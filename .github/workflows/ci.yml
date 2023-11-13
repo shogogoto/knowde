@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ["3.11"]
+        neo4j-version: ["5.13"]
+    services:
+      db:
+        image: neo4j:${{ matrix.neo4j-version }}
+        env:
+          NEO4J_AUTH: neo4j/docker
+        ports:
+          - 7687:7687
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.poetry/bin" >> $GITHUB_PATH
+
+      - name: Poetry version
+        run: |
+          poetry --version
+
+      - name: Install dependencies
+        run: |
+          poetry install
+
+      - name: Test
+        run: poetry run task test
+        env:
+          NEO4J_PROTOCOL: bolt
+          NEO4J_USER: neo4j
+          NEO4J_PASSWORD: docker
+          NEO4J_URI: localhost
+
+      - name: Run linter
+        run: poetry run task lint
