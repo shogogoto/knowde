@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "knowde"
+version = "0.1.0"
+description = ""
+authors = ["Shogo Goto <gotoadmn0605@gmail.com>"]
+readme = "README.md"
+reposiory = "https://github/com/shogogoto/knowde"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
+build-backend = "poetry_dynamic_versioning.backend"
