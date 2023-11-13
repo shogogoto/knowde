@@ -1,10 +1,10 @@
 [tool.poetry]
 name = "knowde"
-version = "0.1.0"
+version = "0.0.0" # poetry-dynamic-versioningでgit tagの値にに置換される
 description = ""
 authors = ["Shogo Goto <gotoadmn0605@gmail.com>"]
 readme = "README.md"
-reposiory = "https://github/com/shogogoto/knowde"
+repository = "https://github/com/shogogoto/knowde"
 
 [tool.poetry.dependencies]
 python = "^3.11"
