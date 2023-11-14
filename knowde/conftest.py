@@ -14,4 +14,5 @@ def pytest_configure() -> None:
 
 def pytest_collection_finish() -> None:
     """Run after tests."""
-    db.close_connection()
+    if db.driver is not None:
+        db.close_connection()
