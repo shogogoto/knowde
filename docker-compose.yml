@@ -1,0 +1,17 @@
+version: "3"
+services:
+  neo4j:
+    image: neo4j:${NEO4J_VERSION}
+    container_name: graph_db
+    ports:
+      - 7474:7474 # GUI
+      - 7687:7687 # Web API
+    expose:
+      - 7474
+      - 7687
+    volumes:
+      - ./.docker/neo4j/data:/data
+      - ./.docker/neo4j/logs:/logs
+      - ./.docker/neo4j/conf:/conf
+    environment:
+      - NEO4J_AUTH=neo4j/docker_neo4j_test # user/password
