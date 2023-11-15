@@ -3,7 +3,7 @@
 
 import os
 
-from neomodel import config, db
+from neomodel import clear_neo4j_database, config, db
 
 
 def pytest_configure() -> None:
@@ -15,4 +15,5 @@ def pytest_configure() -> None:
 def pytest_collection_finish() -> None:
     """Run after tests."""
     if db.driver is not None:
+        clear_neo4j_database(db)
         db.close_connection()
