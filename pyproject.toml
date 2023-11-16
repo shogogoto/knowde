@@ -42,6 +42,7 @@ select = ["ALL"]
 ignore = [
   "ERA001", # found commented-out code
   "ANN101", # missing self type hint
+  "S101", # use assert
 ]
 fixable = ["ALL"]
 unfixable = []
