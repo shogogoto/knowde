@@ -15,6 +15,3 @@ class Concept(BaseModel, frozen=True):
     explain: str | None = None
     created: datetime | None = None
     updated: datetime | None = None
-
-    def exists(self) -> bool:
-        pass
