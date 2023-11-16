@@ -41,6 +41,7 @@ pre-commit = "pre-commit install"
 select = ["ALL"]
 ignore = [
   "ERA001", # found commented-out code
+  "ANN101", # missing self type hint
 ]
 fixable = ["ALL"]
 unfixable = []
