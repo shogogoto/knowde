@@ -30,7 +30,7 @@ class Concept(BaseModel, frozen=True):
         return v.astimezone(TZ)
 
     @property
-    def exists_id(self) -> UUID:
+    def valid_uid(self) -> UUID:
         """Exists in db."""
         if self.uid is None:
             raise NotExistsUidAccessError
