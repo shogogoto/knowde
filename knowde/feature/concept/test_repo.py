@@ -1,6 +1,7 @@
 """repository test."""
 
 
+
 from knowde.feature.concept.domain import Concept
 from knowde.feature.concept.repo import delete_concept, list_concepts, save_concept
 
@@ -20,7 +21,6 @@ def test_list() -> None:
     c = Concept(name="test_list")
     save_concept(c)
     ls = list_concepts()
-    print(ls)
     assert c.name in [e.name for e in ls]
 
 
@@ -28,4 +28,8 @@ def test_delete() -> None:
     """Test."""
     c = Concept(name="test_delete")
     saved = save_concept(c)
+    ls = list_concepts()
+    assert c.name in [e.name for e in ls]
     delete_concept(saved.uid)
+    ls = list_concepts()
+    assert c.name not in [e.name for e in ls]

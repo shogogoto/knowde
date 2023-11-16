@@ -26,7 +26,6 @@ class LConcept(StructuredNode):
     uid = IdProp
     name = StringProperty()
     explain = StringProperty()
-    # created = DateTimeProperty(default=datetime.now(tz=TZ))
     created = DateTimeProperty()
     updated = DateTimeProperty()
 

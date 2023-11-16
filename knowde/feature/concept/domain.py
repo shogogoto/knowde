@@ -1,13 +1,13 @@
 """concept domain."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from datetime import datetime  # noqa: TCH003
 from uuid import UUID  # noqa: TCH003
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
-if TYPE_CHECKING:
-    from datetime import datetime
+from knowde.feature.concept.error import NotExistsUidAccessError
+from knowde.feature.concept.label import TZ
 
 
 class Concept(BaseModel, frozen=True):
@@ -19,6 +19,19 @@ class Concept(BaseModel, frozen=True):
     created: datetime | None = None
     updated: datetime | None = None
 
-    def exists(self) -> bool:
+    @field_validator("created")
+    def validate_created(cls, v: datetime) -> datetime:
+        """Jst."""
+        return v.astimezone(TZ)
+
+    @field_validator("updated")
+    def validate_updated(cls, v: datetime) -> datetime:
+        """Jst."""
+        return v.astimezone(TZ)
+
+    @property
+    def exists_id(self) -> UUID:
         """Exists in db."""
-        return self.uid is not None
+        if self.uid is None:
+            raise NotExistsUidAccessError
+        return self.uid

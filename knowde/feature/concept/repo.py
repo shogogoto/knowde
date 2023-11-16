@@ -29,9 +29,4 @@ def list_concepts() -> list[Concept]:
 
 def delete_concept(uid: UUID) -> None:
     """Delete concept."""
-    l = LConcept.nodes.first(uid=uid)
-    print(l)
-    print(l)
-    print(l)
-    print(l)
-    # LConcept.delete()
+    LConcept.nodes.first(uid=uid.hex).delete()
