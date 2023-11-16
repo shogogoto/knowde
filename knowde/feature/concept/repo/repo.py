@@ -4,7 +4,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from knowde.feature.concept.domain import Concept
-from knowde.feature.concept.label import LConcept
+
+from .label import LConcept
 
 if TYPE_CHECKING:
     from uuid import UUID

@@ -2,7 +2,8 @@
 
 
 from knowde.feature.concept.domain import Concept
-from knowde.feature.concept.repo import delete_concept, list_concepts, save_concept
+
+from .repo import delete_concept, list_concepts, save_concept
 
 
 def test_save() -> None:

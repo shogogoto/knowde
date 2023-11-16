@@ -1,29 +1,15 @@
 """neo4j label."""
-
-
-from datetime import datetime
-
 from neomodel import DateTimeProperty, StringProperty, StructuredNode, UniqueIdProperty
-from pytz import timezone
 from uuid6 import uuid7
 
-TZ = timezone("Asia/Tokyo")
-
-
-def jst_now() -> datetime:
-    """Jst datetime now."""
-    return datetime.now(tz=TZ)
-
-
-JSTProp = DateTimeProperty(default=jst_now())
-IdProp = UniqueIdProperty(defult=uuid7().hex)
+from knowde.feature._shared.timeutil import jst_now
 
 
 class LConcept(StructuredNode):
     """neo4j label."""
 
     __label__ = "Concept"
-    uid = IdProp
+    uid = UniqueIdProperty(defult=uuid7().hex)
     name = StringProperty()
     explain = StringProperty()
     created = DateTimeProperty()
