@@ -10,12 +10,17 @@ from knowde.feature._shared.timeutil import TZ
 from knowde.feature.concept.error import NotExistsUidAccessError
 
 
-class Concept(BaseModel, frozen=True):
+class ConceptProp(BaseModel):
+    """concept properties."""
+
+    name: str
+    explain: str | None = None
+
+
+class Concept(ConceptProp, frozen=True):
     """domain model."""
 
     uid: UUID | None = None
-    name: str
-    explain: str | None = None
     created: datetime | None = None
     updated: datetime | None = None
 

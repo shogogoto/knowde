@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from knowde.feature.concept.domain import Concept
+from knowde.feature.concept.domain import Concept, ConceptProp
 
 from .label import LConcept
 
@@ -16,7 +16,7 @@ def to_model(label: LConcept) -> Concept:
     return Concept.model_validate(label.__properties__)
 
 
-def save_concept(c: Concept) -> Concept:
+def save_concept(c: Concept | ConceptProp) -> Concept:
     """Create concept."""
     lc = LConcept(**c.model_dump()).save()
     return to_model(lc)
