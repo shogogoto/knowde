@@ -1,9 +1,11 @@
 """concept repository."""
 from __future__ import annotations
 
-from knowde.feature.concept.label import Concept
+from knowde.feature.concept.domain import Concept
+from knowde.feature.concept.label import LConcept
 
 
-def list_concepts() -> list[Concept]:
-    """List concepts."""
-    return Concept.nodes
+def save_concept(c: Concept) -> Concept:
+    """Create concept."""
+    lc = LConcept(**c.model_dump()).save()
+    return Concept.model_validate(lc.__properties__)
