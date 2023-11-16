@@ -1,8 +1,13 @@
 """concept repository."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from knowde.feature.concept.domain import Concept
 from knowde.feature.concept.label import LConcept
+
+if TYPE_CHECKING:
+    from uuid import UUID
 
 
 def to_model(label: LConcept) -> Concept:
@@ -20,3 +25,13 @@ def list_concepts() -> list[Concept]:
     """Find all concepts."""
     ls = LConcept.nodes.all()
     return [to_model(e) for e in ls]
+
+
+def delete_concept(uid: UUID) -> None:
+    """Delete concept."""
+    l = LConcept.nodes.first(uid=uid)
+    print(l)
+    print(l)
+    print(l)
+    print(l)
+    # LConcept.delete()
