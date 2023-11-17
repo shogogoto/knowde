@@ -14,4 +14,4 @@ services:
       - ./.docker/neo4j/logs:/logs
       - ./.docker/neo4j/conf:/conf
     environment:
-      - NEO4J_AUTH=neo4j/docker_neo4j_test # user/password
+      - NEO4J_AUTH=neo4j/password # user/password
