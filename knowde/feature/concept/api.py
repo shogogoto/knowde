@@ -1,10 +1,12 @@
 """concept api."""
 from __future__ import annotations
 
+from uuid import UUID  # noqa: TCH003
+
 from fastapi import APIRouter, status
 
 from knowde.feature.concept.domain import Concept, ConceptProp  # noqa: TCH001
-from knowde.feature.concept.repo.repo import list_concepts, save_concept
+from knowde.feature.concept.repo.repo import delete_concept, list_concepts, save_concept
 
 concept_router = APIRouter(prefix="/concepts")
 
@@ -19,3 +21,13 @@ def _get() -> list[Concept]:
 def _post(c: ConceptProp) -> Concept:
     """Create Concept."""
     return save_concept(c)
+
+
+@concept_router.delete(
+    "/{concept_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_model=None,
+)
+def _delete(concept_id: UUID) -> None:
+    """Delete Concept."""
+    delete_concept(concept_id)
