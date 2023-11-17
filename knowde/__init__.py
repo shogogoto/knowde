@@ -1,2 +1,3 @@
 """src root."""
-from .api import app  # noqa: F401
+from .api import api  # noqa: F401
+from .cli import cli  # noqa: F401

@@ -54,3 +54,6 @@ unsafe-fixes = true
 filterwarnings = [
   'ignore: pkg_resources is deprecated as an API:DeprecationWarning',
   ]
+
+[tool.poetry.scripts]
+kn = "knowde:cli"
