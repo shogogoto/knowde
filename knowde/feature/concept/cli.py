@@ -1,7 +1,7 @@
 """concept cli."""
 from __future__ import annotations
 
-from typing import Annotated, Optional
+from typing import Optional
 from uuid import UUID  # noqa: TCH003
 
 import typer
@@ -22,8 +22,8 @@ def _list() -> None:
 # createは打数が多いからやめた
 @concept_cli.command("add")
 def add(
-    name: Annotated[str, typer.Argument()],
-    explain: Annotated[Optional[str], typer.Argument()],
+    name: str = typer.Argument(),
+    explain: Optional[str] = typer.Argument(),
 ) -> None:
     """Create concept."""
     c = ConceptProp(name=name, explain=explain)
@@ -32,7 +32,7 @@ def add(
 
 @concept_cli.command("rm")
 def remove(
-    uid: Annotated[UUID, typer.Argument()],
+    uid: UUID = typer.Argument(),  # noqa: B008
 ) -> None:
     """Remove concept."""
     req_remove(uid)
@@ -41,9 +41,12 @@ def remove(
 @concept_cli.command("ch")
 def change(
     uid: UUID,
-    name: Annotated[Optional[str], typer.Option("-n")] = None,
-    explain: Annotated[Optional[str], typer.Option("-e")] = None,
+    name: Optional[str] = typer.Option(..., "--name", "-n"),
+    explain: Optional[str] = typer.Option(..., "--explain", "-e"),
 ) -> None:
     """Change concept properties."""
-    prop = ConceptChangeProp(name=name, explain=explain)
+    prop = ConceptChangeProp(
+        name=name,
+        explain=explain,
+    )
     req_change(uid, prop)
