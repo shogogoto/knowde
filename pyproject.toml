@@ -40,7 +40,7 @@ test-watch = "pytest-watch -- -v -s --durations=0 --ff"
 lint       = "ruff check ."
 lintfix    = "ruff . --fix"
 pre-commit = "pre-commit install"
-serve      = "uvicorn knowde:api"
+serve      = "uvicorn knowde:api --reload --host 0.0.0.0 --port 8000"
 
 [tool.ruff]
 select = ["ALL"]
