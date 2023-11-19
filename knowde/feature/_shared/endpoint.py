@@ -21,7 +21,7 @@ class Endpoint(Enum):
             _relative += f"/{relative}"
 
         try:
-            base = os.environ["KNOWDE_URL"]
+            base = os.getenv("KNOWDE_URL", "https://knowde.onrender.com")
             return urljoin(base, _relative)
         except KeyError as e:
             msg = "KNOWDE_URL環境変数にAPIのURLを設定してください"
@@ -53,6 +53,18 @@ class Endpoint(Enum):
     ) -> requests.Response:
         """Post of Restful API."""
         return requests.post(
+            self.__url(relative),
+            timeout=TIMEOUT * 3,
+            json=json,
+        )
+
+    def put(
+        self,
+        relative: str | None = None,
+        json: object = None,
+    ) -> requests.Response:
+        """Post of Restful API."""
+        return requests.put(
             self.__url(relative),
             timeout=TIMEOUT * 3,
             json=json,
