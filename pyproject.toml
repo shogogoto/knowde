@@ -49,6 +49,7 @@ ignore = [
   "ANN101", # missing self type hint
   "S101", # use assert
   "N805", # first argument of method should be named self
+  "UP007", # str | Optional[T]が許されない
   ]
 
 # ref: https://github.com/scikit-build/scikit-build/issues/951#issuecomment-1645302094
