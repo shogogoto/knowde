@@ -6,9 +6,8 @@ from uuid import UUID  # noqa: TCH003
 
 import typer
 
-from knowde.feature._shared.endpoint import Endpoint
-from knowde.feature.concept.domain import ConceptChangeProp, ConceptProp
-from knowde.feature.concept.repo.api import req_list_concepts
+from .domain import ConceptChangeProp, ConceptProp
+from .repo.api import req_add, req_change, req_list, req_remove
 
 concept_cli = typer.Typer()
 
@@ -16,7 +15,7 @@ concept_cli = typer.Typer()
 @concept_cli.command("ls")
 def _list() -> None:
     """List concepts."""
-    ls = req_list_concepts()
+    ls = req_list()
     typer.echo(ls)
 
 
@@ -28,7 +27,7 @@ def add(
 ) -> None:
     """Create concept."""
     c = ConceptProp(name=name, explain=explain)
-    Endpoint.Concept.post(json=c.model_dump())
+    req_add(c)
 
 
 @concept_cli.command("rm")
@@ -36,7 +35,7 @@ def remove(
     uid: Annotated[UUID, typer.Argument()],
 ) -> None:
     """Remove concept."""
-    Endpoint.Concept.delete(uid.hex)
+    req_remove(uid)
 
 
 @concept_cli.command("ch")
@@ -47,4 +46,4 @@ def change(
 ) -> None:
     """Change concept properties."""
     prop = ConceptChangeProp(name=name, explain=explain)
-    Endpoint.Concept.put(uid.hex, json=prop.model_dump())
+    req_change(uid, prop)
