@@ -1,7 +1,7 @@
 """concept repository."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from knowde.feature.concept.domain import Concept, ConceptProp
 from knowde.feature.concept.error import NotOnlyMatchError
@@ -37,7 +37,7 @@ def delete_concept(uid: UUID) -> None:
 def change_concept(
     uid: UUID,
     name: str | None = None,
-    explain: Optional[str] = None,
+    explain: str | None = None,
 ) -> Concept:
     """Change concept properties."""
     c = LConcept.nodes.first(uid=uid.hex)

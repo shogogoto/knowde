@@ -10,7 +10,7 @@ from knowde.feature._shared.timeutil import TZ
 from knowde.feature.concept.error import NotExistsUidAccessError
 
 
-class ConceptProp(BaseModel):
+class ConceptProp(BaseModel, frozen=True):
     """concept properties."""
 
     name: str
@@ -40,3 +40,10 @@ class Concept(ConceptProp, frozen=True):
         if self.uid is None:
             raise NotExistsUidAccessError
         return self.uid
+
+
+class ConceptChangeProp(BaseModel, frozen=True):
+    """for change props."""
+
+    name: str | None = None
+    explain: str | None = None
