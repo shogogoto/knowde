@@ -9,10 +9,13 @@ repository = "https://github/com/shogogoto/knowde"
 [tool.poetry.dependencies]
 python = "^3.11"
 fastapi = "^0.104.1"
-typer = {extras = ["all"], version = "^0.9.0"}
 neomodel = "^5.2.0"
 uvicorn = "^0.24.0.post1"
 uuid6 = "^2023.5.2"
+requests = "^2.31.0"
+click = "^8.1.7"
+tabulate = "^0.9.0"
+makefun = "^1.15.2"
 
 [tool.poetry.group.dev.dependencies]
 taskipy = "^1.12.0"
@@ -26,6 +29,9 @@ ruff = "^0.1.5"
 enable = true
 vcs = "git"
 
+[tool.poetry-dynamic-versioning.substitution]
+files = ["knowde/cli.py"]
+
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
 build-backend = "poetry_dynamic_versioning.backend"
@@ -36,6 +42,7 @@ test-watch = "pytest-watch -- -v -s --durations=0 --ff"
 lint       = "ruff check ."
 lintfix    = "ruff . --fix"
 pre-commit = "pre-commit install"
+serve      = "uvicorn knowde:api --reload --host 0.0.0.0 --port 8000"
 
 [tool.ruff]
 select = ["ALL"]
@@ -44,9 +51,9 @@ ignore = [
   "ANN101", # missing self type hint
   "S101", # use assert
   "N805", # first argument of method should be named self
+  "UP007", # str | Optional[T]が許されない
+  "B008", # default argに関数の返り値を使えない
   ]
-fixable = ["ALL"]
-unfixable = []
 unsafe-fixes = true
 
 # ref: https://github.com/scikit-build/scikit-build/issues/951#issuecomment-1645302094
@@ -54,3 +61,6 @@ unsafe-fixes = true
 filterwarnings = [
   'ignore: pkg_resources is deprecated as an API:DeprecationWarning',
   ]
+
+[tool.poetry.scripts]
+kn = "knowde:cli"

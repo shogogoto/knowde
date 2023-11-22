@@ -5,8 +5,17 @@ from uuid import UUID  # noqa: TCH003
 
 from fastapi import APIRouter, status
 
-from knowde.feature.concept.domain import Concept, ConceptProp  # noqa: TCH001
-from knowde.feature.concept.repo.repo import delete_concept, list_concepts, save_concept
+from knowde.feature.concept.domain import (  # noqa: TCH001
+    Concept,
+    ConceptChangeProp,
+    ConceptProp,
+)
+from knowde.feature.concept.repo.repo import (
+    change_concept,
+    delete_concept,
+    list_concepts,
+    save_concept,
+)
 
 concept_router = APIRouter(prefix="/concepts")
 
@@ -18,9 +27,9 @@ def _get() -> list[Concept]:
 
 
 @concept_router.post("", status_code=status.HTTP_201_CREATED)
-def _post(c: ConceptProp) -> Concept:
+def _post(prop: ConceptProp) -> Concept:
     """Create Concept."""
-    return save_concept(c)
+    return save_concept(prop)
 
 
 @concept_router.delete(
@@ -31,3 +40,16 @@ def _post(c: ConceptProp) -> Concept:
 def _delete(concept_id: UUID) -> None:
     """Delete Concept."""
     delete_concept(concept_id)
+
+
+@concept_router.put(
+    "/{concept_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=None,
+)
+def _put(
+    concept_id: UUID,
+    prop: ConceptChangeProp,
+) -> Concept:
+    """Delete Concept."""
+    return change_concept(concept_id, **prop.model_dump())

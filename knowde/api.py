@@ -5,5 +5,5 @@ from fastapi import FastAPI
 
 from .feature import concept_router
 
-app = FastAPI()
-app.include_router(concept_router)
+api = FastAPI()
+api.include_router(concept_router)
