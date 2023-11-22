@@ -1,29 +1,46 @@
 """concept cli."""
 from __future__ import annotations
 
-from typing import Optional
-from uuid import UUID  # noqa: TCH003
+from typing import TYPE_CHECKING
 
-import typer
+import click
 
-from .domain import ConceptChangeProp, ConceptProp
+from .domain import Concept, ConceptChangeProp, ConceptProp
 from .repo.api import req_add, req_change, req_list, req_remove
 
-concept_cli = typer.Typer()
+if TYPE_CHECKING:
+    from uuid import UUID
+
+
+@click.group("concept")
+def concept_cli() -> None:
+    """Concept group."""
 
 
 @concept_cli.command("ls")
-def _list() -> None:
+def _list() -> list[Concept]:
     """List concepts."""
-    ls = req_list()
-    typer.echo(ls)
+    click.echo([e.model_dump() for e in req_list()])
+
+
+arg_uid = click.argument("uid", nargs=1, type=click.UUID)
+op_ex = click.option(
+    "--explain",
+    "-ex",
+    default=None,
+    type=click.STRING,
+    show_default=True,
+    help="説明文",
+)
 
 
 # createは打数が多いからやめた
 @concept_cli.command("add")
+@click.argument("name", nargs=1)
+@op_ex
 def add(
-    name: str = typer.Argument(),
-    explain: Optional[str] = typer.Argument(),
+    name: str,
+    explain: str | None,
 ) -> None:
     """Create concept."""
     c = ConceptProp(name=name, explain=explain)
@@ -31,22 +48,29 @@ def add(
 
 
 @concept_cli.command("rm")
-def remove(
-    uid: UUID = typer.Argument(),  # noqa: B008
-) -> None:
+@arg_uid
+def remove(uid: UUID) -> None:
     """Remove concept."""
     req_remove(uid)
 
 
 @concept_cli.command("ch")
+@arg_uid
+@click.option(
+    "--name",
+    "-n",
+    default=None,
+    type=click.STRING,
+)
+@op_ex
 def change(
     uid: UUID,
-    name: Optional[str] = typer.Option(..., "--name", "-n"),
-    explain: Optional[str] = typer.Option(..., "--explain", "-e"),
-) -> None:
+    name: str | None,
+    explain: str | None,
+) -> Concept:
     """Change concept properties."""
     prop = ConceptChangeProp(
         name=name,
         explain=explain,
     )
-    req_change(uid, prop)
+    return req_change(uid, prop)
