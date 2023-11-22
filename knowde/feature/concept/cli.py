@@ -5,6 +5,10 @@ from typing import TYPE_CHECKING
 
 import click
 
+from knowde.feature._shared import each_args
+from knowde.feature._shared.view.options import view_options
+from knowde.feature.concept.repo.repo import complete_concept
+
 from .domain import Concept, ConceptChangeProp, ConceptProp
 from .repo.api import req_add, req_change, req_list, req_remove
 
@@ -18,9 +22,10 @@ def concept_cli() -> None:
 
 
 @concept_cli.command("ls")
+@view_options
 def _list() -> list[Concept]:
     """List concepts."""
-    click.echo([e.model_dump() for e in req_list()])
+    return req_list()
 
 
 arg_uid = click.argument("uid", nargs=1, type=click.UUID)
@@ -38,23 +43,30 @@ op_ex = click.option(
 @concept_cli.command("add")
 @click.argument("name", nargs=1)
 @op_ex
+@view_options
 def add(
     name: str,
     explain: str | None,
-) -> None:
+) -> Concept:
     """Create concept."""
     c = ConceptProp(name=name, explain=explain)
-    req_add(c)
+    click.echo("Concept was created newly")
+    return req_add(c)
 
 
 @concept_cli.command("rm")
-@arg_uid
+@each_args(
+    "uids",
+    converter=lambda pref_uid: complete_concept(pref_uid).valid_uid,
+)
 def remove(uid: UUID) -> None:
     """Remove concept."""
     req_remove(uid)
+    click.echo(f"Concept({uid}) was deleted")
 
 
 @concept_cli.command("ch")
+@click.argument("uid", nargs=1, type=click.STRING)
 @arg_uid
 @click.option(
     "--name",
@@ -63,8 +75,9 @@ def remove(uid: UUID) -> None:
     type=click.STRING,
 )
 @op_ex
+@view_options
 def change(
-    uid: UUID,
+    pref_uid: str,
     name: str | None,
     explain: str | None,
 ) -> Concept:
@@ -73,4 +86,6 @@ def change(
         name=name,
         explain=explain,
     )
-    return req_change(uid, prop)
+    uid = complete_concept(pref_uid).valid_uid
+    req_change(uid, prop)
+    click.echo("Concept was changed")
