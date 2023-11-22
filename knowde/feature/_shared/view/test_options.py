@@ -51,10 +51,6 @@ def test_view_table() -> None:
         "",
     ]
     expected = "\n".join(lines)
-    print(result.stdout)
-    print(result.stdout)
-    print(result.stdout)
-    print(result)
     assert result.exit_code == 0
     assert result.stdout == expected
 
