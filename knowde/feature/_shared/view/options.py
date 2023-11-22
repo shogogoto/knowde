@@ -7,8 +7,6 @@ from typing import Callable, ParamSpec, Sequence, TypeVar
 import click
 from pydantic import BaseModel
 
-from knowde.feature._shared.view.domain import filter_props_json
-
 from .domain import view
 
 P = ParamSpec("P")
@@ -26,7 +24,7 @@ def view_options(f: Wrapped) -> Callable:
         "props",
         help="表示属性[複数指定可]",
         multiple=True,
-        default=(),
+        default=None,
         show_default=True,
     )
     @click.option(
@@ -39,7 +37,7 @@ def view_options(f: Wrapped) -> Callable:
     )
     @functools.wraps(f)
     def _wrapper(
-        props: tuple[str],
+        props: list[str],
         style: str,
         *args: P.args,
         **kwargs: P.kwargs,
@@ -49,8 +47,7 @@ def view_options(f: Wrapped) -> Callable:
             models = [models]
         if models is None:
             models = []
-        filter_props_json(models, props)
-        view(models, props, style)
+        view(models, set(props), style)
         return models
 
     return _wrapper

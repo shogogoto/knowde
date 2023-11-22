@@ -52,7 +52,6 @@ def view(
     style: Literal["json", "table", "rows"] = "table",
 ) -> None:
     js = filter_props_json(models, props)
-
     if style == "json":
         txt = json.dumps(js, indent=2)
     elif style == "table":
