@@ -25,13 +25,13 @@ def test_view_json() -> None:
     runner = CliRunner()
     result = runner.invoke(
         command,
-        ["test", "--op", "111", "-P", "p1", "-S", "json"],
+        ["test", "--op", "111", "-S", "json"],
     )
     assert result.exit_code == 0
     assert json.loads(result.output) == [
-        {"p1": "0"},
-        {"p1": "1"},
-        {"p1": "2"},
+        {"p1": "0", "p2": "xxx"},
+        {"p1": "1", "p2": "xxx"},
+        {"p1": "2", "p2": "xxx"},
     ]
 
 
@@ -51,6 +51,10 @@ def test_view_table() -> None:
         "",
     ]
     expected = "\n".join(lines)
+    print(result.stdout)
+    print(result.stdout)
+    print(result.stdout)
+    print(result)
     assert result.exit_code == 0
     assert result.stdout == expected
 

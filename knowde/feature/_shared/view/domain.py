@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from typing import Literal, TypeVar
+from typing import Literal, TypeAlias, TypeVar
 
 import click
 from pydantic import BaseModel
@@ -46,12 +46,19 @@ def rows_view(js: list) -> str:
     return tabulate(js, headers=(), tablefmt="plain", showindex=False)
 
 
+Style: TypeAlias = Literal["json", "table", "rows"]
+
+
 def view(
     models: list[T],
-    props: set[str] | None = None,
-    style: Literal["json", "table", "rows"] = "table",
+    props: set[str],
+    style: Style = "table",
 ) -> None:
-    js = filter_props_json(models, props)
+    _props = props
+    if len(_props) == 0:
+        _props = None
+
+    js = filter_props_json(models, _props)
     if style == "json":
         txt = json.dumps(js, indent=2)
     elif style == "table":

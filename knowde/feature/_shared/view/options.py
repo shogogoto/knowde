@@ -7,7 +7,7 @@ from typing import Callable, ParamSpec, Sequence, TypeVar
 import click
 from pydantic import BaseModel
 
-from .domain import view
+from .domain import Style, view
 
 P = ParamSpec("P")
 T = TypeVar("T", bound=BaseModel)
@@ -24,7 +24,7 @@ def view_options(f: Wrapped) -> Callable:
         "props",
         help="表示属性[複数指定可]",
         multiple=True,
-        default=None,
+        default=[],
         show_default=True,
     )
     @click.option(
@@ -32,13 +32,13 @@ def view_options(f: Wrapped) -> Callable:
         "-S",
         help="表示形式",
         default="table",
-        type=click.Choice(["table", "json", "rows"]),
+        type=click.Choice(["json", "table", "rows"]),
         show_default=True,
     )
     @functools.wraps(f)
     def _wrapper(
         props: list[str],
-        style: str,
+        style: Style,
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Ret:
@@ -47,6 +47,7 @@ def view_options(f: Wrapped) -> Callable:
             models = [models]
         if models is None:
             models = []
+
         view(models, set(props), style)
         return models
 
