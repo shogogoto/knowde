@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from knowde.feature.concept.domain import Concept, ConceptProp
-from knowde.feature.concept.error import NotOnlyMatchError
+from knowde.feature.concept.error import NotUniqueFoundError
 
 from .label import LConcept
 
@@ -50,7 +50,17 @@ def change_concept(
 
 def find_one(uid: UUID) -> Concept:
     """Find only one."""
-    ls = LConcept.nodes.filter(uid=uid.hex)
+    return LConcept.nodes.get(uid=uid.hex)
+
+
+def list_by_pref_uid(pref_uid: str) -> list[Concept]:
+    """uidの前方一致で検索."""
+    return LConcept.nodes.filter(uid__startswith=pref_uid)
+
+
+def complete_concept(pref_uid: str) -> Concept:
+    """uuidが前方一致する要素を1つ返す."""
+    ls = list_by_pref_uid(pref_uid)
     if len(ls) != 1:
-        raise NotOnlyMatchError
+        raise NotUniqueFoundError
     return to_model(ls[0])
