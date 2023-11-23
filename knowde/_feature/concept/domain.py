@@ -52,6 +52,5 @@ class ConceptChangeProp(BaseModel, frozen=True):
 class ConceptAdjacent(BaseModel, frozen=True):
     """with connected concepts."""
 
-    center: Concept
     sources: list[Concept]
     dests: list[Concept]

@@ -11,21 +11,25 @@ def find_adjacent(concept_uid: UUID) -> ConceptAdjacent:
     """List connected concepts."""
     lc: LConcept = LConcept.nodes.get(uid=concept_uid.hex)
     return ConceptAdjacent(
-        center=to_model(lc),
         sources=[to_model(e) for e in lc.src.all()],
         dests=[to_model(e) for e in lc.dest.all()],
     )
 
 
-def refer(from_uid: UUID, to_uid: UUID) -> bool:
+def connect(from_uid: UUID, to_uid: UUID) -> bool:
     """Connect two concepts."""
     cfrom: LConcept = LConcept.nodes.get(uid=from_uid.hex)
     cto: LConcept = LConcept.nodes.get(uid=to_uid.hex)
     return cfrom.dest.connect(cto)
 
 
-def disrefer(from_uid: UUID, to_uid: UUID) -> bool:
+def disconnect(from_uid: UUID, to_uid: UUID) -> bool:
     """Discommenct two concepts."""
     cfrom: LConcept = LConcept.nodes.get(uid=from_uid.hex)
-    cto: LConcept = LConcept.nodes.get(uid=to_uid.hex)
-    return cfrom.parts.disconnect(cto)
+    cto = cfrom.dest.get_or_none(uid=to_uid.hex)
+    if cto is None:
+        # そもそも繋がっていなかった
+        return False
+    cfrom.dest.disconnect(cto)
+    # 無事disconnectされてdestが取得できなくなった
+    return cfrom.dest.get_or_none(uid=to_uid.hex) is None

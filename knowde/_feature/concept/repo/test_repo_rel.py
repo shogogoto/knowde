@@ -1,13 +1,13 @@
 from knowde._feature.concept.domain import Concept
 from knowde._feature.concept.repo.repo import save_concept
-from knowde._feature.concept.repo.repo_rel import find_adjacent, refer
+from knowde._feature.concept.repo.repo_rel import connect, disconnect, find_adjacent
 
 
-def test_adjacent_create_read() -> None:
+def test_connect_and_disconnect_concept() -> None:
     """Test."""
     cfrom = save_concept(Concept(name="from"))
     cto = save_concept(Concept(name="to"))
-    assert refer(cfrom.valid_uid, cto.valid_uid)
+    assert connect(cfrom.valid_uid, cto.valid_uid)
 
     adj_from = find_adjacent(cfrom.valid_uid)
     assert len(adj_from.sources) == 0
@@ -15,4 +15,18 @@ def test_adjacent_create_read() -> None:
 
     adj_to = find_adjacent(cto.valid_uid)
     assert adj_to.sources[0] == cfrom
+    assert len(adj_to.dests) == 0
+
+    # fail disconnect test not change
+    assert not disconnect(cto.valid_uid, cfrom.valid_uid)
+    assert adj_to.sources[0] == cfrom
+    assert len(adj_to.dests) == 0
+
+    # success disconnect
+    assert disconnect(cfrom.valid_uid, cto.valid_uid)
+    adj_from = find_adjacent(cfrom.valid_uid)
+    assert len(adj_from.sources) == 0
+    assert len(adj_from.dests) == 0
+    adj_to = find_adjacent(cto.valid_uid)
+    assert len(adj_to.sources) == 0
     assert len(adj_to.dests) == 0
