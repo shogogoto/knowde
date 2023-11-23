@@ -12,6 +12,7 @@ from knowde.feature.concept.domain import (  # noqa: TCH001
 )
 from knowde.feature.concept.repo.repo import (
     change_concept,
+    complete_concept,
     delete_concept,
     list_concepts,
     save_concept,
@@ -28,8 +29,10 @@ def _get() -> list[Concept]:
     return list_concepts()
 
 
-# @concept_router.get("")
-# def _find()
+@concept_router.get("/completion")
+def _complete(pref_uid: str) -> Concept:
+    """Search concept by startswith uid."""
+    return complete_concept(pref_uid)
 
 
 #### Write

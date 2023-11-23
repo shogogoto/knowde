@@ -34,5 +34,10 @@ def req_remove(uid: UUID) -> None:
 def req_change(uid: UUID, prop: ConceptChangeProp) -> Concept:
     """Request change concept."""
     res = Endpoint.Concept.put(uid.hex, json=prop.model_dump())
+    return Concept.model_validate(res.json())
 
+
+def req_complete(pref_uid: str) -> Concept:
+    """Request concept by startswith uid."""
+    res = Endpoint.Concept.get(f"completion?pref_uid={pref_uid}")
     return Concept.model_validate(res.json())
