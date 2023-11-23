@@ -47,3 +47,11 @@ class ConceptChangeProp(BaseModel, frozen=True):
 
     name: str | None = None
     explain: str | None = None
+
+
+class ConceptAdjacent(BaseModel, frozen=True):
+    """with connected concepts."""
+
+    center: Concept
+    sources: list[Concept]
+    dests: list[Concept]
