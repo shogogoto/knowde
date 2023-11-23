@@ -11,6 +11,7 @@ def find_adjacent(concept_uid: UUID) -> ConceptAdjacent:
     """List connected concepts."""
     lc: LConcept = LConcept.nodes.get(uid=concept_uid.hex)
     return ConceptAdjacent(
+        center=to_model(lc),
         sources=[to_model(e) for e in lc.src.all()],
         dests=[to_model(e) for e in lc.dest.all()],
     )
