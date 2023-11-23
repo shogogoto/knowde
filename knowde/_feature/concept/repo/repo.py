@@ -3,8 +3,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from knowde.feature.concept.domain import Concept, ConceptProp
-from knowde.feature.concept.error import NotUniqueFoundError
+from knowde._feature.concept.domain import Concept, ConceptProp
+from knowde._feature.concept.error import NotUniqueFoundError
 
 from .label import LConcept
 

@@ -5,12 +5,12 @@ from uuid import UUID  # noqa: TCH003
 
 from fastapi import APIRouter, status
 
-from knowde.feature.concept.domain import (  # noqa: TCH001
+from knowde._feature.concept.domain import (  # noqa: TCH001
     Concept,
     ConceptChangeProp,
     ConceptProp,
 )
-from knowde.feature.concept.repo.repo import (
+from knowde._feature.concept.repo.repo import (
     change_concept,
     complete_concept,
     delete_concept,

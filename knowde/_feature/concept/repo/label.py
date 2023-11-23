@@ -2,7 +2,7 @@
 from neomodel import DateTimeProperty, StringProperty, StructuredNode, UniqueIdProperty
 from uuid6 import uuid7
 
-from knowde.feature._shared.timeutil import jst_now
+from knowde._feature._shared.timeutil import jst_now
 
 
 class LConcept(StructuredNode):

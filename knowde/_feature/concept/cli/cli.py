@@ -5,15 +5,15 @@ from typing import TYPE_CHECKING
 
 import click
 
-from knowde.feature._shared import each_args, view_options
-from knowde.feature.concept.domain import ConceptChangeProp, ConceptProp
+from knowde._feature._shared import each_args, view_options
+from knowde._feature.concept.domain import ConceptChangeProp, ConceptProp
 
 from .repo import req_add, req_change, req_complete, req_list, req_remove
 
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from knowde.feature.concept.domain import Concept
+    from knowde._feature.concept.domain import Concept
 
 
 @click.group("concept")

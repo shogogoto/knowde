@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING
 
 from starlette.status import HTTP_204_NO_CONTENT
 
-from knowde.feature._shared.endpoint import Endpoint
-from knowde.feature.concept.domain import Concept, ConceptChangeProp, ConceptProp
+from knowde._feature._shared.endpoint import Endpoint
+from knowde._feature.concept.domain import Concept, ConceptChangeProp, ConceptProp
 
 if TYPE_CHECKING:
     from uuid import UUID
