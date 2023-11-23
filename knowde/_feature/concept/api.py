@@ -18,7 +18,10 @@ from knowde._feature.concept.repo.repo import (
     save_concept,
 )
 
-concept_router = APIRouter(prefix="/concepts")
+concept_router = APIRouter(
+    prefix="/concepts",
+    tags=["concept"],
+)
 
 #### Read
 
