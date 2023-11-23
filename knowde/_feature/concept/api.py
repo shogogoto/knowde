@@ -5,13 +5,14 @@ from uuid import UUID  # noqa: TCH003
 
 from fastapi import APIRouter, status
 
-from knowde.feature.concept.domain import (  # noqa: TCH001
+from knowde._feature.concept.domain import (  # noqa: TCH001
     Concept,
     ConceptChangeProp,
     ConceptProp,
 )
-from knowde.feature.concept.repo.repo import (
+from knowde._feature.concept.repo.repo import (
     change_concept,
+    complete_concept,
     delete_concept,
     list_concepts,
     save_concept,
@@ -19,11 +20,22 @@ from knowde.feature.concept.repo.repo import (
 
 concept_router = APIRouter(prefix="/concepts")
 
+#### Read
+
 
 @concept_router.get("")
 def _get() -> list[Concept]:
     """List."""
     return list_concepts()
+
+
+@concept_router.get("/completion")
+def _complete(pref_uid: str) -> Concept:
+    """Search concept by startswith uid."""
+    return complete_concept(pref_uid)
+
+
+#### Write
 
 
 @concept_router.post("", status_code=status.HTTP_201_CREATED)

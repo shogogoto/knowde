@@ -6,8 +6,8 @@ from uuid import UUID  # noqa: TCH003
 
 from pydantic import BaseModel, field_validator
 
-from knowde.feature._shared.timeutil import TZ
-from knowde.feature.concept.error import NotExistsUidAccessError
+from knowde._feature._shared.timeutil import TZ
+from knowde._feature.concept.error import NotExistsUidAccessError
 
 
 class ConceptProp(BaseModel, frozen=True):

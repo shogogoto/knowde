@@ -1,12 +1,12 @@
-"""for api."""
+"""api repository for cli."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
 from starlette.status import HTTP_204_NO_CONTENT
 
-from knowde.feature._shared.endpoint import Endpoint
-from knowde.feature.concept.domain import Concept, ConceptChangeProp, ConceptProp
+from knowde._feature._shared.endpoint import Endpoint
+from knowde._feature.concept.domain import Concept, ConceptChangeProp, ConceptProp
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -34,5 +34,10 @@ def req_remove(uid: UUID) -> None:
 def req_change(uid: UUID, prop: ConceptChangeProp) -> Concept:
     """Request change concept."""
     res = Endpoint.Concept.put(uid.hex, json=prop.model_dump())
+    return Concept.model_validate(res.json())
 
+
+def req_complete(pref_uid: str) -> Concept:
+    """Request concept by startswith uid."""
+    res = Endpoint.Concept.get(f"completion?pref_uid={pref_uid}")
     return Concept.model_validate(res.json())

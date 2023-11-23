@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
-from .feature import concept_router
+from ._feature import concept_router
 
 api = FastAPI()
 api.include_router(concept_router)

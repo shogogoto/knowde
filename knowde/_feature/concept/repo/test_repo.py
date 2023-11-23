@@ -5,8 +5,8 @@ from uuid import UUID
 
 import pytest
 
-from knowde.feature.concept.domain import Concept
-from knowde.feature.concept.error import NotUniqueFoundError
+from knowde._feature.concept.domain import Concept
+from knowde._feature.concept.error import NotUniqueFoundError
 
 from .repo import (
     change_concept,

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import click
 
-from knowde.feature.concept.cli import concept_cli
+from knowde._feature.concept.cli import concept_cli
 
 __version__ = "0.0.0"
 
