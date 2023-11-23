@@ -7,13 +7,15 @@ import click
 
 from knowde.feature._shared import each_args
 from knowde.feature._shared.view.options import view_options
+from knowde.feature.concept.domain import ConceptChangeProp, ConceptProp
 from knowde.feature.concept.repo.repo import complete_concept
 
-from .domain import Concept, ConceptChangeProp, ConceptProp
-from .repo.api import req_add, req_change, req_list, req_remove
+from .repo import req_add, req_change, req_list, req_remove
 
 if TYPE_CHECKING:
     from uuid import UUID
+
+    from knowde.feature.concept.domain import Concept
 
 
 @click.group("concept")

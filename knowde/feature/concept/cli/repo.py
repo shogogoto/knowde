@@ -1,4 +1,4 @@
-"""for api."""
+"""api repository for cli."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

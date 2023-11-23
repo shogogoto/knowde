@@ -19,11 +19,20 @@ from knowde.feature.concept.repo.repo import (
 
 concept_router = APIRouter(prefix="/concepts")
 
+#### Read
+
 
 @concept_router.get("")
 def _get() -> list[Concept]:
     """List."""
     return list_concepts()
+
+
+# @concept_router.get("")
+# def _find()
+
+
+#### Write
 
 
 @concept_router.post("", status_code=status.HTTP_201_CREATED)
