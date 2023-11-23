@@ -62,5 +62,6 @@ def complete_concept(pref_uid: str) -> Concept:
     """uuidが前方一致する要素を1つ返す."""
     ls = list_by_pref_uid(pref_uid)
     if len(ls) != 1:
-        raise NotUniqueFoundError
+        msg = f"{len(ls)}件がヒットしました: {list(ls)}"
+        raise NotUniqueFoundError(msg)
     return to_model(ls[0])
