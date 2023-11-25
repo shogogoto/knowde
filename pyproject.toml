@@ -49,6 +49,7 @@ select = ["ALL"]
 ignore = [
   "ERA001", # found commented-out code
   "ANN101", # missing self type hint
+  "ANN102", # missing cls type hint
   "S101", # use assert
   "N805", # first argument of method should be named self
   "UP007", # str | Optional[T]が許されない
