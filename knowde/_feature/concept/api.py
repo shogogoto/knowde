@@ -1,15 +1,18 @@
 """concept api."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from uuid import UUID  # noqa: TCH003
 
 from fastapi import APIRouter, status
+from neomodel import db
 
 from knowde._feature.concept.domain import (  # noqa: TCH001
     AdjacentConcept,
     ChangeProp,
     Concept,
-    ConceptProp,
+    ConnectedConcept,
+    SaveProp,
 )
 from knowde._feature.concept.repo.repo import (
     change_concept,
@@ -19,6 +22,9 @@ from knowde._feature.concept.repo.repo import (
     save_concept,
 )
 from knowde._feature.concept.repo.repo_rel import find_adjacent
+
+if TYPE_CHECKING:
+    from knowde._feature.concept.domain.rel import ConnectedConcept
 
 concept_router = APIRouter(
     prefix="/concepts",
@@ -41,19 +47,20 @@ def _complete(pref_uid: str) -> Concept:
 
 
 @concept_router.get("/adjacent")
-def _find_adjacent(pref_uid: str) -> AdjacentConcept:
+def _find_adjacent(pref_uid: str) -> list[ConnectedConcept]:
     """Search concept by startswith uid."""
     c = complete_concept(pref_uid)
-    return find_adjacent(c.valid_uid)
+    return find_adjacent(c.valid_uid).flatten()
 
 
 #### Write
 
 
 @concept_router.post("", status_code=status.HTTP_201_CREATED)
-def _post(prop: ConceptProp) -> Concept:
+def _post(prop: SaveProp[str]) -> AdjacentConcept:
     """Create Concept."""
-    return save_concept(prop)
+    with db.transaction:
+        return save_concept(prop)
 
 
 @concept_router.delete(
