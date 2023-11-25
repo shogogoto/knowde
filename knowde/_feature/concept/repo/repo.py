@@ -54,10 +54,10 @@ def change_concept(
 
 def find_one(uid: UUID) -> Concept:
     """Find only one."""
-    return LConcept.nodes.get(uid=uid.hex)
+    return to_model(LConcept.nodes.get(uid=uid.hex))
 
 
-def list_by_pref_uid(pref_uid: str) -> list[Concept]:
+def list_by_pref_uid(pref_uid: str) -> list[LConcept]:
     """uidの前方一致で検索."""
     return LConcept.nodes.filter(uid__startswith=pref_uid)
 

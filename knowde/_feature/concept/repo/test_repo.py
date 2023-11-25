@@ -26,10 +26,6 @@ def test_save() -> None:
     # assert lc2.created != lc2.updated # microsecを省いたのでズレなくなった
 
 
-def test_save_with_adjacent() -> None:
-    """Test."""
-
-
 def test_list() -> None:
     """Find all concepts."""
     prop = SaveProp(name="test_list")
@@ -94,3 +90,9 @@ def test_complete() -> None:
     save_concept(p)
     with pytest.raises(NotUniqueFoundError):
         complete_concept(fine_pref_uid)
+
+
+def test_find_one() -> None:
+    name = "m2l"
+    m = save_concept(SaveProp(name=name))
+    assert m == find_one(m.valid_uid)
