@@ -13,15 +13,15 @@ def test_connect_and_disconnect_concept() -> None:
 
     adj_from = find_adjacent(cfrom.valid_uid)
     assert len(adj_from.sources) == 0
-    assert adj_from.dests[0] == cto
+    assert adj_from.dests[0].valid_uid == cto.valid_uid
 
     adj_to = find_adjacent(cto.valid_uid)
-    assert adj_to.sources[0] == cfrom
+    assert adj_to.sources[0].valid_uid == cfrom.valid_uid
     assert len(adj_to.dests) == 0
 
     # fail disconnect test not change
     assert not disconnect(cto.valid_uid, cfrom.valid_uid)
-    assert adj_to.sources[0] == cfrom
+    assert adj_to.sources[0].valid_uid == cfrom.valid_uid
     assert len(adj_to.dests) == 0
 
     # success disconnect

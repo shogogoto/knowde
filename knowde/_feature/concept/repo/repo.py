@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from knowde._feature.concept.error import NotUniqueFoundError
-from knowde._feature.concept.repo.repo_rel import connect
+from knowde._feature.concept.repo.repo_rel import connect, find_adjacent
 
 from .label import LConcept, to_model
 
@@ -13,9 +13,10 @@ if TYPE_CHECKING:
 
     from knowde._feature.concept.domain import Concept
     from knowde._feature.concept.domain.domain import SaveProp
+    from knowde._feature.concept.domain.rel import AdjacentConcept
 
 
-def save_concept(c: SaveProp[str]) -> Concept:
+def save_concept(c: SaveProp[str]) -> AdjacentConcept:
     """Create concept."""
     lc = LConcept(**c.model_dump()).save()
     saved = to_model(lc)
@@ -25,8 +26,7 @@ def save_concept(c: SaveProp[str]) -> Concept:
     for did in c.dest_ids:
         dest = complete_concept(did)
         connect(saved.valid_uid, dest.valid_uid)
-    return saved
-    # return find_adjacent(saved.valid_uid)
+    return find_adjacent(saved.valid_uid)
 
 
 def list_concepts() -> list[Concept]:

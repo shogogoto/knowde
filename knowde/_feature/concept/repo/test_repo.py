@@ -95,4 +95,4 @@ def test_complete() -> None:
 def test_find_one() -> None:
     name = "m2l"
     m = save_concept(SaveProp(name=name))
-    assert m == find_one(m.valid_uid)
+    assert m.valid_uid == find_one(m.valid_uid).valid_uid
