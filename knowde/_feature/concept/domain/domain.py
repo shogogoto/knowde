@@ -2,9 +2,11 @@
 from __future__ import annotations
 
 from datetime import datetime  # noqa: TCH003
+from typing import Generic, TypeVar
 from uuid import UUID  # noqa: TCH003
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_serializer, field_validator
+from uuid6 import uuid7
 
 from knowde._feature._shared.timeutil import TZ
 from knowde._feature.concept.error import NotExistsUidAccessError
@@ -42,10 +44,19 @@ class Concept(ConceptProp, frozen=True):
         return self.uid
 
 
-class SaveProp(ConceptProp, frozen=True):
-    uid: UUID | None = None
-    src_ids: list[UUID] = Field(default_factory=list)
-    dest_ids: list[UUID] = Field(default_factory=list)
+T = TypeVar("T")
+
+
+class SaveProp(ConceptProp, Generic[T], frozen=True):
+    uid: UUID = Field(default_factory=uuid7)
+    # uid: UUID | None = None
+    src_ids: list[T] = Field(default_factory=list)
+    dest_ids: list[T] = Field(default_factory=list)
+
+    @field_serializer("uid")
+    def to_label(self, v: UUID) -> str:
+        """UniqueIdPropertyはuuid4以外使えない."""
+        return v.hex
 
 
 class ChangeProp(BaseModel, frozen=True):

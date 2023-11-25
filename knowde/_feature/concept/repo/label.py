@@ -7,7 +7,6 @@ from neomodel import (
     StructuredNode,
     UniqueIdProperty,
 )
-from uuid6 import uuid7
 
 from knowde._feature._shared.timeutil import jst_now
 from knowde._feature.concept.domain.domain import Concept
@@ -20,7 +19,7 @@ class LConcept(StructuredNode):
     """neo4j label."""
 
     __label__ = L
-    uid = UniqueIdProperty(defult=uuid7().hex)
+    uid = UniqueIdProperty()
     name = StringProperty()
     explain = StringProperty()
     created = DateTimeProperty()
