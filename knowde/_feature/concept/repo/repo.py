@@ -61,7 +61,7 @@ def find_one(uid: UUID) -> Concept:
 
 def list_by_pref_uid(pref_uid: str) -> list[LConcept]:
     """uidの前方一致で検索."""
-    return LConcept.nodes.filter(uid__startswith=pref_uid)
+    return LConcept.nodes.filter(uid__startswith=pref_uid.replace("-", ""))
 
 
 def complete_concept(pref_uid: str) -> Concept:
