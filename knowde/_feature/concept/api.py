@@ -6,9 +6,9 @@ from uuid import UUID  # noqa: TCH003
 from fastapi import APIRouter, status
 
 from knowde._feature.concept.domain import (  # noqa: TCH001
-    Concept,
     AdjacentConcept,
     ChangeProp,
+    Concept,
     ConceptProp,
 )
 from knowde._feature.concept.repo.repo import (
