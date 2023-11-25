@@ -12,6 +12,7 @@ from uuid6 import uuid7
 from knowde._feature._shared.timeutil import jst_now
 
 L = "Concept"
+ClASS_NAME = f"L{L}"
 
 
 class LConcept(StructuredNode):
@@ -24,8 +25,8 @@ class LConcept(StructuredNode):
     created = DateTimeProperty()
     updated = DateTimeProperty()
 
-    src = RelationshipTo(f"L{L}", "refer")
-    dest = RelationshipFrom(f"L{L}", "refer")
+    src = RelationshipTo(ClASS_NAME, "refer")
+    dest = RelationshipFrom(ClASS_NAME, "refer")
 
     def pre_save(self) -> None:
         """Set updated datetime now."""

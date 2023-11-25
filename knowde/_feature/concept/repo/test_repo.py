@@ -1,6 +1,4 @@
 """repository test."""
-
-
 from uuid import UUID
 
 import pytest

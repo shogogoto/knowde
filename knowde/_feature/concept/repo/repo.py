@@ -17,7 +17,7 @@ def to_model(label: LConcept) -> Concept:
     return Concept.model_validate(label.__properties__)
 
 
-def save_concept(c: Concept | ConceptProp) -> Concept:
+def save_concept(c: ConceptProp) -> Concept:
     """Create concept."""
     lc = LConcept(**c.model_dump()).save()
     return to_model(lc)

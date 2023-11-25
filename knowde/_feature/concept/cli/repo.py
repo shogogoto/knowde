@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from starlette.status import HTTP_204_NO_CONTENT
 
 from knowde._feature._shared.endpoint import Endpoint
-from knowde._feature.concept.domain import Concept, ConceptChangeProp, ConceptProp
+from knowde._feature.concept.domain import Concept, ChangeProp, ConceptProp
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -31,7 +31,7 @@ def req_remove(uid: UUID) -> None:
         pass
 
 
-def req_change(uid: UUID, prop: ConceptChangeProp) -> Concept:
+def req_change(uid: UUID, prop: ChangeProp) -> Concept:
     """Request change concept."""
     res = Endpoint.Concept.put(uid.hex, json=prop.model_dump())
     return Concept.model_validate(res.json())

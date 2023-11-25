@@ -42,7 +42,16 @@ class Concept(ConceptProp, frozen=True):
         return self.uid
 
 
-class ConceptChangeProp(BaseModel, frozen=True):
+class AdjacentMixin:
+    sources: list[Concept]
+    dests: list[Concept]
+
+
+class SaveProp(AdjacentMixin, ConceptProp, frozen=True):
+    pass
+
+
+class ChangeProp(BaseModel, frozen=True):
     """for change props."""
 
     name: str | None = None

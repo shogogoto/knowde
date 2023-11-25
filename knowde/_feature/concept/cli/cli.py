@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import click
 
 from knowde._feature._shared import each_args, view_options
-from knowde._feature.concept.domain import ConceptChangeProp, ConceptProp
+from knowde._feature.concept.domain import ChangeProp, ConceptProp
 
 from .repo import req_add, req_change, req_complete, req_list, req_remove
 
@@ -69,7 +69,7 @@ def change(
     explain: str | None,
 ) -> list[Concept]:
     """Change concept properties."""
-    prop = ConceptChangeProp(
+    prop = ChangeProp(
         name=name,
         explain=explain,
     )

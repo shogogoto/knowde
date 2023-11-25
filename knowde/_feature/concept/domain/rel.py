@@ -1,20 +1,27 @@
 """relation domain."""
-
 from __future__ import annotations
 
 from enum import Enum
 
-from pydantic import BaseModel
-
-from .domain import Concept
+from .domain import AdjacentMixin, Concept
 
 
-class ConceptAdjacent(BaseModel, frozen=True):
+class AdjacentConcept(AdjacentMixin, Concept, frozen=True):
     """with connected concepts."""
 
-    center: Concept
-    sources: list[Concept]
-    dests: list[Concept]
+    def flatten(self) -> list[ConnectedConcept]:
+        """To list with connection type."""
+        return [
+            ConnectedConcept.model_validate(
+                {"conn_type": ConnectionType.Source} | s.model_dump(),
+            )
+            for s in self.sources
+        ] + [
+            ConnectedConcept.model_validate(
+                {"conn_type": ConnectionType.Destination} | d.model_dump(),
+            )
+            for d in self.dests
+        ]
 
 
 class ConnectionType(Enum):
@@ -22,7 +29,11 @@ class ConnectionType(Enum):
     Destination = "dest"
 
 
-class ConnectedConcept(Concept, frozen=True):
-    """connected concept."""
+class _ConnectedMixin:
+    """for field ordering."""
 
     conn_type: ConnectionType
+
+
+class ConnectedConcept(Concept, _ConnectedMixin, frozen=True):
+    """connected concept."""

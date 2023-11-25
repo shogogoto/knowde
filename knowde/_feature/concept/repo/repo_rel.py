@@ -2,16 +2,16 @@
 
 from uuid import UUID
 
-from knowde._feature.concept.domain import ConceptAdjacent
+from knowde._feature.concept.domain import AdjacentConcept
 from knowde._feature.concept.repo.label import LConcept
 from knowde._feature.concept.repo.repo import to_model
 
 
-def find_adjacent(concept_uid: UUID) -> ConceptAdjacent:
+def find_adjacent(concept_uid: UUID) -> AdjacentConcept:
     """List connected concepts."""
     lc: LConcept = LConcept.nodes.get(uid=concept_uid.hex)
-    return ConceptAdjacent(
-        center=to_model(lc),
+    return AdjacentConcept(
+        **to_model(lc).model_dump(),
         sources=[to_model(e) for e in lc.src.all()],
         dests=[to_model(e) for e in lc.dest.all()],
     )

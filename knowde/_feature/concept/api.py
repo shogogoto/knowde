@@ -7,7 +7,8 @@ from fastapi import APIRouter, status
 
 from knowde._feature.concept.domain import (  # noqa: TCH001
     Concept,
-    ConceptChangeProp,
+    AdjacentConcept,
+    ChangeProp,
     ConceptProp,
 )
 from knowde._feature.concept.repo.repo import (
@@ -17,6 +18,7 @@ from knowde._feature.concept.repo.repo import (
     list_concepts,
     save_concept,
 )
+from knowde._feature.concept.repo.repo_rel import find_adjacent
 
 concept_router = APIRouter(
     prefix="/concepts",
@@ -36,6 +38,13 @@ def _get() -> list[Concept]:
 def _complete(pref_uid: str) -> Concept:
     """Search concept by startswith uid."""
     return complete_concept(pref_uid)
+
+
+@concept_router.get("/adjacent")
+def _find_adjacent(pref_uid: str) -> AdjacentConcept:
+    """Search concept by startswith uid."""
+    c = complete_concept(pref_uid)
+    return find_adjacent(c.valid_uid)
 
 
 #### Write
@@ -64,7 +73,11 @@ def _delete(concept_id: UUID) -> None:
 )
 def _put(
     concept_id: UUID,
-    prop: ConceptChangeProp,
+    prop: ChangeProp,
 ) -> Concept:
     """Delete Concept."""
     return change_concept(concept_id, **prop.model_dump())
+
+
+# @concept_router.post("/{concept_id}/source", status_code==status.HTTP_201_CREATED)
+# def _connect_source()
