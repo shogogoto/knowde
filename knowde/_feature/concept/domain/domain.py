@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import datetime  # noqa: TCH003
 from uuid import UUID  # noqa: TCH003
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 from knowde._feature._shared.timeutil import TZ
 from knowde._feature.concept.error import NotExistsUidAccessError
@@ -42,13 +42,10 @@ class Concept(ConceptProp, frozen=True):
         return self.uid
 
 
-class AdjacentMixin:
-    sources: list[Concept]
-    dests: list[Concept]
-
-
-class SaveProp(AdjacentMixin, ConceptProp, frozen=True):
-    pass
+class SaveProp(ConceptProp, frozen=True):
+    uid: UUID | None = None
+    src_ids: list[UUID] = Field(default_factory=list)
+    dest_ids: list[UUID] = Field(default_factory=list)
 
 
 class ChangeProp(BaseModel, frozen=True):

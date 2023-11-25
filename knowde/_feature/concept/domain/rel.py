@@ -3,11 +3,14 @@ from __future__ import annotations
 
 from enum import Enum
 
-from .domain import AdjacentMixin, Concept
+from knowde._feature.concept.domain.domain import Concept
 
 
-class AdjacentConcept(AdjacentMixin, Concept, frozen=True):
+class AdjacentConcept(Concept, frozen=True):
     """with connected concepts."""
+
+    sources: list[Concept]
+    dests: list[Concept]
 
     def flatten(self) -> list[ConnectedConcept]:
         """To list with connection type."""

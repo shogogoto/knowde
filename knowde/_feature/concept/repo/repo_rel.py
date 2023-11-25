@@ -3,8 +3,7 @@
 from uuid import UUID
 
 from knowde._feature.concept.domain import AdjacentConcept
-from knowde._feature.concept.repo.label import LConcept
-from knowde._feature.concept.repo.repo import to_model
+from knowde._feature.concept.repo.label import LConcept, to_model
 
 
 def find_adjacent(concept_uid: UUID) -> AdjacentConcept:

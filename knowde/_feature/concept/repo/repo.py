@@ -3,24 +3,28 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from knowde._feature.concept.domain import Concept, ConceptProp
 from knowde._feature.concept.error import NotUniqueFoundError
+from knowde._feature.concept.repo.repo_rel import connect
 
-from .label import LConcept
+from .label import LConcept, to_model
 
 if TYPE_CHECKING:
     from uuid import UUID
 
-
-def to_model(label: LConcept) -> Concept:
-    """Db mapper to domain model."""
-    return Concept.model_validate(label.__properties__)
+    from knowde._feature.concept.domain import Concept
+    from knowde._feature.concept.domain.domain import SaveProp
 
 
-def save_concept(c: ConceptProp) -> Concept:
+def save_concept(c: SaveProp) -> Concept:
     """Create concept."""
     lc = LConcept(**c.model_dump()).save()
-    return to_model(lc)
+    saved = to_model(lc)
+    for sid in c.src_ids:
+        connect(sid, saved.valid_uid)
+    for did in c.dest_ids:
+        connect(saved.valid_uid, did)
+    return saved
+    # return find_adjacent(saved.valid_uid)
 
 
 def list_concepts() -> list[Concept]:

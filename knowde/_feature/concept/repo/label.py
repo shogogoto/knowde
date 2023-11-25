@@ -10,6 +10,7 @@ from neomodel import (
 from uuid6 import uuid7
 
 from knowde._feature._shared.timeutil import jst_now
+from knowde._feature.concept.domain.domain import Concept
 
 L = "Concept"
 ClASS_NAME = f"L{L}"
@@ -34,3 +35,8 @@ class LConcept(StructuredNode):
         if self.created is None:
             self.created = now
         self.updated = now
+
+
+def to_model(label: LConcept) -> Concept:
+    """Db mapper to domain model."""
+    return Concept.model_validate(label.__properties__)
