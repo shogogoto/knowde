@@ -15,14 +15,16 @@ if TYPE_CHECKING:
     from knowde._feature.concept.domain.domain import SaveProp
 
 
-def save_concept(c: SaveProp) -> Concept:
+def save_concept(c: SaveProp[str]) -> Concept:
     """Create concept."""
     lc = LConcept(**c.model_dump()).save()
     saved = to_model(lc)
     for sid in c.src_ids:
-        connect(sid, saved.valid_uid)
+        src = complete_concept(sid)
+        connect(src.valid_uid, saved.valid_uid)
     for did in c.dest_ids:
-        connect(saved.valid_uid, did)
+        dest = complete_concept(did)
+        connect(saved.valid_uid, dest.valid_uid)
     return saved
     # return find_adjacent(saved.valid_uid)
 
@@ -44,7 +46,7 @@ def change_concept(
     explain: str | None = None,
 ) -> Concept:
     """Change concept properties."""
-    c = LConcept.nodes.first(uid=uid.hex)
+    c = LConcept.nodes.get(uid=uid.hex)
     if name is not None:
         c.name = name
     if explain is not None:
