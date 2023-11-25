@@ -9,8 +9,6 @@ def test_connect_and_disconnect_concept() -> None:
     """Test."""
     cfrom = save_concept(SaveProp(name="from"))
     cto = save_concept(SaveProp(name="to"))
-    print(cfrom)
-    print(cto)
     assert connect(cfrom.valid_uid, cto.valid_uid)
 
     adj_from = find_adjacent(cfrom.valid_uid)
