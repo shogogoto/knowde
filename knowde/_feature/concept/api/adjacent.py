@@ -36,11 +36,12 @@ def _get(concept_id: UUID) -> list[ConnectedConcept]:
 )
 def _delete(concept_id: UUID) -> None:
     """Delete all connections with this concept."""
-    _id = concept_id
+    disconnect_all(concept_id)
 
 
 @concept_adj_router.put("")
 def _put(concept_id: UUID, prop: AdjacentIdsProp) -> AdjacentConcept:
+    """Change adjacent connection around indicated concept."""
     with db.transaction:
         disconnect_all(concept_id)
         save_adjacent(concept_id, prop)
