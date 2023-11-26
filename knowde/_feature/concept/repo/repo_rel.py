@@ -3,7 +3,8 @@
 from uuid import UUID
 
 from knowde._feature.concept.domain import AdjacentConcept
-from knowde._feature.concept.repo.label import LConcept, to_model
+from knowde._feature.concept.domain.domain import AdjacentIdsProp
+from knowde._feature.concept.repo.label import LConcept, complete_concept, to_model
 
 
 def find_adjacent(concept_uid: UUID) -> AdjacentConcept:
@@ -11,7 +12,7 @@ def find_adjacent(concept_uid: UUID) -> AdjacentConcept:
     lc: LConcept = LConcept.nodes.get(uid=concept_uid.hex)
     return AdjacentConcept(
         **to_model(lc).model_dump(),
-        sources=[to_model(e) for e in lc.src.all()],
+        srcs=[to_model(e) for e in lc.src.all()],
         dests=[to_model(e) for e in lc.dest.all()],
     )
 
@@ -49,3 +50,12 @@ def disconnect_srcs(concept_uid: UUID) -> None:
 def disconnect_dests(concept_uid: UUID) -> None:
     lc: LConcept = LConcept.nodes.get(uid=concept_uid.hex)
     lc.dest.disconnect_all()
+
+
+def save_adjacent(center_id: UUID, prop: AdjacentIdsProp) -> None:
+    for sid in prop.src_ids:
+        src = complete_concept(sid)
+        connect(src.valid_uid, center_id)
+    for did in prop.dest_ids:
+        dest = complete_concept(did)
+        connect(center_id, dest.valid_uid)

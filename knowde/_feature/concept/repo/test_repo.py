@@ -6,12 +6,11 @@ import pytest
 from knowde._feature.concept.domain.domain import SaveProp
 from knowde._feature.concept.error import NotUniqueFoundError
 
+from .label import complete_concept, list_by_pref_uid
 from .repo import (
     change_concept,
-    complete_concept,
     delete_concept,
     find_one,
-    list_by_pref_uid,
     list_concepts,
     save_concept,
 )

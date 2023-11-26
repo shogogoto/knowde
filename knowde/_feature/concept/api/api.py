@@ -13,9 +13,9 @@ from knowde._feature.concept.domain import (  # noqa: TCH001
     Concept,
     SaveProp,
 )
+from knowde._feature.concept.repo.label import complete_concept
 from knowde._feature.concept.repo.repo import (
     change_concept,
-    complete_concept,
     delete_concept,
     list_concepts,
     save_concept,
@@ -25,8 +25,6 @@ concept_router = APIRouter(
     prefix=PREFIX,
     tags=[TAG],
 )
-
-#### Read
 
 
 @concept_router.get("")
@@ -41,18 +39,8 @@ def _complete(pref_uid: str) -> Concept:
     return complete_concept(pref_uid)
 
 
-# @concept_router.get("/adjacent")
-# def _find_adjacent(pref_uid: str) -> list[ConnectedConcept]:
-#     """Search concept by startswith uid."""
-#     c = complete_concept(pref_uid)
-#     return find_adjacent(c.valid_uid).flatten()
-
-
-#### Write
-
-
 @concept_router.post("", status_code=status.HTTP_201_CREATED)
-def _post(prop: SaveProp[str]) -> AdjacentConcept:
+def _post(prop: SaveProp) -> AdjacentConcept:
     """Create Concept."""
     with db.transaction:
         return save_concept(prop)

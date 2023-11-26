@@ -22,25 +22,25 @@ def test_connect_and_disconnect_concept() -> None:
     assert connect(cfrom.valid_uid, cto.valid_uid)
 
     adj_from = find_adjacent(cfrom.valid_uid)
-    assert len(adj_from.sources) == 0
+    assert len(adj_from.srcs) == 0
     assert adj_from.dests[0].valid_uid == cto.valid_uid
 
     adj_to = find_adjacent(cto.valid_uid)
-    assert adj_to.sources[0].valid_uid == cfrom.valid_uid
+    assert adj_to.srcs[0].valid_uid == cfrom.valid_uid
     assert len(adj_to.dests) == 0
 
     # fail disconnect test not change
     assert not disconnect(cto.valid_uid, cfrom.valid_uid)
-    assert adj_to.sources[0].valid_uid == cfrom.valid_uid
+    assert adj_to.srcs[0].valid_uid == cfrom.valid_uid
     assert len(adj_to.dests) == 0
 
     # success disconnect
     assert disconnect(cfrom.valid_uid, cto.valid_uid)
     adj_from = find_adjacent(cfrom.valid_uid)
-    assert len(adj_from.sources) == 0
+    assert len(adj_from.srcs) == 0
     assert len(adj_from.dests) == 0
     adj_to = find_adjacent(cto.valid_uid)
-    assert len(adj_to.sources) == 0
+    assert len(adj_to.srcs) == 0
     assert len(adj_to.dests) == 0
 
 
@@ -72,21 +72,21 @@ def adj() -> AdjacentConcept:
 
 
 def test_disconnect_all(adj: AdjacentConcept) -> None:
-    assert len(adj.sources) == 2  # noqa: PLR2004
+    assert len(adj.srcs) == 2  # noqa: PLR2004
     assert len(adj.dests) == 3  # noqa: PLR2004
 
     disconnect_all(adj.valid_uid)
     adj = find_adjacent(adj.valid_uid)
-    assert len(adj.sources) == 0
+    assert len(adj.srcs) == 0
     assert len(adj.dests) == 0
 
 
 def test_disconnect_srcs_and_dests(adj: AdjacentConcept) -> None:
-    assert len(adj.sources) == 2  # noqa: PLR2004
+    assert len(adj.srcs) == 2  # noqa: PLR2004
     assert len(adj.dests) == 3  # noqa: PLR2004
 
     disconnect_srcs(adj.valid_uid)
     disconnect_dests(adj.valid_uid)
     adj = find_adjacent(adj.valid_uid)
-    assert len(adj.sources) == 0
+    assert len(adj.srcs) == 0
     assert len(adj.dests) == 0

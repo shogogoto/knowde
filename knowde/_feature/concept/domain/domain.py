@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime  # noqa: TCH003
-from typing import Generic, TypeVar
+from typing import TypeVar
 from uuid import UUID  # noqa: TCH003
 
 from pydantic import BaseModel, Field, field_serializer, field_validator
@@ -47,11 +47,19 @@ class Concept(ConceptProp, frozen=True):
 T = TypeVar("T")
 
 
-class SaveProp(ConceptProp, Generic[T], frozen=True):
+class AdjacentIdsProp(BaseModel, frozen=True):
+    src_ids: list[str] = Field(
+        default_factory=list,
+        description="前方一致で検索",
+    )
+    dest_ids: list[str] = Field(
+        default_factory=list,
+        description="前方一致で検索",
+    )
+
+
+class SaveProp(AdjacentIdsProp, ConceptProp, frozen=True):
     uid: UUID = Field(default_factory=uuid7)
-    # uid: UUID | None = None
-    src_ids: list[T] = Field(default_factory=list)
-    dest_ids: list[T] = Field(default_factory=list)
 
     @field_serializer("uid")
     def to_label(self, v: UUID) -> str:

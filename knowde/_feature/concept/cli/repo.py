@@ -18,9 +18,9 @@ def req_list() -> list[Concept]:
     return [Concept.model_validate(e) for e in res.json()]
 
 
-def req_add(c: ConceptProp) -> Concept:
+def req_add(p: ConceptProp) -> Concept:
     """Request create concept."""
-    res = Endpoint.Concept.post(json=c.model_dump())
+    res = Endpoint.Concept.post(json=p.model_dump())
     return Concept.model_validate(res.json())
 
 

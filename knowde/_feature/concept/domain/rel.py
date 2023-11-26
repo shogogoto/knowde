@@ -9,7 +9,7 @@ from knowde._feature.concept.domain.domain import Concept
 class AdjacentConcept(Concept, frozen=True):
     """with connected concepts."""
 
-    sources: list[Concept]
+    srcs: list[Concept]
     dests: list[Concept]
 
     def flatten(self) -> list[ConnectedConcept]:
@@ -18,7 +18,7 @@ class AdjacentConcept(Concept, frozen=True):
             ConnectedConcept.model_validate(
                 {"conn_type": ConnectionType.Source} | s.model_dump(),
             )
-            for s in self.sources
+            for s in self.srcs
         ] + [
             ConnectedConcept.model_validate(
                 {"conn_type": ConnectionType.Destination} | d.model_dump(),
