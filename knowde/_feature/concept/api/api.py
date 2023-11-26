@@ -1,7 +1,6 @@
 """concept api."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 from uuid import UUID  # noqa: TCH003
 
 from fastapi import APIRouter, status
@@ -11,7 +10,6 @@ from knowde._feature.concept.domain import (  # noqa: TCH001
     AdjacentConcept,
     ChangeProp,
     Concept,
-    ConnectedConcept,
     SaveProp,
 )
 from knowde._feature.concept.repo.repo import (
@@ -21,10 +19,6 @@ from knowde._feature.concept.repo.repo import (
     list_concepts,
     save_concept,
 )
-from knowde._feature.concept.repo.repo_rel import find_adjacent
-
-if TYPE_CHECKING:
-    from knowde._feature.concept.domain.rel import ConnectedConcept
 
 concept_router = APIRouter(
     prefix="/concepts",
@@ -46,11 +40,11 @@ def _complete(pref_uid: str) -> Concept:
     return complete_concept(pref_uid)
 
 
-@concept_router.get("/adjacent")
-def _find_adjacent(pref_uid: str) -> list[ConnectedConcept]:
-    """Search concept by startswith uid."""
-    c = complete_concept(pref_uid)
-    return find_adjacent(c.valid_uid).flatten()
+# @concept_router.get("/adjacent")
+# def _find_adjacent(pref_uid: str) -> list[ConnectedConcept]:
+#     """Search concept by startswith uid."""
+#     c = complete_concept(pref_uid)
+#     return find_adjacent(c.valid_uid).flatten()
 
 
 #### Write
