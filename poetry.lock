@@ -271,6 +271,17 @@ files = [
 ]
 
 [[package]]
+name = "inflector"
+version = "3.1.0"
+description = "Inflector for Python"
+optional = false
+python-versions = "*"
+files = [
+    {file = "Inflector-3.1.0-py3-none-any.whl", hash = "sha256:74b8f0f2e212c7129c26ad2058f82612a4a97ff45a7945d8eed2ff71b57e9a1b"},
+    {file = "Inflector-3.1.0.tar.gz", hash = "sha256:0a9be5dd1646512f5ab602dcf8723787331594d822d02f382323963787043ee7"},
+]
+
+[[package]]
 name = "iniconfig"
 version = "2.0.0"
 description = "brain-dead simple config-ini parsing"
@@ -972,4 +983,4 @@ watchmedo = ["PyYAML (>=3.10)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "158b3edd68cd1d3a58e2850e183033fc7bdf66712ea12ad22cab42cd7491ef49"
+content-hash = "afb54517c3e52330e7755bfb7dad11f5a313c6c380c14e9015689d414c46774f"

@@ -6,6 +6,7 @@ from uuid import UUID  # noqa: TCH003
 from fastapi import APIRouter, status
 from neomodel import db
 
+from knowde._feature.concept.api.util import PREFIX, TAG
 from knowde._feature.concept.domain import (  # noqa: TCH001
     AdjacentConcept,
     ChangeProp,
@@ -21,8 +22,8 @@ from knowde._feature.concept.repo.repo import (
 )
 
 concept_router = APIRouter(
-    prefix="/concepts",
-    tags=["concept"],
+    prefix=PREFIX,
+    tags=[TAG],
 )
 
 #### Read
