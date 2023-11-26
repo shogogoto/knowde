@@ -1,8 +1,18 @@
 from uuid import UUID
 
+import pytest
+
 from knowde._feature.concept.domain.domain import SaveProp
+from knowde._feature.concept.domain.rel import AdjacentConcept
 from knowde._feature.concept.repo.repo import save_concept
-from knowde._feature.concept.repo.repo_rel import connect, disconnect, find_adjacent
+from knowde._feature.concept.repo.repo_rel import (
+    connect,
+    disconnect,
+    disconnect_all,
+    disconnect_dests,
+    disconnect_srcs,
+    find_adjacent,
+)
 
 
 def test_connect_and_disconnect_concept() -> None:
@@ -42,3 +52,41 @@ def test_save_with_adjacent() -> None:
     adj = find_adjacent(u1)
     assert adj.valid_uid == u1
     assert adj.dests[0].valid_uid == c.valid_uid
+
+
+@pytest.fixture()
+def adj() -> AdjacentConcept:
+    c = save_concept(SaveProp(name="disconn_all"))
+    s1 = save_concept(SaveProp(name="src1"))
+    s2 = save_concept(SaveProp(name="src2"))
+    d1 = save_concept(SaveProp(name="dest1"))
+    d2 = save_concept(SaveProp(name="dest2"))
+    d3 = save_concept(SaveProp(name="dest3"))
+
+    connect(s1.valid_uid, c.valid_uid)
+    connect(s2.valid_uid, c.valid_uid)
+    connect(c.valid_uid, d1.valid_uid)
+    connect(c.valid_uid, d2.valid_uid)
+    connect(c.valid_uid, d3.valid_uid)
+    return find_adjacent(c.valid_uid)
+
+
+def test_disconnect_all(adj: AdjacentConcept) -> None:
+    assert len(adj.sources) == 2  # noqa: PLR2004
+    assert len(adj.dests) == 3  # noqa: PLR2004
+
+    disconnect_all(adj.valid_uid)
+    adj = find_adjacent(adj.valid_uid)
+    assert len(adj.sources) == 0
+    assert len(adj.dests) == 0
+
+
+def test_disconnect_srcs_and_dests(adj: AdjacentConcept) -> None:
+    assert len(adj.sources) == 2  # noqa: PLR2004
+    assert len(adj.dests) == 3  # noqa: PLR2004
+
+    disconnect_srcs(adj.valid_uid)
+    disconnect_dests(adj.valid_uid)
+    adj = find_adjacent(adj.valid_uid)
+    assert len(adj.sources) == 0
+    assert len(adj.dests) == 0

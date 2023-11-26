@@ -33,3 +33,19 @@ def disconnect(from_uid: UUID, to_uid: UUID) -> bool:
     cfrom.dest.disconnect(cto)
     # 無事disconnectされてdestが取得できなくなった
     return cfrom.dest.get_or_none(uid=to_uid.hex) is None
+
+
+def disconnect_all(concept_uid: UUID) -> None:
+    lc: LConcept = LConcept.nodes.get(uid=concept_uid.hex)
+    lc.src.disconnect_all()
+    lc.dest.disconnect_all()
+
+
+def disconnect_srcs(concept_uid: UUID) -> None:
+    lc: LConcept = LConcept.nodes.get(uid=concept_uid.hex)
+    lc.src.disconnect_all()
+
+
+def disconnect_dests(concept_uid: UUID) -> None:
+    lc: LConcept = LConcept.nodes.get(uid=concept_uid.hex)
+    lc.dest.disconnect_all()
