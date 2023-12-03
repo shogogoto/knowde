@@ -3,7 +3,7 @@ from uuid import UUID
 
 import pytest
 
-from knowde._feature.concept.domain.domain import SaveProp
+from knowde._feature.concept.domain.domain import ChangeProp, SaveProp
 from knowde._feature.concept.error import NotUniqueFoundError
 
 from .label import complete_concept, list_by_pref_uid
@@ -49,13 +49,13 @@ def test_change() -> None:
     prop = SaveProp(name="test_change")
     saved = save_concept(prop)
     chname = "changed_name"
-    change_concept(saved.valid_uid, name=chname)
+    change_concept(saved.valid_uid, ChangeProp(name=chname))
     one = find_one(saved.valid_uid)
     assert one.name == chname
     assert one.explain is None
 
     chexplain = "changed_explain"
-    change_concept(saved.valid_uid, explain=chexplain)
+    change_concept(saved.valid_uid, ChangeProp(explain=chexplain))
     one = find_one(saved.valid_uid)
     assert one.name == chname
     assert one.explain == chexplain
