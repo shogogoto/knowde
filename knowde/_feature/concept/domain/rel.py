@@ -2,8 +2,12 @@
 from __future__ import annotations
 
 from enum import Enum
+from typing import Self
+from uuid import UUID  # noqa: TCH003
 
-from knowde._feature.concept.domain.domain import Concept
+from pydantic import model_validator
+
+from knowde._feature.concept.domain.domain import ChangeProp, Concept
 
 
 class AdjacentConcept(Concept, frozen=True):
@@ -40,3 +44,25 @@ class _ConnectedMixin:
 
 class ConnectedConcept(Concept, _ConnectedMixin, frozen=True):
     """connected concept."""
+
+
+class SourceProp(ChangeProp, frozen=True):
+    source_id: UUID | None = None
+
+    @model_validator(mode="after")
+    def _validate(self) -> Self:
+        if self.source_id is None and self.name is None:
+            msg = "Idまたはnameを入力してください"
+            raise ValueError(msg)
+        return self
+
+
+class DestinationProp(ChangeProp, frozen=True):
+    destination_id: UUID | None = None
+
+    @model_validator(mode="after")
+    def _validate(self) -> Self:
+        if self.destination_id is None and self.name is None:
+            msg = "Idまたはnameを入力してください"
+            raise ValueError(msg)
+        return self
