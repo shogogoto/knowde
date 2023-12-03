@@ -11,21 +11,15 @@ if TYPE_CHECKING:
     from uuid import UUID
 
     from knowde._feature.concept.domain import Concept
-    from knowde._feature.concept.domain.domain import SaveProp
+    from knowde._feature.concept.domain.domain import ChangeProp, SaveProp
     from knowde._feature.concept.domain.rel import AdjacentConcept
 
 
-def save_concept(c: SaveProp[str]) -> AdjacentConcept:
+def save_concept(p: SaveProp) -> AdjacentConcept:
     """Create concept."""
-    lc = LConcept(**c.model_dump()).save()
+    lc = LConcept(**p.model_dump()).save()
     saved = to_model(lc)
-    save_adjacent(saved.valid_uid, c)
-    # for sid in c.src_ids:
-    #     src = complete_concept(sid)
-    #     connect(src.valid_uid, saved.valid_uid)
-    # for did in c.dest_ids:
-    #     dest = complete_concept(did)
-    #     connect(saved.valid_uid, dest.valid_uid)
+    save_adjacent(saved.valid_uid, p)
     return find_adjacent(saved.valid_uid)
 
 
@@ -40,17 +34,13 @@ def delete_concept(uid: UUID) -> None:
     LConcept.nodes.first(uid=uid.hex).delete()
 
 
-def change_concept(
-    uid: UUID,
-    name: str | None = None,
-    explain: str | None = None,
-) -> Concept:
+def change_concept(uid: UUID, p: ChangeProp) -> Concept:
     """Change concept properties."""
     c = LConcept.nodes.get(uid=uid.hex)
-    if name is not None:
-        c.name = name
-    if explain is not None:
-        c.explain = explain
+    if p.name is not None:
+        c.name = p.name
+    if p.explain is not None:
+        c.explain = p.explain
     return to_model(c.save())
 
 

@@ -66,7 +66,7 @@ def _put(
     prop: ChangeProp,
 ) -> Concept:
     """Delete Concept."""
-    return change_concept(concept_id, **prop.model_dump())
+    return change_concept(concept_id, prop)
 
 
 # @concept_router.post("/{concept_id}/source", status_code==status.HTTP_201_CREATED)
