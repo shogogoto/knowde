@@ -4,23 +4,27 @@ from __future__ import annotations
 from uuid import UUID  # noqa: TCH003
 
 from fastapi import APIRouter, status
+from neomodel import db
 
+from knowde._feature.concept.api.util import PREFIX, TAG
 from knowde._feature.concept.domain import (  # noqa: TCH001
+    AdjacentConcept,
+    ChangeProp,
     Concept,
-    ConceptChangeProp,
-    ConceptProp,
+    SaveProp,
 )
+from knowde._feature.concept.repo.label import complete_concept
 from knowde._feature.concept.repo.repo import (
     change_concept,
-    complete_concept,
     delete_concept,
     list_concepts,
     save_concept,
 )
 
-concept_router = APIRouter(prefix="/concepts")
-
-#### Read
+concept_router = APIRouter(
+    prefix=PREFIX,
+    tags=[TAG],
+)
 
 
 @concept_router.get("")
@@ -35,13 +39,11 @@ def _complete(pref_uid: str) -> Concept:
     return complete_concept(pref_uid)
 
 
-#### Write
-
-
 @concept_router.post("", status_code=status.HTTP_201_CREATED)
-def _post(prop: ConceptProp) -> Concept:
+def _post(prop: SaveProp) -> AdjacentConcept:
     """Create Concept."""
-    return save_concept(prop)
+    with db.transaction:
+        return save_concept(prop)
 
 
 @concept_router.delete(
@@ -61,7 +63,11 @@ def _delete(concept_id: UUID) -> None:
 )
 def _put(
     concept_id: UUID,
-    prop: ConceptChangeProp,
+    prop: ChangeProp,
 ) -> Concept:
     """Delete Concept."""
-    return change_concept(concept_id, **prop.model_dump())
+    return change_concept(concept_id, prop)
+
+
+# @concept_router.post("/{concept_id}/source", status_code==status.HTTP_201_CREATED)
+# def _connect_source()

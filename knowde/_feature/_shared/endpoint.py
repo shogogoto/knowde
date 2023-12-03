@@ -6,6 +6,7 @@ from enum import Enum
 from urllib.parse import urljoin
 
 import requests
+from inflector import Inflector
 
 TIMEOUT = 3.0
 
@@ -14,6 +15,11 @@ class Endpoint(Enum):
     """endpoint."""
 
     Concept = "concepts"
+
+    @property
+    def single_form(self) -> str:
+        """単数形."""
+        return Inflector().singularize(self.value)
 
     def __url(self, relative: str | None = None) -> str:
         _relative = self.value

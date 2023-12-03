@@ -1,19 +1,16 @@
 """repository test."""
-
-
 from uuid import UUID
 
 import pytest
 
-from knowde._feature.concept.domain import Concept
+from knowde._feature.concept.domain.domain import ChangeProp, SaveProp
 from knowde._feature.concept.error import NotUniqueFoundError
 
+from .label import complete_concept, list_by_pref_uid
 from .repo import (
     change_concept,
-    complete_concept,
     delete_concept,
     find_one,
-    list_by_pref_uid,
     list_concepts,
     save_concept,
 )
@@ -21,46 +18,45 @@ from .repo import (
 
 def test_save() -> None:
     """Create and read the created."""
-    c = Concept(name="test_create")
-    lc = save_concept(c)
-    assert lc.uid is not None
-    assert lc.created == lc.updated
-    save_concept(lc)
+    prop = SaveProp(name="test_create")
+    c = save_concept(prop)
+    assert c.uid is not None
+    assert c.created == c.updated
     # assert lc2.created != lc2.updated # microsecを省いたのでズレなくなった
 
 
 def test_list() -> None:
     """Find all concepts."""
-    c = Concept(name="test_list")
-    save_concept(c)
+    prop = SaveProp(name="test_list")
+    save_concept(prop)
     ls = list_concepts()
-    assert c.name in [e.name for e in ls]
+    assert prop.name in [e.name for e in ls]
 
 
 def test_delete() -> None:
     """Test."""
-    c = Concept(name="test_delete")
-    saved = save_concept(c)
+    prop = SaveProp(name="test_delete")
+    saved = save_concept(prop)
     ls = list_concepts()
-    assert c.name in [e.name for e in ls]
+    assert prop.name in [e.name for e in ls]
     delete_concept(saved.valid_uid)
     ls = list_concepts()
-    assert c.name not in [e.name for e in ls]
+    assert prop.name not in [e.name for e in ls]
 
 
 def test_change() -> None:
     """Test."""
-    c = Concept(name="test_change")
-    saved = save_concept(c)
+    prop = SaveProp(name="test_change")
+    saved = save_concept(prop)
     chname = "changed_name"
-    change_concept(saved.valid_uid, name=chname)
-    one = find_one(saved.uid)
+    change_concept(saved.valid_uid, ChangeProp(name=chname))
+    one = find_one(saved.valid_uid)
     assert one.name == chname
     assert one.explain is None
 
     chexplain = "changed_explain"
-    change_concept(saved.valid_uid, explain=chexplain)
-    one = find_one(saved.uid)
+    change_concept(saved.valid_uid, ChangeProp(explain=chexplain))
+    one = find_one(saved.valid_uid)
     assert one.name == chname
     assert one.explain == chexplain
 
@@ -69,13 +65,13 @@ def test_list_by_pref_uid() -> None:
     """Test."""
     uid1 = UUID("ffffff75-daef-470c-a0f3-192f920797a3")
     uid2 = UUID("ffffff76-daef-470c-a0f3-192f920797a3")
-    c1 = Concept(uid=uid1, name="startswith1")
-    c2 = Concept(uid=uid2, name="startswith2")
-    save_concept(c1)
-    save_concept(c2)
+    p1 = SaveProp(uid=uid1, name="startswith1")
+    p2 = SaveProp(uid=uid2, name="startswith2")
+    save_concept(p1)
+    save_concept(p2)
     result = list_by_pref_uid("ffffff")
     assert len(result) == 2  # noqa: PLR2004
-    assert {c1.name, c2.name} == {e.name for e in result}
+    assert {p1.name, p2.name} == {e.name for e in result}
 
 
 def test_complete() -> None:
@@ -83,13 +79,19 @@ def test_complete() -> None:
     with pytest.raises(NotUniqueFoundError):
         complete_concept("ffffffffffffffffffff")
     uid = UUID("d8750567-eb54-41a1-b63d-48fbd4c8000f")
-    c = Concept(uid=uid, name="complete")
-    save_concept(c)
+    p = SaveProp(uid=uid, name="complete")
+    save_concept(p)
     fine_pref_uid = "d8750567"
     assert complete_concept(fine_pref_uid).valid_uid == uid
 
     uid = UUID("d8750567-eb54-41a1-b63d-48fbd4c8000a")
-    c = Concept(uid=uid, name="complete")
-    save_concept(c)
+    p = SaveProp(uid=uid, name="complete")
+    save_concept(p)
     with pytest.raises(NotUniqueFoundError):
         complete_concept(fine_pref_uid)
+
+
+def test_find_one() -> None:
+    name = "m2l"
+    m = save_concept(SaveProp(name=name))
+    assert m.valid_uid == find_one(m.valid_uid).valid_uid
