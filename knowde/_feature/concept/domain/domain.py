@@ -1,15 +1,13 @@
 """concept domain."""
 from __future__ import annotations
 
-from datetime import datetime  # noqa: TCH003
 from typing import TypeVar
 from uuid import UUID  # noqa: TCH003
 
-from pydantic import BaseModel, Field, field_serializer, field_validator
+from pydantic import BaseModel, Field, field_serializer
 from uuid6 import uuid7
 
-from knowde._feature._shared.timeutil import TZ
-from knowde._feature.concept.error import NotExistsUidAccessError
+from knowde._feature._shared import DomainModel
 
 
 class ConceptProp(BaseModel, frozen=True):
@@ -19,29 +17,8 @@ class ConceptProp(BaseModel, frozen=True):
     explain: str | None = None
 
 
-class Concept(ConceptProp, frozen=True):
-    """domain model."""
-
-    uid: UUID | None = None
-    created: datetime | None = None
-    updated: datetime | None = None
-
-    @field_validator("created")
-    def validate_created(cls, v: datetime) -> datetime:
-        """Jst."""
-        return v.astimezone(TZ)
-
-    @field_validator("updated")
-    def validate_updated(cls, v: datetime) -> datetime:
-        """Jst."""
-        return v.astimezone(TZ)
-
-    @property
-    def valid_uid(self) -> UUID:
-        """Exists in db."""
-        if self.uid is None:
-            raise NotExistsUidAccessError
-        return self.uid
+class Concept(ConceptProp, DomainModel, frozen=True):
+    pass
 
 
 T = TypeVar("T")
