@@ -63,6 +63,7 @@ unsafe-fixes = true
 [tool.pytest.ini_options]
 filterwarnings = [
   'ignore: pkg_resources is deprecated as an API:DeprecationWarning',
+  "ignore: Relying on Driver's destructor to close the session is deprecated."
   ]
 
 [tool.poetry.scripts]
