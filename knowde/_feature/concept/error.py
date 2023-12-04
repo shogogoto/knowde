@@ -5,7 +5,7 @@ from knowde._feature._shared import DomainError
 
 
 class NotExistsUidAccessError(DomainError):
-    status_code = 400
+    status_code = status.HTTP_404_NOT_FOUND
 
 
 class CompleteNotFoundError(DomainError):
