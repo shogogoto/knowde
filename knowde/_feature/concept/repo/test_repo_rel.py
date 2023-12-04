@@ -4,6 +4,7 @@ import pytest
 
 from knowde._feature.concept.domain.domain import SaveProp
 from knowde._feature.concept.domain.rel import AdjacentConcept
+from knowde._feature.concept.error import ConnectionNotFoundError
 from knowde._feature.concept.repo.repo import save_concept
 from knowde._feature.concept.repo.repo_rel import (
     connect,
@@ -19,7 +20,7 @@ def test_connect_and_disconnect_concept() -> None:
     """Test."""
     cfrom = save_concept(SaveProp(name="from"))
     cto = save_concept(SaveProp(name="to"))
-    assert connect(cfrom.valid_uid, cto.valid_uid)
+    connect(cfrom.valid_uid, cto.valid_uid)
 
     adj_from = find_adjacent(cfrom.valid_uid)
     assert len(adj_from.srcs) == 0
@@ -29,13 +30,11 @@ def test_connect_and_disconnect_concept() -> None:
     assert adj_to.srcs[0].valid_uid == cfrom.valid_uid
     assert len(adj_to.dests) == 0
 
-    # fail disconnect test not change
-    assert not disconnect(cto.valid_uid, cfrom.valid_uid)
-    assert adj_to.srcs[0].valid_uid == cfrom.valid_uid
-    assert len(adj_to.dests) == 0
+    with pytest.raises(ConnectionNotFoundError):
+        disconnect(cto.valid_uid, cfrom.valid_uid)
 
     # success disconnect
-    assert disconnect(cfrom.valid_uid, cto.valid_uid)
+    disconnect(cfrom.valid_uid, cto.valid_uid)
     adj_from = find_adjacent(cfrom.valid_uid)
     assert len(adj_from.srcs) == 0
     assert len(adj_from.dests) == 0

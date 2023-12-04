@@ -4,12 +4,18 @@ from uuid import UUID
 
 from knowde._feature.concept.domain import AdjacentConcept
 from knowde._feature.concept.domain.domain import AdjacentIdsProp
-from knowde._feature.concept.repo.label import LConcept, complete_concept, to_model
+from knowde._feature.concept.error import ConnectionNotFoundError
+from knowde._feature.concept.repo.label import (
+    LConcept,
+    complete_concept,
+    find_one_,
+    to_model,
+)
 
 
 def find_adjacent(concept_uid: UUID) -> AdjacentConcept:
     """List connected concepts."""
-    lc: LConcept = LConcept.nodes.get(uid=concept_uid.hex)
+    lc: LConcept = find_one_(concept_uid)
     return AdjacentConcept(
         **to_model(lc).model_dump(),
         srcs=[to_model(e) for e in lc.src.all()],
@@ -17,38 +23,36 @@ def find_adjacent(concept_uid: UUID) -> AdjacentConcept:
     )
 
 
-def connect(from_uid: UUID, to_uid: UUID) -> bool:
+def connect(from_uid: UUID, to_uid: UUID) -> None:
     """Connect two concepts."""
-    cfrom: LConcept = LConcept.nodes.get(uid=from_uid.hex)
-    cto: LConcept = LConcept.nodes.get(uid=to_uid.hex)
-    return cfrom.dest.connect(cto)
+    cfrom: LConcept = find_one_(from_uid)
+    cto: LConcept = find_one_(to_uid)
+    cfrom.dest.connect(cto)
 
 
-def disconnect(from_uid: UUID, to_uid: UUID) -> bool:
+def disconnect(from_uid: UUID, to_uid: UUID) -> None:
     """Discommenct two concepts."""
-    cfrom: LConcept = LConcept.nodes.get(uid=from_uid.hex)
+    cfrom: LConcept = find_one_(from_uid)
     cto = cfrom.dest.get_or_none(uid=to_uid.hex)
     if cto is None:
-        # そもそも繋がっていなかった
-        return False
+        msg = f"({from_uid})->({to_uid})は繋がっていなかった"
+        raise ConnectionNotFoundError(msg)
     cfrom.dest.disconnect(cto)
-    # 無事disconnectされてdestが取得できなくなった
-    return cfrom.dest.get_or_none(uid=to_uid.hex) is None
 
 
 def disconnect_all(concept_uid: UUID) -> None:
-    lc: LConcept = LConcept.nodes.get(uid=concept_uid.hex)
+    lc: LConcept = find_one_(concept_uid)
     lc.src.disconnect_all()
     lc.dest.disconnect_all()
 
 
 def disconnect_srcs(concept_uid: UUID) -> None:
-    lc: LConcept = LConcept.nodes.get(uid=concept_uid.hex)
+    lc: LConcept = find_one_(concept_uid)
     lc.src.disconnect_all()
 
 
 def disconnect_dests(concept_uid: UUID) -> None:
-    lc: LConcept = LConcept.nodes.get(uid=concept_uid.hex)
+    lc: LConcept = find_one_(concept_uid)
     lc.dest.disconnect_all()
 
 

@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from knowde._feature.concept.repo.repo_rel import find_adjacent, save_adjacent
 
-from .label import LConcept, to_model
+from .label import LConcept, find_one_, to_model
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -31,12 +31,12 @@ def list_concepts() -> list[Concept]:
 
 def delete_concept(uid: UUID) -> None:
     """Delete concept."""
-    LConcept.nodes.first(uid=uid.hex).delete()
+    find_one_(uid).delete()
 
 
 def change_concept(uid: UUID, p: ChangeProp) -> Concept:
     """Change concept properties."""
-    c = LConcept.nodes.get(uid=uid.hex)
+    c = find_one_(uid)
     if p.name is not None:
         c.name = p.name
     if p.explain is not None:
@@ -46,4 +46,4 @@ def change_concept(uid: UUID, p: ChangeProp) -> Concept:
 
 def find_one(uid: UUID) -> Concept:
     """Find only one."""
-    return to_model(LConcept.nodes.get(uid=uid.hex))
+    return to_model(find_one_(uid))

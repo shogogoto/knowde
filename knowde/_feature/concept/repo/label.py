@@ -1,8 +1,11 @@
 """neo4j label."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from neomodel import (
     DateTimeProperty,
+    DoesNotExist,
     RelationshipFrom,
     RelationshipTo,
     StringProperty,
@@ -15,7 +18,11 @@ from knowde._feature.concept.domain.domain import Concept
 from knowde._feature.concept.error import (
     CompleteMultiHitError,
     CompleteNotFoundError,
+    NeomodelNotFoundError,
 )
+
+if TYPE_CHECKING:
+    from uuid import UUID
 
 L = "Concept"
 ClASS_NAME = f"L{L}"
@@ -63,3 +70,11 @@ def complete_concept(pref_uid: str) -> Concept:
         msg = f"{uids}がヒットしました.1件がヒットするように入力桁を増やしてみてね"
         raise CompleteMultiHitError(msg)
     return to_model(ls[0])
+
+
+def find_one_(uid: UUID) -> LConcept:
+    """neomodelエラーをラップする."""
+    try:
+        return LConcept.nodes.get(uid=uid.hex)
+    except DoesNotExist as e:
+        raise NeomodelNotFoundError(msg=str(e)) from e

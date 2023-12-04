@@ -14,3 +14,11 @@ class CompleteNotFoundError(DomainError):
 
 class CompleteMultiHitError(DomainError):
     status_code = status.HTTP_409_CONFLICT
+
+
+class NeomodelNotFoundError(DomainError):
+    status_code = status.HTTP_404_NOT_FOUND
+
+
+class ConnectionNotFoundError(DomainError):
+    status_code = status.HTTP_404_NOT_FOUND
