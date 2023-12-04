@@ -4,7 +4,7 @@ from uuid import UUID
 import pytest
 
 from knowde._feature.concept.domain.domain import ChangeProp, SaveProp
-from knowde._feature.concept.error import NotUniqueFoundError
+from knowde._feature.concept.error import CompleteMultiHitError, CompleteNotFoundError
 
 from .label import complete_concept, list_by_pref_uid
 from .repo import (
@@ -76,7 +76,7 @@ def test_list_by_pref_uid() -> None:
 
 def test_complete() -> None:
     """Test."""
-    with pytest.raises(NotUniqueFoundError):
+    with pytest.raises(CompleteNotFoundError):
         complete_concept("ffffffffffffffffffff")
     uid = UUID("d8750567-eb54-41a1-b63d-48fbd4c8000f")
     p = SaveProp(uid=uid, name="complete")
@@ -87,7 +87,7 @@ def test_complete() -> None:
     uid = UUID("d8750567-eb54-41a1-b63d-48fbd4c8000a")
     p = SaveProp(uid=uid, name="complete")
     save_concept(p)
-    with pytest.raises(NotUniqueFoundError):
+    with pytest.raises(CompleteMultiHitError):
         complete_concept(fine_pref_uid)
 
 

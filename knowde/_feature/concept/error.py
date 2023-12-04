@@ -1,9 +1,16 @@
 """concept error."""
+from fastapi import status
+
+from knowde._feature._shared import DomainError
 
 
-class NotExistsUidAccessError(Exception):
-    """uid is None."""
+class NotExistsUidAccessError(DomainError):
+    status_code = 400
 
 
-class NotUniqueFoundError(Exception):
-    """not unique."""
+class CompleteNotFoundError(DomainError):
+    status_code = status.HTTP_404_NOT_FOUND
+
+
+class CompleteMultiHitError(DomainError):
+    status_code = status.HTTP_409_CONFLICT

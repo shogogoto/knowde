@@ -12,7 +12,10 @@ from neomodel import (
 
 from knowde._feature._shared.timeutil import jst_now
 from knowde._feature.concept.domain.domain import Concept
-from knowde._feature.concept.error import NotUniqueFoundError
+from knowde._feature.concept.error import (
+    CompleteMultiHitError,
+    CompleteNotFoundError,
+)
 
 L = "Concept"
 ClASS_NAME = f"L{L}"
@@ -52,7 +55,11 @@ def list_by_pref_uid(pref_uid: str) -> list[LConcept]:
 def complete_concept(pref_uid: str) -> Concept:
     """uuidが前方一致する要素を1つ返す."""
     ls = list_by_pref_uid(pref_uid)
-    if len(ls) != 1:
-        msg = f"{len(ls)}件がヒットしました: {list(ls)}"
-        raise NotUniqueFoundError(msg)
+    if len(ls) == 0:
+        msg = "ヒットしませんでした."
+        raise CompleteNotFoundError(msg)
+    if len(ls) > 1:
+        uids = [e.uid for e in ls]
+        msg = f"{uids}がヒットしました.1件がヒットするように入力桁を増やしてみてね"
+        raise CompleteMultiHitError(msg)
     return to_model(ls[0])
