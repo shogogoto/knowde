@@ -3,8 +3,11 @@ from uuid import UUID
 
 import pytest
 
+from knowde._feature._shared.errors.domain import (
+    CompleteMultiHitError,
+    CompleteNotFoundError,
+)
 from knowde._feature.concept.domain.domain import ChangeProp, SaveProp
-from knowde._feature.concept.error import CompleteMultiHitError, CompleteNotFoundError
 
 from .label import complete_concept, list_by_pref_uid
 from .repo import (

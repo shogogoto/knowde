@@ -4,19 +4,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from neomodel import (
-    DoesNotExist,
     RelationshipFrom,
     RelationshipTo,
     StringProperty,
 )
 
 from knowde._feature._shared import LBase
+from knowde._feature._shared.repo.util import RepoUtil
 from knowde._feature.concept.domain.domain import Concept
-from knowde._feature.concept.error import (
-    CompleteMultiHitError,
-    CompleteNotFoundError,
-    NeomodelNotFoundError,
-)
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -35,32 +30,24 @@ class LConcept(LBase):
     dest = RelationshipFrom(CLASS_NAME, "refer")
 
 
+util = RepoUtil(label=LConcept, model=Concept)
+
+
 def to_model(label: LConcept) -> Concept:
     """Db mapper to domain model."""
-    return Concept.model_validate(label.__properties__)
+    return util.to_model(label)
 
 
 def list_by_pref_uid(pref_uid: str) -> list[LConcept]:
     """uidの前方一致で検索."""
-    return LConcept.nodes.filter(uid__startswith=pref_uid.replace("-", ""))
+    return util.suggest(pref_uid)
 
 
 def complete_concept(pref_uid: str) -> Concept:
     """uuidが前方一致する要素を1つ返す."""
-    ls = list_by_pref_uid(pref_uid)
-    if len(ls) == 0:
-        msg = "ヒットしませんでした."
-        raise CompleteNotFoundError(msg)
-    if len(ls) > 1:
-        uids = [e.uid for e in ls]
-        msg = f"{uids}がヒットしました.1件がヒットするように入力桁を増やしてみてね"
-        raise CompleteMultiHitError(msg)
-    return to_model(ls[0])
+    return util.complete(pref_uid)
 
 
 def find_one_(uid: UUID) -> LConcept:
     """neomodelエラーをラップする."""
-    try:
-        return LConcept.nodes.get(uid=uid.hex)
-    except DoesNotExist as e:
-        raise NeomodelNotFoundError(msg=str(e)) from e
+    return util.find_one(uid)
