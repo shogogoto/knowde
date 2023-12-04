@@ -4,16 +4,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from neomodel import (
-    DateTimeProperty,
     DoesNotExist,
     RelationshipFrom,
     RelationshipTo,
     StringProperty,
-    StructuredNode,
-    UniqueIdProperty,
 )
 
-from knowde._feature._shared.timeutil import jst_now
+from knowde._feature._shared import LBase
 from knowde._feature.concept.domain.domain import Concept
 from knowde._feature.concept.error import (
     CompleteMultiHitError,
@@ -25,28 +22,17 @@ if TYPE_CHECKING:
     from uuid import UUID
 
 L = "Concept"
-ClASS_NAME = f"L{L}"
+CLASS_NAME = f"L{L}"
 
 
-class LConcept(StructuredNode):
+class LConcept(LBase):
     """neo4j label."""
 
     __label__ = L
-    uid = UniqueIdProperty()
-    name = StringProperty()
     explain = StringProperty()
-    created = DateTimeProperty()
-    updated = DateTimeProperty()
 
-    src = RelationshipTo(ClASS_NAME, "refer")
-    dest = RelationshipFrom(ClASS_NAME, "refer")
-
-    def pre_save(self) -> None:
-        """Set updated datetime now."""
-        now = jst_now()
-        if self.created is None:
-            self.created = now
-        self.updated = now
+    src = RelationshipTo(CLASS_NAME, "refer")
+    dest = RelationshipFrom(CLASS_NAME, "refer")
 
 
 def to_model(label: LConcept) -> Concept:

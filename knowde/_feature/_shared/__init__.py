@@ -7,6 +7,7 @@ from neomodel import config
 from .each_args import each_args  # noqa: F401
 from .endpoint import Endpoint  # noqa: F401
 from .errors import *  # noqa: F403
+from .repo import *  # noqa: F403
 from .timeutil import TZ, jst_now  # noqa: F401
 from .view import *  # noqa: F403
 
