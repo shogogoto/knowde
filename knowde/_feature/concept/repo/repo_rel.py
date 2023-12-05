@@ -8,7 +8,6 @@ from knowde._feature.concept.error import ConnectionNotFoundError
 from knowde._feature.concept.repo.label import (
     LConcept,
     complete_concept,
-    to_model,
     util_concept,
 )
 
@@ -17,9 +16,9 @@ def find_adjacent(concept_uid: UUID) -> AdjacentConcept:
     """List connected concepts."""
     lc: LConcept = util_concept.find_one(concept_uid)
     return AdjacentConcept(
-        **to_model(lc).model_dump(),
-        srcs=[to_model(e) for e in lc.src.all()],
-        dests=[to_model(e) for e in lc.dest.all()],
+        **util_concept.to_model(lc).model_dump(),
+        srcs=[util_concept.to_model(e) for e in lc.src.all()],
+        dests=[util_concept.to_model(e) for e in lc.dest.all()],
     )
 
 

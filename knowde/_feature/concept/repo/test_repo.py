@@ -9,7 +9,7 @@ from knowde._feature._shared.errors.domain import (
 )
 from knowde._feature.concept.domain.domain import ChangeProp, SaveProp
 
-from .label import complete_concept, list_by_pref_uid
+from .label import complete_concept, util_concept
 from .repo import (
     change_concept,
     delete_concept,
@@ -72,7 +72,7 @@ def test_list_by_pref_uid() -> None:
     p2 = SaveProp(uid=uid2, name="startswith2")
     save_concept(p1)
     save_concept(p2)
-    result = list_by_pref_uid("ffffff")
+    result = util_concept.suggest("ffffff")
     assert len(result) == 2  # noqa: PLR2004
     assert {p1.name, p2.name} == {e.name for e in result}
 

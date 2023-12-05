@@ -28,16 +28,6 @@ class LConcept(LBase):
 util_concept = LabelUtil(label=LConcept, model=Concept)
 
 
-def to_model(label: LConcept) -> Concept:
-    """Db mapper to domain model."""
-    return util_concept.to_model(label)
-
-
-def list_by_pref_uid(pref_uid: str) -> list[LConcept]:
-    """uidの前方一致で検索."""
-    return util_concept.suggest(pref_uid)
-
-
 def complete_concept(pref_uid: str) -> Concept:
     """uuidが前方一致する要素を1つ返す."""
     return util_concept.complete(pref_uid)
