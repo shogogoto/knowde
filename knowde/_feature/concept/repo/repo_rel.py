@@ -7,7 +7,6 @@ from knowde._feature.concept.domain.domain import AdjacentIdsProp
 from knowde._feature.concept.error import ConnectionNotFoundError
 from knowde._feature.concept.repo.label import (
     LConcept,
-    complete_concept,
     util_concept,
 )
 
@@ -57,8 +56,8 @@ def disconnect_dests(concept_uid: UUID) -> None:
 
 def save_adjacent(center_id: UUID, prop: AdjacentIdsProp) -> None:
     for sid in prop.src_ids:
-        src = complete_concept(sid)
+        src = util_concept.complete(sid)
         connect(src.valid_uid, center_id)
     for did in prop.dest_ids:
-        dest = complete_concept(did)
+        dest = util_concept.complete(did)
         connect(center_id, dest.valid_uid)

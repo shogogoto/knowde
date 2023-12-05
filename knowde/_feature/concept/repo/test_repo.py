@@ -9,7 +9,7 @@ from knowde._feature._shared.errors.domain import (
 )
 from knowde._feature.concept.domain.domain import ChangeProp, SaveProp
 
-from .label import complete_concept, util_concept
+from .label import util_concept
 from .repo import (
     change_concept,
     delete_concept,
@@ -80,18 +80,18 @@ def test_list_by_pref_uid() -> None:
 def test_complete() -> None:
     """Test."""
     with pytest.raises(CompleteNotFoundError):
-        complete_concept("ffffffffffffffffffff")
+        util_concept.complete("ffffffffffffffffffff")
     uid = UUID("d8750567-eb54-41a1-b63d-48fbd4c8000f")
     p = SaveProp(uid=uid, name="complete")
     save_concept(p)
     fine_pref_uid = "d8750567"
-    assert complete_concept(fine_pref_uid).valid_uid == uid
+    assert util_concept.complete(fine_pref_uid).valid_uid == uid
 
     uid = UUID("d8750567-eb54-41a1-b63d-48fbd4c8000a")
     p = SaveProp(uid=uid, name="complete")
     save_concept(p)
     with pytest.raises(CompleteMultiHitError):
-        complete_concept(fine_pref_uid)
+        util_concept.complete(fine_pref_uid)
 
 
 def test_find_one() -> None:

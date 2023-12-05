@@ -26,8 +26,3 @@ class LConcept(LBase):
 
 
 util_concept = LabelUtil(label=LConcept, model=Concept)
-
-
-def complete_concept(pref_uid: str) -> Concept:
-    """uuidが前方一致する要素を1つ返す."""
-    return util_concept.complete(pref_uid)
