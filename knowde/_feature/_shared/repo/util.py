@@ -21,12 +21,15 @@ L = TypeVar("L", bound=LBase)
 M = TypeVar("M", bound=DomainModel)
 
 
-class RepoUtil(BaseModel, Generic[L, M], frozen=True):
+class LabelUtil(BaseModel, Generic[L, M], frozen=True):
     label: type[L]
     model: type[M]
 
     def to_model(self, label: L) -> M:
         return self.model.model_validate(label.__properties__)
+
+    def to_label(self, **kwargs: dict) -> L:
+        return self.label(**kwargs)
 
     def suggest(self, pref_uid: str) -> list[L]:
         pref_hex = pref_uid.replace("-", "")
@@ -48,3 +51,15 @@ class RepoUtil(BaseModel, Generic[L, M], frozen=True):
             return self.label.nodes.get(uid=uid.hex)
         except DoesNotExist as e:
             raise NeomodelNotFoundError(msg=str(e)) from e
+
+    def find_all(self) -> list[M]:
+        """TODO:pagingが未実装."""
+        ls = self.label.nodes.all()
+        return [self.to_model(e) for e in ls]
+
+    def delete(self, uid: UUID) -> None:
+        self.find_one(uid).delete()
+
+    def create(self, **kwargs: dict) -> M:
+        saved = self.label(**kwargs).save()
+        return self.to_model(saved)
