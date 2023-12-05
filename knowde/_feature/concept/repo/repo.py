@@ -24,7 +24,7 @@ def save_concept(p: SaveProp) -> AdjacentConcept:
 
 def change_concept(uid: UUID, p: ChangeProp) -> Concept:
     """Change concept properties."""
-    lb = util_concept.find_one(uid)
+    lb = util_concept.find_one(uid).label
     if p.name is not None:
         lb.name = p.name
     if p.explain is not None:
@@ -34,5 +34,4 @@ def change_concept(uid: UUID, p: ChangeProp) -> Concept:
 
 def find_one(uid: UUID) -> Concept:
     """Find only one."""
-    lb = util_concept.find_one(uid)
-    return util_concept.to_model(lb)
+    return util_concept.find_one(uid).to_model()

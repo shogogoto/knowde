@@ -34,7 +34,7 @@ def _get() -> list[Concept]:
 @concept_router.get("/completion")
 def _complete(pref_uid: str) -> Concept:
     """Search concept by startswith uid."""
-    return util_concept.complete(pref_uid)
+    return util_concept.complete(pref_uid).to_model()
 
 
 @concept_router.post("", status_code=status.HTTP_201_CREATED)

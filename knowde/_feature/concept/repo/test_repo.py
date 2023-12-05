@@ -83,7 +83,8 @@ def test_complete() -> None:
     p = SaveProp(uid=uid, name="complete")
     save_concept(p)
     fine_pref_uid = "d8750567"
-    assert util_concept.complete(fine_pref_uid).valid_uid == uid
+    c = util_concept.complete(fine_pref_uid).to_model()
+    assert c.valid_uid == uid
 
     uid = UUID("d8750567-eb54-41a1-b63d-48fbd4c8000a")
     p = SaveProp(uid=uid, name="complete")

@@ -12,7 +12,7 @@ from knowde._feature._shared.errors.domain import (
     NeomodelNotFoundError,
 )
 
-from .label import LBase
+from .label import Label, Labels, LBase
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -30,27 +30,32 @@ class LabelUtil(BaseModel, Generic[L, M], frozen=True):
     def to_model(self, label: L) -> M:
         return self.model.model_validate(label.__properties__)
 
-    def to_label(self, **kwargs: dict) -> L:
-        return self.label(**kwargs)
+    def to_label(self, label: L) -> Label[L, M]:
+        return Label(label=label, convert=self.to_model)
 
-    def suggest(self, pref_uid: str) -> list[L]:
+    def to_labels(self, labels: list[L]) -> Labels[L, M]:
+        return Labels(root=labels, convert=self.to_model)
+
+    def suggest(self, pref_uid: str) -> Labels[L, M]:
         pref_hex = pref_uid.replace("-", "")
-        return self.label.nodes.filter(uid__startswith=pref_hex)
+        lbs = self.label.nodes.filter(uid__startswith=pref_hex)
+        return self.to_labels(lbs)
 
-    def complete(self, pref_uid: str) -> M:
-        ls = self.suggest(pref_uid)
-        if len(ls) == 0:
+    def complete(self, pref_uid: str) -> Label[L, M]:
+        lbs = self.suggest(pref_uid)
+        if len(lbs) == 0:
             msg = "ヒットしませんでした."
             raise CompleteNotFoundError(msg)
-        if len(ls) > 1:
-            uids = [e.uid for e in ls]
+        if len(lbs) > 1:
+            uids = [e.uid for e in lbs]
             msg = f"{uids}がヒットしました.1件がヒットするように入力桁を増やしてみてね"
             raise CompleteMultiHitError(msg)
-        return self.to_model(ls[0])
+        return self.to_label(lbs[0])
 
-    def find_one(self, uid: UUID) -> L:
+    def find_one(self, uid: UUID) -> Label[L, M]:
         try:
-            return self.label.nodes.get(uid=uid.hex)
+            lb = self.label.nodes.get(uid=uid.hex)
+            return self.to_label(lb)
         except DoesNotExist as e:
             raise NeomodelNotFoundError(msg=str(e)) from e
 
@@ -60,7 +65,7 @@ class LabelUtil(BaseModel, Generic[L, M], frozen=True):
         return [self.to_model(e) for e in ls]
 
     def delete(self, uid: UUID) -> None:
-        self.find_one(uid).delete()
+        self.find_one(uid).label.delete()
 
     def create(self, **kwargs: dict) -> M:
         saved = self.label(**kwargs).save()
