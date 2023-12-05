@@ -45,8 +45,6 @@ class Label(BaseModel, Generic[L, M], frozen=True):
     label: L
     convert: Converter[L, M]
 
-    # model_config = ConfigDict(arbitrary_types_allowed=True)
-
     def to_model(self) -> M:
         return self.convert(self.label)
 

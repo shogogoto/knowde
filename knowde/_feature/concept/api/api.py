@@ -28,7 +28,7 @@ concept_router = APIRouter(
 @concept_router.get("")
 def _get() -> list[Concept]:
     """List."""
-    return util_concept.find_all()
+    return util_concept.find_all().to_model()
 
 
 @concept_router.get("/completion")

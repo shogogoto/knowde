@@ -12,11 +12,11 @@ from knowde._feature.concept.repo.label import (
 
 def find_adjacent(concept_uid: UUID) -> AdjacentConcept:
     """List connected concepts."""
-    lc = util_concept.find_one(concept_uid).label
+    lb = util_concept.find_one(concept_uid)
     return AdjacentConcept(
-        **util_concept.to_model(lc).model_dump(),
-        srcs=[util_concept.to_model(e) for e in lc.src.all()],
-        dests=[util_concept.to_model(e) for e in lc.dest.all()],
+        **lb.to_model().model_dump(),
+        srcs=[util_concept.to_model(e) for e in lb.label.src.all()],
+        dests=[util_concept.to_model(e) for e in lb.label.dest.all()],
     )
 
 

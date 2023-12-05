@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 def save_concept(p: SaveProp) -> AdjacentConcept:
     """Create concept."""
-    saved = util_concept.create(**p.model_dump())
+    saved = util_concept.create(**p.model_dump()).to_model()
     save_adjacent(saved.valid_uid, p)
     return find_adjacent(saved.valid_uid)
 
@@ -30,8 +30,3 @@ def change_concept(uid: UUID, p: ChangeProp) -> Concept:
     if p.explain is not None:
         lb.explain = p.explain
     return util_concept.to_model(lb.save())
-
-
-def find_one(uid: UUID) -> Concept:
-    """Find only one."""
-    return util_concept.find_one(uid).to_model()

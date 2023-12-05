@@ -59,14 +59,14 @@ class LabelUtil(BaseModel, Generic[L, M], frozen=True):
         except DoesNotExist as e:
             raise NeomodelNotFoundError(msg=str(e)) from e
 
-    def find_all(self) -> list[M]:
+    def find_all(self) -> Labels[L, M]:
         """TODO:pagingが未実装."""
         ls = self.label.nodes.all()
-        return [self.to_model(e) for e in ls]
+        return self.to_labels(ls)
 
     def delete(self, uid: UUID) -> None:
         self.find_one(uid).label.delete()
 
-    def create(self, **kwargs: dict) -> M:
+    def create(self, **kwargs: dict) -> Label[L, M]:
         saved = self.label(**kwargs).save()
-        return self.to_model(saved)
+        return self.to_label(saved)

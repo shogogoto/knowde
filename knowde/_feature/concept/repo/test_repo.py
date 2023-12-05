@@ -12,7 +12,6 @@ from knowde._feature.concept.domain.domain import ChangeProp, SaveProp
 from .label import util_concept
 from .repo import (
     change_concept,
-    find_one,
     save_concept,
 )
 
@@ -51,13 +50,13 @@ def test_change() -> None:
     saved = save_concept(prop)
     chname = "changed_name"
     change_concept(saved.valid_uid, ChangeProp(name=chname))
-    one = find_one(saved.valid_uid)
+    one = util_concept.find_one(saved.valid_uid).to_model()
     assert one.name == chname
     assert one.explain is None
 
     chexplain = "changed_explain"
     change_concept(saved.valid_uid, ChangeProp(explain=chexplain))
-    one = find_one(saved.valid_uid)
+    one = util_concept.find_one(saved.valid_uid).to_model()
     assert one.name == chname
     assert one.explain == chexplain
 
@@ -96,4 +95,5 @@ def test_complete() -> None:
 def test_find_one() -> None:
     name = "m2l"
     m = save_concept(SaveProp(name=name))
-    assert m.valid_uid == find_one(m.valid_uid).valid_uid
+    one = util_concept.find_one(m.valid_uid).to_model()
+    assert m.valid_uid == one.valid_uid
