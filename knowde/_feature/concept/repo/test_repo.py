@@ -12,9 +12,7 @@ from knowde._feature.concept.domain.domain import ChangeProp, SaveProp
 from .label import util_concept
 from .repo import (
     change_concept,
-    delete_concept,
     find_one,
-    list_concepts,
     save_concept,
 )
 
@@ -32,7 +30,7 @@ def test_list() -> None:
     """Find all concepts."""
     prop = SaveProp(name="test_list")
     save_concept(prop)
-    ls = list_concepts()
+    ls = util_concept.find_all()
     assert prop.name in [e.name for e in ls]
 
 
@@ -40,10 +38,10 @@ def test_delete() -> None:
     """Test."""
     prop = SaveProp(name="test_delete")
     saved = save_concept(prop)
-    ls = list_concepts()
+    ls = util_concept.find_all()
     assert prop.name in [e.name for e in ls]
-    delete_concept(saved.valid_uid)
-    ls = list_concepts()
+    util_concept.delete(saved.valid_uid)
+    ls = util_concept.find_all()
     assert prop.name not in [e.name for e in ls]
 
 

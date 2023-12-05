@@ -16,8 +16,6 @@ from knowde._feature.concept.domain import (  # noqa: TCH001
 from knowde._feature.concept.repo.label import util_concept
 from knowde._feature.concept.repo.repo import (
     change_concept,
-    delete_concept,
-    list_concepts,
     save_concept,
 )
 
@@ -30,7 +28,7 @@ concept_router = APIRouter(
 @concept_router.get("")
 def _get() -> list[Concept]:
     """List."""
-    return list_concepts()
+    return util_concept.find_all()
 
 
 @concept_router.get("/completion")
@@ -53,7 +51,7 @@ def _post(prop: SaveProp) -> AdjacentConcept:
 )
 def _delete(concept_id: UUID) -> None:
     """Delete Concept."""
-    delete_concept(concept_id)
+    util_concept.delete(concept_id)
 
 
 @concept_router.put(

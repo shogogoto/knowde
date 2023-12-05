@@ -22,6 +22,8 @@ M = TypeVar("M", bound=DomainModel)
 
 
 class LabelUtil(BaseModel, Generic[L, M], frozen=True):
+    """neomodelを隠蔽する."""
+
     label: type[L]
     model: type[M]
 

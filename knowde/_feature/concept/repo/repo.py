@@ -22,16 +22,6 @@ def save_concept(p: SaveProp) -> AdjacentConcept:
     return find_adjacent(saved.valid_uid)
 
 
-def list_concepts() -> list[Concept]:
-    """Find all concepts."""
-    return util_concept.find_all()
-
-
-def delete_concept(uid: UUID) -> None:
-    """Delete concept."""
-    util_concept.delete(uid)
-
-
 def change_concept(uid: UUID, p: ChangeProp) -> Concept:
     """Change concept properties."""
     lb = util_concept.find_one(uid)
