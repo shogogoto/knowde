@@ -3,7 +3,7 @@
 from uuid import UUID
 
 from knowde._feature.concept.domain import AdjacentConcept
-from knowde._feature.concept.domain.domain import AdjacentIdsProp
+from knowde._feature.concept.domain.domain import AdjacentIdsProp, Concept
 from knowde._feature.concept.error import ConnectionNotFoundError
 from knowde._feature.concept.repo.label import (
     util_concept,
@@ -15,8 +15,8 @@ def find_adjacent(concept_uid: UUID) -> AdjacentConcept:
     lb = util_concept.find_one(concept_uid)
     return AdjacentConcept(
         **lb.to_model().model_dump(),
-        srcs=[util_concept.to_model(e) for e in lb.label.src.all()],
-        dests=[util_concept.to_model(e) for e in lb.label.dest.all()],
+        srcs=[Concept.to_model(e) for e in lb.label.src.all()],
+        dests=[Concept.to_model(e) for e in lb.label.dest.all()],
     )
 
 

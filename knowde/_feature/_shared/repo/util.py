@@ -27,14 +27,11 @@ class LabelUtil(BaseModel, Generic[L, M], frozen=True):
     label: type[L]
     model: type[M]
 
-    def to_model(self, label: L) -> M:
-        return self.model.model_validate(label.__properties__)
-
     def to_label(self, label: L) -> Label[L, M]:
-        return Label(label=label, convert=self.to_model)
+        return Label(label=label, model=self.model)
 
     def to_labels(self, labels: list[L]) -> Labels[L, M]:
-        return Labels(root=labels, convert=self.to_model)
+        return Labels(root=labels, model=self.model)
 
     def suggest(self, pref_uid: str) -> Labels[L, M]:
         pref_hex = pref_uid.replace("-", "")

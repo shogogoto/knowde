@@ -3,7 +3,13 @@ from __future__ import annotations
 from typing import Annotated, Any, Callable, Generic, Iterator, TypeAlias, TypeVar
 
 from neomodel import DateTimeProperty, StringProperty, StructuredNode, UniqueIdProperty
-from pydantic import BaseModel, PlainSerializer, PlainValidator, ValidationInfo
+from pydantic import (
+    BaseModel,
+    PlainSerializer,
+    PlainValidator,
+    ValidationInfo,
+    model_serializer,
+)
 
 from knowde._feature._shared.domain import DomainModel
 from knowde._feature._shared.timeutil import jst_now
@@ -43,15 +49,15 @@ Converter: TypeAlias = Callable[[L], M]
 
 class Label(BaseModel, Generic[L, M], frozen=True):
     label: L
-    convert: Converter[L, M]
+    model: type[M]
 
     def to_model(self) -> M:
-        return self.convert(self.label)
+        return self.model.to_model(self.label)
 
 
 class Labels(BaseModel, Generic[L, M], frozen=True):
     root: list[L]
-    convert: Callable[[L], M]
+    model: type[M]
 
     def __len__(self) -> int:
         return len(self.root)
@@ -63,4 +69,8 @@ class Labels(BaseModel, Generic[L, M], frozen=True):
         return self.root[i]
 
     def to_model(self) -> list[M]:
-        return [self.convert(lb) for lb in self]
+        return [self.model.to_model(lb) for lb in self]
+
+    @model_serializer
+    def _serialize(self) -> Any:  # noqa: ANN401
+        return [m.model_dump() for m in self.to_model()]

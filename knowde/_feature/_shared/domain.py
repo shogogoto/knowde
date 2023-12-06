@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 from datetime import datetime  # noqa: TCH003
+from typing import TYPE_CHECKING, Self
 from uuid import UUID  # noqa: TCH003
 
 from pydantic import BaseModel, field_validator
 
 from .errors import NotExistsUidAccessError
 from .timeutil import TZ
+
+if TYPE_CHECKING:
+    from knowde._feature._shared.repo.label import LBase
 
 
 class DomainModel(BaseModel, frozen=True):
@@ -30,3 +34,7 @@ class DomainModel(BaseModel, frozen=True):
         if self.uid is None:
             raise NotExistsUidAccessError
         return self.uid
+
+    @classmethod
+    def to_model(cls, lb: LBase) -> Self:
+        return cls.model_validate(lb.__properties__)
