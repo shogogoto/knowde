@@ -1,13 +1,16 @@
-from textwrap import dedent
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 import networkx as nx
-from neomodel import NeomodelPath, db
 
+from knowde._feature._shared import query_cypher
 from knowde._feature.reference.domain import Reference
 from knowde._feature.reference.domain.domain import ReferenceGraph
 
 from .label import ref_util
+
+if TYPE_CHECKING:
+    from neomodel import NeomodelPath
 
 
 def add_reference(name: str) -> Reference:
@@ -21,16 +24,23 @@ def add_part(parent_id: UUID, name: str) -> Reference:
     return part.to_model()
 
 
+# def find_roots() -> list[Reference]:
+#     _q = align_query(
+#         """
+#     MATCH (r:Reference)
+#     WHERE NOT (r)-[:INCLUDED*1]->(:Reference)
+#     RETURN r
+#     """,
+#     )
+
+
 def find_reference(uid: UUID) -> ReferenceGraph:
-    q = dedent(
+    results, meta = query_cypher(
         """
-    MATCH (tgt:Reference) WHERE tgt.uid=$uid
-    MATCH p = (tgt)<-[rel:INCLUDED*]-(child:Reference)
-    RETURN p
-    """,
-    ).strip()
-    results, meta = db.cypher_query(
-        q,
+        MATCH (tgt:Reference) WHERE tgt.uid=$uid
+        MATCH p = (tgt)<-[rel:INCLUDED*]-(child:Reference)
+        RETURN p
+        """,
         params={"uid": uid.hex},
         resolve_objects=True,
     )
