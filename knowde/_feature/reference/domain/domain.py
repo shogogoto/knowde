@@ -1,16 +1,10 @@
 from __future__ import annotations
 
-from typing import Annotated, Any, Final, Optional
+from typing import Final, Optional
 
-from networkx import DiGraph, tree_data
-from networkx.convert import nx
-from pydantic import (
-    PlainSerializer,
-    PlainValidator,
-    ValidationInfo,
-)
+from networkx import tree_data
 
-from knowde._feature._shared import DomainModel
+from knowde._feature._shared import DomainModel, Graph
 
 
 class Reference(DomainModel, frozen=True):
@@ -23,19 +17,6 @@ class Reference(DomainModel, frozen=True):
 class Author(DomainModel, frozen=True):
     name: str
     # birthday: date
-
-
-def validate(v: Any, info: ValidationInfo) -> DiGraph:  # noqa: ARG001 ANN401
-    if isinstance(v, DiGraph):
-        return v
-    raise TypeError
-
-
-Graph = Annotated[
-    DiGraph,
-    PlainValidator(validate),
-    PlainSerializer(lambda x: nx.node_link_graph(x)),
-]
 
 
 class ReferenceGraph(DomainModel, frozen=True):
