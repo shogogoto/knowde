@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Annotated, Any, Callable, Generic, Iterator, TypeAlias, TypeVar
+from typing import Annotated, Any, Generic, Iterator, TypeVar
 
 from neomodel import DateTimeProperty, StringProperty, StructuredNode, UniqueIdProperty
 from pydantic import (
@@ -44,7 +44,6 @@ NeoModel = Annotated[
 
 L = TypeVar("L", bound=NeoModel)
 M = TypeVar("M", bound=DomainModel)
-Converter: TypeAlias = Callable[[L], M]
 
 
 class Label(BaseModel, Generic[L, M], frozen=True):
