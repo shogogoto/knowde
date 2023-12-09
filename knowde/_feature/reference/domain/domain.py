@@ -17,7 +17,7 @@ class Reference(DomainModel, frozen=True):
     """nodeとしてのモデル. relを含まない."""
 
     name: str
-    # author: Author | None = None
+    authors: set[Author] | None = None
 
 
 class Author(DomainModel, frozen=True):
