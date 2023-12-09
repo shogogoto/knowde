@@ -1,16 +1,21 @@
+from __future__ import annotations
+
+import itertools
 from typing import TYPE_CHECKING
-from uuid import UUID
 
 import networkx as nx
 
 from knowde._feature._shared import query_cypher
-from knowde._feature.reference.domain import Reference
 from knowde._feature.reference.domain.domain import ReferenceGraph
 
 from .label import ref_util
 
 if TYPE_CHECKING:
+    from uuid import UUID
+
     from neomodel import NeomodelPath
+
+    from knowde._feature.reference.domain import Reference
 
 
 def add_reference(name: str) -> Reference:
@@ -24,14 +29,17 @@ def add_part(parent_id: UUID, name: str) -> Reference:
     return part.to_model()
 
 
-# def find_roots() -> list[Reference]:
-#     _q = align_query(
-#         """
-#     MATCH (r:Reference)
-#     WHERE NOT (r)-[:INCLUDED*1]->(:Reference)
-#     RETURN r
-#     """,
-#     )
+def find_roots() -> list[Reference]:
+    results, meta = query_cypher(
+        """
+        MATCH (r:Reference)
+        WHERE NOT (r)-[:INCLUDED*1]->(:Reference)
+        RETURN r
+        """,
+    )
+    return ref_util.to_labels(
+        list(itertools.chain.from_iterable(results)),
+    ).to_model()
 
 
 def find_reference(uid: UUID) -> ReferenceGraph:

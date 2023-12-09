@@ -1,8 +1,26 @@
-from knowde._feature.reference.repo.node import add_part, add_reference, find_reference
+from knowde._feature._shared.domain import ModelList
+from knowde._feature.reference.repo.node import (
+    add_part,
+    add_reference,
+    find_reference,
+    find_roots,
+)
 
 
 def test_create() -> None:
-    add_reference("book")
+    assert len(find_roots()) == 0
+    ref1 = add_reference("book")
+    add_reference("book2")
+    assert len(find_roots()) == 2  # noqa: PLR2004
+    add_part(ref1.valid_uid, name="part")
+    # not increase root num when adding part
+    assert len(find_roots()) == 2  # noqa: PLR2004
+
+    actual = ModelList(root=find_roots()).model_dump(
+        include={"__all__": {"name": ...}},
+        mode="json",
+    )
+    assert {d["name"] for d in actual} == {"book", "book2"}
 
 
 def test_add_part() -> None:

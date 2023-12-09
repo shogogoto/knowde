@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from datetime import datetime  # noqa: TCH003
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Self, TypeVar
 from uuid import UUID  # noqa: TCH003
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, RootModel, field_validator
 
 from .errors import NotExistsUidAccessError
 from .timeutil import TZ
@@ -38,3 +38,10 @@ class DomainModel(BaseModel, frozen=True):
     @classmethod
     def to_model(cls, lb: LBase) -> Self:
         return cls.model_validate(lb.__properties__)
+
+
+M = TypeVar("M", bound=DomainModel)
+
+
+class ModelList(RootModel[list[M]], frozen=True):
+    pass

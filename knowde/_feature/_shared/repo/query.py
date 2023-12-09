@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from textwrap import dedent
-from typing import Any
+from typing import Any, Optional
 
 from neomodel import db
 
 
 def query_cypher(
     query: str,
-    params: dict[str, Any],
+    params: Optional[dict[str, Any]] = None,
     handle_unique: bool = True,  # noqa: FBT001 FBT002
     retry_on_session_expire: bool = False,  # noqa: FBT001 FBT002
     resolve_objects: bool = True,  # noqa: FBT001 FBT002
