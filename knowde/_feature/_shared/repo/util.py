@@ -12,7 +12,8 @@ from knowde._feature._shared.errors.domain import (
     NeomodelNotFoundError,
 )
 
-from .label import Label, Labels, LBase
+from .base import LBase
+from .label import Label, Labels
 
 if TYPE_CHECKING:
     from uuid import UUID
