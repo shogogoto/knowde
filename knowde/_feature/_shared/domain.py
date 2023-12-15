@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime  # noqa: TCH003
-from typing import TYPE_CHECKING, Self, TypeVar
+from typing import TYPE_CHECKING, Any, Self, TypeVar
 from uuid import UUID  # noqa: TCH003
 
 from pydantic import BaseModel, RootModel, field_validator
@@ -44,4 +44,13 @@ M = TypeVar("M", bound=DomainModel)
 
 
 class ModelList(RootModel[list[M]], frozen=True):
-    pass
+    def attrs(self, key: str) -> list[Any]:
+        return [getattr(m, key) for m in self.root]
+
+    def first(self, key: str, value: Any) -> M:  # noqa: ANN401
+        return next(
+            filter(
+                lambda x: getattr(x, key) == value,
+                self.root,
+            ),
+        )

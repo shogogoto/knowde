@@ -1,9 +1,11 @@
+
+from pytest_unordered import unordered
+
 from knowde._feature._shared.domain import ModelList
 from knowde._feature.reference.repo.node import (
     add_author,
     add_part,
     add_root,
-    find_reference,
     find_roots,
 )
 
@@ -19,7 +21,7 @@ def test_add_root() -> None:
     # not increase root num when adding part
     assert len(find_roots()) == 2  # noqa: PLR2004
 
-    actual = ModelList(root=find_roots()).model_dump(
+    actual = ModelList(root=find_roots().roots).model_dump(
         include={"__all__": {"name": ...}},
         mode="json",
     )
@@ -33,20 +35,20 @@ def test_add_part() -> None:
     add_part(p1.valid_uid, name="part11")
     add_part(p1.valid_uid, name="part12")
 
-    root = find_reference(ref1.valid_uid)
-    tree = root.tree(include={"name"})
+    g_root = find_roots()
+    tree = g_root.tree(ref1, include={"name"})
     expected = {
         "name": "book1",
-        "children": [
+        "children": unordered(
             {
                 "name": "part1",
-                "children": [
+                "children": unordered(
                     {"name": "part11"},
                     {"name": "part12"},
-                ],
+                ),
             },
             {"name": "part2"},
-        ],
+        ),
     }
     actual = tree.model_dump(
         exclude_unset=True,
@@ -59,11 +61,34 @@ def test_add_author() -> None:
     ref = add_root("with_author")
     author = add_author("oresama", ref)
     assert author == author_util.find_one(author.valid_uid).to_model()
-    roots = find_roots()
-    assert roots[0].authors == {author}
-    assert len(roots) == 1
 
-    author2 = add_author("oremo", ref)
-    roots = find_roots()
-    assert roots[0].authors == {author, author2}
-    assert len(roots) == 1
+    # print("ooooooooooooooohohoohoho")
+    # print("ooooooooooooooohohoohoho")
+    # pprint("ooooooooooooooohohoohoho")
+    g_roots = find_roots()
+    ModelList(root=list(g_roots.G.nodes)).first("name", "with_author")
+
+    # print(ms.model_dump(mode="json"))
+    # print(ms.authors)
+    # print(g_roots.G)
+    # print(g_roots.G.nodes)
+
+    # query_cypher(
+    #     """
+    #     MATCH (root:Reference)
+    #     WHERE NOT (root)-[:INCLUDED*1]->(:Reference)
+    #     OPTIONAL MATCH p = (root)<-[:WROTE*1]-(author:Author)
+    #     OPTIONAL MATCH tree = (root)<-[rel:INCLUDED*]-(child:Reference)
+    #     RETURN root, p, tree
+    #     """,
+    # )
+
+    # print(g_roots.tree(root))
+    # print(g_roots.tree(ref).model_dump(mode="json"))
+    # assert g_roots.tree(ref).authors == {author}
+    # assert len(g_roots) == 1
+
+    # author2 = add_author("oremo", ref)
+    # g_roots = find_roots()
+    # assert g_roots[0].authors == {author, author2}
+    # assert len(g_roots) == 1

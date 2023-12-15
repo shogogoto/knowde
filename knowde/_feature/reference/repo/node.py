@@ -38,52 +38,61 @@ def add_author(
     return a.to_model()
 
 
-def find_roots() -> list[Reference]:
-    results, _ = query_cypher(
+def find_roots() -> ReferenceGraph:
+    results = query_cypher(
         """
         MATCH (root:Reference)
         WHERE NOT (root)-[:INCLUDED*1]->(:Reference)
         OPTIONAL MATCH p = (root)<-[:WROTE*1]-(author:Author)
-        RETURN root, p
+        OPTIONAL MATCH tree = (root)<-[rel:INCLUDED*]-(child:Reference)
+        RETURN root, p, tree
         """,
     )
-    refs: set[Reference] = set()
-    g = nx.DiGraph()
-    for row in results:
-        refs.add(Reference.to_model(row[0]))
-        if row[1] is None:
-            continue
-        p: NeomodelPath = row[1]
+
+    g_ref = nx.DiGraph()
+    roots = [Reference.to_model(lb) for lb in results.get("root")]
+    g_ref.add_nodes_from(roots)
+    for row in results.get("tree"):
+        x: NeomodelPath = row
+        models = ref_util.to_labels(x.nodes).to_model()
+        nx.add_path(g_ref, models)
+
+    g_author = nx.DiGraph()
+    for row in results.get("p"):
+        p: NeomodelPath = row
         path = [
             Reference.to_model(p.start_node),
             Author.to_model(p.end_node),
         ]
-        nx.add_path(g, path)
-    ret = []
-    for ref in refs:
-        _ref = ref
-        if ref in g:
-            _authors = set(g.successors(ref))
-            _ref = ref.model_copy(update={"authors": _authors})
-        ret.append(_ref)
-    return ret
+        nx.add_path(g_author, path)
+
+    mapping = {}
+    for ref in g_ref.nodes:
+        if ref in g_author:
+            mapping[ref] = ref.model_copy(
+                update={
+                    "authors": g_author.successors(ref),
+                    # "authors": g_author.successors(ref),
+                },
+            )
+    # print(mapping)
+    g_with_authors = nx.relabel_nodes(g_ref, mapping, copy=False)
+    return ReferenceGraph(G=g_with_authors, roots=roots)
 
 
-def find_reference(uid: UUID) -> ReferenceGraph:
-    results, meta = query_cypher(
-        """
-        MATCH (tgt:Reference) WHERE tgt.uid=$uid
-        OPTIONAL MATCH p = (tgt)<-[rel:INCLUDED*]-(child:Reference)
-        RETURN p
-        """,
-        params={"uid": uid.hex},
-        resolve_objects=True,
-    )
-    g = nx.DiGraph()
-    for row in results:
-        if row[0] is None:
-            continue
-        x: NeomodelPath = row[0]
-        models = ref_util.to_labels(x.nodes).to_model()
-        nx.add_path(g, models)
-    return ReferenceGraph(G=g, uid=uid)
+# def find_reference(uid: UUID) -> ReferenceGraph:
+#     result = query_cypher(
+#         """
+#         MATCH (tgt:Reference) WHERE tgt.uid=$uid
+#         OPTIONAL MATCH p = (tgt)<-[rel:INCLUDED*]-(child:Reference)
+#         RETURN p
+#         """,
+#         params={"uid": uid.hex},
+#         resolve_objects=True,
+#     )
+#     g = nx.DiGraph()
+#     for row in result.get("p"):
+#         x: NeomodelPath = row
+#         models = ref_util.to_labels(x.nodes).to_model()
+#         nx.add_path(g, models)
+#     return ReferenceGraph(G=g, uid=uid)

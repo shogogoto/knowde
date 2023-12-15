@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from neomodel import DoesNotExist
 from pydantic import BaseModel
@@ -65,6 +65,6 @@ class LabelUtil(BaseModel, Generic[L, M], frozen=True):
     def delete(self, uid: UUID) -> None:
         self.find_one(uid).label.delete()
 
-    def create(self, **kwargs: dict) -> Label[L, M]:
+    def create(self, **kwargs: dict[str, Any]) -> Label[L, M]:
         saved = self.label(**kwargs).save()
         return self.to_label(saved)

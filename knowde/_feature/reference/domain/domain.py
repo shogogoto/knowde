@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Final, Optional
 
 from networkx import tree_data
+from pydantic import BaseModel, Field
 
 from knowde._feature._shared import DomainModel, Graph
 
@@ -11,7 +12,7 @@ class Reference(DomainModel, frozen=True):
     """nodeとしてのモデル. relを含まない."""
 
     name: str
-    authors: set[Author] | None = None
+    authors: list[Author] = Field(default_factory=list)
 
 
 class Author(DomainModel, frozen=True):
@@ -19,28 +20,22 @@ class Author(DomainModel, frozen=True):
     # birthday: date
 
 
-class ReferenceGraph(DomainModel, frozen=True):
+class ReferenceGraph(BaseModel, frozen=True):
     G: Graph
-
-    @property
-    def root(self) -> Reference:
-        return next(
-            filter(
-                lambda x: x.uid == self.valid_uid,
-                self.G.nodes,
-            ),
-        )
+    roots: list[Reference]
 
     def tree(
         self,
+        root: Reference,
         include: Optional[set[str]] = None,
         exclude: Optional[set[str]] = None,
     ) -> Reference:
-        td = tree_data(self.G, root=self.root, ident="ref")
+        ident: Final = "ref"
         k: Final[str] = "children"
+        td = tree_data(self.G, root=root, ident=ident)
 
         def _convert(d: dict[str, Reference]) -> Reference:
-            _d = d["ref"].model_dump(
+            _d = d[ident].model_dump(
                 include=include,
                 exclude=exclude,
             )
@@ -51,10 +46,12 @@ class ReferenceGraph(DomainModel, frozen=True):
 
         return _convert(td)
 
+    def __len__(self) -> int:
+        return len(self.roots)
+
 
 class RefComposite(Reference, frozen=True):
     children: list[RefComposite | RefLeaf]
-    author: Author | None = None
 
 
 class RefLeaf(Reference, frozen=True):
