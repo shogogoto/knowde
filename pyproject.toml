@@ -28,6 +28,7 @@ pytest-watch = "^4.2.0"
 ruff = "^0.1.5"
 httpx = "^0.25.2"
 pytest-unordered = "^0.5.2"
+ruff-lsp = "^0.0.48"
 
 [tool.poetry-dynamic-versioning]
 enable = true
