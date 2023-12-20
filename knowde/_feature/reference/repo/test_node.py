@@ -1,4 +1,3 @@
-
 from pytest_unordered import unordered
 
 from knowde._feature._shared.domain import ModelList
@@ -61,34 +60,14 @@ def test_add_author() -> None:
     ref = add_root("with_author")
     author = add_author("oresama", ref)
     assert author == author_util.find_one(author.valid_uid).to_model()
-
-    # print("ooooooooooooooohohoohoho")
-    # print("ooooooooooooooohohoohoho")
-    # pprint("ooooooooooooooohohoohoho")
     g_roots = find_roots()
-    ModelList(root=list(g_roots.G.nodes)).first("name", "with_author")
+    root = ModelList(root=list(g_roots.G.nodes)).first("name", "with_author")
 
-    # print(ms.model_dump(mode="json"))
-    # print(ms.authors)
-    # print(g_roots.G)
-    # print(g_roots.G.nodes)
+    assert g_roots.tree(root).authors == (author,)
+    assert len(g_roots) == 1
 
-    # query_cypher(
-    #     """
-    #     MATCH (root:Reference)
-    #     WHERE NOT (root)-[:INCLUDED*1]->(:Reference)
-    #     OPTIONAL MATCH p = (root)<-[:WROTE*1]-(author:Author)
-    #     OPTIONAL MATCH tree = (root)<-[rel:INCLUDED*]-(child:Reference)
-    #     RETURN root, p, tree
-    #     """,
-    # )
-
-    # print(g_roots.tree(root))
-    # print(g_roots.tree(ref).model_dump(mode="json"))
-    # assert g_roots.tree(ref).authors == {author}
-    # assert len(g_roots) == 1
-
-    # author2 = add_author("oremo", ref)
-    # g_roots = find_roots()
-    # assert g_roots[0].authors == {author, author2}
-    # assert len(g_roots) == 1
+    author2 = add_author("oremo", ref)
+    g_roots = find_roots()
+    root = ModelList(root=list(g_roots.G.nodes)).first("name", "with_author")
+    assert g_roots.tree(root).authors == (author, author2)
+    assert len(g_roots) == 2  # noqa: PLR2004

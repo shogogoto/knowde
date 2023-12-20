@@ -48,7 +48,6 @@ def find_roots() -> ReferenceGraph:
         RETURN root, p, tree
         """,
     )
-
     g_ref = nx.DiGraph()
     roots = [Reference.to_model(lb) for lb in results.get("root")]
     g_ref.add_nodes_from(roots)
@@ -71,13 +70,12 @@ def find_roots() -> ReferenceGraph:
         if ref in g_author:
             mapping[ref] = ref.model_copy(
                 update={
-                    "authors": g_author.successors(ref),
+                    "authors": tuple(g_author.successors(ref)),
                     # "authors": g_author.successors(ref),
                 },
             )
-    # print(mapping)
-    g_with_authors = nx.relabel_nodes(g_ref, mapping, copy=False)
-    return ReferenceGraph(G=g_with_authors, roots=roots)
+    nx.relabel_nodes(g_ref, mapping, copy=False)
+    return ReferenceGraph(G=g_ref, roots=roots)
 
 
 # def find_reference(uid: UUID) -> ReferenceGraph:

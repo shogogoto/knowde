@@ -12,7 +12,8 @@ class Reference(DomainModel, frozen=True):
     """nodeとしてのモデル. relを含まない."""
 
     name: str
-    authors: list[Author] = Field(default_factory=list)
+    # authors: list[Author] = Field(default_factory=list)
+    authors: tuple[Author, ...] = Field(default_factory=tuple)
 
 
 class Author(DomainModel, frozen=True):
