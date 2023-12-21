@@ -8,12 +8,16 @@ from knowde._feature import (
     concept_dest_router,
     concept_router,
     concept_src_router,
+    ref_router,
 )
 from knowde._feature._shared import ErrorHandlingMiddleware
 
 api = FastAPI()
 api.add_middleware(ErrorHandlingMiddleware)
+
 api.include_router(concept_router)
 api.include_router(concept_adj_router)
 api.include_router(concept_src_router)
 api.include_router(concept_dest_router)
+
+api.include_router(ref_router)
