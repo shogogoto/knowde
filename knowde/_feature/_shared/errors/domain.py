@@ -1,7 +1,10 @@
-"""concept error."""
 from fastapi import status
 
-from knowde._feature._shared import DomainError
+from knowde._feature._shared.errors.errors import DomainError
+
+
+class NotExistsUidAccessError(DomainError):
+    status_code = status.HTTP_404_NOT_FOUND
 
 
 class CompleteNotFoundError(DomainError):
@@ -13,8 +16,4 @@ class CompleteMultiHitError(DomainError):
 
 
 class NeomodelNotFoundError(DomainError):
-    status_code = status.HTTP_404_NOT_FOUND
-
-
-class ConnectionNotFoundError(DomainError):
     status_code = status.HTTP_404_NOT_FOUND
