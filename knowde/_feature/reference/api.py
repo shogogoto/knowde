@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from uuid import UUID  # noqa: TCH003
 
 from fastapi import APIRouter
 
 from knowde._feature.reference.repo.node import add_part, add_root, find_roots
 
 from .domain import Reference  # noqa: TCH001
-
-if TYPE_CHECKING:
-    from uuid import UUID
 
 ref_router = APIRouter(
     prefix="/references",
