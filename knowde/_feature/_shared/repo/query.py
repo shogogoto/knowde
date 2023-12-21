@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from textwrap import dedent
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 from neomodel import db
 from pydantic import BaseModel
@@ -30,7 +30,16 @@ class QueryResult(BaseModel, frozen=True):
     results: list[list[Any]]
     meta: list[str]
 
-    def get(self, retvar: str) -> list[Any]:
+    def get(
+        self,
+        retvar: str,
+        convert: Callable[[Any], Any] = lambda x: x,
+        row_convert: Callable[[Any], Any] = lambda x: x,
+    ) -> list[Any]:
         i = self.meta.index(retvar)
-        cols = [row[i] for row in self.results]
-        return list(filter(lambda x: x is not None, cols))
+        return list(
+            map(
+                convert,
+                [row_convert(row[i]) for row in self.results if row[i]],  # None削除
+            ),
+        )

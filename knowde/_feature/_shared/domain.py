@@ -39,6 +39,10 @@ class DomainModel(BaseModel, frozen=True):
     def to_model(cls, lb: LBase) -> Self:
         return cls.model_validate(lb.__properties__)
 
+    @classmethod
+    def to_models(cls, lbs: LBase) -> list[Self]:
+        return [cls.to_model(lb) for lb in lbs]
+
 
 M = TypeVar("M", bound=DomainModel)
 

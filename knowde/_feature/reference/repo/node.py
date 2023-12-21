@@ -2,18 +2,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import networkx as nx
-
 from knowde._feature._shared import query_cypher
 from knowde._feature.reference.domain import Reference
 from knowde._feature.reference.domain.domain import Author, ReferenceGraph
+from knowde._feature.reference.domain.graph_path import GraphPaths, GraphReplacer
 
 from .label import author_util, ref_util
 
 if TYPE_CHECKING:
     from uuid import UUID
-
-    from neomodel import NeomodelPath
 
 
 def add_root(name: str) -> Reference:
@@ -48,49 +45,20 @@ def find_roots() -> ReferenceGraph:
         RETURN root, p, tree
         """,
     )
-    g_ref = nx.DiGraph()
-    roots = [Reference.to_model(lb) for lb in results.get("root")]
-    g_ref.add_nodes_from(roots)
-    for row in results.get("tree"):
-        x: NeomodelPath = row
-        models = ref_util.to_labels(x.nodes).to_model()
-        nx.add_path(g_ref, models)
+    roots = results.get("root", convert=Reference.to_model)
+    rpaths = GraphPaths(init=roots)
+    rpaths.add(
+        results.get(
+            "tree",
+            convert=Reference.to_models,
+            row_convert=lambda row: row.nodes,
+        ),
+    )
 
-    g_author = nx.DiGraph()
-    for row in results.get("p"):
-        p: NeomodelPath = row
-        path = [
-            Reference.to_model(p.start_node),
-            Author.to_model(p.end_node),
-        ]
-        nx.add_path(g_author, path)
-
-    mapping = {}
-    for ref in g_ref.nodes:
-        if ref in g_author:
-            mapping[ref] = ref.model_copy(
-                update={
-                    "authors": tuple(g_author.successors(ref)),
-                    # "authors": g_author.successors(ref),
-                },
-            )
-    nx.relabel_nodes(g_ref, mapping, copy=False)
-    return ReferenceGraph(G=g_ref, roots=roots)
-
-
-# def find_reference(uid: UUID) -> ReferenceGraph:
-#     result = query_cypher(
-#         """
-#         MATCH (tgt:Reference) WHERE tgt.uid=$uid
-#         OPTIONAL MATCH p = (tgt)<-[rel:INCLUDED*]-(child:Reference)
-#         RETURN p
-#         """,
-#         params={"uid": uid.hex},
-#         resolve_objects=True,
-#     )
-#     g = nx.DiGraph()
-#     for row in result.get("p"):
-#         x: NeomodelPath = row
-#         models = ref_util.to_labels(x.nodes).to_model()
-#         nx.add_path(g, models)
-#     return ReferenceGraph(G=g, uid=uid)
+    author_replacer = GraphReplacer(
+        init=results.get("p"),
+        to_domain=lambda row: Reference.to_model(row.start_node),
+        to_range=lambda row: Author.to_model(row.end_node),
+    )
+    author_replacer(rpaths.G)
+    return ReferenceGraph(G=rpaths.G, roots=roots)
