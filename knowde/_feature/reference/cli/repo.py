@@ -28,7 +28,5 @@ def req_add(name: str) -> Reference:
 
 def req_rm(uid: UUID) -> None:
     res = Endpoint.Reference.delete(uid.hex)
-    print(res.status_code)
-    print(res.json())
     if res.status_code != HTTP_204_NO_CONTENT:
         pass
