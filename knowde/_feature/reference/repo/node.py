@@ -17,6 +17,12 @@ def add_root(name: str) -> Reference:
     return ref_util.create(name=name).to_model()
 
 
+def change_name(ref_id: UUID, name: str) -> Reference:
+    lb = ref_util.find_one(ref_id).label
+    lb.name = name
+    return Reference.to_model(lb.save())
+
+
 def add_part(parent_id: UUID, name: str) -> Reference:
     parent = ref_util.find_one(parent_id)
     part = ref_util.create(name=name)

@@ -4,9 +4,10 @@ from typing import TYPE_CHECKING
 
 import click
 
+from knowde._feature._shared import each_args
 from knowde._feature._shared.view.options import view_options
 
-from .repo import req_add, req_list, req_rm
+from .repo import req_add, req_change_name, req_complete, req_list, req_rm
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -32,6 +33,23 @@ def _add(name: str) -> Reference:
 
 
 @ref_cli.command("rm")
-@click.argument("uid", nargs=1, type=click.UUID)
+@each_args(
+    "uids",
+    converter=lambda pref_uid: req_complete(pref_uid).valid_uid,
+)
 def _remove(uid: UUID) -> None:
     return req_rm(uid)
+
+
+@ref_cli.command("ch")
+@click.argument("pref_uid", nargs=1, type=click.STRING)
+@click.argument("name", nargs=1, type=click.STRING)
+@view_options
+def _change(
+    pref_uid: str,
+    name: str,
+) -> list[Reference]:
+    pre = req_complete(pref_uid)
+    post = req_change_name(pre.valid_uid, name)
+    click.echo("Reference was changed")
+    return [pre, post]

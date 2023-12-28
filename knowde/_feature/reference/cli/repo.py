@@ -30,3 +30,13 @@ def req_rm(uid: UUID) -> None:
     res = Endpoint.Reference.delete(uid.hex)
     if res.status_code != HTTP_204_NO_CONTENT:
         pass
+
+
+def req_complete(pref_uid: str) -> Reference:
+    res = Endpoint.Reference.get(f"completion?pref_uid={pref_uid}")
+    return Reference.model_validate(res.json())
+
+
+def req_change_name(uid: UUID, name: str) -> Reference:
+    res = Endpoint.Reference.put(uid.hex, json={"name": name})
+    return Reference.model_validate(res.json())

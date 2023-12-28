@@ -65,7 +65,3 @@ def _put(
 ) -> Concept:
     """Delete Concept."""
     return change_concept(concept_id, prop)
-
-
-# @concept_router.post("/{concept_id}/source", status_code==status.HTTP_201_CREATED)
-# def _connect_source()

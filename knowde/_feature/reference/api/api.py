@@ -11,7 +11,12 @@ from knowde._feature.reference.api.param import (  # noqa: TCH001
 )
 from knowde._feature.reference.domain.domain import Reference  # noqa: TCH001
 from knowde._feature.reference.repo.label import ref_util
-from knowde._feature.reference.repo.node import add_part, add_root, find_roots
+from knowde._feature.reference.repo.node import (
+    add_part,
+    add_root,
+    change_name,
+    find_roots,
+)
 
 _EP = Endpoint.Reference
 
@@ -31,11 +36,21 @@ def add_ref(p: NameParam) -> Reference:
     return add_root(p.name)
 
 
-@ref_router.post("/{ref_id}")
-def add_subref(p: SubReferenceParam) -> Reference:
-    return add_part(p.ref_id, p.name)
-
-
 @ref_router.delete("/{ref_id}")
 def _delete(ref_id: UUID) -> None:
     ref_util.delete(ref_id)
+
+
+@ref_router.get("/completion")
+def _complete(pref_uid: str) -> Reference:
+    return ref_util.complete(pref_uid).to_model()
+
+
+@ref_router.put("/{ref_id}")
+def _put(ref_id: UUID, p: NameParam) -> Reference:
+    return change_name(ref_id, p.name)
+
+
+@ref_router.post("/{ref_id}")
+def add_subref(p: SubReferenceParam) -> Reference:
+    return add_part(p.ref_id, p.name)
