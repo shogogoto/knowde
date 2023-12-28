@@ -8,11 +8,15 @@ from pydantic import BaseModel, Field
 from knowde._feature._shared import DomainModel, Graph
 
 
-class Reference(DomainModel, frozen=True):
-    """nodeとしてのモデル. relを含まない."""
+class RefMixin(BaseModel):
+    """属性の順序を入れ替える用."""
 
     name: str
     authors: tuple[Author, ...] = Field(default_factory=tuple)
+
+
+class Reference(DomainModel, RefMixin, frozen=True):
+    """nodeとしてのモデル. relを含まない."""
 
 
 class Author(DomainModel, frozen=True):
