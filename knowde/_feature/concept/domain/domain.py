@@ -2,10 +2,9 @@
 from __future__ import annotations
 
 from typing import TypeVar
-from uuid import UUID  # noqa: TCH003
+from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, field_serializer
-from uuid6 import uuid7
 
 from knowde._feature._shared import DomainModel
 
@@ -36,7 +35,7 @@ class AdjacentIdsProp(BaseModel, frozen=True):
 
 
 class SaveProp(AdjacentIdsProp, ConceptProp, frozen=True):
-    uid: UUID = Field(default_factory=uuid7)
+    uid: UUID = Field(default_factory=uuid4)
 
     @field_serializer("uid")
     def to_label(self, v: UUID) -> str:
