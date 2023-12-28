@@ -10,7 +10,7 @@ from .errors import NotExistsUidAccessError
 from .timeutil import TZ
 
 if TYPE_CHECKING:
-    from knowde._feature._shared.repo.label import LBase
+    from knowde._feature._shared.repo import LBase
 
 
 class DomainModel(BaseModel, frozen=True):

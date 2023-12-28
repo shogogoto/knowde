@@ -15,6 +15,7 @@ class Endpoint(Enum):
     """endpoint."""
 
     Concept = "concepts"
+    Reference = "references"
 
     @property
     def single_form(self) -> str:
