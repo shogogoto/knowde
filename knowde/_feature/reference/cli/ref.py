@@ -4,8 +4,7 @@ from typing import TYPE_CHECKING
 
 import click
 
-from knowde._feature._shared import each_args
-from knowde._feature._shared.view.options import view_options
+from knowde._feature._shared import each_args, view_options
 
 from .repo import req_add, req_change_name, req_complete, req_list, req_rm
 
