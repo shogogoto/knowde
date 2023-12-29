@@ -7,7 +7,7 @@ from knowde._feature._shared.errors.domain import (
     CompleteMultiHitError,
     CompleteNotFoundError,
 )
-from knowde._feature.concept.domain.domain import ChangeProp, SaveProp
+from knowde._feature.concept.domain.domain import SaveProp
 
 from .label import util_concept
 from .repo import (
@@ -49,13 +49,13 @@ def test_change() -> None:
     prop = SaveProp(name="test_change")
     saved = save_concept(prop)
     chname = "changed_name"
-    change_concept(saved.valid_uid, ChangeProp(name=chname))
+    change_concept(saved.valid_uid, name=chname)
     one = util_concept.find_one(saved.valid_uid).to_model()
     assert one.name == chname
     assert one.explain is None
 
     chexplain = "changed_explain"
-    change_concept(saved.valid_uid, ChangeProp(explain=chexplain))
+    change_concept(saved.valid_uid, explain=chexplain)
     one = util_concept.find_one(saved.valid_uid).to_model()
     assert one.name == chname
     assert one.explain == chexplain

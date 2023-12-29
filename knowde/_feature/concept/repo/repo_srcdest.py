@@ -14,7 +14,7 @@ def add_source(dest_id: UUID, prop: SourceProp) -> AdjacentConcept:
     if prop.source_id is None:
         src = save_concept(SaveProp(name=prop.name, explain=prop.explain))
     else:
-        src = change_concept(prop.source_id, prop)
+        src = change_concept(prop.source_id, prop.name, prop.explain)
     connect(src.valid_uid, dest_id)
     return find_adjacent(src.valid_uid)
 
@@ -23,6 +23,6 @@ def add_destination(src_id: UUID, prop: DestinationProp) -> AdjacentConcept:
     if prop.destination_id is None:
         dest = save_concept(SaveProp(name=prop.name, explain=prop.explain))
     else:
-        dest = change_concept(prop.destination_id, prop)
+        dest = change_concept(prop.destination_id, prop.name, prop.explain)
     connect(src_id, dest.valid_uid)
     return find_adjacent(dest.valid_uid)

@@ -1,7 +1,7 @@
 """concept repository."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from knowde._feature.concept.domain import Concept
 from knowde._feature.concept.repo.repo_rel import find_adjacent, save_adjacent
@@ -11,7 +11,7 @@ from .label import util_concept
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from knowde._feature.concept.domain.domain import ChangeProp, SaveProp
+    from knowde._feature.concept.domain.domain import SaveProp
     from knowde._feature.concept.domain.rel import AdjacentConcept
 
 
@@ -22,11 +22,15 @@ def save_concept(p: SaveProp) -> AdjacentConcept:
     return find_adjacent(saved.valid_uid)
 
 
-def change_concept(uid: UUID, p: ChangeProp) -> Concept:
+def change_concept(
+    uid: UUID,
+    name: Optional[str] = None,
+    explain: Optional[str] = None,
+) -> Concept:
     """Change concept properties."""
     lb = util_concept.find_one(uid).label
-    if p.name is not None:
-        lb.name = p.name
-    if p.explain is not None:
-        lb.explain = p.explain
+    if name is not None:
+        lb.name = name
+    if explain is not None:
+        lb.explain = explain
     return Concept.to_model(lb.save())

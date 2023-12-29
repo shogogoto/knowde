@@ -1,7 +1,6 @@
 """concept domain."""
 from __future__ import annotations
 
-from typing import TypeVar
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, field_serializer
@@ -18,9 +17,6 @@ class ConceptProp(BaseModel, frozen=True):
 
 class Concept(ConceptProp, DomainModel, frozen=True):
     pass
-
-
-T = TypeVar("T")
 
 
 class AdjacentIdsProp(BaseModel, frozen=True):
