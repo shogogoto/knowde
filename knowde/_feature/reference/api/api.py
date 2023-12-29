@@ -23,10 +23,7 @@ _EP = Endpoint.Reference
 ref_router = CRUDRouter(
     util=ref_util,
     ls_all=lambda: find_roots().roots,
-).create(
-    f"/{_EP.value}",
-    [f"{_EP.single_form}"],
-)
+).create(_EP.prefix, [_EP.single_form])
 
 
 @ref_router.post("")

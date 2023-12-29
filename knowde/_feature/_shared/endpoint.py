@@ -18,6 +18,11 @@ class Endpoint(Enum):
     Reference = "references"
 
     @property
+    def prefix(self) -> str:
+        """REST API用."""
+        return f"/{self.value}"
+
+    @property
     def single_form(self) -> str:
         """単数形."""
         return Inflector().singularize(self.value)
