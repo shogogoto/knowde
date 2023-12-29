@@ -3,9 +3,10 @@ from __future__ import annotations
 
 from uuid import UUID  # noqa: TCH003
 
-from fastapi import APIRouter, status
+from fastapi import status
 from neomodel import db
 
+from knowde._feature._shared.api.crud import CRUDRouter
 from knowde._feature.concept.api.util import PREFIX, TAG
 from knowde._feature.concept.domain import (  # noqa: TCH001
     AdjacentConcept,
@@ -19,22 +20,7 @@ from knowde._feature.concept.repo.repo import (
     save_concept,
 )
 
-concept_router = APIRouter(
-    prefix=PREFIX,
-    tags=[TAG],
-)
-
-
-@concept_router.get("")
-def _get() -> list[Concept]:
-    """List."""
-    return util_concept.find_all().to_model()
-
-
-@concept_router.get("/completion")
-def _complete(pref_uid: str) -> Concept:
-    """Search concept by startswith uid."""
-    return util_concept.complete(pref_uid).to_model()
+concept_router = CRUDRouter(util=util_concept).create(PREFIX, [TAG])
 
 
 @concept_router.post("", status_code=status.HTTP_201_CREATED)
@@ -42,16 +28,6 @@ def _post(prop: SaveProp) -> AdjacentConcept:
     """Create Concept."""
     with db.transaction:
         return save_concept(prop)
-
-
-@concept_router.delete(
-    "/{concept_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    response_model=None,
-)
-def _delete(concept_id: UUID) -> None:
-    """Delete Concept."""
-    util_concept.delete(concept_id)
 
 
 @concept_router.put(
