@@ -41,12 +41,13 @@ class LabelUtil(BaseModel, Generic[L, M], frozen=True):
 
     def complete(self, pref_uid: str) -> Label[L, M]:
         lbs = self.suggest(pref_uid)
-        if len(lbs) == 0:
+        n = len(lbs)
+        if n == 0:
             msg = "ヒットしませんでした."
             raise CompleteNotFoundError(msg)
-        if len(lbs) > 1:
+        if n > 1:
             uids = [e.uid for e in lbs]
-            msg = f"{uids}がヒットしました.1件がヒットするように入力桁を増やしてみてね"
+            msg = f"{n}件ヒット.入力桁を増やしてみてね.{uids}"
             raise CompleteMultiHitError(msg)
         return self.to_label(lbs[0])
 

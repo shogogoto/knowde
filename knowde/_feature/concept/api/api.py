@@ -33,11 +33,10 @@ def _post(prop: SaveProp) -> AdjacentConcept:
 @concept_router.put(
     "/{concept_id}",
     status_code=status.HTTP_200_OK,
-    response_model=None,
 )
 def _put(
     concept_id: UUID,
     prop: ChangeProp,
 ) -> Concept:
     """Delete Concept."""
-    return change_concept(concept_id, prop)
+    return change_concept(concept_id, prop.name, prop.explain)
