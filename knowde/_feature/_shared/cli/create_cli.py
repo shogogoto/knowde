@@ -1,34 +1,34 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import Callable, Generic, TypeVar
+from uuid import UUID
 
 import click
-from click import Group
-from pydantic import BaseModel
+from click import Group, ParamType
+from pydantic import BaseModel, Field
 
+from knowde._feature._shared.api.param import ApiParam  # noqa: TCH001
 from knowde._feature._shared.cli import each_args
 from knowde._feature._shared.cli.view.options import view_options
 from knowde._feature._shared.domain import DomainModel
 
-if TYPE_CHECKING:
-    from uuid import UUID
-
-from knowde._feature._shared.cli.request import CliRequest  # noqa: TCH001
+from .request import CliRequest  # noqa: TCH001
 
 T = TypeVar("T", bound=DomainModel)
 
 
-class CliGroupCreator(BaseModel, Generic[T], frozen=True):
-    req: CliRequest
+class CliGroupCreator(BaseModel, Generic[T]):
+    req: CliRequest = Field(frozen=True)
+    group_help: str = Field(default="", frozen=True)
+    commands: list[ApiParam] = Field(default_factory=list)
 
     def __call__(
         self,
         group_name: str,
-        doc: str | None = None,
     ) -> Group:
-        @click.group(group_name)
+        @click.group(group_name, help=self.group_help)
         def _cli() -> None:
-            f"""{doc}"""  # noqa: B021
+            pass
 
         @_cli.command("rm")
         @each_args(
@@ -46,3 +46,46 @@ class CliGroupCreator(BaseModel, Generic[T], frozen=True):
             return self.req.ls()
 
         return _cli
+
+    def add_command(self, param: ApiParam) -> None:
+        pass
+
+
+def type2type(t: type | None) -> ParamType:
+    if t == str:
+        return click.STRING
+    if t == float:
+        return click.FLOAT
+    if t == UUID:
+        return click.UUID
+    if t == int:
+        return click.INT
+    if t == bool:
+        return click.BOOL
+    msg = f"{t} is not compatible type"
+    raise ValueError(msg)
+
+
+Wrapper = Callable[[Callable], Callable]
+
+
+def to_click_wrapper(
+    param: ApiParam,
+) -> list[Wrapper]:
+    cliparams = []
+    for k, v in param.model_fields.items():
+        if v.is_required():
+            p = click.argument(
+                k,
+                nargs=1,
+                type=type2type(v.annotation),
+            )
+        else:
+            t = type(getattr(param, k))  # for excliding optional
+            p = click.option(
+                f"--{k}",
+                f"-{k[0]}",
+                type=type2type(t),
+            )
+        cliparams.append(p)
+    return cliparams
