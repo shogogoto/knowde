@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 import click
 from click.testing import CliRunner
+from pydantic import Field
 
 from knowde._feature._shared.api.param import ApiParam
 
@@ -56,7 +57,6 @@ class MultiParam(ApiParam, frozen=True):
 def test_multi_parameters() -> None:
     ws = to_click_wrappers(MultiParam(p3=0, p4="p4"))
 
-    @click.command()
     @ws.wraps
     def _dummy(p3: int | None, p4: str) -> None:
         if p3 is not None:
@@ -71,3 +71,19 @@ def test_multi_parameters() -> None:
     result = runner.invoke(_dummy, ["dummy", "--p3", "999"])
     assert "p3" in result.output
     assert "999" in result.output
+
+
+class DescParam(ApiParam, frozen=True):
+    p: str | None = Field(None, description="description_test")
+
+
+def test_description() -> None:
+    ws = to_click_wrappers(DescParam(p="str"))
+
+    @ws.wraps
+    def _dummy(p: str | None) -> None:  # noqa: ARG001
+        pass
+
+    runner = CliRunner()
+    result = runner.invoke(_dummy, "--help")
+    assert "description_test" in result.output

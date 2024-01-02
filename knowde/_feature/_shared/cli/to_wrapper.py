@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Callable
 from uuid import UUID
 
 import click
-from click import ParamType
+from click import Command, ParamType
 from pydantic import RootModel
 
 from knowde._feature._shared.api.param import ApiParam  # noqa: TCH001
@@ -48,11 +48,11 @@ class ClickWrappers(RootModel[list[Wrapper]], frozen=True):
         """Indexing."""
         return self.root[i]
 
-    def wraps(self, command_func: Callable) -> Callable:
+    def wraps(self, command_func: Callable) -> Command:
         f = command_func
         for w in self.root:
             f = w(f)
-        return f
+        return click.command(f)
 
     def get_by_name(self, name: str) -> Wrapper | None:
         for w in self.root:
@@ -79,10 +79,7 @@ def to_click_wrappers(
                 f"--{k}",
                 f"-{k[0]}",
                 type=type2type(t),
+                help=v.description,
             )
         cliparams.append(p)
     return ClickWrappers(root=cliparams)
-
-
-# def to_wrapped(param: ApiParam) -> Callable:
-#     pass
