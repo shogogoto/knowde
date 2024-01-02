@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING
 import click
 
 from knowde._feature._shared.api.param import ApiParam
-from knowde._feature._shared.cli.create_cli import to_click_wrapper
+
+from .to_wrapper import to_click_wrappers
 
 if TYPE_CHECKING:
     from click import Argument
@@ -16,7 +17,7 @@ class OneParam(ApiParam, frozen=True):
 
 
 def test_to_arg_wrapper() -> None:
-    wrap = to_click_wrapper(OneParam(p1="x"))[0]
+    wrap = to_click_wrappers(OneParam(p1="x"))[0]
 
     @wrap
     def _dummy() -> None:
@@ -34,7 +35,7 @@ class AParam(ApiParam, frozen=True):
 
 
 def test_to_option_wrapper() -> None:
-    wrap = to_click_wrapper(AParam(p2=0))[0]
+    wrap = to_click_wrappers(AParam(p2=0))[0]
 
     @wrap
     def _dummy() -> None:
@@ -44,3 +45,12 @@ def test_to_option_wrapper() -> None:
     assert p.name == "p2"
     assert p.type == click.INT
     assert p.param_type_name == "option"
+
+
+class MultiParam(ApiParam, frozen=True):
+    p3: int | None = None
+    p4: str
+
+
+def test_multi_parameters() -> None:
+    to_click_wrappers(MultiParam(p3=0, p4="p4"))
