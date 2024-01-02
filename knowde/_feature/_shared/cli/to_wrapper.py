@@ -1,13 +1,16 @@
 from __future__ import annotations
 
-from typing import Callable
+from typing import TYPE_CHECKING, Callable
 from uuid import UUID
 
 import click
 from click import ParamType
-from pydantic import BaseModel
+from pydantic import RootModel
 
 from knowde._feature._shared.api.param import ApiParam  # noqa: TCH001
+
+if TYPE_CHECKING:
+    from pydantic.main import TupleGenerator
 
 
 def type2type(t: type | None) -> ParamType:
@@ -28,16 +31,39 @@ def type2type(t: type | None) -> ParamType:
 Wrapper = Callable[[Callable], Callable]
 
 
-class ClickWrappers(BaseModel):
-    values: list[Wrapper]
+class ClickWrappers(RootModel[list[Wrapper]], frozen=True):
+    def __iter__(self) -> TupleGenerator:
+        """Behavior like list."""
+        return iter(self.root)
 
-    def apply(self, command_func: Callable) -> Callable:
-        pass
+    def __next__(self) -> Wrapper:
+        """Behavior like list."""
+        return next(self.root)
+
+    def __len__(self) -> int:
+        """Count of elements."""
+        return len(self.root)
+
+    def __getitem__(self, i: int) -> Wrapper:
+        """Indexing."""
+        return self.root[i]
+
+    def wraps(self, command_func: Callable) -> Callable:
+        f = command_func
+        for w in self.root:
+            f = w(f)
+        return f
+
+    def get_by_name(self, name: str) -> Wrapper | None:
+        for w in self.root:
+            if w.name == name:
+                return w
+        return None
 
 
 def to_click_wrappers(
     param: ApiParam,
-) -> list[Wrapper]:
+) -> ClickWrappers:
     """click.{argument,option}のリストを返す."""
     cliparams = []
     for k, v in param.model_fields.items():
@@ -55,7 +81,7 @@ def to_click_wrappers(
                 type=type2type(t),
             )
         cliparams.append(p)
-    return cliparams
+    return ClickWrappers(root=cliparams)
 
 
 # def to_wrapped(param: ApiParam) -> Callable:

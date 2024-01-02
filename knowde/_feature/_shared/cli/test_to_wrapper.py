@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import click
+from click.testing import CliRunner
 
 from knowde._feature._shared.api.param import ApiParam
 
@@ -53,4 +54,20 @@ class MultiParam(ApiParam, frozen=True):
 
 
 def test_multi_parameters() -> None:
-    to_click_wrappers(MultiParam(p3=0, p4="p4"))
+    ws = to_click_wrappers(MultiParam(p3=0, p4="p4"))
+
+    @click.command()
+    @ws.wraps
+    def _dummy(p3: int | None, p4: str) -> None:
+        if p3 is not None:
+            click.echo(f"p3={p3}")
+        click.echo(f"p4={p4}")
+
+    runner = CliRunner()
+    result = runner.invoke(_dummy, ["p4-arg"])
+    assert "p3" not in result.output
+    assert "p4" in result.output
+
+    result = runner.invoke(_dummy, ["dummy", "--p3", "999"])
+    assert "p3" in result.output
+    assert "999" in result.output
