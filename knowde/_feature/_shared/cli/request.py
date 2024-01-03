@@ -10,6 +10,7 @@ from knowde._feature._shared.domain import DomainModel
 if TYPE_CHECKING:
     from uuid import UUID
 
+    from knowde._feature._shared.api.param import ApiParam
     from knowde._feature._shared.endpoint import Endpoint
 
 
@@ -38,3 +39,11 @@ class CliRequest(BaseModel, Generic[T], frozen=True):
 
     def rm(self, uid: UUID) -> None:
         self.endpoint.delete(uid.hex)
+
+    def post(self, param: ApiParam) -> T:
+        res = self.endpoint.post(json=param.model_dump())
+        return self.M.model_validate(res.json())
+
+    def put(self, uid: UUID, param: ApiParam) -> T:
+        res = self.endpoint.put(uid.hex, json=param.model_dump())
+        return self.M.model_validate(res.json())

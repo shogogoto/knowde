@@ -6,9 +6,10 @@ from uuid import UUID, uuid4
 from pydantic import BaseModel, Field, field_serializer
 
 from knowde._feature._shared import DomainModel
+from knowde._feature._shared.api.param import ApiParam
 
 
-class ConceptProp(BaseModel, frozen=True):
+class ConceptProp(ApiParam, frozen=True):
     """concept properties."""
 
     name: str
@@ -39,7 +40,7 @@ class SaveProp(AdjacentIdsProp, ConceptProp, frozen=True):
         return v.hex
 
 
-class ChangeProp(BaseModel, frozen=True):
+class ChangeProp(ApiParam, frozen=True):
     """for change props."""
 
     name: str | None = None

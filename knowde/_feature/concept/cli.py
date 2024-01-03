@@ -1,20 +1,18 @@
 """concept cli."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import click
 
 from knowde._feature._shared import view_options
 from knowde._feature._shared.cli.create_cli import CliGroupCreator
-from knowde._feature.concept.domain import ChangeProp, ConceptProp
+from knowde._feature._shared.cli.request import CliRequest
+from knowde._feature._shared.endpoint import Endpoint
+from knowde._feature.concept.domain import ChangeProp, Concept, ConceptProp
 
-from .repo import req_add, req_change, req_concept
-
-if TYPE_CHECKING:
-    from knowde._feature.concept.domain import Concept
-
-
+req_concept = CliRequest(
+    endpoint=Endpoint.Concept,
+    M=Concept,
+)
 concept_cli = CliGroupCreator(req=req_concept)("concept")
 
 
@@ -39,8 +37,9 @@ def add(
 ) -> Concept:
     """Create concept."""
     c = ConceptProp(name=name, explain=explain)
+    m = req_concept.post(c)
     click.echo("Concept was created newly")
-    return req_add(c)
+    return m
 
 
 @concept_cli.command("ch")
@@ -64,6 +63,6 @@ def change(
         explain=explain,
     )
     pre = req_concept.complete(pref_uid)
-    post = req_change(pre.valid_uid, prop)
-    click.echo("Concept was changed")
+    post = req_concept.put(pre.valid_uid, prop)
+    click.echo("Concept was changed 0 -> 1")
     return [pre, post]
