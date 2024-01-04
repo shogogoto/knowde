@@ -14,8 +14,8 @@ class Model(DomainModel, frozen=True):
 
 
 def test_signature() -> None:
-    def x(p: OneParam) -> Model:
-        return Model(p3=p.p1, p4=p.p2)
+    def x(p1: str, p2: int) -> Model:
+        return Model(p3=p1, p4=p2)
 
     f = OneParam.makefunc(x)
     assert f(p1="p1", p2=0) == Model(p3="p1", p4=0)

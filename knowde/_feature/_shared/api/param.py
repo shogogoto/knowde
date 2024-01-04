@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from inspect import Parameter, Signature, signature
-from typing import TYPE_CHECKING, Callable, Generic, Self, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, Generic, TypeVar
 
 from makefun import create_function
 from pydantic import BaseModel
@@ -9,6 +9,8 @@ from pydantic import BaseModel
 from knowde._feature._shared.domain import DomainModel
 
 if TYPE_CHECKING:
+    from fastapi import APIRouter
+
     from knowde._feature._shared.repo.base import LBase
 
 T = TypeVar("T", bound=DomainModel)
@@ -22,7 +24,7 @@ class ApiParam(BaseModel, Generic[T], frozen=True):
     @classmethod
     def makefunc(
         cls,
-        f: Callable[[Self], T],
+        f: Callable[[Any], T],
         func_name: str | None = None,
         doc: str | None = None,
     ) -> Callable:
@@ -35,7 +37,7 @@ class ApiParam(BaseModel, Generic[T], frozen=True):
         sig = Signature(params, return_annotation=r)
 
         def impl(**kwargs) -> T:  # noqa: ANN003
-            return f(cls(**kwargs))
+            return f(**kwargs)
 
         return create_function(
             sig,
@@ -43,3 +45,18 @@ class ApiParam(BaseModel, Generic[T], frozen=True):
             func_name=func_name,
             doc=doc,
         )
+
+    @classmethod
+    def api(
+        cls,
+        router: APIRouter,
+        func: Callable,
+        name: str | None = None,
+        doc: str | None = None,
+    ) -> None:
+        f = cls.makefunc(func, func_name=name, doc=doc)
+        cls.api_impl(router, f)
+
+    @classmethod
+    def api_impl(cls, router: APIRouter, func: Callable) -> None:
+        pass

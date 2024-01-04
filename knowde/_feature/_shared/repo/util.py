@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import Any, Generic, TypeVar
+from uuid import UUID  # noqa: TCH003
 
 from neomodel import DoesNotExist
 from pydantic import BaseModel
@@ -14,9 +15,6 @@ from knowde._feature._shared.errors.domain import (
 
 from .base import LBase
 from .label import Label, Labels
-
-if TYPE_CHECKING:
-    from uuid import UUID
 
 L = TypeVar("L", bound=LBase)
 M = TypeVar("M", bound=DomainModel)

@@ -21,8 +21,7 @@ from knowde._feature.concept.repo.repo import (
 )
 
 concept_router = APIRouter(prefix=PREFIX, tags=[TAG])
-
-CRUDRouter(util=util_concept).create(concept_router)
+CRUDRouter(util=util_concept).set_router(concept_router)
 
 
 @concept_router.post("", status_code=status.HTTP_201_CREATED)

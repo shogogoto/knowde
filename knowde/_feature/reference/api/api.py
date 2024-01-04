@@ -25,7 +25,7 @@ ref_router = APIRouter(prefix=_EP.prefix, tags=[_EP.single_form])
 CRUDRouter(
     util=ref_util,
     ls_all=lambda: find_roots().roots,
-).create(ref_router)
+).set_router(ref_router)
 
 
 @ref_router.post("")
