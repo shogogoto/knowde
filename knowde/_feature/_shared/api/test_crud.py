@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import APIRouter, FastAPI
 from fastapi.testclient import TestClient
 from neomodel import StringProperty
 from starlette.status import HTTP_404_NOT_FOUND
@@ -24,7 +24,9 @@ class OneModel(DomainModel, frozen=True):
 
 util = LabelUtil(label=LTestLabel, model=OneModel)
 
-r = CRUDRouter(util=util).create(prefix="/testing", tags=["testing"])
+r = CRUDRouter(util=util).create(
+    APIRouter(prefix="/testing", tags=["testing"]),
+)
 api = FastAPI()
 api.add_middleware(ErrorHandlingMiddleware)
 api.include_router(r)

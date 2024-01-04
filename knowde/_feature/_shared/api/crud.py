@@ -24,7 +24,7 @@ class CRUDRouter(BaseModel, Generic[L, M], frozen=True):
     def create(
         self,
         router: APIRouter,
-    ) -> None:
+    ) -> APIRouter:
         """labelに対応したCRUD APIの基本的な定義."""
 
         @router.get("")
@@ -44,3 +44,5 @@ class CRUDRouter(BaseModel, Generic[L, M], frozen=True):
         )
         def _delete(uid: UUID) -> None:
             self.util.delete(uid)
+
+        return router
