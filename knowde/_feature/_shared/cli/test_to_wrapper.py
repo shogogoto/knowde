@@ -19,7 +19,7 @@ class OneParam(ApiParam, frozen=True):
 
 
 def test_to_arg_wrapper() -> None:
-    wrap = to_click_wrappers(OneParam(p1="x"))[0]
+    wrap = to_click_wrappers(OneParam)[0]
 
     @wrap
     def _dummy() -> None:
@@ -37,7 +37,7 @@ class AParam(ApiParam, frozen=True):
 
 
 def test_to_option_wrapper() -> None:
-    wrap = to_click_wrappers(AParam(p2=0))[0]
+    wrap = to_click_wrappers(AParam)[0]
 
     @wrap
     def _dummy() -> None:
@@ -55,7 +55,7 @@ class MultiParam(ApiParam, frozen=True):
 
 
 def test_multi_parameters() -> None:
-    ws = to_click_wrappers(MultiParam(p3=0, p4="p4"))
+    ws = to_click_wrappers(MultiParam)
 
     @ws.wraps
     def _dummy(p3: int | None, p4: str) -> None:
@@ -78,7 +78,7 @@ class DescParam(ApiParam, frozen=True):
 
 
 def test_description() -> None:
-    ws = to_click_wrappers(DescParam(p="str"))
+    ws = to_click_wrappers(DescParam)
 
     @ws.wraps
     def _dummy(p: str | None) -> None:  # noqa: ARG001

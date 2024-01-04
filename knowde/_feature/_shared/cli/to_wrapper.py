@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Callable, get_args
 from uuid import UUID
 
 import click
@@ -61,8 +61,16 @@ class ClickWrappers(RootModel[list[Wrapper]], frozen=True):
         return None
 
 
+# T = TypeVar("T")
+
+
+# class TypeUtil(Generic[T]):
+#     def exclude(t: type[T | None]) -> T:
+#         return type[T
+
+
 def to_click_wrappers(
-    param: ApiParam,
+    param: type[ApiParam],
 ) -> ClickWrappers:
     """click.{argument,option}のリストを返す."""
     cliparams = []
@@ -74,7 +82,7 @@ def to_click_wrappers(
                 type=type2type(v.annotation),
             )
         else:
-            t = type(getattr(param, k))  # for excliding optional
+            t = get_args(v.annotation)[0]  # for excliding optional
             p = click.option(
                 f"--{k}",
                 f"-{k[0]}",
