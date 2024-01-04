@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from uuid import UUID  # noqa: TCH003
 
-from fastapi import status
+from fastapi import APIRouter, status
 from neomodel import db
 
 from knowde._feature._shared.api.crud import CRUDRouter
@@ -20,7 +20,9 @@ from knowde._feature.concept.repo.repo import (
     save_concept,
 )
 
-concept_router = CRUDRouter(util=util_concept).create(PREFIX, [TAG])
+concept_router = APIRouter(prefix=PREFIX, tags=[TAG])
+
+CRUDRouter(util=util_concept).create(concept_router)
 
 
 @concept_router.post("", status_code=status.HTTP_201_CREATED)

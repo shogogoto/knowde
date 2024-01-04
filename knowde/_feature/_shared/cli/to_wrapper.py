@@ -54,20 +54,6 @@ class ClickWrappers(RootModel[list[Wrapper]], frozen=True):
             f = w(f)
         return click.command(f)
 
-    def get_by_name(self, name: str) -> Wrapper | None:
-        for w in self.root:
-            if w.name == name:
-                return w
-        return None
-
-
-# T = TypeVar("T")
-
-
-# class TypeUtil(Generic[T]):
-#     def exclude(t: type[T | None]) -> T:
-#         return type[T
-
 
 def to_click_wrappers(
     param: type[ApiParam],
