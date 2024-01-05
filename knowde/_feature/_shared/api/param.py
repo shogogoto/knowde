@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from inspect import Parameter, signature
-from typing import TYPE_CHECKING, Any, Callable, Generic, TypeVar
+from typing import TYPE_CHECKING, Callable, Generic, ParamSpec, TypeVar
 
 from makefun import create_function
 from pydantic import BaseModel
@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from knowde._feature._shared.repo.base import LBase
 
 T = TypeVar("T", bound=DomainModel)
+P = ParamSpec("P")
 
 
 class ApiParam(BaseModel, Generic[T], frozen=True):
@@ -24,10 +25,10 @@ class ApiParam(BaseModel, Generic[T], frozen=True):
     @classmethod
     def makefunc(
         cls,
-        f: Callable[[Any], T],
+        f: Callable[P, T],
         func_name: str | None = None,
         doc: str | None = None,
-    ) -> Callable:
+    ) -> Callable[P, T]:
         params = []
         for k, v in cls.model_fields.items():
             kind = Parameter.KEYWORD_ONLY

@@ -6,8 +6,8 @@ from knowde._feature._shared.repo.util import LabelUtil  # noqa: TCH001
 
 from .basic_param import (
     CompleteParam,
-    DeleteParam,
     ListParam,
+    RemoveParam,
 )
 
 if TYPE_CHECKING:
@@ -20,7 +20,7 @@ def set_basic_router(
 ) -> APIRouter:
     """labelに対応したCRUD APIの基本的な定義."""
     ListParam.api(router, lambda: util.find_all().to_model(), "list")
-    DeleteParam.api(router, util.delete, "delete")
+    RemoveParam.api(router, util.delete, "delete")
     CompleteParam.api(
         router,
         lambda pref_uid: util.complete(pref_uid=pref_uid).to_model(),

@@ -9,7 +9,7 @@ from typing_extensions import override
 from knowde._feature._shared.api.param import ApiParam
 
 
-class DeleteParam(ApiParam, frozen=True):
+class RemoveParam(ApiParam, frozen=True):
     uid: UUID
 
     @classmethod

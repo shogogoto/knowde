@@ -57,6 +57,7 @@ class MultiParam(ApiParam, frozen=True):
 def test_multi_parameters() -> None:
     ws = to_click_wrappers(MultiParam)
 
+    @click.command()
     @ws.wraps
     def _dummy(p3: int | None, p4: str) -> None:
         click.echo(f"{p3}{p4}")
@@ -76,6 +77,7 @@ class DescParam(ApiParam, frozen=True):
 def test_description() -> None:
     ws = to_click_wrappers(DescParam)
 
+    @click.command()
     @ws.wraps
     def _dummy(p: str | None) -> None:  # noqa: ARG001
         pass
@@ -96,6 +98,7 @@ class ParentModel(ApiParam, frozen=True):
 
 
 def test_nested_model() -> None:
+    @click.command()
     @to_click_wrappers(ParentModel).wraps
     def _dummy(p: bool, n1: int, n2: str | None) -> None:  # noqa: FBT001
         click.echo(f"{p}{n1}{n2}")

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Callable, get_args
 from uuid import UUID
 
 import click
-from click import Command, ParamType
+from click import ParamType
 from pydantic import BaseModel, RootModel
 
 if TYPE_CHECKING:
@@ -48,11 +48,11 @@ class ClickWrappers(RootModel[list[Wrapper]], frozen=True):
         """Indexing."""
         return self.root[i]
 
-    def wraps(self, command_func: Callable) -> Command:
+    def wraps(self, command_func: Callable) -> Callable:
         f = command_func
         for w in self.root:
             f = w(f)
-        return click.command(f)
+        return f
 
 
 def to_click_wrappers(
@@ -60,6 +60,7 @@ def to_click_wrappers(
 ) -> ClickWrappers:
     """click.{argument,option}のリストを返す."""
     params = []
+
     for k, v in t_param.model_fields.items():
         t = v.annotation
         if isclass(t) and BaseModel in t.__mro__:
