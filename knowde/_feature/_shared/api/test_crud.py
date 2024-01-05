@@ -24,7 +24,7 @@ class OneModel(DomainModel, frozen=True):
 
 util = LabelUtil(label=LTestLabel, model=OneModel)
 
-r = CRUDRouter(util=util).set_router(
+r = CRUDRouter(util=util).set_basic_router(
     APIRouter(prefix="/testing", tags=["testing"]),
 )
 api = FastAPI()

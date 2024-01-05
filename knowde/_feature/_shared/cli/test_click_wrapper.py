@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 
 from knowde._feature._shared.api.param import ApiParam
 
-from .to_wrapper import to_click_wrappers
+from .click_wrapper import to_click_wrappers
 
 if TYPE_CHECKING:
     from click import Argument

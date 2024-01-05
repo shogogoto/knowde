@@ -48,6 +48,3 @@ class CliGroupCreator(BaseModel, Generic[T]):
             return self.req.ls()
 
         return _cli
-
-    # def to_command(self, param: ApiParam) -> None:
-    #     to_click_wrappers(param)

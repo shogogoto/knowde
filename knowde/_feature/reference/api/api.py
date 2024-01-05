@@ -4,7 +4,7 @@ from uuid import UUID  # noqa: TCH003
 
 from fastapi import APIRouter
 
-from knowde._feature._shared.api.crud import CRUDRouter
+from knowde._feature._shared.api.crud import set_basic_router
 from knowde._feature._shared.endpoint import Endpoint
 from knowde._feature.reference.api.param import (  # noqa: TCH001
     NameParam,
@@ -16,16 +16,14 @@ from knowde._feature.reference.repo.node import (
     add_part,
     add_root,
     change_name,
-    find_roots,
 )
 
 _EP = Endpoint.Reference
 
-ref_router = APIRouter(prefix=_EP.prefix, tags=[_EP.single_form])
-CRUDRouter(
-    util=ref_util,
-    ls_all=lambda: find_roots().roots,
-).set_router(ref_router)
+ref_router = set_basic_router(
+    ref_util,
+    APIRouter(prefix=_EP.prefix, tags=[_EP.single_form]),
+)
 
 
 @ref_router.post("")

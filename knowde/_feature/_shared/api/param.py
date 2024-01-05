@@ -51,9 +51,10 @@ class ApiParam(BaseModel, Generic[T], frozen=True):
         func: Callable,
         name: str | None = None,
         doc: str | None = None,
-    ) -> None:
+    ) -> APIRouter:
         f = cls.makefunc(func, func_name=name, doc=doc)
         cls.api_impl(router, f)
+        return router
 
     @classmethod
     def api_impl(cls, router: APIRouter, func: Callable) -> None:

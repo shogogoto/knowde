@@ -44,6 +44,7 @@ class CompleteParam(ApiParam, frozen=True):
 
 class ListParam(ApiParam, frozen=True):
     @classmethod
+    @override
     def api_impl(
         cls,
         router: APIRouter,
