@@ -1,13 +1,13 @@
 from __future__ import annotations
 
+from inspect import isclass
+from types import UnionType
 from typing import TYPE_CHECKING, Callable, get_args
 from uuid import UUID
 
 import click
 from click import Command, ParamType
-from pydantic import RootModel
-
-from knowde._feature._shared.api.param import ApiParam  # noqa: TCH001
+from pydantic import BaseModel, RootModel
 
 if TYPE_CHECKING:
     from pydantic.main import TupleGenerator
@@ -56,24 +56,29 @@ class ClickWrappers(RootModel[list[Wrapper]], frozen=True):
 
 
 def to_click_wrappers(
-    param: type[ApiParam],
+    t_param: type[BaseModel],
 ) -> ClickWrappers:
     """click.{argument,option}のリストを返す."""
-    cliparams = []
-    for k, v in param.model_fields.items():
-        if v.is_required():
+    params = []
+    for k, v in t_param.model_fields.items():
+        t = v.annotation
+        if isclass(t) and BaseModel in t.__mro__:
+            ws = to_click_wrappers(t)
+            params = list(reversed(params + ws.root))
+        if type(t) == type and v.is_required():
             p = click.argument(
                 k,
                 nargs=1,
-                type=type2type(v.annotation),
+                type=type2type(t),
             )
-        else:
-            t = get_args(v.annotation)[0]  # for excliding optional
+            params.append(p)
+        if type(t) == UnionType:
+            t_exclude = get_args(t)[0]  # for excliding optional
             p = click.option(
                 f"--{k}",
                 f"-{k[0]}",
-                type=type2type(t),
+                type=type2type(t_exclude),
                 help=v.description,
             )
-        cliparams.append(p)
-    return ClickWrappers(root=cliparams)
+            params.append(p)
+    return ClickWrappers(root=params)

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from inspect import Parameter, Signature, signature
+from inspect import Parameter, signature
 from typing import TYPE_CHECKING, Any, Callable, Generic, TypeVar
 
 from makefun import create_function
@@ -33,14 +33,12 @@ class ApiParam(BaseModel, Generic[T], frozen=True):
             kind = Parameter.KEYWORD_ONLY
             p = Parameter(k, kind=kind, annotation=v.annotation)
             params.append(p)
-        r = signature(f).return_annotation
-        sig = Signature(params, return_annotation=r)
 
         def impl(**kwargs) -> T:  # noqa: ANN003
             return f(**kwargs)
 
         return create_function(
-            sig,
+            signature(f).replace(parameters=params),
             impl,
             func_name=func_name,
             doc=doc,

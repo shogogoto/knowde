@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 import click
 from click.testing import CliRunner
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 from knowde._feature._shared.api.param import ApiParam
 
@@ -59,18 +59,14 @@ def test_multi_parameters() -> None:
 
     @ws.wraps
     def _dummy(p3: int | None, p4: str) -> None:
-        if p3 is not None:
-            click.echo(f"p3={p3}")
-        click.echo(f"p4={p4}")
+        click.echo(f"{p3}{p4}")
 
     runner = CliRunner()
-    result = runner.invoke(_dummy, ["p4-arg"])
-    assert "p3" not in result.output
-    assert "p4" in result.output
+    result = runner.invoke(_dummy, ["p4"])
+    assert result.output.strip() == "Nonep4"
 
     result = runner.invoke(_dummy, ["dummy", "--p3", "999"])
-    assert "p3" in result.output
-    assert "999" in result.output
+    assert result.output.strip() == "999dummy"
 
 
 class DescParam(ApiParam, frozen=True):
@@ -87,3 +83,32 @@ def test_description() -> None:
     runner = CliRunner()
     result = runner.invoke(_dummy, "--help")
     assert "description_test" in result.output
+
+
+class ChildModel(BaseModel, frozen=True):
+    n1: int
+    n2: str | None
+
+
+class ParentModel(ApiParam, frozen=True):
+    p: bool
+    nested: ChildModel
+
+
+def test_nested_model() -> None:
+    @to_click_wrappers(ParentModel).wraps
+    def _dummy(p: bool, n1: int, n2: str | None) -> None:  # noqa: FBT001
+        click.echo(f"{p}{n1}{n2}")
+
+    # 逆順で並ぶ
+    ps = _dummy.params
+    assert ps[0].name == "p"
+    assert ps[0].param_type_name == "argument"
+    assert ps[1].name == "n1"
+    assert ps[1].param_type_name == "argument"
+    assert ps[2].name == "n2"
+    assert ps[2].param_type_name == "option"
+
+    runner = CliRunner()
+    result = runner.invoke(_dummy, ["True", "0", "--n2", "n2"])
+    assert result.output.strip() == "True0n2"
