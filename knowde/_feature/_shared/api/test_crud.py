@@ -3,12 +3,11 @@ from fastapi.testclient import TestClient
 from neomodel import StringProperty
 from starlette.status import HTTP_404_NOT_FOUND
 
+from knowde._feature._shared.api.crud import set_basic_router
 from knowde._feature._shared.domain import DomainModel
 from knowde._feature._shared.errors.errors import ErrorHandlingMiddleware
 from knowde._feature._shared.repo.base import LBase
 from knowde._feature._shared.repo.util import LabelUtil
-
-from .crud import CRUDRouter
 
 
 class LTestLabel(LBase):
@@ -24,7 +23,8 @@ class OneModel(DomainModel, frozen=True):
 
 util = LabelUtil(label=LTestLabel, model=OneModel)
 
-r = CRUDRouter(util=util).set_basic_router(
+r = set_basic_router(
+    util,
     APIRouter(prefix="/testing", tags=["testing"]),
 )
 api = FastAPI()
