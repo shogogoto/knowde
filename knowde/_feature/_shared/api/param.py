@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from inspect import Parameter, signature
-from typing import TYPE_CHECKING, Callable, Generic, ParamSpec, TypeVar
+from typing import TYPE_CHECKING, Callable, Generic, ParamSpec, TypedDict, TypeVar
 
 from makefun import create_function
 from pydantic import BaseModel
@@ -15,6 +15,12 @@ if TYPE_CHECKING:
 
 T = TypeVar("T", bound=DomainModel)
 P = ParamSpec("P")
+
+
+class HttpMethodParams(TypedDict):
+    relative: str | None
+    params: dict | None
+    json: object
 
 
 class ApiParam(BaseModel, Generic[T], frozen=True):
@@ -31,7 +37,7 @@ class ApiParam(BaseModel, Generic[T], frozen=True):
     ) -> Callable[P, T]:
         params = []
         for k, v in cls.model_fields.items():
-            kind = Parameter.KEYWORD_ONLY
+            kind = Parameter.POSITIONAL_OR_KEYWORD
             p = Parameter(k, kind=kind, annotation=v.annotation)
             params.append(p)
 
@@ -60,3 +66,7 @@ class ApiParam(BaseModel, Generic[T], frozen=True):
     @classmethod
     def api_impl(cls, router: APIRouter, func: Callable) -> None:
         pass
+
+    @classmethod
+    def for_method(cls, **kwargs) -> HttpMethodParams:  # noqa: ARG003 ANN003
+        return {"relative": None, "params": None, "json": None}

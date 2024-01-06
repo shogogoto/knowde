@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Generic, TypeVar
+from typing import TYPE_CHECKING, Callable, Generic, Optional, TypeVar
 
 from pydantic import BaseModel
 from starlette.status import HTTP_200_OK
@@ -31,11 +31,26 @@ class CliRequest(BaseModel, Generic[T], frozen=True):
         self,
         m: HttpMethod,
         param: type[ApiParam],
+        post_func: Optional[Callable] = None,
     ) -> Callable:
         return m.request_func(
             ep=self.endpoint,
             model=self.M,
             param=param,
+            post_func=post_func,
+        )
+
+    def noreturn_method(
+        self,
+        m: HttpMethod,
+        param: type[ApiParam],
+        post_func: Optional[Callable] = None,
+    ) -> Callable:
+        return m.request_func(
+            ep=self.endpoint,
+            model=None,
+            param=param,
+            post_func=post_func,
         )
 
     def ls(self) -> list[T]:

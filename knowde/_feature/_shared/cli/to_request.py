@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import TYPE_CHECKING, Callable, ParamSpec, TypeVar
+from typing import TYPE_CHECKING, Callable, Optional, ParamSpec, TypeVar
 
-from knowde._feature._shared.cli.click_wrapper import to_click_wrappers
 from knowde._feature._shared.domain import DomainModel
 
 if TYPE_CHECKING:
@@ -26,18 +25,22 @@ class HttpMethod(Enum):
     PUT = "put"
     DELETE = "delete"
 
-    def request_func(
+    def request_func(  # noqa: PLR0913
         self,
         ep: Endpoint,
-        model: type[T],
         param: type[ApiParam],
+        model: type[T] | None = None,
         response_check: Callable[[Response], None] = default_check,
+        post_func: Optional[Callable] = None,
     ) -> Callable:
-        def req(**kwargs) -> T:  # noqa: ANN003
+        def req(**kwargs) -> T | None:  # noqa: ANN003
             method = getattr(ep, self.value)
-            res = method(**kwargs)
+            res = method(**param.for_method(**kwargs))
             response_check(res)
-            return model.model_validate(res.json)
+            if post_func is not None:
+                post_func(**kwargs)
+            if model is not None:
+                return model.model_validate(res.json())
+            return None
 
-        f = param.makefunc(f=req)
-        return to_click_wrappers(param).wraps(f)
+        return param.makefunc(f=req)

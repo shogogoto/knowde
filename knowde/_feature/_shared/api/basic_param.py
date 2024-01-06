@@ -6,7 +6,7 @@ from pydantic import Field
 from starlette.status import HTTP_204_NO_CONTENT
 from typing_extensions import override
 
-from knowde._feature._shared.api.param import ApiParam
+from knowde._feature._shared.api.param import ApiParam, HttpMethodParams
 
 
 class RemoveParam(ApiParam, frozen=True):
@@ -24,6 +24,16 @@ class RemoveParam(ApiParam, frozen=True):
             status_code=HTTP_204_NO_CONTENT,
             response_model=None,
         )(func)
+
+    @classmethod
+    @override
+    def for_method(cls, **kwargs) -> HttpMethodParams:  # noqa: ANN003
+        self = cls.model_validate(kwargs)
+        return {
+            "relative": self.uid.hex,
+            "json": None,
+            "params": None,
+        }
 
 
 class CompleteParam(ApiParam, frozen=True):
