@@ -4,7 +4,7 @@ from __future__ import annotations
 import click
 
 from knowde._feature._shared import view_options
-from knowde._feature._shared.cli.create_cli import CliGroupCreator
+from knowde._feature._shared.cli import set_basic_commands
 from knowde._feature._shared.cli.request import CliRequest
 from knowde._feature._shared.endpoint import Endpoint
 from knowde._feature.concept.domain import ChangeProp, Concept, ConceptProp
@@ -13,8 +13,14 @@ req_concept = CliRequest(
     endpoint=Endpoint.Concept,
     M=Concept,
 )
-concept_cli = CliGroupCreator(req=req_concept)("concept")
 
+
+@click.group("concept")
+def concept_cli() -> None:
+    pass
+
+
+set_basic_commands(concept_cli, ep=Endpoint.Concept, t_model=Concept)
 
 op_ex = click.option(
     "--explain",

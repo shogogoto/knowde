@@ -1,19 +1,21 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import click
 
 from knowde._feature._shared import view_options
-from knowde._feature._shared.cli.create_cli import CliGroupCreator
+from knowde._feature._shared.cli import set_basic_commands
+from knowde._feature._shared.endpoint import Endpoint
+from knowde._feature.reference.domain.domain import Reference
 
 from .repo import ref_req, req_add, req_change_name
 
-if TYPE_CHECKING:
-    from knowde._feature.reference.domain.domain import Reference
+
+@click.group("reference")
+def ref_cli() -> None:
+    pass
 
 
-ref_cli = CliGroupCreator(req=ref_req)("reference")
+set_basic_commands(ref_cli, ep=Endpoint.Reference, t_model=Reference)
 
 
 @ref_cli.command("add")
