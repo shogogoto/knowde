@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, ClassVar
 from uuid import UUID
 
 from fastapi import APIRouter
@@ -37,6 +37,7 @@ class RemoveParam(ApiParam, frozen=True):
 
 
 class CompleteParam(ApiParam, frozen=True):
+    relative: ClassVar[str] = "/relative"
     pref_uid: str = Field(
         min_length=1,
         description="uuidと前方一致で検索",
@@ -49,7 +50,17 @@ class CompleteParam(ApiParam, frozen=True):
         router: APIRouter,
         func: Callable,
     ) -> None:
-        router.get("/completion")(func)
+        router.get(cls.relative)(func)
+
+    @classmethod
+    @override
+    def for_method(cls, **kwargs) -> HttpMethodParams:  # noqa: ANN003
+        self = cls.model_validate(kwargs)
+        return {
+            "relative": cls.relative,
+            "json": None,
+            "params": self.model_dump(),
+        }
 
 
 class ListParam(ApiParam, frozen=True):

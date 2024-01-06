@@ -3,9 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable, Generic, Optional, TypeVar
 
 from pydantic import BaseModel
-from starlette.status import HTTP_200_OK
 
-from knowde._feature._shared.cli.each_args.domain import EachArgsWrapper
 from knowde._feature._shared.domain import DomainModel
 
 if TYPE_CHECKING:
@@ -17,10 +15,6 @@ if TYPE_CHECKING:
 
 
 T = TypeVar("T", bound=DomainModel)
-
-
-class CliRequestError(Exception):
-    pass
 
 
 class CliRequest(BaseModel, Generic[T], frozen=True):
@@ -66,21 +60,6 @@ class CliRequest(BaseModel, Generic[T], frozen=True):
             return_converter=lambda res: [self.M.model_validate(e) for e in res.json()],
         )
 
-    def ls(self) -> list[T]:
-        res = self.endpoint.get()
-        return [self.M.model_validate(e) for e in res.json()]
-
-    def complete(self, pref_uid: str) -> T:
-        res = self.endpoint.get(f"completion?pref_uid={pref_uid}")
-        if res.status_code != HTTP_200_OK:
-            msg = res.json()["detail"]["message"]
-            msg = f"[{res.status_code}]:{msg}"
-            raise CliRequestError(msg)
-        return self.M.model_validate(res.json())
-
-    def rm(self, uid: UUID) -> None:
-        self.endpoint.delete(uid.hex)
-
     def post(self, param: BaseModel) -> T:
         res = self.endpoint.post(json=param.model_dump())
         return self.M.model_validate(res.json())
@@ -88,9 +67,3 @@ class CliRequest(BaseModel, Generic[T], frozen=True):
     def put(self, uid: UUID, param: BaseModel) -> T:
         res = self.endpoint.put(uid.hex, json=param.model_dump())
         return self.M.model_validate(res.json())
-
-    def each_complete(self, arg_name: str) -> EachArgsWrapper:
-        return EachArgsWrapper(
-            converter=lambda pref_uid: self.complete(pref_uid).valid_uid,
-            arg_name=arg_name,
-        )
