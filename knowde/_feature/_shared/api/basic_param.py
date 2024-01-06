@@ -37,7 +37,7 @@ class RemoveParam(ApiParam, frozen=True):
 
 
 class CompleteParam(ApiParam, frozen=True):
-    relative: ClassVar[str] = "/relative"
+    relative: ClassVar[str] = "/completion"
     pref_uid: str = Field(
         min_length=1,
         description="uuidと前方一致で検索",
