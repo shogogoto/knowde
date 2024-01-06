@@ -4,6 +4,7 @@ import os
 
 from neomodel import config
 
+from .api import *  # noqa: F403
 from .cli import *  # noqa: F403
 from .domain import DomainModel  # noqa: F401
 from .endpoint import Endpoint  # noqa: F401

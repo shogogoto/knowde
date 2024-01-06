@@ -6,7 +6,7 @@ from uuid import UUID  # noqa: TCH003
 from fastapi import APIRouter, status
 from neomodel import db
 
-from knowde._feature._shared.api.crud import set_basic_router
+from knowde._feature._shared import set_basic_router
 from knowde._feature.concept.api.util import PREFIX, TAG
 from knowde._feature.concept.domain import (  # noqa: TCH001
     AdjacentConcept,

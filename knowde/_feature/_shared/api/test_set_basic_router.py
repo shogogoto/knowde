@@ -3,11 +3,12 @@ from fastapi.testclient import TestClient
 from neomodel import StringProperty
 from starlette.status import HTTP_404_NOT_FOUND
 
-from knowde._feature._shared.api.crud import set_basic_router
 from knowde._feature._shared.domain import DomainModel
 from knowde._feature._shared.errors.errors import ErrorHandlingMiddleware
 from knowde._feature._shared.repo.base import LBase
 from knowde._feature._shared.repo.util import LabelUtil
+
+from .set_basic_router import set_basic_router
 
 
 class LTestLabel(LBase):

@@ -4,8 +4,7 @@ from uuid import UUID  # noqa: TCH003
 
 from fastapi import APIRouter
 
-from knowde._feature._shared.api.crud import set_basic_router
-from knowde._feature._shared.endpoint import Endpoint
+from knowde._feature._shared import Endpoint, set_basic_router
 from knowde._feature.reference.api.param import (  # noqa: TCH001
     NameParam,
     SubReferenceParam,
