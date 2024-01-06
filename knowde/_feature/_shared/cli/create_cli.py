@@ -6,7 +6,7 @@ import click
 from click import Group
 from pydantic import BaseModel, Field
 
-from knowde._feature._shared.api.basic_param import RemoveParam
+from knowde._feature._shared.api.basic_param import ListParam, RemoveParam
 from knowde._feature._shared.cli.to_request import HttpMethod
 from knowde._feature._shared.cli.view.options import view_options
 from knowde._feature._shared.domain import DomainModel
@@ -38,9 +38,13 @@ class CliGroupCreator(BaseModel, Generic[T]):
             ),
         )
 
-        @_cli.command("ls")
-        @view_options
-        def _ls() -> list[T]:
-            return self.req.ls()
+        _cli.command("ls")(
+            view_options(
+                self.req.ls_method(
+                    HttpMethod.GET,
+                    ListParam,
+                ),
+            ),
+        )
 
         return _cli

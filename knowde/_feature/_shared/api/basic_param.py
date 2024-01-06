@@ -61,3 +61,12 @@ class ListParam(ApiParam, frozen=True):
         func: Callable,
     ) -> None:
         router.get("")(func)
+
+    @classmethod
+    @override
+    def for_method(cls, **kwargs) -> HttpMethodParams:  # noqa: ANN003
+        return {
+            "relative": None,
+            "json": None,
+            "params": kwargs,
+        }

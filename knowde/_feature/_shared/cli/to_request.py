@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import TYPE_CHECKING, Callable, Optional, ParamSpec, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, Optional, ParamSpec, TypeVar
 
 from knowde._feature._shared.domain import DomainModel
 
 if TYPE_CHECKING:
-    from httpx import Response
+    from requests import Response
 
     from knowde._feature._shared.api.param import ApiParam
     from knowde._feature._shared.endpoint import Endpoint
@@ -29,7 +29,7 @@ class HttpMethod(Enum):
         self,
         ep: Endpoint,
         param: type[ApiParam],
-        model: type[T] | None = None,
+        return_converter: Callable[[Response], Any],
         response_check: Callable[[Response], None] = default_check,
         post_func: Optional[Callable] = None,
     ) -> Callable:
@@ -39,8 +39,6 @@ class HttpMethod(Enum):
             response_check(res)
             if post_func is not None:
                 post_func(**kwargs)
-            if model is not None:
-                return model.model_validate(res.json())
-            return None
+            return return_converter(res)
 
         return param.makefunc(f=req)

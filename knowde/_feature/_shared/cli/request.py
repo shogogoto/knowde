@@ -35,9 +35,9 @@ class CliRequest(BaseModel, Generic[T], frozen=True):
     ) -> Callable:
         return m.request_func(
             ep=self.endpoint,
-            model=self.M,
             param=param,
             post_func=post_func,
+            return_converter=lambda res: self.M.model_validate(res.json()),
         )
 
     def noreturn_method(
@@ -48,9 +48,22 @@ class CliRequest(BaseModel, Generic[T], frozen=True):
     ) -> Callable:
         return m.request_func(
             ep=self.endpoint,
-            model=None,
             param=param,
             post_func=post_func,
+            return_converter=lambda _res: None,
+        )
+
+    def ls_method(
+        self,
+        m: HttpMethod,
+        param: type[ApiParam],
+        post_func: Optional[Callable] = None,
+    ) -> Callable:
+        return m.request_func(
+            ep=self.endpoint,
+            param=param,
+            post_func=post_func,
+            return_converter=lambda res: [self.M.model_validate(e) for e in res.json()],
         )
 
     def ls(self) -> list[T]:
