@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 
     from knowde._feature._shared.endpoint import Endpoint
 
+
 T = TypeVar("T", bound=DomainModel)
 
 

@@ -108,7 +108,7 @@ class AddParam(ApiParam, frozen=True):
 
 
 class ChangeParam(ApiParam, frozen=True):
-    pref_uid: str
+    uid: UUID
 
     @classmethod
     @override
@@ -123,8 +123,10 @@ class ChangeParam(ApiParam, frozen=True):
     @override
     def for_method(cls, **kwargs) -> HttpMethodParams:  # noqa: ANN003
         self = cls.model_validate(kwargs)
+        d = kwargs
+        del d["uid"]
         return {
-            "relative": None,
-            "json": self.model_dump(),
+            "relative": self.uid.hex,
+            "json": kwargs,
             "params": None,
         }

@@ -7,7 +7,6 @@ from pydantic import BaseModel, Field, field_serializer
 
 from knowde._feature._shared import DomainModel
 from knowde._feature._shared.api.basic_param import AddParam, ChangeParam
-from knowde._feature._shared.api.param import ApiParam
 
 
 class ConceptProp(AddParam, frozen=True):
@@ -41,13 +40,12 @@ class SaveProp(AdjacentIdsProp, ConceptProp, frozen=True):
         return v.hex
 
 
-class ChangeProp(ApiParam, frozen=True):
+class ChangeProp(BaseModel, frozen=True):
     """for change props."""
 
     name: str | None = Field(None, description="名前")
     explain: str | None = Field(None, description="説明文")
 
 
-class ConceptChangeParam(ChangeParam, frozen=True):
-    name: str | None = Field(None, description="名前")
-    explain: str | None = Field(None, description="説明文")
+class ConceptChangeParam(ChangeProp, ChangeParam, frozen=True):
+    pass

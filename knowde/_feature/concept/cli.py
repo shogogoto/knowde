@@ -4,12 +4,14 @@ from __future__ import annotations
 import click
 
 from knowde._feature._shared import view_options
+from knowde._feature._shared.api.basic_param import CompleteParam
 from knowde._feature._shared.cli import set_basic_commands
 from knowde._feature._shared.cli.click_wrapper import to_click_wrappers
 from knowde._feature._shared.cli.request import CliRequest
+from knowde._feature._shared.cli.to_request import HttpMethod
 from knowde._feature._shared.endpoint import Endpoint
 from knowde._feature.concept.domain import Concept, ConceptProp
-from knowde._feature.concept.domain.domain import ConceptChangeParam
+from knowde._feature.concept.domain.domain import ChangeProp, ConceptChangeParam
 
 req_concept = CliRequest(
     endpoint=Endpoint.Concept,
@@ -38,14 +40,19 @@ def add(
     explain: str | None,
 ) -> Concept:
     """Create concept."""
-    c = ConceptProp(name=name, explain=explain)
-    m = req_concept.post(c)
+    post = HttpMethod.POST.request_func(
+        ep=Endpoint.Concept,
+        param=ConceptProp,
+        return_converter=lambda res: Concept.model_validate(res.json()),
+    )
+    m = post(name=name, explain=explain)
     click.echo("Concept was created newly")
     return m
 
 
 @concept_cli.command("ch")
-@to_click_wrappers(ConceptChangeParam).wraps
+@to_click_wrappers(CompleteParam).wraps
+@to_click_wrappers(ChangeProp).wraps
 @view_options
 def change(
     pref_uid: str,
@@ -53,12 +60,16 @@ def change(
     explain: str | None,
 ) -> list[Concept]:
     """Change concept properties."""
-    prop = ConceptChangeParam(
-        pref_uid=pref_uid,
+    pre = utils.complete(pref_uid)
+    put = HttpMethod.PUT.request_func(
+        ep=Endpoint.Concept,
+        param=ConceptChangeParam,
+        return_converter=lambda res: Concept.model_validate(res.json()),
+    )
+    post = put(
+        uid=pre.valid_uid,
         name=name,
         explain=explain,
     )
-    pre = utils.complete(pref_uid)
-    post = req_concept.put(pre.valid_uid, prop)
     click.echo("Concept was changed 0 -> 1")
     return [pre, post]
