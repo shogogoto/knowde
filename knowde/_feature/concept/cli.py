@@ -5,9 +5,11 @@ import click
 
 from knowde._feature._shared import view_options
 from knowde._feature._shared.cli import set_basic_commands
+from knowde._feature._shared.cli.click_wrapper import to_click_wrappers
 from knowde._feature._shared.cli.request import CliRequest
 from knowde._feature._shared.endpoint import Endpoint
-from knowde._feature.concept.domain import ChangeProp, Concept, ConceptProp
+from knowde._feature.concept.domain import Concept, ConceptProp
+from knowde._feature.concept.domain.domain import ConceptChangeParam
 
 req_concept = CliRequest(
     endpoint=Endpoint.Concept,
@@ -20,22 +22,16 @@ def concept_cli() -> None:
     pass
 
 
-set_basic_commands(concept_cli, ep=Endpoint.Concept, t_model=Concept)
-
-op_ex = click.option(
-    "--explain",
-    "-ex",
-    default=None,
-    type=click.STRING,
-    show_default=True,
-    help="説明文",
+_, utils = set_basic_commands(
+    concept_cli,
+    ep=Endpoint.Concept,
+    t_model=Concept,
 )
 
 
 # createは打数が多いからやめた
 @concept_cli.command("add")
-@click.argument("name", nargs=1)
-@op_ex
+@to_click_wrappers(ConceptProp).wraps
 @view_options
 def add(
     name: str,
@@ -49,14 +45,7 @@ def add(
 
 
 @concept_cli.command("ch")
-@click.argument("pref_uid", nargs=1, type=click.STRING)
-@click.option(
-    "--name",
-    "-n",
-    default=None,
-    type=click.STRING,
-)
-@op_ex
+@to_click_wrappers(ConceptChangeParam).wraps
 @view_options
 def change(
     pref_uid: str,
@@ -64,11 +53,12 @@ def change(
     explain: str | None,
 ) -> list[Concept]:
     """Change concept properties."""
-    prop = ChangeProp(
+    prop = ConceptChangeParam(
+        pref_uid=pref_uid,
         name=name,
         explain=explain,
     )
-    pre = req_concept.complete(pref_uid)
+    pre = utils.complete(pref_uid)
     post = req_concept.put(pre.valid_uid, prop)
     click.echo("Concept was changed 0 -> 1")
     return [pre, post]

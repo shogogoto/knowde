@@ -1,7 +1,14 @@
 from __future__ import annotations
 
 from inspect import Parameter, signature
-from typing import TYPE_CHECKING, Callable, Generic, ParamSpec, TypedDict, TypeVar
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    Generic,
+    ParamSpec,
+    TypedDict,
+    TypeVar,
+)
 
 from makefun import create_function
 from pydantic import BaseModel

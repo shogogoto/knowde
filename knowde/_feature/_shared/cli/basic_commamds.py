@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, Callable, Generic, NamedTuple, TypeVar
 
 import click
 from starlette.status import HTTP_200_OK
@@ -28,11 +28,15 @@ class CliRequestError(Exception):
     pass
 
 
+class BasicUtils(NamedTuple, Generic[T]):
+    complete: Callable[[str], T]
+
+
 def set_basic_commands(
     g: click.Group,
     ep: Endpoint,
     t_model: type[DomainModel],
-) -> click.Group:
+) -> tuple[click.Group, BasicUtils]:
     def _complete_check(res: Response) -> None:
         if res.status_code != HTTP_200_OK:
             msg = res.json()["detail"]["message"]
@@ -68,4 +72,5 @@ def set_basic_commands(
             ),
         ),
     )
-    return g
+
+    return g, BasicUtils(complete)

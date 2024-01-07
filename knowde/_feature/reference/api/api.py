@@ -24,6 +24,8 @@ ref_router = set_basic_router(
     APIRouter(prefix=_EP.prefix, tags=[_EP.single_form]),
 )
 
+# RemoveParam.api(router, util.delete, "delete")
+
 
 @ref_router.post("")
 def add_ref(p: NameParam) -> Reference:

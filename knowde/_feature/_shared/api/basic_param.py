@@ -1,7 +1,7 @@
 from typing import Callable, ClassVar
 from uuid import UUID
 
-from fastapi import APIRouter
+from fastapi import APIRouter, status
 from pydantic import Field
 from starlette.status import HTTP_204_NO_CONTENT
 from typing_extensions import override
@@ -80,4 +80,51 @@ class ListParam(ApiParam, frozen=True):
             "relative": None,
             "json": None,
             "params": kwargs,
+        }
+
+
+class AddParam(ApiParam, frozen=True):
+    @classmethod
+    @override
+    def api_impl(
+        cls,
+        router: APIRouter,
+        func: Callable,
+    ) -> None:
+        router.post(
+            "",
+            status_code=status.HTTP_201_CREATED,
+        )(func)
+
+    @classmethod
+    @override
+    def for_method(cls, **kwargs) -> HttpMethodParams:  # noqa: ANN003
+        self = cls.model_validate(kwargs)
+        return {
+            "relative": None,
+            "json": self.model_dump(),
+            "params": None,
+        }
+
+
+class ChangeParam(ApiParam, frozen=True):
+    pref_uid: str
+
+    @classmethod
+    @override
+    def api_impl(
+        cls,
+        router: APIRouter,
+        func: Callable,
+    ) -> None:
+        router.put("")(func)
+
+    @classmethod
+    @override
+    def for_method(cls, **kwargs) -> HttpMethodParams:  # noqa: ANN003
+        self = cls.model_validate(kwargs)
+        return {
+            "relative": None,
+            "json": self.model_dump(),
+            "params": None,
         }
