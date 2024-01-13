@@ -1,26 +1,23 @@
 """concept domain."""
 from __future__ import annotations
 
-from typing import TypeVar
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, field_serializer
 
 from knowde._feature._shared import DomainModel
+from knowde._feature._shared.api.basic_param import AddParam, ChangeParam
 
 
-class ConceptProp(BaseModel, frozen=True):
+class ConceptProp(AddParam, frozen=True):
     """concept properties."""
 
     name: str
-    explain: str | None = None
+    explain: str | None = Field(None, description="説明文")
 
 
 class Concept(ConceptProp, DomainModel, frozen=True):
     pass
-
-
-T = TypeVar("T")
 
 
 class AdjacentIdsProp(BaseModel, frozen=True):
@@ -46,5 +43,9 @@ class SaveProp(AdjacentIdsProp, ConceptProp, frozen=True):
 class ChangeProp(BaseModel, frozen=True):
     """for change props."""
 
-    name: str | None = None
-    explain: str | None = None
+    name: str | None = Field(None, description="名前")
+    explain: str | None = Field(None, description="説明文")
+
+
+class ConceptChangeParam(ChangeProp, ChangeParam, frozen=True):
+    pass

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import Any, Generic, TypeVar
+from uuid import UUID  # noqa: TCH003
 
 from neomodel import DoesNotExist
 from pydantic import BaseModel
@@ -14,9 +15,6 @@ from knowde._feature._shared.errors.domain import (
 
 from .base import LBase
 from .label import Label, Labels
-
-if TYPE_CHECKING:
-    from uuid import UUID
 
 L = TypeVar("L", bound=LBase)
 M = TypeVar("M", bound=DomainModel)
@@ -41,12 +39,13 @@ class LabelUtil(BaseModel, Generic[L, M], frozen=True):
 
     def complete(self, pref_uid: str) -> Label[L, M]:
         lbs = self.suggest(pref_uid)
-        if len(lbs) == 0:
+        n = len(lbs)
+        if n == 0:
             msg = "ヒットしませんでした."
             raise CompleteNotFoundError(msg)
-        if len(lbs) > 1:
+        if n > 1:
             uids = [e.uid for e in lbs]
-            msg = f"{uids}がヒットしました.1件がヒットするように入力桁を増やしてみてね"
+            msg = f"{n}件ヒット.入力桁を増やしてみてね.{uids}"
             raise CompleteMultiHitError(msg)
         return self.to_label(lbs[0])
 

@@ -18,6 +18,11 @@ class Endpoint(Enum):
     Reference = "references"
 
     @property
+    def prefix(self) -> str:
+        """REST API用."""
+        return f"/{self.value}"
+
+    @property
     def single_form(self) -> str:
         """単数形."""
         return Inflector().singularize(self.value)
@@ -38,41 +43,54 @@ class Endpoint(Enum):
         self,
         relative: str | None = None,
         params: dict | None = None,
+        json: object = None,
     ) -> requests.Response:
         """Get of RESTful API."""
         return requests.get(
             self.__url(relative),
             timeout=TIMEOUT,
             params=params,
+            json=json,
         )
 
-    def delete(self, relative: str) -> requests.Response:
+    def delete(
+        self,
+        relative: str,
+        params: dict | None = None,
+        json: object = None,
+    ) -> requests.Response:
         """Delete of Restful API."""
         return requests.delete(
             self.__url(relative),
             timeout=TIMEOUT * 3,
+            params=params,
+            json=json,
         )
 
     def post(
         self,
         relative: str | None = None,
+        params: dict | None = None,
         json: object = None,
     ) -> requests.Response:
         """Post of Restful API."""
         return requests.post(
             self.__url(relative),
             timeout=TIMEOUT * 3,
+            params=params,
             json=json,
         )
 
     def put(
         self,
         relative: str | None = None,
+        params: dict | None = None,
         json: object = None,
     ) -> requests.Response:
         """Post of Restful API."""
         return requests.put(
             self.__url(relative),
             timeout=TIMEOUT * 3,
+            params=params,
             json=json,
         )
