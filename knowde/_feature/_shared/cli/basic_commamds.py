@@ -112,23 +112,12 @@ def set_basic_commands(
         ) -> list[t_model]:
             """Change concept properties."""
             pre = complete(pref_uid)
-            # print(pre)
-            # print(kwargs)
-
-            def ret_cvt(res: Response) -> t_model:
-                # print(res.status_code)
-                # print(res.json())
-                return t_model.model_validate(res.json())
-
             put = HttpMethod.PUT.request_func(
                 ep=ep,
                 param=t_param,
                 return_converter=lambda res: t_model.model_validate(res.json()),
             )
-            # print(signature(put))
-            # print(signature(put))
-            # print(signature(put))
-            post = put(**kwargs)
+            post = put(uid=pre.valid_uid, **kwargs)
             click.echo(message)
             return [pre, post]
 

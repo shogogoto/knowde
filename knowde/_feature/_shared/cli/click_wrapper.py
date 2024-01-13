@@ -57,12 +57,13 @@ class ClickWrappers(RootModel[list[Wrapper]], frozen=True):
 
 def to_click_wrappers(
     t_param: type[BaseModel],
+    exclude: bool = True,  # noqa: FBT001 FBT002
 ) -> ClickWrappers:
     """click.{argument,option}のリストを返す."""
     params = []
 
     for k, v in t_param.model_fields.items():
-        if v.exclude:
+        if exclude and v.exclude:
             continue
         t = v.annotation
         if isclass(t) and BaseModel in t.__mro__:

@@ -123,7 +123,9 @@ class ChangeParam(ApiParam, frozen=True):
     @override
     def for_method(cls, **kwargs) -> HttpMethodParams:  # noqa: ANN003
         self = cls.model_validate(kwargs)
-        d = self.model_dump(exclude={"uid"})
+        d = self.model_dump()
+        d = {k: v for k, v in d.items() if v is not None}
+        d["uid"] = str(self.uid)
         return {
             "relative": self.uid.hex,
             "json": d,
