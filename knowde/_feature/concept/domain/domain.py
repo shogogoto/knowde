@@ -48,4 +48,4 @@ class ChangeProp(BaseModel, frozen=True):
 
 
 class ConceptChangeParam(ChangeProp, ChangeParam, frozen=True):
-    pass
+    uid: UUID

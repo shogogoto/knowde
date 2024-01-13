@@ -62,6 +62,8 @@ def to_click_wrappers(
     params = []
 
     for k, v in t_param.model_fields.items():
+        if v.exclude:
+            continue
         t = v.annotation
         if isclass(t) and BaseModel in t.__mro__:
             ws = to_click_wrappers(t)

@@ -1,15 +1,18 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Generic, NamedTuple, TypeVar
+from typing import TYPE_CHECKING, Callable, Generic, NamedTuple, Optional, TypeVar
 
 import click
 from starlette.status import HTTP_200_OK
 
 from knowde._feature._shared.api.basic_param import (
+    AddParam,
+    ChangeParam,
     CompleteParam,
     ListParam,
     RemoveParam,
 )
+from knowde._feature._shared.cli.click_wrapper import to_click_wrappers
 from knowde._feature._shared.domain import DomainModel
 
 from .each_args import each_args
@@ -31,6 +34,8 @@ class CliRequestError(Exception):
 
 class BasicUtils(NamedTuple, Generic[T]):
     complete: Callable[[str], T]
+    create_add: Callable[[type[AddParam], str], Callable]
+    create_change: Callable[[type[ChangeParam], str], Callable]
 
 
 def set_basic_commands(
@@ -38,6 +43,8 @@ def set_basic_commands(
     ep: Endpoint,
     t_model: type[DomainModel],
 ) -> tuple[click.Group, BasicUtils]:
+    """エンドポイントと返り値の型を束縛した関数も返す."""
+
     def _complete_check(res: Response) -> None:
         if res.status_code != HTTP_200_OK:
             msg = res.json()["detail"]["message"]
@@ -74,4 +81,61 @@ def set_basic_commands(
         ),
     )
 
-    return g, BasicUtils(complete)
+    def create_add(
+        t_param: type[AddParam],
+        message: Optional[str] = None,
+    ) -> Callable:
+        @to_click_wrappers(t_param).wraps
+        @view_options
+        def _add(**kwargs) -> t_model:  # noqa: ANN003
+            post = HttpMethod.POST.request_func(
+                ep=ep,
+                param=t_param,
+                return_converter=lambda res: t_model.model_validate(res.json()),
+            )
+            m = post(**kwargs)
+            click.echo(message)
+            return m
+
+        return _add
+
+    def create_change(
+        t_param: type[ChangeParam],
+        message: Optional[str] = None,
+    ) -> Callable:
+        @to_click_wrappers(CompleteParam).wraps
+        @to_click_wrappers(t_param).wraps
+        @view_options
+        def _change(
+            pref_uid: str,
+            **kwargs,  # noqa: ANN003
+        ) -> list[t_model]:
+            """Change concept properties."""
+            pre = complete(pref_uid)
+            # print(pre)
+            # print(kwargs)
+
+            def ret_cvt(res: Response) -> t_model:
+                # print(res.status_code)
+                # print(res.json())
+                return t_model.model_validate(res.json())
+
+            put = HttpMethod.PUT.request_func(
+                ep=ep,
+                param=t_param,
+                return_converter=lambda res: t_model.model_validate(res.json()),
+            )
+            # print(signature(put))
+            # print(signature(put))
+            # print(signature(put))
+            post = put(**kwargs)
+            click.echo(message)
+            return [pre, post]
+
+        return _change
+
+    return g, BasicUtils(
+        complete,
+        create_add,
+        create_change,
+    )

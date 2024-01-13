@@ -108,7 +108,7 @@ class AddParam(ApiParam, frozen=True):
 
 
 class ChangeParam(ApiParam, frozen=True):
-    uid: UUID
+    uid: UUID = Field(exclude=True)
 
     @classmethod
     @override
@@ -117,16 +117,15 @@ class ChangeParam(ApiParam, frozen=True):
         router: APIRouter,
         func: Callable,
     ) -> None:
-        router.put("")(func)
+        router.put("/{uid}")(func)
 
     @classmethod
     @override
     def for_method(cls, **kwargs) -> HttpMethodParams:  # noqa: ANN003
         self = cls.model_validate(kwargs)
-        d = kwargs
-        del d["uid"]
+        d = self.model_dump(exclude={"uid"})
         return {
             "relative": self.uid.hex,
-            "json": kwargs,
+            "json": d,
             "params": None,
         }

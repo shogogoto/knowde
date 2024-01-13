@@ -3,20 +3,14 @@ from __future__ import annotations
 
 import click
 
-from knowde._feature._shared import view_options
 from knowde._feature._shared.api.basic_param import CompleteParam
 from knowde._feature._shared.cli import set_basic_commands
 from knowde._feature._shared.cli.click_wrapper import to_click_wrappers
-from knowde._feature._shared.cli.request import CliRequest
 from knowde._feature._shared.cli.to_request import HttpMethod
+from knowde._feature._shared.cli.view.options import view_options
 from knowde._feature._shared.endpoint import Endpoint
 from knowde._feature.concept.domain import Concept, ConceptProp
 from knowde._feature.concept.domain.domain import ChangeProp, ConceptChangeParam
-
-req_concept = CliRequest(
-    endpoint=Endpoint.Concept,
-    M=Concept,
-)
 
 
 @click.group("concept")
@@ -31,23 +25,15 @@ _, utils = set_basic_commands(
 )
 
 
-# createは打数が多いからやめた
-@concept_cli.command("add")
-@to_click_wrappers(ConceptProp).wraps
-@view_options
-def add(
-    name: str,
-    explain: str | None,
-) -> Concept:
-    """Create concept."""
-    post = HttpMethod.POST.request_func(
-        ep=Endpoint.Concept,
-        param=ConceptProp,
-        return_converter=lambda res: Concept.model_validate(res.json()),
-    )
-    m = post(name=name, explain=explain)
-    click.echo("Concept was created newly")
-    return m
+# createではなくaddの方がは打数が少ない
+concept_cli.command("add")(
+    utils.create_add(ConceptProp, "Concept was created newly."),
+)
+
+
+# concept_cli.command("ch")(
+#     utils.create_change(ChangeProp, "Concept was changed 0 -> 1"),
+# )
 
 
 @concept_cli.command("ch")

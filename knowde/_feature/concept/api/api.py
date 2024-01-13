@@ -41,5 +41,5 @@ def _put(
     concept_id: UUID,
     prop: ChangeProp,
 ) -> Concept:
-    """Delete Concept."""
+    """Change Concept."""
     return change_concept(concept_id, prop.name, prop.explain)

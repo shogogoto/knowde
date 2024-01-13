@@ -19,3 +19,7 @@ def test_signature() -> None:
 
     f = OneParam.makefunc(x)
     assert f(p1="p1", p2=0) == Model(p3="p1", p4=0)
+
+
+def test_makefunc() -> None:
+    pass

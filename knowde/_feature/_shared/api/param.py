@@ -44,6 +44,8 @@ class ApiParam(BaseModel, Generic[T], frozen=True):
     ) -> Callable[P, T]:
         params = []
         for k, v in cls.model_fields.items():
+            if v.exclude:
+                continue
             kind = Parameter.POSITIONAL_OR_KEYWORD
             p = Parameter(k, kind=kind, annotation=v.annotation)
             params.append(p)
@@ -66,6 +68,7 @@ class ApiParam(BaseModel, Generic[T], frozen=True):
         name: str | None = None,
         doc: str | None = None,
     ) -> APIRouter:
+        """FastAPIでエンドポイントを定義."""
         f = cls.makefunc(func, func_name=name, doc=doc)
         cls.api_impl(router, f)
         return router

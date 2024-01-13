@@ -7,7 +7,7 @@ from knowde._feature._shared.cli import set_basic_commands
 from knowde._feature._shared.endpoint import Endpoint
 from knowde._feature.reference.domain.domain import Reference
 
-from .repo import ref_req, req_add, req_change_name
+from .repo import req_add, req_change_name
 
 
 @click.group("reference")
@@ -15,7 +15,7 @@ def ref_cli() -> None:
     pass
 
 
-set_basic_commands(ref_cli, ep=Endpoint.Reference, t_model=Reference)
+_, utils = set_basic_commands(ref_cli, ep=Endpoint.Reference, t_model=Reference)
 
 
 @ref_cli.command("add")
@@ -32,7 +32,7 @@ def _change(
     pref_uid: str,
     name: str,
 ) -> list[Reference]:
-    pre = ref_req.complete(pref_uid)
+    pre = utils.complete(pref_uid)
     post = req_change_name(pre.valid_uid, name)
     click.echo("Reference was changed")
     return [pre, post]
