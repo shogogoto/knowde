@@ -19,6 +19,7 @@ class LConcept(LBase):
     """neo4j label."""
 
     __label__ = L
+    name = StringProperty()
     explain = StringProperty()
 
     src = RelationshipTo(CLASS_NAME, "refer")

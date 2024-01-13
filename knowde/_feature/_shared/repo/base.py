@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from neomodel import DateTimeProperty, StringProperty, StructuredNode, UniqueIdProperty
+from neomodel import DateTimeProperty, StructuredNode, UniqueIdProperty
 
 from knowde._feature._shared.timeutil import jst_now
 
@@ -8,7 +8,6 @@ from knowde._feature._shared.timeutil import jst_now
 class LBase(StructuredNode):
     __abstract_node__ = True
     uid = UniqueIdProperty()
-    name = StringProperty()
     created = DateTimeProperty()
     updated = DateTimeProperty()
 
