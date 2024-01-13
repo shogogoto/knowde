@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from inspect import Parameter, signature
 from typing import (
     TYPE_CHECKING,
     Callable,
@@ -10,10 +9,10 @@ from typing import (
     TypeVar,
 )
 
-from makefun import create_function
 from pydantic import BaseModel
 
 from knowde._feature._shared.domain import DomainModel
+from knowde._feature._shared.param import parametrize
 
 if TYPE_CHECKING:
     from fastapi import APIRouter
@@ -36,31 +35,6 @@ class ApiParam(BaseModel, Generic[T], frozen=True):
             setattr(lb, k, v)
 
     @classmethod
-    def makefunc(
-        cls,
-        f: Callable[P, T],
-        func_name: str | None = None,
-        doc: str | None = None,
-    ) -> Callable[P, T]:
-        params = []
-        for k, v in cls.model_fields.items():
-            if v.exclude:
-                continue
-            kind = Parameter.POSITIONAL_OR_KEYWORD
-            p = Parameter(k, kind=kind, annotation=v.annotation)
-            params.append(p)
-
-        def impl(**kwargs) -> T:  # noqa: ANN003
-            return f(**kwargs)
-
-        return create_function(
-            signature(f).replace(parameters=params),
-            impl,
-            func_name=func_name,
-            doc=doc,
-        )
-
-    @classmethod
     def api(
         cls,
         router: APIRouter,
@@ -69,7 +43,7 @@ class ApiParam(BaseModel, Generic[T], frozen=True):
         doc: str | None = None,
     ) -> APIRouter:
         """FastAPIでエンドポイントを定義."""
-        f = cls.makefunc(func, func_name=name, doc=doc)
+        f = parametrize(cls, func, func_name=name, doc=doc, exclude=True)
         cls.api_impl(router, f)
         return router
 

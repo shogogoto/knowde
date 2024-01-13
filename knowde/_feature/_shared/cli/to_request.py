@@ -4,6 +4,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, Any, Callable, Optional, ParamSpec, TypeVar
 
 from knowde._feature._shared.domain import DomainModel
+from knowde._feature._shared.param import parametrize
 
 if TYPE_CHECKING:
     from requests import Response
@@ -15,7 +16,7 @@ T = TypeVar("T", bound=DomainModel)
 P = ParamSpec("P")
 
 
-def default_check(_res: Response) -> None:
+def _default_check(_res: Response) -> None:
     pass
 
 
@@ -30,7 +31,7 @@ class HttpMethod(Enum):
         ep: Endpoint,
         param: type[ApiParam],
         return_converter: Callable[[Response], Any],
-        response_check: Callable[[Response], None] = default_check,
+        response_check: Callable[[Response], None] = _default_check,
         post_func: Optional[Callable] = None,
     ) -> Callable:
         def req(**kwargs) -> T | None:  # noqa: ANN003
@@ -41,4 +42,4 @@ class HttpMethod(Enum):
                 post_func(**kwargs)
             return return_converter(res)
 
-        return param.makefunc(f=req)
+        return parametrize(param, f=req)
