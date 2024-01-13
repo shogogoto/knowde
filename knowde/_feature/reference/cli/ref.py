@@ -2,12 +2,10 @@ from __future__ import annotations
 
 import click
 
-from knowde._feature._shared import view_options
+from knowde._feature._shared.api.basic_param import AddParam, ChangeParam
 from knowde._feature._shared.cli import set_basic_commands
 from knowde._feature._shared.endpoint import Endpoint
 from knowde._feature.reference.domain.domain import Reference
-
-from .repo import req_add, req_change_name
 
 
 @click.group("reference")
@@ -18,21 +16,19 @@ def ref_cli() -> None:
 _, utils = set_basic_commands(ref_cli, ep=Endpoint.Reference, t_model=Reference)
 
 
-@ref_cli.command("add")
-@click.argument("name", nargs=1)
-def _add(name: str) -> Reference:
-    return req_add(name)
+class NameParam(AddParam, frozen=True):
+    name: str
 
 
-@ref_cli.command("ch")
-@click.argument("pref_uid", nargs=1, type=click.STRING)
-@click.argument("name", nargs=1, type=click.STRING)
-@view_options
-def _change(
-    pref_uid: str,
-    name: str,
-) -> list[Reference]:
-    pre = utils.complete(pref_uid)
-    post = req_change_name(pre.valid_uid, name)
-    click.echo("Reference was changed")
-    return [pre, post]
+ref_cli.command("add")(
+    utils.create_add(NameParam, "Reference was created newly."),
+)
+
+
+class RenameParam(ChangeParam, frozen=True):
+    name: str | None
+
+
+ref_cli.command("ch")(
+    utils.create_change(RenameParam, "Reference was changed 0 -> 1"),
+)
