@@ -20,7 +20,7 @@ from knowde._feature.concept.repo.repo import (
     save_concept,
 )
 
-concept_router = set_basic_router(
+concept_router, _ = set_basic_router(
     util_concept,
     APIRouter(prefix=PREFIX, tags=[TAG]),
 )

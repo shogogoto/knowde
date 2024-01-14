@@ -62,7 +62,8 @@ def to_click_wrappers(
     """click.{argument,option}のリストを返す."""
     params = []
 
-    for k, v in t_param.model_fields.items():
+    # 逆順にしないと、commandのhelpがmodel propの逆順になってしまう
+    for k, v in reversed(t_param.model_fields.items()):
         if exclude and v.exclude:
             continue
         t = v.annotation

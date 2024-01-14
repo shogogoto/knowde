@@ -34,7 +34,7 @@ class CliRequestError(Exception):
 
 class CommandHooks(NamedTuple, Generic[T]):
     complete: Callable[[str], T]
-    create_add: Callable[[str, type[BaseModel], str], Callable]
+    create_add: Callable[[str, type[BaseModel], str | None], Callable]
     create_change: Callable[[type[ChangeParam], str], Callable]
 
 
@@ -116,12 +116,26 @@ def create_group(
         ) -> list[t_model]:
             """Change concept properties."""
             pre = complete(pref_uid)
-            put = HttpMethod.PUT.request_func(
-                ep=ep,
-                param=t_param,
-                return_converter=lambda res: t_model.model_validate(res.json()),
+            # put = HttpMethod.PUT.request_func(
+            #     ep=ep,
+            #     param=t_param,
+            #     return_converter=lambda res: t_model.model_validate(res.json()),
+            # )
+            # post = put(uid=pre.valid_uid, **kwargs)
+            # print(kwargs)
+            # print(t_param.for_method(**kwargs))
+            # print(t_param.model_validate(uid=pre.valid_uid, **kwargs))
+            d = t_param.model_validate(kwargs).model_dump()
+            # print(d)
+            d["uid"] = str(pre.valid_uid)
+            res = ep.put(
+                relative=pre.valid_uid.hex,
+                json=d,
             )
-            post = put(uid=pre.valid_uid, **kwargs)
+            p = t_param.validate(kwargs)
+            res = ep.put(json=p.model_dump())
+            post = t_model.model_validate(res.json())
+            # click.echo(f"{t_model.__name__} was created newly.")
             click.echo(message)
             return [pre, post]
 

@@ -6,7 +6,7 @@ from knowde._feature._shared.endpoint import Endpoint
 from knowde._feature.concept.domain import Concept, ConceptProp
 from knowde._feature.concept.domain.domain import ConceptChangeParam
 
-concept_cli, utils = create_group(
+concept_cli, hooks = create_group(
     "concept",
     ep=Endpoint.Concept,
     t_model=Concept,
@@ -14,11 +14,9 @@ concept_cli, utils = create_group(
 
 
 # createではなくaddの方がは打数が少ない
-concept_cli.command("add")(
-    utils.create_add(ConceptProp, "Concept was created newly."),
-)
+hooks.create_add("add", ConceptProp, "Concept was created newly.")
 
 
 concept_cli.command("ch")(
-    utils.create_change(ConceptChangeParam, "Concept was changed 0 -> 1"),
+    hooks.create_change(ConceptChangeParam, "Concept was changed 0 -> 1"),
 )

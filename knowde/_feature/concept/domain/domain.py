@@ -47,5 +47,5 @@ class ChangeProp(BaseModel, frozen=True):
     explain: str | None = Field(None, description="説明文")
 
 
-class ConceptChangeParam(ChangeProp, ChangeParam, frozen=True):
+class ConceptChangeParam(ChangeParam, ChangeProp, frozen=True):
     pass

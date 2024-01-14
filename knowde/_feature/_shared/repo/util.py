@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Generic, TypeVar
+from typing import Generic, TypeVar
 from uuid import UUID  # noqa: TCH003
 
 from neomodel import DoesNotExist
@@ -64,6 +64,6 @@ class LabelUtil(BaseModel, Generic[L, M], frozen=True):
     def delete(self, uid: UUID) -> None:
         self.find_one(uid).label.delete()
 
-    def create(self, **kwargs: dict[str, Any]) -> Label[L, M]:
+    def create(self, **kwargs) -> Label[L, M]:  # noqa: ANN003
         saved = self.label(**kwargs).save()
         return self.to_label(saved)

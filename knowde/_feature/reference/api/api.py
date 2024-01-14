@@ -19,12 +19,10 @@ from knowde._feature.reference.repo.node import (
 
 _EP = Endpoint.Reference
 
-ref_router = set_basic_router(
+ref_router, _ = set_basic_router(
     ref_util,
     APIRouter(prefix=_EP.prefix, tags=[_EP.single_form]),
 )
-
-# RemoveParam.api(router, util.delete, "delete")
 
 
 @ref_router.post("")
