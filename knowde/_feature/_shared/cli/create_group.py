@@ -6,7 +6,6 @@ import click
 from starlette.status import HTTP_200_OK
 
 from knowde._feature._shared.api.basic_param import (
-    AddParam,
     ChangeParam,
     CompleteParam,
     ListParam,
@@ -20,6 +19,7 @@ from .to_request import HttpMethod
 from .view.options import view_options
 
 if TYPE_CHECKING:
+    from pydantic import BaseModel
     from requests import Response
 
     from knowde._feature._shared.endpoint import Endpoint
@@ -34,7 +34,7 @@ class CliRequestError(Exception):
 
 class CommandHooks(NamedTuple, Generic[T]):
     complete: Callable[[str], T]
-    create_add: Callable[[type[AddParam], str], Callable]
+    create_add: Callable[[str, type[BaseModel], str], Callable]
     create_change: Callable[[type[ChangeParam], str], Callable]
 
 
@@ -87,19 +87,18 @@ def create_group(
     )
 
     def create_add(
-        t_param: type[AddParam],
-        message: Optional[str] = None,
+        command_name: str,
+        t_param: type[BaseModel],
+        c_help: str | None = None,
     ) -> Callable:
+        @g.command(command_name, help=c_help)
         @to_click_wrappers(t_param).wraps
         @view_options
         def _add(**kwargs) -> t_model:  # noqa: ANN003
-            post = HttpMethod.POST.request_func(
-                ep=ep,
-                param=t_param,
-                return_converter=lambda res: t_model.model_validate(res.json()),
-            )
-            m = post(**kwargs)
-            click.echo(message)
+            p = t_param.validate(kwargs)
+            res = ep.post(json=p.model_dump())
+            m = t_model.model_validate(res.json())
+            click.echo(f"{t_model.__name__} was created newly.")
             return m
 
         return _add
