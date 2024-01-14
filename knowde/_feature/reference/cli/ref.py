@@ -1,19 +1,15 @@
 from __future__ import annotations
 
-import click
-
 from knowde._feature._shared.api.basic_param import AddParam, ChangeParam
-from knowde._feature._shared.cli import set_basic_commands
+from knowde._feature._shared.cli import create_group
 from knowde._feature._shared.endpoint import Endpoint
 from knowde._feature.reference.domain.domain import Reference
 
-
-@click.group("reference")
-def ref_cli() -> None:
-    pass
-
-
-_, utils = set_basic_commands(ref_cli, ep=Endpoint.Reference, t_model=Reference)
+ref_cli, utils = create_group(
+    "reference",
+    ep=Endpoint.Reference,
+    t_model=Reference,
+)
 
 
 class NameParam(AddParam, frozen=True):

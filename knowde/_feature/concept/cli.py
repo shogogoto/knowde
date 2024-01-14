@@ -1,21 +1,13 @@
 """concept cli."""
 from __future__ import annotations
 
-import click
-
-from knowde._feature._shared.cli import set_basic_commands
+from knowde._feature._shared.cli import create_group
 from knowde._feature._shared.endpoint import Endpoint
 from knowde._feature.concept.domain import Concept, ConceptProp
 from knowde._feature.concept.domain.domain import ConceptChangeParam
 
-
-@click.group("concept")
-def concept_cli() -> None:
-    pass
-
-
-_, utils = set_basic_commands(
-    concept_cli,
+concept_cli, utils = create_group(
+    "concept",
     ep=Endpoint.Concept,
     t_model=Concept,
 )

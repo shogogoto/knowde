@@ -32,18 +32,23 @@ class CliRequestError(Exception):
     pass
 
 
-class BasicUtils(NamedTuple, Generic[T]):
+class CommandHooks(NamedTuple, Generic[T]):
     complete: Callable[[str], T]
     create_add: Callable[[type[AddParam], str], Callable]
     create_change: Callable[[type[ChangeParam], str], Callable]
 
 
-def set_basic_commands(
-    g: click.Group,
+def create_group(
+    name: str,
     ep: Endpoint,
     t_model: type[DomainModel],
-) -> tuple[click.Group, BasicUtils]:
+    g_help: str | None = None,
+) -> tuple[click.Group, CommandHooks]:
     """エンドポイントと返り値の型を束縛した関数も返す."""
+
+    @click.group(name, help=g_help)
+    def g() -> None:
+        pass
 
     def _complete_check(res: Response) -> None:
         if res.status_code != HTTP_200_OK:
@@ -123,7 +128,7 @@ def set_basic_commands(
 
         return _change
 
-    return g, BasicUtils(
+    return g, CommandHooks(
         complete,
         create_add,
         create_change,
