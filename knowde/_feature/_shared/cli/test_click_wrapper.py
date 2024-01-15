@@ -107,10 +107,10 @@ def test_nested_model() -> None:
     ps = _dummy.params
     assert ps[0].name == "p"
     assert ps[0].param_type_name == "argument"
-    assert ps[1].name == "n1"
-    assert ps[1].param_type_name == "argument"
-    assert ps[2].name == "n2"
-    assert ps[2].param_type_name == "option"
+    assert ps[2].name == "n1"
+    assert ps[2].param_type_name == "argument"
+    assert ps[1].name == "n2"
+    assert ps[1].param_type_name == "option"
 
     runner = CliRunner()
     result = runner.invoke(_dummy, ["True", "0", "--n2", "n2"])
