@@ -33,17 +33,17 @@ def test_is_nested() -> None:
 
 
 def test_option() -> None:
-    assert not is_option(OneModel.model_fields["pstr"])
-    assert is_option(OneModel.model_fields["pstr_"])
-    assert is_option(OneModel.model_fields["pstr__"])
-    assert not is_option(OneModel.model_fields["nested"])
-    assert not is_option(OneModel.model_fields["nested_"])
+    assert not is_option(OneModel.model_fields["pstr"].annotation)
+    assert is_option(OneModel.model_fields["pstr_"].annotation)
+    assert is_option(OneModel.model_fields["pstr__"].annotation)
+    assert not is_option(OneModel.model_fields["nested"].annotation)
+    assert not is_option(OneModel.model_fields["nested_"].annotation)
 
-    assert is_option(OneModelPartial.model_fields["pstr"])
-    assert is_option(OneModelPartial.model_fields["pstr_"])
-    assert is_option(OneModelPartial.model_fields["pstr__"])
-    assert not is_option(OneModelPartial.model_fields["nested"])
-    assert not is_option(OneModel.model_fields["nested_"])
+    assert is_option(OneModelPartial.model_fields["pstr"].annotation)
+    assert is_option(OneModelPartial.model_fields["pstr_"].annotation)
+    assert is_option(OneModelPartial.model_fields["pstr__"].annotation)
+    assert not is_option(OneModelPartial.model_fields["nested"].annotation)
+    assert not is_option(OneModel.model_fields["nested_"].annotation)
 
 
 def test_extract_type() -> None:
