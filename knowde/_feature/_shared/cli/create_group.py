@@ -11,7 +11,7 @@ from knowde._feature._shared.api.basic_param import (
     ListParam,
     RemoveParam,
 )
-from knowde._feature._shared.cli.click_wrapper import to_click_wrappers
+from knowde._feature._shared.cli.to_clickparam import model2decorator
 from knowde._feature._shared.domain import DomainModel
 
 from .each_args import each_args
@@ -101,7 +101,7 @@ def create_group(
         c_help: str | None = None,
     ) -> Callable:
         @g.command(command_name, help=c_help)
-        @to_click_wrappers(t_param).wraps
+        @model2decorator(t_param)
         @view_options
         def _add(**kwargs) -> t_model:  # noqa: ANN003
             p = t_param.validate(kwargs)
@@ -118,8 +118,8 @@ def create_group(
         c_help: str | None = None,
     ) -> Callable:
         @g.command(command_name, help=c_help)
-        @to_click_wrappers(CompleteParam).wraps
-        @to_click_wrappers(t_param).wraps
+        @model2decorator(CompleteParam)
+        @model2decorator(t_param)
         @view_options
         def _change(
             pref_uid: str,
