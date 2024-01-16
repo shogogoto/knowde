@@ -716,6 +716,20 @@ files = [
 typing-extensions = ">=4.6.0,<4.7.0 || >4.7.0"
 
 [[package]]
+name = "pydantic-partial"
+version = "0.5.4"
+description = "Create partial models from your pydantic models. Partial models may allow None for certain or all fields."
+optional = false
+python-versions = ">=3.9,<4.0"
+files = [
+    {file = "pydantic_partial-0.5.4-py3-none-any.whl", hash = "sha256:8366f5c7b34ccbd25a7705b5d633f759bc39d6ee60ce7157c5ca5714035e3943"},
+    {file = "pydantic_partial-0.5.4.tar.gz", hash = "sha256:c4d2d5790d897c8ebec18e13a6050be3134dcc4e478b3248aed4f960a152019b"},
+]
+
+[package.dependencies]
+pydantic = ">=1.9.0,<3.0.0"
+
+[[package]]
 name = "pygls"
 version = "1.2.1"
 description = "A pythonic generic language server (pronounced like 'pie glass')"
@@ -1154,4 +1168,4 @@ watchmedo = ["PyYAML (>=3.10)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "be74e1a6bc8036a28611f14e22d59234184864f880a78e2b52ed9257b93126b7"
+content-hash = "6e7dd9e0d9217262db2c64a671092166fe369c8423f7329a142df840076a3aee"
