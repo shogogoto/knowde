@@ -9,18 +9,15 @@ from starlette.status import HTTP_200_OK
 
 from knowde._feature._shared.api.basic_param import (
     CompleteParam,
-    ListParam,
-    RemoveParam,
 )
 from knowde._feature._shared.cli.to_clickparam import model2decorator
 from knowde._feature._shared.domain import DomainModel
 
 from .each_args import each_args
-from .to_request import HttpMethod
 from .view.options import view_options
 
 if TYPE_CHECKING:
-    from requests import Response
+    from uuid import UUID
 
     from knowde._feature._shared.endpoint import Endpoint
 
@@ -46,9 +43,11 @@ class CommandHooks(NamedTuple, Generic[T]):
     complete: Callable[[str], T]
     create_add: CommandHook
     create_change: CommandHook
+    create_rm: Callable[[str, str | None], Callable]
+    create_ls: Callable[[str, str | None], Callable]
 
 
-def create_group(
+def create_group(  # noqa: C901
     name: str,
     ep: Endpoint,
     t_model: type[DomainModel],
@@ -60,41 +59,37 @@ def create_group(
     def g() -> None:
         pass
 
-    def _complete_check(res: Response) -> None:
+    def complete(pref_uid: str) -> t_model:
+        res = ep.get(relative="/completion", params={"pref_uid": pref_uid})
         if res.status_code != HTTP_200_OK:
             msg = res.json()["detail"]["message"]
             msg = f"[{res.status_code}]:{msg}"
             raise CliRequestError(msg)
+        return t_model.model_validate(res.json())
 
-    complete = HttpMethod.GET.request_func(
-        ep=ep,
-        param=CompleteParam,
-        return_converter=lambda res: t_model.model_validate(res.json()),
-        response_check=_complete_check,
-    )
+    def create_ls(
+        command_name: str,
+        c_help: str | None = None,
+    ) -> Callable:
+        @g.command(command_name, help=c_help)
+        @view_options
+        def _ls() -> list[t_model]:
+            res = ep.get()
+            return [t_model.model_validate(e) for e in res.json()]
 
-    g.command("rm")(
-        each_args("uids", converter=lambda pref_uid: complete(pref_uid).valid_uid)(
-            HttpMethod.DELETE.request_func(
-                ep=ep,
-                param=RemoveParam,
-                return_converter=lambda _res: None,
-                post_func=lambda uid: click.echo(f"{uid} was removed"),
-            ),
-        ),
-    )
+        return _ls
 
-    g.command("ls")(
-        view_options(
-            HttpMethod.GET.request_func(
-                ep=ep,
-                param=ListParam,
-                return_converter=lambda res: [
-                    t_model.model_validate(e) for e in res.json()
-                ],
-            ),
-        ),
-    )
+    def create_rm(
+        command_name: str,
+        c_help: str | None = None,
+    ) -> Callable:
+        @g.command(command_name, help=c_help)
+        @each_args("uids", converter=lambda pref_uid: complete(pref_uid).valid_uid)
+        def _rm(uid: UUID) -> None:
+            ep.delete(relative=uid.hex)
+            click.echo(f"{t_model.__name__}({uid}) was removed.")
+
+        return _rm
 
     # createではなくaddの方が短くて良い
     def create_add(
@@ -144,4 +139,6 @@ def create_group(
         complete,
         create_add,
         create_change,
+        create_rm,
+        create_ls,
     )
