@@ -16,6 +16,7 @@ class Endpoint(Enum):
 
     Concept = "concepts"
     Reference = "references"
+    Sentence = "sentences"
 
     @property
     def prefix(self) -> str:

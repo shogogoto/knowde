@@ -16,7 +16,8 @@ concept_cli, hooks = create_group(
 # createではなくaddの方がは打数が少ない
 hooks.create_add("add", ConceptProp, "Concept was created newly.")
 
+hooks.create_change("ch", ConceptChangeParam, None)
 
-concept_cli.command("ch")(
-    hooks.create_change(ConceptChangeParam, "Concept was changed 0 -> 1"),
-)
+# concept_cli.command("ch")(
+#     hooks.create_change(ConceptChangeParam, "Concept was changed 0 -> 1"),
+# )

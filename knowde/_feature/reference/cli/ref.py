@@ -23,6 +23,8 @@ class RenameParam(ChangeParam, frozen=True):
     name: str | None
 
 
-ref_cli.command("ch")(
-    hooks.create_change(RenameParam, "Reference was changed 0 -> 1"),
-)
+hooks.create_change("ch", RenameParam, None)
+
+# ref_cli.command("ch")(
+#     hooks.create_change(RenameParam, "Reference was changed 0 -> 1"),
+# )

@@ -115,3 +115,16 @@ def test_nested_model() -> None:
     runner = CliRunner()
     result = runner.invoke(_dummy, ["True", "0", "--n2", "n2"])
     assert result.output.strip() == "True0n2"
+
+
+# def test_partial() -> None:
+#     print("#######################################")
+#     print("#######################################")
+#     print("#######################################")
+
+#     print(to_click_wrappers(OneParam).root)
+#     print("#######################################")
+
+#     part = create_partial_model(OneParam)
+#     wrap = to_click_wrappers(part)
+#     print(wrap.root)

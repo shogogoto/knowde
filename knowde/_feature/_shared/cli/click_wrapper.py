@@ -64,21 +64,30 @@ def to_click_wrappers(
 
     # 逆順にしないと、commandのhelpがmodel propの逆順になってしまう
     for k, v in reversed(t_param.model_fields.items()):
+        a = v.annotation
+        t = type(a)
+        # print(k, v, a, t)
+        # print(":0", exclude and v.exclude)
+        # print(":1", isclass(a) and BaseModel in a.__mro__, isclass(a), isclass(t))
+        # print(":2", a, type(a), isclass(a), type(a) == type and v.is_required())
+        # print(":3", type(a) == UnionType)
+        # print(":?", t in (type, typing._UnionGenericAlias))
         if exclude and v.exclude:
             continue
-        t = v.annotation
-        if isclass(t) and BaseModel in t.__mro__:
-            ws = to_click_wrappers(t)
+        if isclass(a) and BaseModel in a.__mro__:
+            ws = to_click_wrappers(a)
             params = list(reversed(params + ws.root))
-        if type(t) == type and v.is_required():
+            continue
+        if t == type and v.is_required():
             p = click.argument(
                 k,
                 nargs=1,
-                type=type2type(t),
+                type=type2type(a),
             )
             params.append(p)
-        if type(t) == UnionType:
-            t_exclude = get_args(t)[0]  # for excliding optional
+            continue
+        if t == UnionType:
+            t_exclude = get_args(a)[0]  # for excliding optional
             p = click.option(
                 f"--{k}",
                 f"-{k[0]}",
@@ -86,4 +95,5 @@ def to_click_wrappers(
                 help=v.description,
             )
             params.append(p)
+            continue
     return ClickWrappers(root=params)

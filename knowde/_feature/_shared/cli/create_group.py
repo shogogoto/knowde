@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Generic, NamedTuple, Optional, TypeVar
+from typing import TYPE_CHECKING, Callable, Generic, NamedTuple, TypeAlias, TypeVar
 
 import click
+from pydantic import BaseModel
 from starlette.status import HTTP_200_OK
 
 from knowde._feature._shared.api.basic_param import (
-    ChangeParam,
     CompleteParam,
     ListParam,
     RemoveParam,
@@ -19,7 +19,6 @@ from .to_request import HttpMethod
 from .view.options import view_options
 
 if TYPE_CHECKING:
-    from pydantic import BaseModel
     from requests import Response
 
     from knowde._feature._shared.endpoint import Endpoint
@@ -32,10 +31,20 @@ class CliRequestError(Exception):
     pass
 
 
+CommandHook: TypeAlias = Callable[
+    [
+        str,
+        type[BaseModel],
+        str | None,
+    ],
+    Callable,
+]
+
+
 class CommandHooks(NamedTuple, Generic[T]):
     complete: Callable[[str], T]
-    create_add: Callable[[str, type[BaseModel], str | None], Callable]
-    create_change: Callable[[type[ChangeParam], str], Callable]
+    create_add: CommandHook
+    create_change: CommandHook
 
 
 def create_group(
@@ -104,9 +113,11 @@ def create_group(
         return _add
 
     def create_change(
-        t_param: type[ChangeParam],
-        message: Optional[str] = None,
+        command_name: str,
+        t_param: type[BaseModel],
+        c_help: str | None = None,
     ) -> Callable:
+        @g.command(command_name, help=c_help)
         @to_click_wrappers(CompleteParam).wraps
         @to_click_wrappers(t_param).wraps
         @view_options
@@ -136,7 +147,7 @@ def create_group(
             res = ep.put(json=p.model_dump())
             post = t_model.model_validate(res.json())
             # click.echo(f"{t_model.__name__} was created newly.")
-            click.echo(message)
+            # click.echo(message)
             return [pre, post]
 
         return _change
