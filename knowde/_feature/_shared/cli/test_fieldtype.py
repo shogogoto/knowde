@@ -5,7 +5,7 @@ from typing import Optional
 from pydantic import BaseModel, Field
 from pydantic_partial.partial import create_partial_model
 
-from knowde._feature._shared.cli.fieldtype import extract_type, is_option
+from knowde._feature._shared.cli.fieldtype import extract_type, is_nested, is_option
 
 
 class NestedModel(BaseModel):
@@ -18,10 +18,18 @@ class OneModel(BaseModel):
     pstr__: Optional[str]
     pex: str = Field(exclude=True)
     nested: NestedModel
-    nested_: NestedModel
+    nested_: NestedModel | None
 
 
 OneModelPartial = create_partial_model(OneModel)
+
+
+def test_is_nested() -> None:
+    assert not is_nested(OneModel.model_fields["pstr"].annotation)
+    assert not is_nested(OneModel.model_fields["pstr_"].annotation)
+    assert not is_nested(OneModel.model_fields["pstr__"].annotation)
+    assert is_nested(OneModel.model_fields["nested"].annotation)
+    assert is_nested(OneModel.model_fields["nested_"].annotation)
 
 
 def test_option() -> None:
