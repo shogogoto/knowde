@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Callable, Generic, NamedTuple, TypeAlias, Type
 
 import click
 from pydantic import BaseModel
+from pydantic_partial.partial import create_partial_model
 from starlette.status import HTTP_200_OK
 
 from knowde._feature._shared.api.basic_param import (
@@ -95,6 +96,7 @@ def create_group(
         ),
     )
 
+    # createではなくaddの方が短くて良い
     def create_add(
         command_name: str,
         t_param: type[BaseModel],
@@ -119,35 +121,21 @@ def create_group(
     ) -> Callable:
         @g.command(command_name, help=c_help)
         @model2decorator(CompleteParam)
-        @model2decorator(t_param)
+        @model2decorator(create_partial_model(t_param))
         @view_options
         def _change(
             pref_uid: str,
             **kwargs,  # noqa: ANN003
         ) -> list[t_model]:
-            """Change concept properties."""
             pre = complete(pref_uid)
-            # put = HttpMethod.PUT.request_func(
-            #     ep=ep,
-            #     param=t_param,
-            #     return_converter=lambda res: t_model.model_validate(res.json()),
-            # )
-            # post = put(uid=pre.valid_uid, **kwargs)
-            # print(kwargs)
-            # print(t_param.for_method(**kwargs))
-            # print(t_param.model_validate(uid=pre.valid_uid, **kwargs))
             d = t_param.model_validate(kwargs).model_dump()
-            # print(d)
-            d["uid"] = str(pre.valid_uid)
             res = ep.put(
                 relative=pre.valid_uid.hex,
                 json=d,
+                # json={k: v for k, v in d.items() if v is not None},
             )
-            p = t_param.validate(kwargs)
-            res = ep.put(json=p.model_dump())
             post = t_model.model_validate(res.json())
-            # click.echo(f"{t_model.__name__} was created newly.")
-            # click.echo(message)
+            click.echo(f"{t_model.__name__} was changed from 0 to 1.")
             return [pre, post]
 
         return _change
