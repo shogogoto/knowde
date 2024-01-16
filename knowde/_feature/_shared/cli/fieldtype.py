@@ -14,12 +14,16 @@ def is_nested(annotation: type[Any] | None) -> TypeGuard[type[BaseModel]]:
     return type(BaseModel) in types
 
 
+def is_optional(annotation: type[Any] | None) -> bool:
+    args = get_args(annotation)
+    return NoneType in args
+
+
 def is_option(annotation: type[Any] | None) -> bool:
     """Optionalではない. かつnestedでない."""
-    args = get_args(annotation)
     if is_nested(annotation):
         return False
-    return NoneType in args
+    return is_optional(annotation)
 
 
 def extract_type(t: type | None) -> type:
