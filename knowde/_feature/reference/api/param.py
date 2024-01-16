@@ -2,10 +2,8 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from knowde._feature._shared.api.basic_param import AddParam
 
-
-class NameParam(AddParam, frozen=True):
+class NameParam(BaseModel, frozen=True):
     name: str
 
 

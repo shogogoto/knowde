@@ -12,7 +12,7 @@ concept_cli, hooks = create_group(
 )
 
 
-hooks.create_add("add", ConceptProp, "Concept was created newly.")
-hooks.create_change("ch", ConceptProp, None)
-hooks.create_rm("rm", None)
-hooks.create_ls("ls", None)
+hooks.create_add("add", ConceptProp)
+hooks.create_change("ch", ConceptProp)
+hooks.create_rm("rm")
+hooks.create_ls("ls")

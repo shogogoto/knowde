@@ -6,10 +6,9 @@ from uuid import UUID, uuid4
 from pydantic import BaseModel, Field, field_serializer
 
 from knowde._feature._shared import DomainModel
-from knowde._feature._shared.api.basic_param import AddParam, ChangeParam
 
 
-class ConceptProp(AddParam, frozen=True):
+class ConceptProp(BaseModel, frozen=True):
     """concept properties."""
 
     name: str
@@ -45,7 +44,3 @@ class ChangeProp(BaseModel, frozen=True):
 
     name: str | None = Field(None, description="名前")
     explain: str | None = Field(None, description="説明文")
-
-
-class ConceptChangeParam(ChangeParam, ChangeProp, frozen=True):
-    pass

@@ -11,14 +11,15 @@ from pydantic import BaseModel
 from knowde._feature._shared.domain import DomainModel
 from knowde._feature._shared.repo.util import LabelUtil  # noqa: TCH001
 
-from .basic_param import (
-    CompleteParam,
-    ListParam,
-    RemoveParam,
-)
-
 if TYPE_CHECKING:
     from knowde._feature._shared.endpoint import Endpoint
+
+
+def create_router(ep: Endpoint) -> APIRouter:
+    return APIRouter(
+        prefix=f"/{ep.value}",
+        tags=[f"/{ep.single_form}"],
+    )
 
 
 RouterHook: TypeAlias = Callable[
@@ -36,31 +37,11 @@ class RouterHooks(NamedTuple):
     create_change: RouterHook
 
 
-def create_router(ep: Endpoint) -> APIRouter:
-    return APIRouter(
-        prefix=f"/{ep.value}",
-        tags=[f"/{ep.single_form}"],
-    )
-
-
 def set_basic_router(
     util: LabelUtil,
     router: APIRouter,
 ) -> tuple[APIRouter, RouterHooks]:
     """labelに対応したCRUD APIの基本的な定義."""
-    ListParam.api(router, lambda: util.find_all().to_model(), "list")
-    RemoveParam.api(router, util.delete, "delete")
-    CompleteParam.api(
-        router,
-        lambda pref_uid: util.complete(pref_uid=pref_uid).to_model(),
-        "complete",
-    )
-
-    # hooksの型引数によるAPI定義ではundefined errorが発生した
-    # create_fucntionでrouterに渡す関数のSignatureを上書きすれば、
-    # エラーが回避できる? できた
-    def _define(f: Callable) -> Callable:
-        return create_function(signature(f), f)
 
     def create_add(
         t_in: type[BaseModel],
@@ -74,8 +55,9 @@ def set_basic_router(
             relative,
             status_code=status.HTTP_201_CREATED,
         )(
-            # _define(_add),
-            # ハードコードしないとAPI生成時にエラー
+            # hooksの型引数によるAPI定義ではundefined errorが発生した
+            # create_fucntionでrouterに渡す関数のSignatureを上書きすれば、
+            # エラーが回避できる? できた
             create_function(signature(_add), _add),
         )
 
@@ -97,7 +79,28 @@ def set_basic_router(
             create_function(signature(_ch), _ch),
         )
 
+    def create_delete() -> None:
+        _rm = util.delete
+        router.delete(
+            "/{uid}",
+            status_code=status.HTTP_204_NO_CONTENT,
+            response_model=None,
+        )(
+            create_function(signature(_rm), _rm),
+        )
+
+    def _complete(pref_uid: str) -> util.model:
+        return util.complete(pref_uid).to_model()
+
+    router.get("/completion")(create_function(signature(_complete), _complete))
+
+    def _list() -> list[util.model]:
+        return util.find_all().to_model()
+
+    router.get("")(create_function(signature(_list), _list))
+
+    create_delete()
     return router, RouterHooks(
-        create_add=create_add,
-        create_change=create_change,
+        create_add,
+        create_change,
     )
