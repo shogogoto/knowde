@@ -1,18 +1,19 @@
 from __future__ import annotations
 
 from inspect import signature
-from typing import TYPE_CHECKING, Callable, NamedTuple, TypeAlias
+from typing import TYPE_CHECKING, NamedTuple, Protocol
 from uuid import UUID  # noqa: TCH003
 
 from fastapi import APIRouter, status
 from makefun import create_function
 from neomodel import db
-from pydantic import BaseModel
 
-from knowde._feature._shared.domain import DomainModel
 from knowde._feature._shared.repo.util import LabelUtil  # noqa: TCH001
 
 if TYPE_CHECKING:
+    from pydantic import BaseModel
+
+    from knowde._feature._shared.domain import DomainModel
     from knowde._feature._shared.endpoint import Endpoint
 
 
@@ -23,14 +24,14 @@ def create_router(ep: Endpoint) -> APIRouter:
     )
 
 
-RouterHook: TypeAlias = Callable[
-    [
-        type[BaseModel],
-        type[DomainModel],
-        str,
-    ],
-    None,
-]
+class RouterHook(Protocol):
+    def __call__(
+        self,
+        t_in: type[BaseModel],
+        t_out: type[DomainModel] | None = None,
+        relative: str = "",
+    ) -> None:
+        ...
 
 
 class RouterHooks(NamedTuple):
@@ -46,9 +47,12 @@ def set_basic_router(  # noqa: C901
 
     def create_add(
         t_in: type[BaseModel],
-        t_out: type[DomainModel] = util.model,
+        t_out: type[DomainModel] | None = None,
         relative: str = "",
     ) -> None:
+        if t_out is None:
+            t_out = util.model
+
         def _add(p: t_in) -> t_out:
             with db.transaction:
                 return util.create(**p.model_dump()).to_model()

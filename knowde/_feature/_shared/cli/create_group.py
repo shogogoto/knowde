@@ -1,6 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Generic, NamedTuple, TypeAlias, TypeVar
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    Generic,
+    NamedTuple,
+    Protocol,
+    TypeVar,
+)
 
 import click
 from pydantic import BaseModel, Field
@@ -33,22 +40,31 @@ class CliRequestError(Exception):
     pass
 
 
-CommandHook: TypeAlias = Callable[
-    [
-        str,  # commnad_name
-        type[BaseModel],  # input model type
-        str | None,  # command_help
-    ],
-    Callable,
-]
+class CommandHook(Protocol):
+    def __call__(
+        self,
+        command_name: str,
+        t_in: type[BaseModel],
+        command_help: str | None = None,
+    ) -> Callable:
+        ...
+
+
+class DocHook(Protocol):
+    def __call__(
+        self,
+        command_name: str,
+        command_help: str | None = None,
+    ) -> Callable:
+        ...
 
 
 class CommandHooks(NamedTuple, Generic[T]):
     complete: Callable[[str], T]
     create_add: CommandHook
     create_change: CommandHook
-    create_rm: Callable[[str, str | None], Callable]
-    create_ls: Callable[[str, str | None], Callable]
+    create_rm: DocHook
+    create_ls: DocHook
 
 
 def create_group(  # noqa: C901
