@@ -6,6 +6,7 @@ from uuid import UUID  # noqa: TCH003
 
 from fastapi import APIRouter, status
 from makefun import create_function
+from neomodel import db
 from pydantic import BaseModel
 
 from knowde._feature._shared.domain import DomainModel
@@ -37,7 +38,7 @@ class RouterHooks(NamedTuple):
     create_change: RouterHook
 
 
-def set_basic_router(
+def set_basic_router(  # noqa: C901
     util: LabelUtil,
     router: APIRouter,
 ) -> tuple[APIRouter, RouterHooks]:
@@ -49,7 +50,8 @@ def set_basic_router(
         relative: str = "",
     ) -> None:
         def _add(p: t_in) -> t_out:
-            return util.create(**p.model_dump()).to_model()
+            with db.transaction:
+                return util.create(**p.model_dump()).to_model()
 
         router.post(
             relative,
@@ -67,11 +69,12 @@ def set_basic_router(
         relative: str = "/{uid}",
     ) -> None:
         def _ch(uid: UUID, p: t_in) -> t_out:
-            lb = util.find_one(uid).label
-            for k, v in p.model_dump().items():
-                if v is not None:
-                    setattr(lb, k, v)
-            return t_out.to_model(lb.save())
+            with db.transaction:
+                lb = util.find_one(uid).label
+                for k, v in p.model_dump().items():
+                    if v is not None:
+                        setattr(lb, k, v)
+                return t_out.to_model(lb.save())
 
         router.put(
             relative,
@@ -80,7 +83,10 @@ def set_basic_router(
         )
 
     def create_delete() -> None:
-        _rm = util.delete
+        def _rm(uid: UUID) -> None:
+            with db.transaction:
+                util.delete(uid)
+
         router.delete(
             "/{uid}",
             status_code=status.HTTP_204_NO_CONTENT,

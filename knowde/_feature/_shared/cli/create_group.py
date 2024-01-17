@@ -35,9 +35,9 @@ class CliRequestError(Exception):
 
 CommandHook: TypeAlias = Callable[
     [
-        str,
-        type[BaseModel],
-        str | None,
+        str,  # commnad_name
+        type[BaseModel],  # input model type
+        str | None,  # command_help
     ],
     Callable,
 ]
