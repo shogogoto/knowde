@@ -9,6 +9,7 @@ from knowde._feature import (
     concept_router,
     concept_src_router,
     ref_router,
+    s_router,
 )
 from knowde._feature._shared import ErrorHandlingMiddleware
 
@@ -21,3 +22,5 @@ api.include_router(concept_src_router)
 api.include_router(concept_dest_router)
 
 api.include_router(ref_router)
+
+api.include_router(s_router)
