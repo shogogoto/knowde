@@ -17,8 +17,7 @@ from starlette.status import HTTP_200_OK
 from knowde._feature._shared.cli.to_clickparam import model2decorator
 from knowde._feature._shared.domain import DomainModel
 
-from .each_args import each_args
-from .view.options import view_options
+from . import each_args, view_options
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -114,14 +113,14 @@ def create_group(  # noqa: C901
     # createではなくaddの方が短くて良い
     def create_add(
         command_name: str,
-        t_param: type[BaseModel],
+        t_in: type[BaseModel],
         c_help: str | None = f"Create {t_model.__name__}",
     ) -> Callable:
         @g.command(command_name, help=c_help)
-        @model2decorator(t_param)
+        @model2decorator(t_in)
         @view_options
         def _add(**kwargs) -> t_model:  # noqa: ANN003
-            p = t_param.validate(kwargs)
+            p = t_in.validate(kwargs)
             res = ep.post(json=p.model_dump())
             m = t_model.model_validate(res.json())
             click.echo(f"{t_model.__name__} was created newly.")
@@ -131,23 +130,22 @@ def create_group(  # noqa: C901
 
     def create_change(
         command_name: str,
-        t_param: type[BaseModel],
+        t_in: type[BaseModel],
         c_help: str | None = f"Change {t_model.__name__} properties",
     ) -> Callable:
         @g.command(command_name, help=c_help)
         @model2decorator(_CompleteParam)
-        @model2decorator(create_partial_model(t_param))
+        @model2decorator(create_partial_model(t_in))
         @view_options
         def _change(
             pref_uid: str,
             **kwargs,  # noqa: ANN003
         ) -> list[t_model]:
             pre = complete(pref_uid)
-            d = t_param.model_validate(kwargs).model_dump()
+            d = t_in.model_validate(kwargs).model_dump()
             res = ep.put(
                 relative=pre.valid_uid.hex,
                 json=d,
-                # json={k: v for k, v in d.items() if v is not None},
             )
             post = t_model.model_validate(res.json())
             click.echo(f"{t_model.__name__} was changed from 0 to 1.")
