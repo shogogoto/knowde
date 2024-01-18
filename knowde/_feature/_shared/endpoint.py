@@ -40,7 +40,7 @@ class Endpoint(Enum):
 
     def __url(self, relative: str | None = None) -> str:
         _relative = self.value
-        if relative is not None:
+        if relative is not None and relative != "":
             _relative += f"/{relative}"
 
         try:

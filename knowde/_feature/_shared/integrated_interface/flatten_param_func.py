@@ -16,7 +16,7 @@ P = ParamSpec("P")
 
 # Python 3.12で関数のGenericが導入されたらリライト
 def flatten_param_func(
-    t_in: type[BaseModel] | None,
+    t_in: type[BaseModel],
     # ↓type[BaseModel]の場合、set_router時にundefined-annotation errorになる
     t_out: type | None,
     f: Callable[[BaseModel], Any],
@@ -24,11 +24,10 @@ def flatten_param_func(
     doc: str | None = None,
 ) -> Callable:
     params = []
-    if t_in is not None:
-        for k, v in t_in.model_fields.items():
-            kind = Parameter.POSITIONAL_OR_KEYWORD
-            p = Parameter(k, kind=kind, annotation=v.annotation)
-            params.append(p)
+    for k, v in t_in.model_fields.items():
+        kind = Parameter.POSITIONAL_OR_KEYWORD
+        p = Parameter(k, kind=kind, annotation=v.annotation)
+        params.append(p)
 
     def _f(**kwargs) -> t_out:  # noqa: ANN003
         if t_in is not None:
