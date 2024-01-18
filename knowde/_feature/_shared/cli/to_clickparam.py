@@ -61,7 +61,6 @@ def to_option_attrs(info: FieldInfo) -> OptionAttrs:
 def to_argument_attrs(info: FieldInfo) -> ArgumentAttrs:
     return {
         "type": to_clicktype(info),
-        # "help": info.description,
     }
 
 

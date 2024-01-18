@@ -68,7 +68,7 @@ def test_generate_completion(requests_mock: Mocker) -> None:
         url=f"/tests/completion?pref_uid={pref_uid}",
         json=res.json(),
     )
-    assert gen_get(pref_uid=pref_uid)(OneModel.model_validate) == m
+    assert gen_get(OneModel.model_validate)(pref_uid=pref_uid) == m
 
 
 def test_generate_list(requests_mock: Mocker) -> None:
@@ -95,6 +95,6 @@ def test_generate_list(requests_mock: Mocker) -> None:
         url="/tests",
         json=res.json(),
     )
-    assert gen_get()(
+    assert gen_get(
         encoder=lambda data: [OneModel.model_validate(e) for e in data],
-    ) == [m1, m2]
+    )() == [m1, m2]

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from inspect import Parameter, signature
-from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeVar
+from inspect import Parameter, Signature, signature
+from typing import TYPE_CHECKING, Any, Callable, ParamSpec, TypeAlias, TypeVar
 
 from makefun import create_function
 
@@ -44,3 +44,24 @@ def flatten_param_func(
         func_name=name,
         doc=doc,
     )
+
+
+Decorator: TypeAlias = Callable[[Callable], Callable]
+
+
+def change_signature(
+    t_in: type[BaseModel] | None,
+    # ↓ undefined annotation回避のために必要
+    t_out: type[BaseModel],
+) -> Decorator:
+    def _decorator(func: Callable[[t_in], t_out]) -> Callable:
+        if t_in is not None:
+            f = flatten_param_func(t_in, t_out, func)
+        else:
+            f = create_function(
+                Signature(return_annotation=t_out),
+                func,
+            )
+        return f
+
+    return _decorator
