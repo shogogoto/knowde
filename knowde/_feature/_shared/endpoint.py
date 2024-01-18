@@ -18,6 +18,16 @@ class Endpoint(Enum):
     Reference = "references"
     Sentence = "sentences"
 
+    Test = "tests"  # test用
+
+    @classmethod
+    def of(cls, prefix: str) -> Endpoint:
+        for m in cls:
+            if m.prefix == prefix:
+                return m
+        msg = f"{prefix} must be in {[m.prefix for m in cls]}"
+        raise KeyError(msg)
+
     @property
     def prefix(self) -> str:
         """REST API用."""
