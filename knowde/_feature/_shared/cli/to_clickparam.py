@@ -42,7 +42,7 @@ class ParamAttrs(TypedDict):
 
 
 class OptionAttrs(ParamAttrs):
-    help: str | None  # noqa: A003
+    help: str | None
     # show_default: bool | None
     # required: bool | None
 

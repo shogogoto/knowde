@@ -60,6 +60,10 @@ ignore = [
   "N805", # first argument of method should be named self
   "UP007", # str | Optional[T]が許されない
   "B008", # default argに関数の返り値を使えない
+  "A003", # Class attribute `help` is shadowing a Python builtin
+  ]
+unfixable = [
+  "T201", # print
   ]
 unsafe-fixes = true
 
