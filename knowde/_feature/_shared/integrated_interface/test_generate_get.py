@@ -9,9 +9,13 @@ from pydantic import BaseModel
 
 from knowde._feature._shared.domain import DomainModel, ModelList
 from knowde._feature._shared.endpoint import Endpoint
+from knowde._feature._shared.integrated_interface.basic_method import (
+    create_basic_methods,
+)
 from knowde._feature._shared.integrated_interface.generate import (
     create_get_generator,
 )
+from knowde._feature._shared.integrated_interface.types import CompleteParam
 from knowde._feature._shared.repo.base import LBase
 from knowde._feature._shared.repo.util import LabelUtil
 
@@ -37,25 +41,17 @@ class OneModel(OneParam, DomainModel, frozen=True):
 # End
 
 util = LabelUtil(label=LOne, model=OneModel)
-
-
-class _CompleteParam(BaseModel):
-    pref_uid: str
+methods = create_basic_methods(util)
 
 
 def test_generate_completion(requests_mock: Mocker) -> None:
     m = util.create(name="n", value="v").to_model()
-
-    def _api_func(p: _CompleteParam) -> OneModel:
-        return util.complete(p.pref_uid).to_model()
-
-    r = APIRouter(prefix=Endpoint.Test.prefix)
     api = FastAPI()
-    _, gen_get = create_get_generator(
-        r,
-        t_in=_CompleteParam,
+    r, gen_get = create_get_generator(
+        APIRouter(prefix=Endpoint.Test.prefix),
+        t_in=CompleteParam,
         t_out=OneModel,
-        func=_api_func,
+        func=methods.complete,
         relative="/completion",
     )
     api.include_router(r)
@@ -74,17 +70,12 @@ def test_generate_completion(requests_mock: Mocker) -> None:
 def test_generate_list(requests_mock: Mocker) -> None:
     m1 = util.create(name="n", value="v").to_model()
     m2 = util.create(name="n", value="v").to_model()
-
-    def _api_func() -> list[OneModel]:
-        return util.find_all().to_model()
-
-    r = APIRouter(prefix=Endpoint.Test.prefix)
     api = FastAPI()
-    _, gen_get = create_get_generator(
-        r,
+    r, gen_get = create_get_generator(
+        APIRouter(prefix=Endpoint.Test.prefix),
         t_in=None,
         t_out=list[OneModel],
-        func=_api_func,
+        func=methods.ls,
     )
     api.include_router(r)
     client = TestClient(api)

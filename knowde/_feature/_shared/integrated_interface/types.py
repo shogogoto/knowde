@@ -15,6 +15,10 @@ CheckResponse: TypeAlias = Callable[[Response], None]
 ModelEncoder: TypeAlias = Callable[[JsonValue], Model]
 
 
+class CompleteParam(BaseModel):
+    pref_uid: str
+
+
 class GeneratedRequest(Protocol):
     def __call__(
         self,

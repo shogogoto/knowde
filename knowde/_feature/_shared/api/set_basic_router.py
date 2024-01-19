@@ -8,6 +8,11 @@ from fastapi import APIRouter, status
 from makefun import create_function
 from neomodel import db
 
+from knowde._feature._shared.integrated_interface.basic_method import (
+    create_basic_methods,
+)
+from knowde._feature._shared.integrated_interface.generate import create_get_generator
+from knowde._feature._shared.integrated_interface.types import CompleteParam
 from knowde._feature._shared.repo.util import LabelUtil  # noqa: TCH001
 
 if TYPE_CHECKING:
@@ -69,9 +74,12 @@ def set_basic_router(  # noqa: C901
 
     def create_change(
         t_in: type[BaseModel],
-        t_out: type[DomainModel] = util.model,
+        t_out: type[DomainModel] | None = None,
         relative: str = "/{uid}",
     ) -> None:
+        if t_out is None:
+            t_out = util.model
+
         def _ch(uid: UUID, p: t_in) -> t_out:
             with db.transaction:
                 lb = util.find_one(uid).label
@@ -99,15 +107,21 @@ def set_basic_router(  # noqa: C901
             create_function(signature(_rm), _rm),
         )
 
-    def _complete(pref_uid: str) -> util.model:
-        return util.complete(pref_uid).to_model()
+    methods = create_basic_methods(util)
+    _ = create_get_generator(
+        router,
+        CompleteParam,
+        util.model,
+        methods.complete,
+        relative="/completion",
+    )
 
-    router.get("/completion")(create_function(signature(_complete), _complete))
-
-    def _list() -> list[util.model]:
-        return util.find_all().to_model()
-
-    router.get("")(create_function(signature(_list), _list))
+    _ = create_get_generator(
+        router,
+        None,
+        list[util.model],
+        methods.ls,
+    )
 
     create_delete()
     return router, RouterHooks(

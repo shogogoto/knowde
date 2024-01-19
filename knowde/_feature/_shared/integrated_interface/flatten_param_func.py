@@ -53,15 +53,14 @@ def change_signature(
     t_in: type[BaseModel] | None,
     # ↓ undefined annotation回避のために必要
     t_out: type[BaseModel],
+    name: str | None = None,
+    doc: str | None = None,
 ) -> Decorator:
     def _decorator(func: Callable[[t_in], t_out]) -> Callable:
         if t_in is not None:
-            f = flatten_param_func(t_in, t_out, func)
+            f = flatten_param_func(t_in, t_out, func, name, doc)
         else:
-            f = create_function(
-                Signature(return_annotation=t_out),
-                func,
-            )
+            f = create_function(Signature(return_annotation=t_out), func, name, doc)
         return f
 
     return _decorator

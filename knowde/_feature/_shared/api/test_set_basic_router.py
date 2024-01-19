@@ -26,7 +26,7 @@ util = LabelUtil(label=LTestLabel, model=OneModel)
 
 r, hooks = set_basic_router(
     util,
-    APIRouter(prefix="/testing", tags=["testing"]),
+    APIRouter(prefix="/tests", tags=["tests"]),
 )
 api = FastAPI()
 api.add_middleware(ErrorHandlingMiddleware)
@@ -35,16 +35,17 @@ client = TestClient(api)
 
 
 def test_get() -> None:
-    res = client.get(url="/testing")
+    res = client.get(url="/tests")
     assert len(res.json()) == 0
 
     one = util.create(prop="p").to_model()
-    res = client.get(url="/testing")
+    res = client.get(url="/tests")
+
     assert len(res.json()) == 1
 
     # hit 1
     res = client.get(
-        url="/testing/completion",
+        url="/tests/completion",
         params={
             "pref_uid": one.valid_uid.hex[0],
         },
@@ -52,13 +53,13 @@ def test_get() -> None:
     assert OneModel.model_validate(res.json()) == one
 
     res = client.get(
-        url="/testing/completion",
+        url="/tests/completion",
         params={
             "pref_uid": "eeee",  # not matching
         },
     )
     assert res.status_code == HTTP_404_NOT_FOUND
 
-    client.delete(url=f"/testing/{one.valid_uid}")
-    res = client.get(url="/testing")
+    client.delete(url=f"/tests/{one.valid_uid}")
+    res = client.get(url="/tests")
     assert len(res.json()) == 0
