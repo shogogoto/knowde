@@ -66,7 +66,7 @@ class Endpoint(Enum):
 
     def delete(
         self,
-        relative: str,
+        relative: str | None = None,
         params: dict | None = None,
         json: object = None,
     ) -> requests.Response:

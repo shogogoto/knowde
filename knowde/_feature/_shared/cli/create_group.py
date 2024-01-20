@@ -10,29 +10,24 @@ from typing import (
 )
 
 import click
-from pydantic import BaseModel, Field
 from pydantic_partial.partial import create_partial_model
 from starlette.status import HTTP_200_OK
 
 from knowde._feature._shared.cli.to_clickparam import model2decorator
 from knowde._feature._shared.domain import DomainModel
+from knowde._feature._shared.integrated_interface.types import CompleteParam
 
 from . import each_args, view_options
 
 if TYPE_CHECKING:
     from uuid import UUID
 
+    from pydantic import BaseModel
+
     from knowde._feature._shared.endpoint import Endpoint
 
 
 T = TypeVar("T", bound=DomainModel)
-
-
-class _CompleteParam(BaseModel, frozen=True):
-    pref_uid: str = Field(
-        min_length=1,
-        description="uuidと前方一致で検索",
-    )
 
 
 class CliRequestError(Exception):
@@ -134,7 +129,7 @@ def create_group(  # noqa: C901
         c_help: str | None = f"Change {t_model.__name__} properties",
     ) -> Callable:
         @g.command(command_name, help=c_help)
-        @model2decorator(_CompleteParam)
+        @model2decorator(CompleteParam)
         @model2decorator(create_partial_model(t_in))
         @view_options
         def _change(
