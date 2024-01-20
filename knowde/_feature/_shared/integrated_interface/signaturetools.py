@@ -55,12 +55,35 @@ def change_signature(
     t_out: type[BaseModel],
     name: str | None = None,
     doc: str | None = None,
+    only_eval: bool = False,  # noqa: FBT001 FBT002
 ) -> Decorator:
     def _decorator(func: Callable[[t_in], t_out]) -> Callable:
-        if t_in is not None:
-            f = flatten_param_func(t_in, t_out, func, name, doc)
-        else:
-            f = create_function(Signature(return_annotation=t_out), func, name, doc)
-        return f
+        if t_in is None:
+            return create_function(Signature(return_annotation=t_out), func, name, doc)
+        if only_eval:
+            return eval_signature(t_in, t_out, func, name, doc)
+        return flatten_param_func(t_in, t_out, func, name, doc)
 
     return _decorator
+
+
+def eval_signature(
+    t_in: type[BaseModel] | None,
+    t_out: type[BaseModel],
+    func: Callable,
+    name: str | None = None,
+    doc: str | None = None,
+) -> Callable:
+    params = signature(func).parameters
+    p = next(iter(params.values()))
+    return create_function(
+        Signature(
+            parameters=[
+                p.replace(annotation=t_in),
+            ],
+            return_annotation=t_out,
+        ),
+        func,
+        name,
+        doc,
+    )

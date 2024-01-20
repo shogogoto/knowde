@@ -11,7 +11,9 @@ from neomodel import db
 from knowde._feature._shared.integrated_interface.basic_method import (
     create_basic_methods,
 )
-from knowde._feature._shared.integrated_interface.generate import create_get_generator
+from knowde._feature._shared.integrated_interface.generate import (
+    create_request_generator,
+)
 from knowde._feature._shared.integrated_interface.types import CompleteParam
 from knowde._feature._shared.repo.util import LabelUtil  # noqa: TCH001
 
@@ -108,7 +110,7 @@ def set_basic_router(  # noqa: C901
         )
 
     methods = create_basic_methods(util)
-    _ = create_get_generator(
+    _ = create_request_generator(
         router,
         CompleteParam,
         util.model,
@@ -116,7 +118,7 @@ def set_basic_router(  # noqa: C901
         relative="/completion",
     )
 
-    _ = create_get_generator(
+    _ = create_request_generator(
         router,
         None,
         list[util.model],

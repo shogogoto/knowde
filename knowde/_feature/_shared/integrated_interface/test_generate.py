@@ -13,11 +13,13 @@ from knowde._feature._shared.integrated_interface.basic_method import (
     create_basic_methods,
 )
 from knowde._feature._shared.integrated_interface.generate import (
-    create_get_generator,
+    create_request_generator,
 )
 from knowde._feature._shared.integrated_interface.types import CompleteParam
 from knowde._feature._shared.repo.base import LBase
 from knowde._feature._shared.repo.util import LabelUtil
+
+from .types import HttpType
 
 if TYPE_CHECKING:
     from requests_mock.mocker import Mocker
@@ -31,14 +33,12 @@ class LOne(LBase):
 
 class OneParam(BaseModel, frozen=True):
     name: str
-    value: str
+    value: str | None = None
 
 
 class OneModel(OneParam, DomainModel, frozen=True):
     pass
 
-
-# End
 
 util = LabelUtil(label=LOne, model=OneModel)
 methods = create_basic_methods(util)
@@ -47,11 +47,11 @@ methods = create_basic_methods(util)
 def test_generate_completion(requests_mock: Mocker) -> None:
     m = util.create(name="n", value="v").to_model()
     api = FastAPI()
-    r, gen_get = create_get_generator(
+    r, gen_get = create_request_generator(
         APIRouter(prefix=Endpoint.Test.prefix),
         t_in=CompleteParam,
         t_out=OneModel,
-        func=methods.complete,
+        api_impl=methods.complete,
         relative="/completion",
     )
     api.include_router(r)
@@ -71,11 +71,11 @@ def test_generate_list(requests_mock: Mocker) -> None:
     m1 = util.create(name="n", value="v").to_model()
     m2 = util.create(name="n", value="v").to_model()
     api = FastAPI()
-    r, gen_get = create_get_generator(
+    r, gen_get = create_request_generator(
         APIRouter(prefix=Endpoint.Test.prefix),
         t_in=None,
         t_out=list[OneModel],
-        func=methods.ls,
+        api_impl=methods.ls,
     )
     api.include_router(r)
     client = TestClient(api)
@@ -89,3 +89,43 @@ def test_generate_list(requests_mock: Mocker) -> None:
     assert gen_get(
         encoder=lambda data: [OneModel.model_validate(e) for e in data],
     )() == [m1, m2]
+
+
+def test_generate_add(requests_mock: Mocker) -> None:
+    api = FastAPI()
+
+    def impl(p: OneParam) -> OneModel:
+        return util.create(**p.model_dump()).to_model()
+
+    r, gen_post = create_request_generator(
+        APIRouter(prefix=Endpoint.Test.prefix),
+        t_in=OneParam,
+        t_out=OneModel,
+        api_impl=impl,
+        ht=HttpType.POST,
+    )
+    # 確認用にgetを定義
+    _, gen_get = create_request_generator(
+        r,
+        t_in=None,
+        t_out=list[OneModel],
+        api_impl=methods.ls,
+    )
+    api.include_router(r)
+    client = TestClient(api)
+
+    res1 = client.post(url="/tests", json={"name": "n1", "value": "v1"})
+    res2 = client.post(url="/tests", json={"name": "n2"})
+    res = client.get(url="/tests")
+    assert res.json() == [res1.json(), res2.json()]
+
+    requests_mock.post(
+        url="/tests",
+        json={"name": "n3"},
+    )
+    m = gen_post(encoder=OneModel.model_validate)(OneParam(name="dummy"))
+    assert m.name == "n3"
+
+
+# def test_generate_ch(requests_mock: Mocker) -> None:
+#     pass

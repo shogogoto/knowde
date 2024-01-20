@@ -64,8 +64,11 @@ class RequestMethod(Protocol):
         ...
 
 
-class MethodType(Enum):
+class HttpType(Enum):
     GET = "get"
     POST = "post"
     PUT = "put"
     DELETE = "delete"
+
+    def is_get(self) -> bool:
+        return self.value == "get"
