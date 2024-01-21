@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, TypeAlias, TypedDict
-from uuid import UUID
+from typing import TYPE_CHECKING
 
 import click
-from click import ParamType
-from click.decorators import FC
 from click.testing import CliRunner
 from pydantic import BaseModel
 from pydantic_partial.partial import create_partial_model
@@ -17,38 +14,13 @@ from knowde._feature._shared.cli.fieldtype import (
     is_optional,
 )
 
+from .types import ArgumentAttrs, ClickParam, to_clicktype
+
 if TYPE_CHECKING:
+    from click.decorators import FC
     from pydantic.fields import FieldInfo
 
-
-def to_clicktype(info: FieldInfo) -> ParamType:
-    t = extract_type(info.annotation)
-    if t == str:
-        return click.STRING
-    if t == float:
-        return click.FLOAT
-    if t == UUID:
-        return click.UUID
-    if t == int:
-        return click.INT
-    if t == bool:
-        return click.BOOL
-    msg = f"{t} is not compatible type"
-    raise ValueError(msg)
-
-
-class ParamAttrs(TypedDict):
-    type: ParamType | Any | None
-
-
-class OptionAttrs(ParamAttrs):
-    help: str | None
-    # show_default: bool | None
-    # required: bool | None
-
-
-class ArgumentAttrs(ParamAttrs):
-    pass
+    from .types import OptionAttrs
 
 
 def to_option_attrs(info: FieldInfo) -> OptionAttrs:
@@ -79,9 +51,6 @@ def to_click_param(
         nargs=1,
         **to_argument_attrs(info),
     )
-
-
-ClickParam: TypeAlias = Callable[[FC], FC]
 
 
 class ClickDecorator(BaseModel, frozen=True):
