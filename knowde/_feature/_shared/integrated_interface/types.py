@@ -64,6 +64,16 @@ class RequestMethod(Protocol):
         ...
 
 
+class EndpointMethod(Protocol):
+    def __call__(
+        self,
+        relative: str | None = None,
+        params: dict | None = None,
+        json: object = None,
+    ) -> Response:
+        ...
+
+
 class HttpType(Enum):
     GET = "get"
     POST = "post"
