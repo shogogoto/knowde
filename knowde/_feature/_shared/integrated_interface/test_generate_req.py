@@ -11,9 +11,10 @@ from pydantic import BaseModel, PydanticUndefinedAnnotation
 from pydantic_partial.partial import create_partial_model
 
 from knowde._feature._shared.domain import DomainModel
-from knowde._feature._shared.param.generate_req import APIRequests, inject_signature
 from knowde._feature._shared.repo.base import LBase
 from knowde._feature._shared.repo.util import LabelUtil
+
+from .generate_req import APIRequests, inject_signature
 
 if TYPE_CHECKING:
     from requests_mock.mocker import Mocker
