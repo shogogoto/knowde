@@ -17,7 +17,7 @@ from knowde._feature._shared.domain import DomainModel
 from knowde._feature._shared.integrated_interface.types import CompleteParam
 
 from . import each_args, view_options
-from .model2clickparam import model2decorator
+from .field import model2decorator
 
 if TYPE_CHECKING:
     from uuid import UUID

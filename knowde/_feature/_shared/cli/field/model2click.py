@@ -7,13 +7,12 @@ from click.testing import CliRunner
 from pydantic import BaseModel
 from pydantic_partial.partial import create_partial_model
 
-from knowde._feature._shared.cli.fieldtype import (
+from .fieldutils import (
     extract_type,
     is_nested,
     is_option,
     is_optional,
 )
-
 from .types import ArgumentAttrs, ClickParam, to_clicktype
 
 if TYPE_CHECKING:
@@ -36,7 +35,7 @@ def to_argument_attrs(info: FieldInfo) -> ArgumentAttrs:
     }
 
 
-def to_click_param(
+def field2click_param(
     name: str,
     info: FieldInfo,
 ) -> ClickParam:
@@ -95,5 +94,5 @@ def model2decorator(
                 a = create_partial_model(a)
             params.extend(model2decorator(a).params)
         else:
-            params.append(to_click_param(k, v))
+            params.append(field2click_param(k, v))
     return ClickDecorator(params=params)

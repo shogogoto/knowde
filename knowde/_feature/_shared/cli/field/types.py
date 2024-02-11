@@ -6,7 +6,7 @@ from uuid import UUID
 import click
 from click.decorators import FC
 
-from knowde._feature._shared.cli.fieldtype import extract_type
+from .fieldutils import extract_type
 
 if TYPE_CHECKING:
     from click import ParamType
@@ -31,15 +31,14 @@ def to_clicktype(info: FieldInfo) -> ParamType:
     raise ValueError(msg)
 
 
-class ParamAttrs(TypedDict):
+class ClickParamAttrs(TypedDict):
     type: ParamType | Any | None
 
 
-class OptionAttrs(ParamAttrs):
+class OptionAttrs(ClickParamAttrs):
     help: str | None
     # show_default: bool | None
-    # required: bool | None
 
 
-class ArgumentAttrs(ParamAttrs):
+class ArgumentAttrs(ClickParamAttrs):
     pass

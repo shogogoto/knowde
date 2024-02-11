@@ -7,7 +7,12 @@ import pytest
 from pydantic import BaseModel, Field
 from pydantic_partial.partial import create_partial_model
 
-from .to_clickparam import ClickParam, model2decorator, to_click_param, to_clicktype
+from .model2click import (
+    ClickParam,
+    field2click_param,
+    model2decorator,
+    to_clicktype,
+)
 
 
 class NestedModel(BaseModel):
@@ -56,8 +61,8 @@ def test_to_click_param() -> None:
 
         return _dummy.__click_params__[0]
 
-    p1 = get_clickparam(to_click_param("_", OneModel.model_fields["pstr"]))
-    p2 = get_clickparam(to_click_param("_", OneModelPartial.model_fields["pstr"]))
+    p1 = get_clickparam(field2click_param("_", OneModel.model_fields["pstr"]))
+    p2 = get_clickparam(field2click_param("_", OneModelPartial.model_fields["pstr"]))
     assert (p1.type, p1.param_type_name) == (click.STRING, "argument")
     assert (p2.type, p2.param_type_name) == (click.STRING, "option")
 
