@@ -10,8 +10,8 @@ from pydantic_partial.partial import create_partial_model
 from .model2click import (
     ClickParam,
     field2click_param,
+    field2clicktype,
     model2decorator,
-    to_clicktype,
 )
 
 
@@ -36,21 +36,21 @@ OneModelPartial = create_partial_model(OneModel)
 
 
 def test_to_clicktype() -> None:
-    assert to_clicktype(OneModel.model_fields["pstr"]) == click.STRING
-    assert to_clicktype(OneModel.model_fields["pfloat"]) == click.FLOAT
-    assert to_clicktype(OneModel.model_fields["puid"]) == click.UUID
-    assert to_clicktype(OneModel.model_fields["pint"]) == click.INT
-    assert to_clicktype(OneModel.model_fields["pbool"]) == click.BOOL
+    assert field2clicktype(OneModel.model_fields["pstr"]) == click.STRING
+    assert field2clicktype(OneModel.model_fields["pfloat"]) == click.FLOAT
+    assert field2clicktype(OneModel.model_fields["puid"]) == click.UUID
+    assert field2clicktype(OneModel.model_fields["pint"]) == click.INT
+    assert field2clicktype(OneModel.model_fields["pbool"]) == click.BOOL
     with pytest.raises(ValueError):  # noqa: PT011
-        to_clicktype(OneModel.model_fields["nested"])
+        field2clicktype(OneModel.model_fields["nested"])
 
-    assert to_clicktype(OneModelPartial.model_fields["pstr"]) == click.STRING
-    assert to_clicktype(OneModelPartial.model_fields["pfloat"]) == click.FLOAT
-    assert to_clicktype(OneModelPartial.model_fields["puid"]) == click.UUID
-    assert to_clicktype(OneModelPartial.model_fields["pint"]) == click.INT
-    assert to_clicktype(OneModelPartial.model_fields["pbool"]) == click.BOOL
+    assert field2clicktype(OneModelPartial.model_fields["pstr"]) == click.STRING
+    assert field2clicktype(OneModelPartial.model_fields["pfloat"]) == click.FLOAT
+    assert field2clicktype(OneModelPartial.model_fields["puid"]) == click.UUID
+    assert field2clicktype(OneModelPartial.model_fields["pint"]) == click.INT
+    assert field2clicktype(OneModelPartial.model_fields["pbool"]) == click.BOOL
     with pytest.raises(ValueError):  # noqa: PT011
-        to_clicktype(OneModelPartial.model_fields["nested"])
+        field2clicktype(OneModelPartial.model_fields["nested"])
 
 
 def test_to_click_param() -> None:

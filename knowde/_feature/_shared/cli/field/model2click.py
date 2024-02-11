@@ -3,9 +3,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import click
-from click.testing import CliRunner
-from pydantic import BaseModel
 from pydantic_partial.partial import create_partial_model
+
+from knowde._feature._shared.cli.to_click import (
+    ClickDecorator,
+    ClickParam,
+    to_clicktype,
+)
 
 from .fieldutils import (
     extract_type,
@@ -13,25 +17,29 @@ from .fieldutils import (
     is_option,
     is_optional,
 )
-from .types import ArgumentAttrs, ClickParam, to_clicktype
 
 if TYPE_CHECKING:
-    from click.decorators import FC
+    from pydantic import BaseModel
     from pydantic.fields import FieldInfo
 
-    from .types import OptionAttrs
+    from .types import ArgumentAttrs, OptionAttrs
+
+
+def field2clicktype(info: FieldInfo) -> click.ParamType:
+    t = extract_type(info.annotation)
+    return to_clicktype(t)
 
 
 def to_option_attrs(info: FieldInfo) -> OptionAttrs:
     return {
-        "type": to_clicktype(info),
+        "type": field2clicktype(info),
         "help": info.description,
     }
 
 
 def to_argument_attrs(info: FieldInfo) -> ArgumentAttrs:
     return {
-        "type": to_clicktype(info),
+        "type": field2clicktype(info),
     }
 
 
@@ -50,36 +58,6 @@ def field2click_param(
         nargs=1,
         **to_argument_attrs(info),
     )
-
-
-class ClickDecorator(BaseModel, frozen=True):
-    params: list[ClickParam]
-
-    @property
-    def info(self) -> list[tuple[str, str]]:
-        @self
-        def _dummy() -> None:
-            pass
-
-        return [(p.name, p.param_type_name) for p in reversed(_dummy.__click_params__)]
-
-    def show_help(self) -> str:
-        """For debugging."""
-
-        @click.command
-        @self
-        def _dummy() -> None:
-            pass
-
-        runner = CliRunner()
-        result = runner.invoke(_dummy, ["--help"])
-        return result.output
-
-    def __call__(self, f: FC) -> FC:
-        _f = f
-        for p in reversed(self.params):
-            _f = p(_f)
-        return _f
 
 
 def model2decorator(
