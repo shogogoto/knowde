@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 
 """1つの関数からapiとrequest, commandを生成できるようにしたい.
 
+repo -> api, req
 ボイラープレートを削除したい
 関数 = repositoryを想定
 
@@ -59,11 +60,6 @@ def to_client(router: APIRouter) -> TestClient:
     api.include_router(router)
     return TestClient(api)
 
-
-"""
-- BaseModelが引数のpost apiを作成する
-- APIと同じsingatureのrequestを作成
-"""
 
 PREFIX = "/tests"
 

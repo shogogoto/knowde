@@ -75,7 +75,7 @@ def create_request_generator(  # noqa: PLR0913
     APIRouter,
     RequestGenerator,
 ]:
-    deco = change_signature(t_in, t_out, only_eval=not ht.is_get())
+    deco = change_signature(t_in, t_out)
     f = deco(api_impl)
     api, req = get_pair_methods(router, ht)
     if ht == HttpType.POST:

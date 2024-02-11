@@ -13,11 +13,11 @@ import click
 from pydantic_partial.partial import create_partial_model
 from starlette.status import HTTP_200_OK
 
-from knowde._feature._shared.cli.to_clickparam import model2decorator
 from knowde._feature._shared.domain import DomainModel
 from knowde._feature._shared.integrated_interface.types import CompleteParam
 
 from . import each_args, view_options
+from .model2clickparam import model2decorator
 
 if TYPE_CHECKING:
     from uuid import UUID

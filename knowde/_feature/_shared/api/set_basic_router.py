@@ -7,6 +7,7 @@ from uuid import UUID  # noqa: TCH003
 from fastapi import APIRouter, status
 from makefun import create_function
 from neomodel import db
+from pydantic import BaseModel
 
 from knowde._feature._shared.integrated_interface.basic_method import (
     create_basic_methods,
@@ -18,8 +19,6 @@ from knowde._feature._shared.integrated_interface.types import CompleteParam
 from knowde._feature._shared.repo.util import LabelUtil  # noqa: TCH001
 
 if TYPE_CHECKING:
-    from pydantic import BaseModel
-
     from knowde._feature._shared.domain import DomainModel
     from knowde._feature._shared.endpoint import Endpoint
 
@@ -94,6 +93,17 @@ def set_basic_router(  # noqa: C901
             relative,
         )(
             create_function(signature(_ch), _ch),
+        )
+
+        class ChParam(BaseModel):
+            uid: UUID
+            p: t_in | None
+
+        _ = create_request_generator(
+            router,
+            ChParam,
+            t_out,
+            _ch,
         )
 
     def create_delete() -> None:

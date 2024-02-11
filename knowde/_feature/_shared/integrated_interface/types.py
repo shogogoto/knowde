@@ -80,5 +80,8 @@ class HttpType(Enum):
     PUT = "put"
     DELETE = "delete"
 
+    def should_flatten_params(self) -> bool:
+        return self.value in ["get", "put"]
+
     def is_get(self) -> bool:
         return self.value == "get"
