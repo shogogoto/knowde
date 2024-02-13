@@ -6,7 +6,6 @@ from uuid import UUID
 import click
 from click import ParamType
 from click.decorators import FC
-from click.testing import CliRunner
 from pydantic import BaseModel
 
 
@@ -28,28 +27,18 @@ def to_clicktype(t: type) -> ParamType:
 ClickParam: TypeAlias = Callable[[FC], FC]
 
 
+def click_decorate(params: list[ClickParam]) -> ClickParam:
+    def _deco(f: FC) -> FC:
+        _f = f
+        for p in reversed(params):
+            _f = p(_f)
+        return _f
+
+    return _deco
+
+
 class ClickDecorator(BaseModel, frozen=True):
     params: list[ClickParam]
-
-    @property
-    def info(self) -> list[tuple[str, str]]:
-        @self
-        def _dummy() -> None:
-            pass
-
-        return [(p.name, p.param_type_name) for p in reversed(_dummy.__click_params__)]
-
-    def show_help(self) -> str:
-        """For debugging."""
-
-        @click.command
-        @self
-        def _dummy() -> None:
-            pass
-
-        runner = CliRunner()
-        result = runner.invoke(_dummy, ["--help"])
-        return result.output
 
     def __call__(self, f: FC) -> FC:
         _f = f

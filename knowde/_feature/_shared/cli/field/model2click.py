@@ -24,34 +24,37 @@ if TYPE_CHECKING:
     from .types import ArgumentAttrs, OptionAttrs
 
 
-def to_option_attrs(info: FieldInfo) -> OptionAttrs:
+def field2option_attrs(info: FieldInfo) -> OptionAttrs:
     return {
         "help": info.description,
     }
 
 
-def to_argument_attrs(info: FieldInfo) -> ArgumentAttrs:  # noqa: ARG001
+def field2argument_attrs(info: FieldInfo) -> ArgumentAttrs:  # noqa: ARG001
     return {}
 
 
-def field2clickparam(
+def to_clickparam(
     name: str,
     info: FieldInfo,
+    t: type | None = None,
 ) -> ClickParam:
-    t = info.annotation
-    ct = to_clicktype(extract_type(t))
-    if is_option(t):
+    a = info.annotation
+    if t is not None:
+        a = t
+    ct = to_clicktype(extract_type(a))
+    if is_option(a):
         return click.option(
             f"--{name}",
             f"-{name[0]}",
             type=ct,
-            **to_option_attrs(info),
+            **field2option_attrs(info),
         )
     return click.argument(
         name,
         nargs=1,
         type=ct,
-        **to_argument_attrs(info),
+        **field2argument_attrs(info),
     )
 
 
@@ -67,5 +70,5 @@ def model2decorator(
                 a = create_partial_model(a)
             params.extend(model2decorator(a).params)
         else:
-            params.append(field2clickparam(k, v))
+            params.append(to_clickparam(k, v))
     return ClickDecorator(params=params)
