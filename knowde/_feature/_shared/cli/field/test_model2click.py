@@ -3,14 +3,12 @@ from __future__ import annotations
 from uuid import UUID  # noqa: TCH003
 
 import click
-import pytest
 from pydantic import BaseModel, Field
 from pydantic_partial.partial import create_partial_model
 
 from .model2click import (
     ClickParam,
-    field2click_param,
-    field2clicktype,
+    field2clickparam,
     model2decorator,
 )
 
@@ -35,24 +33,6 @@ class OneModel(BaseModel):
 OneModelPartial = create_partial_model(OneModel)
 
 
-def test_to_clicktype() -> None:
-    assert field2clicktype(OneModel.model_fields["pstr"]) == click.STRING
-    assert field2clicktype(OneModel.model_fields["pfloat"]) == click.FLOAT
-    assert field2clicktype(OneModel.model_fields["puid"]) == click.UUID
-    assert field2clicktype(OneModel.model_fields["pint"]) == click.INT
-    assert field2clicktype(OneModel.model_fields["pbool"]) == click.BOOL
-    with pytest.raises(ValueError):  # noqa: PT011
-        field2clicktype(OneModel.model_fields["nested"])
-
-    assert field2clicktype(OneModelPartial.model_fields["pstr"]) == click.STRING
-    assert field2clicktype(OneModelPartial.model_fields["pfloat"]) == click.FLOAT
-    assert field2clicktype(OneModelPartial.model_fields["puid"]) == click.UUID
-    assert field2clicktype(OneModelPartial.model_fields["pint"]) == click.INT
-    assert field2clicktype(OneModelPartial.model_fields["pbool"]) == click.BOOL
-    with pytest.raises(ValueError):  # noqa: PT011
-        field2clicktype(OneModelPartial.model_fields["nested"])
-
-
 def test_to_click_param() -> None:
     def get_clickparam(f: ClickParam) -> click.Parameter:
         @f
@@ -61,8 +41,8 @@ def test_to_click_param() -> None:
 
         return _dummy.__click_params__[0]
 
-    p1 = get_clickparam(field2click_param("_", OneModel.model_fields["pstr"]))
-    p2 = get_clickparam(field2click_param("_", OneModelPartial.model_fields["pstr"]))
+    p1 = get_clickparam(field2clickparam("_", OneModel.model_fields["pstr"]))
+    p2 = get_clickparam(field2clickparam("_", OneModelPartial.model_fields["pstr"]))
     assert (p1.type, p1.param_type_name) == (click.STRING, "argument")
     assert (p2.type, p2.param_type_name) == (click.STRING, "option")
 

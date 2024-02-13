@@ -10,8 +10,7 @@ from knowde._feature._shared.cli.to_click import (
     ClickParam,
     to_clicktype,
 )
-
-from .fieldutils import (
+from knowde._feature._shared.cli.typeutils import (
     extract_type,
     is_nested,
     is_option,
@@ -25,37 +24,33 @@ if TYPE_CHECKING:
     from .types import ArgumentAttrs, OptionAttrs
 
 
-def field2clicktype(info: FieldInfo) -> click.ParamType:
-    t = extract_type(info.annotation)
-    return to_clicktype(t)
-
-
 def to_option_attrs(info: FieldInfo) -> OptionAttrs:
     return {
-        "type": field2clicktype(info),
         "help": info.description,
     }
 
 
-def to_argument_attrs(info: FieldInfo) -> ArgumentAttrs:
-    return {
-        "type": field2clicktype(info),
-    }
+def to_argument_attrs(info: FieldInfo) -> ArgumentAttrs:  # noqa: ARG001
+    return {}
 
 
-def field2click_param(
+def field2clickparam(
     name: str,
     info: FieldInfo,
 ) -> ClickParam:
-    if is_option(info.annotation):
+    t = info.annotation
+    ct = to_clicktype(extract_type(t))
+    if is_option(t):
         return click.option(
             f"--{name}",
             f"-{name[0]}",
+            type=ct,
             **to_option_attrs(info),
         )
     return click.argument(
         name,
         nargs=1,
+        type=ct,
         **to_argument_attrs(info),
     )
 
@@ -72,5 +67,5 @@ def model2decorator(
                 a = create_partial_model(a)
             params.extend(model2decorator(a).params)
         else:
-            params.append(field2click_param(k, v))
+            params.append(field2clickparam(k, v))
     return ClickDecorator(params=params)

@@ -22,7 +22,7 @@ def to_clicktype(t: type) -> ParamType:
     if t == bool:
         return click.BOOL
     msg = f"{t} is not compatible type"
-    raise ValueError(msg)
+    raise TypeError(msg)
 
 
 ClickParam: TypeAlias = Callable[[FC], FC]
