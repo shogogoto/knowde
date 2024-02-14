@@ -1,7 +1,6 @@
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, FastAPI, status
 from fastapi.testclient import TestClient
 from neomodel import StringProperty
-from starlette.status import HTTP_404_NOT_FOUND
 
 from knowde._feature._shared.domain import DomainModel
 from knowde._feature._shared.errors.errors import ErrorHandlingMiddleware
@@ -58,7 +57,7 @@ def test_get() -> None:
             "pref_uid": "eeee",  # not matching
         },
     )
-    assert res.status_code == HTTP_404_NOT_FOUND
+    assert res.status_code == status.HTTP_404_NOT_FOUND
 
     client.delete(url=f"/tests/{one.valid_uid}")
     res = client.get(url="/tests")

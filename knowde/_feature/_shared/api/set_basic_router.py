@@ -10,7 +10,6 @@ from knowde._feature._shared.integrated_interface.generate_req import (
     APIRequests,
     inject_signature,
 )
-from knowde._feature._shared.integrated_interface.types import CompleteParam
 from knowde._feature._shared.repo.util import LabelUtil  # noqa: TCH001
 
 if TYPE_CHECKING:
@@ -75,14 +74,14 @@ def set_basic_router(
         with db.transaction:
             util.delete(uid)
 
-    def _complete(p: CompleteParam) -> util.model:
-        return util.complete(p.pref_uid).to_model()
+    def _complete(pref_uid: str) -> util.model:
+        return util.complete(pref_uid).to_model()
 
     def _ls() -> list[util.model]:
         return util.find_all().to_model()
 
     reqs.delete(inject_signature(_rm, [UUID]))
-    reqs.get(inject_signature(_complete, [CompleteParam], util.model))
+    reqs.get(inject_signature(_complete, [str], util.model), "/completion")
     reqs.get(inject_signature(_ls, [], list[util.model]))
 
     return router, RouterHooks(
