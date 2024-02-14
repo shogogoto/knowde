@@ -3,9 +3,11 @@ from __future__ import annotations
 
 import os
 from enum import Enum
+from typing import Self
 from urllib.parse import urljoin
 
 import requests
+from fastapi import APIRouter
 from inflector import Inflector
 
 TIMEOUT = 3.0
@@ -21,7 +23,7 @@ class Endpoint(Enum):
     Test = "tests"  # test用
 
     @classmethod
-    def of(cls, prefix: str) -> Endpoint:
+    def of(cls, prefix: str) -> Self:
         for m in cls:
             if m.prefix == prefix:
                 return m
@@ -104,4 +106,10 @@ class Endpoint(Enum):
             timeout=TIMEOUT * 3,
             params=params,
             json=json,
+        )
+
+    def create_router(self) -> APIRouter:
+        return APIRouter(
+            prefix=self.prefix,
+            tags=[self.single_form],
         )

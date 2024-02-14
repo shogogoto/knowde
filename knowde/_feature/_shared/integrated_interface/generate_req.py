@@ -10,13 +10,13 @@ from pydantic import BaseModel
 from knowde._feature._shared.endpoint import Endpoint
 
 if TYPE_CHECKING:
-    from .types import EndpointMethod
+    from .types import RequestMethod
 
 
 def inject_signature(
     f: Callable,
     t_in: list[type],
-    t_out: type,
+    t_out: type | None = None,
 ) -> Callable:
     """API定義時に型情報が喪失する場合があるので、それを補う."""
     params = signature(f).parameters.values()
@@ -45,7 +45,7 @@ class APIRequests(
         self,
         f: Callable,
         path: str = "",
-    ) -> EndpointMethod:
+    ) -> RequestMethod:
         self.router.post(
             path,
             status_code=status.HTTP_201_CREATED,
@@ -56,7 +56,7 @@ class APIRequests(
         self,
         f: Callable,
         path: str = "/{uid}",
-    ) -> EndpointMethod:
+    ) -> RequestMethod:
         self.router.put(path)(f)
         return self.endpoint.put
 
@@ -64,7 +64,7 @@ class APIRequests(
         self,
         f: Callable,
         path: str = "",
-    ) -> EndpointMethod:
+    ) -> RequestMethod:
         self.router.get(path)(f)
         return self.endpoint.get
 
@@ -72,7 +72,7 @@ class APIRequests(
         self,
         f: Callable,
         path: str = "/{uid}",
-    ) -> EndpointMethod:
+    ) -> RequestMethod:
         self.router.delete(
             path,
             status_code=status.HTTP_204_NO_CONTENT,

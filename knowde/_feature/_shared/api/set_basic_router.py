@@ -1,24 +1,21 @@
 from __future__ import annotations
 
-from inspect import signature
 from typing import TYPE_CHECKING, NamedTuple, Protocol
-from uuid import UUID  # noqa: TCH003
+from uuid import UUID
 
-from fastapi import APIRouter, status
-from makefun import create_function
+from fastapi import APIRouter
 from neomodel import db
-from pydantic import BaseModel
 
-from knowde._feature._shared.integrated_interface.basic_method import (
-    create_basic_methods,
-)
-from knowde._feature._shared.integrated_interface.generate import (
-    create_request_generator,
+from knowde._feature._shared.integrated_interface.generate_req import (
+    APIRequests,
+    inject_signature,
 )
 from knowde._feature._shared.integrated_interface.types import CompleteParam
 from knowde._feature._shared.repo.util import LabelUtil  # noqa: TCH001
 
 if TYPE_CHECKING:
+    from pydantic import BaseModel
+
     from knowde._feature._shared.domain import DomainModel
     from knowde._feature._shared.endpoint import Endpoint
 
@@ -45,97 +42,49 @@ class RouterHooks(NamedTuple):
     create_change: RouterHook
 
 
-def set_basic_router(  # noqa: C901
+def set_basic_router(
     util: LabelUtil,
     router: APIRouter,
 ) -> tuple[APIRouter, RouterHooks]:
     """labelに対応したCRUD APIの基本的な定義."""
+    reqs = APIRequests(router=router)
 
     def create_add(
         t_in: type[BaseModel],
-        t_out: type[DomainModel] | None = None,
-        relative: str = "",
     ) -> None:
-        if t_out is None:
-            t_out = util.model
-
-        def _add(p: t_in) -> t_out:
+        def _add(p: t_in) -> util.model:
             with db.transaction:
                 return util.create(**p.model_dump()).to_model()
 
-        router.post(
-            relative,
-            status_code=status.HTTP_201_CREATED,
-        )(
-            # hooksの型引数によるAPI定義ではundefined errorが発生した
-            # create_fucntionでrouterに渡す関数のSignatureを上書きすれば、
-            # エラーが回避できる? できた
-            create_function(signature(_add), _add),
-        )
+        reqs.post(inject_signature(_add, [t_in], util.model))
 
     def create_change(
         t_in: type[BaseModel],
-        t_out: type[DomainModel] | None = None,
-        relative: str = "/{uid}",
     ) -> None:
-        if t_out is None:
-            t_out = util.model
-
-        def _ch(uid: UUID, p: t_in) -> t_out:
+        def _ch(uid: UUID, p: t_in) -> util.model:
             with db.transaction:
                 lb = util.find_one(uid).label
                 for k, v in p.model_dump().items():
                     if v is not None:
                         setattr(lb, k, v)
-                return t_out.to_model(lb.save())
+                return util.model.to_model(lb.save())
 
-        router.put(
-            relative,
-        )(
-            create_function(signature(_ch), _ch),
-        )
+        reqs.put(inject_signature(_ch, [UUID, t_in], util.model))
 
-        class ChParam(BaseModel):
-            uid: UUID
-            p: t_in | None
+    def _rm(uid: UUID) -> None:
+        with db.transaction:
+            util.delete(uid)
 
-        _ = create_request_generator(
-            router,
-            ChParam,
-            t_out,
-            _ch,
-        )
+    def _complete(p: CompleteParam) -> util.model:
+        return util.complete(p.pref_uid).to_model()
 
-    def create_delete() -> None:
-        def _rm(uid: UUID) -> None:
-            with db.transaction:
-                util.delete(uid)
+    def _ls() -> list[util.model]:
+        return util.find_all().to_model()
 
-        router.delete(
-            "/{uid}",
-            status_code=status.HTTP_204_NO_CONTENT,
-            response_model=None,
-        )(
-            create_function(signature(_rm), _rm),
-        )
+    reqs.delete(inject_signature(_rm, [UUID]))
+    reqs.get(inject_signature(_complete, [CompleteParam], util.model))
+    reqs.get(inject_signature(_ls, [], list[util.model]))
 
-    methods = create_basic_methods(util)
-    _ = create_request_generator(
-        router,
-        CompleteParam,
-        util.model,
-        methods.complete,
-        relative="/completion",
-    )
-
-    _ = create_request_generator(
-        router,
-        None,
-        list[util.model],
-        methods.ls,
-    )
-
-    create_delete()
     return router, RouterHooks(
         create_add,
         create_change,
