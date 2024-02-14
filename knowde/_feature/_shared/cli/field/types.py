@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TypedDict
+from typing import Any, TypedDict
 
 
 class ClickParamAttrs(TypedDict):
@@ -10,7 +10,8 @@ class ClickParamAttrs(TypedDict):
 
 class OptionAttrs(ClickParamAttrs):
     help: str | None
-    # show_default: bool | None
+    default: Any
+    show_default: bool | None
 
 
 class ArgumentAttrs(ClickParamAttrs):

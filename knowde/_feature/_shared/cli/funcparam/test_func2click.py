@@ -37,20 +37,17 @@ def to_info(cp: click.Parameter) -> tuple[click.ParamType, str]:
 
 
 def test_get_fparams() -> None:
-    """BaseModel以外のタイプをclickparamへ変換する.
-
-    - to argument
-    - to option
-    """
+    """BaseModel以外のタイプをclickparamへ変換する."""
     NestOp = create_partial_model(Nest)  # noqa: N806
 
     def f(
         uid: UUID,  # noqa: ARG001
         _uid: UUID | None = None,
         __uid: Optional[UUID] = None,
-        field: UUID | None = Field(description="help"),  # noqa: ARG001
+        field: str | None = Field(description="help", default="default"),  # noqa: ARG001
         nest: Nest = Field(),  # noqa: ARG001
         _nest: NestOp = Field(),
+        default2: str | None = "default2",  # noqa: ARG001
     ) -> None:
         pass
 
@@ -61,9 +58,10 @@ def test_get_fparams() -> None:
                 UUID,
                 UUID | None,
                 Optional[UUID],
-                UUID | None,
+                str | None,
                 Nest,
                 NestOp,
+                str | None,
             ],
         ),
     )
@@ -71,7 +69,9 @@ def test_get_fparams() -> None:
     assert to_info(cps[0]) == (click.UUID, "argument")
     assert to_info(cps[1]) == (click.UUID, "option")
     assert to_info(cps[2]) == (click.UUID, "option")
-    assert to_info(cps[3]) == (click.UUID, "option")
+    assert to_info(cps[3]) == (click.STRING, "option")
     assert cps[3].help == "help"
+    assert cps[3].default == "default"
     assert to_info(cps[4]) == (click.STRING, "argument")
     assert to_info(cps[5]) == (click.STRING, "option")
+    assert cps[6].default == "default2"  # デフォルト引数でもいけるか

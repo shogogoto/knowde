@@ -27,6 +27,7 @@ if TYPE_CHECKING:
 def field2option_attrs(info: FieldInfo) -> OptionAttrs:
     return {
         "help": info.description,
+        "default": info.default,
     }
 
 
