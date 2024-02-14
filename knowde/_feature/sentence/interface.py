@@ -1,15 +1,14 @@
 from knowde._feature._shared import Endpoint, create_group, set_basic_router
-from knowde._feature._shared.api.set_basic_router import create_router
+from knowde._feature._shared.integrated_interface.generate_req import APIRequests
 from knowde._feature.sentence.domain import Sentence, SentenceParam
 
 from .repo.label import s_util
 
-s_router, hooks = set_basic_router(
+s_router, reqs, add_and_change = set_basic_router(
     s_util,
-    create_router(Endpoint.Sentence),
+    Endpoint.Sentence.create_router(),
 )
-hooks.create_add(SentenceParam)
-hooks.create_change(SentenceParam)
+add_and_change(SentenceParam)
 
 s_cli, chooks = create_group(
     "sentence",
@@ -20,3 +19,8 @@ chooks.create_add("add", SentenceParam)
 chooks.create_change("ch", SentenceParam)
 chooks.create_rm("rm")
 chooks.create_ls("ls")
+
+s_router = Endpoint.Sentence.create_router()
+reqs = APIRequests(router=s_router)
+
+# reqs.post()

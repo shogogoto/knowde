@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from uuid import UUID  # noqa: TCH003
 
-from fastapi import APIRouter
-
 from knowde._feature._shared import Endpoint, set_basic_router
 from knowde._feature.reference.api.param import (  # noqa: TCH001
     NameParam,
@@ -17,11 +15,9 @@ from knowde._feature.reference.repo.node import (
     change_name,
 )
 
-_EP = Endpoint.Reference
-
-ref_router, _ = set_basic_router(
+ref_router, _, _ = set_basic_router(
     ref_util,
-    APIRouter(prefix=_EP.prefix, tags=[_EP.single_form]),
+    Endpoint.Reference.create_router(),
 )
 
 

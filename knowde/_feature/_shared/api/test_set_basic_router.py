@@ -23,7 +23,7 @@ class OneModel(DomainModel, frozen=True):
 
 util = LabelUtil(label=LTestLabel, model=OneModel)
 
-r, hooks = set_basic_router(
+r, _, _ = set_basic_router(
     util,
     APIRouter(prefix="/tests", tags=["tests"]),
 )
