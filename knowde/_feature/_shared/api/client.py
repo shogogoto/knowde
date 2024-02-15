@@ -9,9 +9,13 @@ if TYPE_CHECKING:
 
     from pydantic import BaseModel
 
-    from knowde._feature._shared.api.types import Complete, ListMethod, Remove
+    from knowde._feature._shared.api.types import (
+        Complete,
+        ListMethod,
+        Remove,
+        RequestMethod,
+    )
     from knowde._feature._shared.domain import DomainModel
-    from knowde._feature._shared.integrated_interface.types import RequestMethod
 
 
 class APIClientError(Exception):

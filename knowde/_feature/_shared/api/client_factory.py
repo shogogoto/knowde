@@ -14,11 +14,12 @@ from knowde._feature._shared.api.client import (
 )
 from knowde._feature._shared.api.endpoint_funcs import EndpointFuncs
 from knowde._feature._shared.api.types import BasicClients, Complete
-from knowde._feature._shared.integrated_interface.generate_req import (
+from knowde._feature._shared.repo.util import LabelUtil  # noqa: TCH001
+
+from .generate_req import (
     APIRequests,
     inject_signature,
 )
-from knowde._feature._shared.repo.util import LabelUtil  # noqa: TCH001
 
 if TYPE_CHECKING:
     from fastapi import APIRouter

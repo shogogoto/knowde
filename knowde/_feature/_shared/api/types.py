@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any, Callable, NamedTuple, Protocol
 if TYPE_CHECKING:
     from uuid import UUID
 
+    import requests
     from pydantic import BaseModel
 
     from knowde._feature._shared.domain import DomainModel
@@ -56,3 +57,13 @@ class AddChangeFactory(Protocol):
 class ReturnType(NamedTuple):
     add_and_change: AddChangeFactory
     methods: BasicClients
+
+
+class RequestMethod(Protocol):
+    def __call__(
+        self,
+        relative: str | None = None,
+        params: dict | None = None,
+        json: object = None,
+    ) -> requests.Response:
+        ...

@@ -6,8 +6,8 @@ from uuid import UUID  # noqa: TCH003
 from neomodel import db
 
 from knowde._feature._shared.api.client_factory import create_basic_clients
+from knowde._feature._shared.api.generate_req import APIRequests
 from knowde._feature._shared.endpoint import Endpoint
-from knowde._feature._shared.integrated_interface.generate_req import APIRequests
 from knowde._feature.concept.domain import (  # noqa: TCH001
     AdjacentConcept,
     ChangeProp,
