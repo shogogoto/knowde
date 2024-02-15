@@ -1,4 +1,4 @@
-from knowde._feature._shared.endpoint import Endpoint
+from knowde._feature._shared import Endpoint
 
 _EP = Endpoint.Concept
 

@@ -7,7 +7,7 @@ from fastapi import APIRouter, status
 from makefun import create_function
 from pydantic import BaseModel
 
-from knowde._feature._shared.endpoint import Endpoint
+from .endpoint import Endpoint
 
 if TYPE_CHECKING:
     from .types import RequestMethod
