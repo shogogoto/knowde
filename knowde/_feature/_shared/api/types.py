@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, NamedTuple, Protocol
+from typing import TYPE_CHECKING, Any, Callable, NamedTuple, Protocol
 
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from fastapi import APIRouter
     from pydantic import BaseModel
 
-    from knowde._feature._shared.integrated_interface.generate_req import APIRequests
+    from knowde._feature._shared.domain import DomainModel
 
 
 class Remove(Protocol):
@@ -17,17 +16,19 @@ class Remove(Protocol):
 
 
 class Complete(Protocol):
-    def __call__(self, pref_uid: str) -> BaseModel:
+    def __call__(self, pref_uid: str) -> DomainModel:
         ...
 
 
-class List(Protocol):
-    def __call__(self) -> list[BaseModel]:
+class ListMethod(Protocol):
+    """typing.Listと区別できる名前にした."""
+
+    def __call__(self) -> list[DomainModel]:
         ...
 
 
 class Add(Protocol):
-    def __call__(self, p: BaseModel) -> BaseModel:
+    def __call__(self, p: BaseModel) -> DomainModel:
         ...
 
 
@@ -37,22 +38,21 @@ class Change(Protocol):
         uid: UUID,
         # PydanticPartialに合う型が分からなかった
         p: Any,  # noqa: ANN401
-    ) -> BaseModel:
+    ) -> DomainModel:
         ...
 
 
-class BasicMethods(NamedTuple):
+class BasicClients(NamedTuple):
     rm: Remove
     complete: Complete
-    ls: List
+    ls: ListMethod
 
 
-class APISetter(Protocol):
-    def __call__(self, t_in: type[BaseModel]) -> None:
+class AddChangeFactory(Protocol):
+    def __call__(self, t_in: type[BaseModel]) -> tuple[Callable, Callable]:
         ...
 
 
 class ReturnType(NamedTuple):
-    router: APIRouter
-    requests: APIRequests
-    add_and_change: APISetter
+    add_and_change: AddChangeFactory
+    methods: BasicClients

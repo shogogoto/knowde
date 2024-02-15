@@ -5,24 +5,24 @@ from uuid import UUID  # noqa: TCH003
 
 from neomodel import db
 
-from knowde._feature._shared import set_basic_router
+from knowde._feature._shared.api.client_factory import create_basic_clients
 from knowde._feature._shared.endpoint import Endpoint
+from knowde._feature._shared.integrated_interface.generate_req import APIRequests
 from knowde._feature.concept.domain import (  # noqa: TCH001
     AdjacentConcept,
     ChangeProp,
     Concept,
     SaveProp,
 )
-from knowde._feature.concept.repo.label import util_concept
 from knowde._feature.concept.repo.repo import (
     change_concept,
     save_concept,
+    util_concept,
 )
 
-concept_router, reqs, _ = set_basic_router(
-    util_concept,
-    Endpoint.Concept.create_router(),
-)
+concept_router = Endpoint.Concept.create_router()
+_ = create_basic_clients(util_concept, concept_router)
+reqs = APIRequests(router=concept_router)
 
 
 def _post(prop: SaveProp) -> AdjacentConcept:
