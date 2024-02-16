@@ -41,7 +41,4 @@ class ClickDecorator(BaseModel, frozen=True):
     params: list[ClickParam]
 
     def __call__(self, f: FC) -> FC:
-        _f = f
-        for p in reversed(self.params):
-            _f = p(_f)
-        return _f
+        return click_decorate(self.params)(f)

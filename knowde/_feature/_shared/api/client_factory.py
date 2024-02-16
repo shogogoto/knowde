@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 from fastapi import APIRouter  # noqa: TCH002
@@ -26,6 +27,9 @@ from .generate_req import (
     APIRequests,
     inject_signature,
 )
+
+if TYPE_CHECKING:
+    from knowde._feature._shared.domain import DomainModel
 
 
 def create_add_client(
@@ -86,6 +90,10 @@ class APIClientFactory(
 ):
     util: LabelUtil
     router: APIRouter
+
+    @property
+    def t_out(self) -> type[DomainModel]:
+        return self.util.model
 
     def create_basics(self) -> BasicClients:
         return create_basic_clients(
