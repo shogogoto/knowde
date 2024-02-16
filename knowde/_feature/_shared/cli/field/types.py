@@ -11,7 +11,7 @@ class ClickParamAttrs(TypedDict):
 class OptionAttrs(ClickParamAttrs):
     help: str | None
     default: Any
-    show_default: bool | None
+    # show_default: bool | None
 
 
 class ArgumentAttrs(ClickParamAttrs):

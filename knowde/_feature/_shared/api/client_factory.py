@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable
+from typing import Callable
 from uuid import UUID
 
+from fastapi import APIRouter  # noqa: TCH002
+from pydantic import BaseModel
 from pydantic_partial.partial import create_partial_model
 
 from knowde._feature._shared.api.client import (
@@ -13,7 +15,14 @@ from knowde._feature._shared.api.client import (
     remove_client,
 )
 from knowde._feature._shared.api.endpoint_funcs import EndpointFuncs
-from knowde._feature._shared.api.types import BasicClients, Complete
+from knowde._feature._shared.api.types import (
+    Add,
+    AddFactory,
+    BasicClients,
+    Change,
+    ChangeFactory,
+    Complete,
+)
 from knowde._feature._shared.repo.util import LabelUtil  # noqa: TCH001
 
 from .generate_req import (
@@ -21,15 +30,11 @@ from .generate_req import (
     inject_signature,
 )
 
-if TYPE_CHECKING:
-    from fastapi import APIRouter
-    from pydantic import BaseModel
-
 
 def create_add_client_factory(
     util: LabelUtil,
     router: APIRouter,
-) -> Callable[[type[BaseModel]], Callable]:
+) -> AddFactory:
     reqs = APIRequests(router=router)
     epfs = EndpointFuncs(util=util)
 
@@ -48,7 +53,7 @@ def create_change_client_factory(
     util: LabelUtil,
     router: APIRouter,
     complete_client: Complete,
-) -> Callable[[type[BaseModel]], Callable]:
+) -> ChangeFactory:
     reqs = APIRequests(router=router)
     epfs = EndpointFuncs(util=util)
 
@@ -83,3 +88,37 @@ def create_basic_clients(
         complete_client(req_complete, util.model),
         list_client(req_ls, util.model),
     )
+
+
+class APIClientFactory(
+    BaseModel,
+    frozen=True,
+    arbitrary_types_allowed=True,
+):
+    util: LabelUtil
+    router: APIRouter
+
+    def create_basics(self) -> BasicClients:
+        return create_basic_clients(
+            self.util,
+            self.router,
+        )
+
+    def create_add(
+        self,
+        t_in: type[BaseModel],
+    ) -> Add:
+        return create_add_client_factory(
+            self.util,
+            self.router,
+        )(t_in)
+
+    def create_change(
+        self,
+        t_in: type[BaseModel],
+    ) -> Change:
+        return create_change_client_factory(
+            self.util,
+            self.router,
+            self.create_basics().complete,
+        )(t_in)

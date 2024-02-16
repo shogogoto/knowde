@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, NamedTuple, Protocol
+from typing import TYPE_CHECKING, Any, Callable, NamedTuple, Protocol, TypeAlias
+
+from pydantic import BaseModel
 
 if TYPE_CHECKING:
     from uuid import UUID
 
     import requests
-    from pydantic import BaseModel
 
     from knowde._feature._shared.domain import DomainModel
 
@@ -41,6 +42,10 @@ class Change(Protocol):
         p: Any,  # noqa: ANN401
     ) -> DomainModel:
         ...
+
+
+AddFactory: TypeAlias = Callable[[type[BaseModel]], Add]
+ChangeFactory: TypeAlias = Callable[[type[BaseModel]], Change]
 
 
 class BasicClients(NamedTuple):
