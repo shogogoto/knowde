@@ -8,8 +8,8 @@ repository = "https://github/com/shogogoto/knowde"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-fastapi = "^0.104.1"
-neomodel = "^5.2.0"
+fastapi = "^0.109.0"
+neomodel = "^5.2.1"
 uvicorn = "^0.24.0.post1"
 uuid6 = "^2023.5.2"
 requests = "^2.31.0"
@@ -60,6 +60,11 @@ ignore = [
   "N805", # first argument of method should be named self
   "UP007", # str | Optional[T]が許されない
   "B008", # default argに関数の返り値を使えない
+  "A003", # Class attribute `help` is shadowing a Python builtin
+  ]
+unfixable = [
+  "T201", # print
+  "F841" # unused local variable
   ]
 unsafe-fixes = true
 
@@ -67,7 +72,8 @@ unsafe-fixes = true
 [tool.pytest.ini_options]
 filterwarnings = [
   'ignore: pkg_resources is deprecated as an API:DeprecationWarning',
-  "ignore: Relying on Driver's destructor to close the session is deprecated."
+  "ignore: Relying on Driver's destructor to close the session is deprecated.",
+  "ignore: Using extra keyword arguments on `Field` is deprecated and will be removed."
   ]
 
 [tool.poetry.scripts]

@@ -1,1 +1,1 @@
-from .set_basic_router import set_basic_router  # noqa:F401
+from .endpoint import Endpoint  # noqa: F401

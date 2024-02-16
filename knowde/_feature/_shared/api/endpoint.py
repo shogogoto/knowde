@@ -3,9 +3,11 @@ from __future__ import annotations
 
 import os
 from enum import Enum
+from typing import Self
 from urllib.parse import urljoin
 
 import requests
+from fastapi import APIRouter
 from inflector import Inflector
 
 TIMEOUT = 3.0
@@ -17,6 +19,16 @@ class Endpoint(Enum):
     Concept = "concepts"
     Reference = "references"
     Sentence = "sentences"
+
+    Test = "tests"  # test用
+
+    @classmethod
+    def of(cls, prefix: str) -> Self:
+        for m in cls:
+            if m.prefix == prefix:
+                return m
+        msg = f"{prefix} must be in {[m.prefix for m in cls]}"
+        raise KeyError(msg)
 
     @property
     def prefix(self) -> str:
@@ -30,7 +42,7 @@ class Endpoint(Enum):
 
     def __url(self, relative: str | None = None) -> str:
         _relative = self.value
-        if relative is not None:
+        if relative is not None and relative != "":
             _relative += f"/{relative}"
 
         try:
@@ -56,7 +68,7 @@ class Endpoint(Enum):
 
     def delete(
         self,
-        relative: str,
+        relative: str | None = None,
         params: dict | None = None,
         json: object = None,
     ) -> requests.Response:
@@ -94,4 +106,10 @@ class Endpoint(Enum):
             timeout=TIMEOUT * 3,
             params=params,
             json=json,
+        )
+
+    def create_router(self) -> APIRouter:
+        return APIRouter(
+            prefix=self.prefix,
+            tags=[self.single_form],
         )

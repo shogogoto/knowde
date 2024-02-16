@@ -1,13 +1,20 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from uuid import UUID  # noqa: TCH003
 
 import click
-import pytest
 from pydantic import BaseModel, Field
 from pydantic_partial.partial import create_partial_model
 
-from .to_clickparam import ClickParam, model2decorator, to_click_param, to_clicktype
+from .model2click import (
+    ClickParam,
+    model2decorator,
+    to_clickparam,
+)
+
+if TYPE_CHECKING:
+    from knowde._feature._shared.cli.to_click import ClickDecorator
 
 
 class NestedModel(BaseModel):
@@ -30,34 +37,16 @@ class OneModel(BaseModel):
 OneModelPartial = create_partial_model(OneModel)
 
 
-def test_to_clicktype() -> None:
-    assert to_clicktype(OneModel.model_fields["pstr"]) == click.STRING
-    assert to_clicktype(OneModel.model_fields["pfloat"]) == click.FLOAT
-    assert to_clicktype(OneModel.model_fields["puid"]) == click.UUID
-    assert to_clicktype(OneModel.model_fields["pint"]) == click.INT
-    assert to_clicktype(OneModel.model_fields["pbool"]) == click.BOOL
-    with pytest.raises(ValueError):  # noqa: PT011
-        to_clicktype(OneModel.model_fields["nested"])
-
-    assert to_clicktype(OneModelPartial.model_fields["pstr"]) == click.STRING
-    assert to_clicktype(OneModelPartial.model_fields["pfloat"]) == click.FLOAT
-    assert to_clicktype(OneModelPartial.model_fields["puid"]) == click.UUID
-    assert to_clicktype(OneModelPartial.model_fields["pint"]) == click.INT
-    assert to_clicktype(OneModelPartial.model_fields["pbool"]) == click.BOOL
-    with pytest.raises(ValueError):  # noqa: PT011
-        to_clicktype(OneModelPartial.model_fields["nested"])
-
-
 def test_to_click_param() -> None:
-    def get_clickparam(f: ClickParam) -> click.Parameter:
+    def to_param(f: ClickParam) -> click.Parameter:
         @f
         def _dummy() -> None:
             pass
 
         return _dummy.__click_params__[0]
 
-    p1 = get_clickparam(to_click_param("_", OneModel.model_fields["pstr"]))
-    p2 = get_clickparam(to_click_param("_", OneModelPartial.model_fields["pstr"]))
+    p1 = to_param(to_clickparam("_", OneModel.model_fields["pstr"]))
+    p2 = to_param(to_clickparam("_", OneModelPartial.model_fields["pstr"]))
     assert (p1.type, p1.param_type_name) == (click.STRING, "argument")
     assert (p2.type, p2.param_type_name) == (click.STRING, "option")
 
@@ -78,9 +67,17 @@ class ParentModel2(BaseModel):
     p3: str
 
 
+def info(deco: ClickDecorator) -> list[tuple[str, str]]:
+    @deco
+    def _dummy() -> None:
+        pass
+
+    return [(p.name, p.param_type_name) for p in reversed(_dummy.__click_params__)]
+
+
 def test_params_order() -> None:
     deco = model2decorator(ParentModel)
-    assert deco.info == [
+    assert info(deco) == [
         ("p1_1", "option"),
         ("p1_2", "option"),
         ("p2", "argument"),
@@ -92,7 +89,7 @@ def test_params_order() -> None:
     ]
 
     deco2 = model2decorator(ParentModel2)
-    assert deco2.info == [
+    assert info(deco2) == [
         ("p1_1", "option"),
         ("p1_2", "option"),
         ("nint1_1", "option"),
@@ -114,7 +111,7 @@ class ParentModel3(BaseModel):
 
 def test_optional_nested() -> None:
     deco = model2decorator(ParentModel3)
-    assert deco.info == [
+    assert info(deco) == [
         ("nint1_1", "option"),
         ("nint1_2", "option"),
         ("nstr2", "option"),

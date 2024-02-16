@@ -20,7 +20,7 @@ def is_optional(annotation: type[Any] | None) -> bool:
 
 
 def is_option(annotation: type[Any] | None) -> bool:
-    """Optionalではない. かつnestedでない."""
+    """click.Parameterに変換するよう判定する."""
     if is_nested(annotation):
         return False
     return is_optional(annotation)

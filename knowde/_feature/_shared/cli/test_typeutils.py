@@ -5,7 +5,7 @@ from typing import Optional
 from pydantic import BaseModel, Field
 from pydantic_partial.partial import create_partial_model
 
-from knowde._feature._shared.cli.fieldtype import extract_type, is_nested, is_option
+from .typeutils import extract_type, is_nested, is_option
 
 
 class NestedModel(BaseModel):
