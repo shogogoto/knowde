@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import Callable
 from uuid import UUID
 
 from fastapi import APIRouter  # noqa: TCH002
@@ -17,10 +16,8 @@ from knowde._feature._shared.api.client import (
 from knowde._feature._shared.api.endpoint_funcs import EndpointFuncs
 from knowde._feature._shared.api.types import (
     Add,
-    AddFactory,
     BasicClients,
     Change,
-    ChangeFactory,
     Complete,
 )
 from knowde._feature._shared.repo.util import LabelUtil  # noqa: TCH001
@@ -31,42 +28,34 @@ from .generate_req import (
 )
 
 
-def create_add_client_factory(
+def create_add_client(
     util: LabelUtil,
     router: APIRouter,
-) -> AddFactory:
+    t_in: type[BaseModel],
+) -> Add:
     reqs = APIRequests(router=router)
     epfs = EndpointFuncs(util=util)
 
-    def _add(
-        t_in: type[BaseModel],
-    ) -> Callable:
-        req_add = reqs.post(
-            inject_signature(epfs.add_factory(t_in), [t_in], util.model),
-        )
-        return add_client(req_add, t_in, util.model)
-
-    return _add
+    req_add = reqs.post(
+        inject_signature(epfs.add_factory(t_in), [t_in], util.model),
+    )
+    return add_client(req_add, t_in, util.model)
 
 
-def create_change_client_factory(
+def create_change_client(
     util: LabelUtil,
     router: APIRouter,
+    t_in: type[BaseModel],
     complete_client: Complete,
-) -> ChangeFactory:
+) -> Change:
     reqs = APIRequests(router=router)
     epfs = EndpointFuncs(util=util)
 
-    def _ch(
-        t_in: type[BaseModel],
-    ) -> Callable:
-        OPT = create_partial_model(t_in)  # noqa: N806
-        req_ch = reqs.put(
-            inject_signature(epfs.ch_factory(t_in), [UUID, OPT], util.model),
-        )
-        return change_client(req_ch, OPT, util.model, complete_client)
-
-    return _ch
+    OPT = create_partial_model(t_in)  # noqa: N806
+    req_ch = reqs.put(
+        inject_signature(epfs.ch_factory(t_in), [UUID, OPT], util.model),
+    )
+    return change_client(req_ch, OPT, util.model, complete_client)
 
 
 def create_basic_clients(
@@ -108,17 +97,19 @@ class APIClientFactory(
         self,
         t_in: type[BaseModel],
     ) -> Add:
-        return create_add_client_factory(
+        return create_add_client(
             self.util,
             self.router,
-        )(t_in)
+            t_in,
+        )
 
     def create_change(
         self,
         t_in: type[BaseModel],
     ) -> Change:
-        return create_change_client_factory(
+        return create_change_client(
             self.util,
             self.router,
+            t_in,
             self.create_basics().complete,
-        )(t_in)
+        )
