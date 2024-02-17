@@ -1,8 +1,15 @@
 from __future__ import annotations
 
+from datetime import datetime
+
 from neomodel import DateTimeProperty, StructuredNode, UniqueIdProperty
 
-from knowde._feature._shared.timeutil import jst_now
+from knowde._feature._shared.domain import TZ
+
+
+def jst_now() -> datetime:
+    """Jst datetime now truncated microsecond."""
+    return datetime.now(tz=TZ).replace(microsecond=0)
 
 
 class LBase(StructuredNode):

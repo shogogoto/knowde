@@ -1,16 +1,17 @@
 from __future__ import annotations
 
-from datetime import datetime  # noqa: TCH003
+from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any, Self, TypeVar
 from uuid import UUID  # noqa: TCH003
 
 from pydantic import BaseModel, RootModel, field_validator
 
 from .errors import NotExistsUidAccessError
-from .timeutil import TZ
 
 if TYPE_CHECKING:
     from knowde._feature._shared.repo import LBase
+
+TZ = timezone(timedelta(hours=9), "Asia/Tokyo")
 
 
 class DomainModel(BaseModel, frozen=True):
