@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any, Self, TypeVar
 from uuid import UUID  # noqa: TCH003
 
-from pydantic import BaseModel, RootModel, field_validator
+from pydantic import BaseModel, Field, RootModel, field_validator
 
 from .errors import NotExistsUidAccessError
 
@@ -14,10 +14,15 @@ if TYPE_CHECKING:
 TZ = timezone(timedelta(hours=9), "Asia/Tokyo")
 
 
+def jst_now() -> datetime:
+    """Jst datetime now truncated microsecond."""
+    return datetime.now(tz=TZ).replace(microsecond=0)
+
+
 class DomainModel(BaseModel, frozen=True):
     uid: UUID | None = None
-    created: datetime | None = None
-    updated: datetime | None = None
+    created: datetime | None = Field(None, repr=False)
+    updated: datetime | None = Field(None, repr=False)
 
     @field_validator("created")
     def validate_created(cls, v: datetime) -> datetime:
