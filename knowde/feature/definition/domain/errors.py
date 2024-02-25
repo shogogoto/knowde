@@ -1,3 +1,6 @@
+"""自作エラー."""
+
+
 class MarkContainsMarkError(Exception):
     """マーク内にマークを含む."""
 
