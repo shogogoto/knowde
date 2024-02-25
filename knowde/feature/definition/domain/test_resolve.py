@@ -1,41 +1,88 @@
-"""explainを定義と紐付ける."""
+"""説明を定義と紐付ける.
+
+説明を表す文字列に定義を埋め込んで表現できるようにしたい
+
+- 既存定義の引用 e.g. 微分の説明には{極限}が含まれる
+  リザードン：{リザード}の{進化系}.{ほのおタイプ}
+
+"""
 
 
 import pytest
 
-from knowde.feature.definition.domain.errors import MarkContainsMarkError
-from knowde.feature.definition.domain.resolve import inject_mark, pick_mark
+from knowde.feature.definition.domain.errors import (
+    EmptyMarkError,
+    MarkContainsMarkError,
+    PlaceHolderMappingError,
+)
+from knowde.feature.definition.domain.resolve import (
+    count_placeholder,
+    inject2placeholder,
+    pick_marks,
+    replace_marks,
+)
 
 
-def test_parse_mark() -> None:
+def test_pick_mark() -> None:
     """文字列からマーク{}を識別する."""
     s1 = "xxx{def1}xxx"
     s2 = "{d1}x{d2}xxxx{d3}x"
-    assert pick_mark(s1) == ["def1"]
-    assert pick_mark(s2) == ["d1", "d2", "d3"]
+    assert pick_marks(s1) == ["def1"]
+    assert pick_marks(s2) == ["d1", "d2", "d3"]
 
 
-def test_parse_mark_empty() -> None:
+def test_pick_mark_empty() -> None:
     """mark内が空の場合、抽出しない."""
-    txt = "xx{}xx"
-    assert pick_mark(txt) == []
+    s = "xx{}xx"
+    with pytest.raises(EmptyMarkError):
+        pick_marks(s)
 
 
-def test_parse_mark_in_mark() -> None:
+def test_pick_mark_none() -> None:
+    """markなし."""
+    assert pick_marks("xxx") == []
+
+
+def test_pick_mark_in_mark() -> None:
     """markと同じ文字列を含む場合はエラー."""
-    txt1 = r"{{}"
-    txt2 = r"{}}"
-    txt3 = r"{{}}"
+    s1 = "{{}"
+    s2 = "{}}"
+    s3 = "{{}}"
     with pytest.raises(MarkContainsMarkError):
-        pick_mark(txt1)
-
-    with pytest.raises(MarkContainsMarkError):
-        pick_mark(txt2)
+        pick_marks(s1)
 
     with pytest.raises(MarkContainsMarkError):
-        pick_mark(txt3)
+        pick_marks(s2)
+
+    with pytest.raises(MarkContainsMarkError):
+        pick_marks(s3)
 
 
-# def test_inject_mark() -> None:
-#     txt = "xx{}xx"
-#     assert inject_mark(txt, "@") == "xx@xx"
+def test_replace_marks() -> None:
+    """markをplaceholderへ置換."""
+    s1 = "xx{def}xx"
+    s2 = "xx{def}xx{def2}"
+
+    assert replace_marks(s1) == "xx$@xx"
+    assert replace_marks(s2) == "xx$@xx$@"
+
+
+def count_place_holder() -> None:
+    """プレースホルダーを数える."""
+    assert count_placeholder("xx$x@xx") == 0
+    assert count_placeholder("xx$@xx") == 1
+    assert count_placeholder("xx$@$@") == 2  # noqa: PLR2004
+
+
+def test_inject2placeholder() -> None:
+    """placeholderに文字を挿入."""
+    s1 = "xx$@xx"
+    s2 = "xx$@xx$@"  # $@ * 2
+    assert inject2placeholder(s1, ["def"]) == "xxdefxx"
+    assert inject2placeholder(s2, ["def", "def2"]) == "xxdefxxdef2"
+
+    with pytest.raises(PlaceHolderMappingError):  # 2 != 1
+        inject2placeholder(s2, ["d1"])
+
+    with pytest.raises(PlaceHolderMappingError):  # 2 != 3
+        inject2placeholder(s2, ["d1", "d2", "d3"])
