@@ -6,12 +6,12 @@
 
 import pytest
 
-from knowde.feature.definition.domain.errors import (
+from .errors import (
     EmptyMarkError,
     MarkContainsMarkError,
     PlaceHolderMappingError,
 )
-from knowde.feature.definition.domain.resolve import (
+from .mark import (
     count_placeholder,
     inject2placeholder,
     pick_marks,
@@ -63,7 +63,7 @@ def test_replace_marks() -> None:
     assert replace_marks(s2) == "xx$@xx$@"
 
 
-def count_place_holder() -> None:
+def test_count_place_holder() -> None:
     """プレースホルダーを数える."""
     assert count_placeholder("xx$x@xx") == 0
     assert count_placeholder("xx$@xx") == 1
