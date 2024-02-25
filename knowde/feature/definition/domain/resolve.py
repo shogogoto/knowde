@@ -21,7 +21,7 @@ def pick_marks(s: str) -> list[str]:
         return []
     marks = MARK_PATTERN.findall(s)
     if any(map(contains_mark_symbol, marks)):
-        msg = f"マーク内にマーク文字'{MARK_OPEN}'または'{MARK_CLOSE}'が含まれています: {s}"
+        msg = f"マーク内に'{MARK_OPEN}'または'{MARK_CLOSE}'が含まれています: {s}"
         raise MarkContainsMarkError(msg)
     if len(marks) == 0:
         msg = "マーク内に文字列を入力してください"
