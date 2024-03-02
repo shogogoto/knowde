@@ -7,13 +7,13 @@
         return Sentence(value=v).value
 
 """
-
+from __future__ import annotations
 
 from pydantic import BaseModel, field_validator
 
 from knowde._feature._shared.domain import DomainModel
-from knowde._feature.sentence.domain import SentenceParam
-from knowde._feature.term.domain import TermParam
+from knowde._feature.sentence.domain import Sentence, SentenceParam
+from knowde._feature.term.domain import Term, TermParam
 
 
 class DefinitionParam(BaseModel, frozen=True):
@@ -31,5 +31,18 @@ class DefinitionParam(BaseModel, frozen=True):
         return SentenceParam(value=v).value
 
 
-class Definition(DefinitionParam, DomainModel, frozen=True):
+class Definition(DomainModel, frozen=True):
     """定義モデル."""
+
+    term: Term
+    sentence: Sentence
+
+    @property
+    def name(self) -> str:
+        """term.value alias."""
+        return self.term.value
+
+    @property
+    def explain(self) -> str:
+        """Description sentence alias."""
+        return self.sentence.value

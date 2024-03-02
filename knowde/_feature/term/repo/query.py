@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from knowde._feature._shared.repo.label import Label, Labels
 from knowde._feature.term.domain import Term
 
 from .label import LTerm
@@ -7,14 +8,14 @@ from .label import LTerm
 
 class TermQuery:
     @staticmethod
-    def find(v: str) -> list[Term]:
+    def find(v: str) -> Labels[LTerm, Term]:
         """{name}を含むデータすべてを取得."""
         lbs = LTerm.nodes.filter(value__icontains=v)
-        return Term.to_models(lbs)
+        return Labels(root=lbs, model=Term)
 
     @staticmethod
-    def find_one_or_none(v: str) -> Term | None:
-        lb = LTerm.nodes.get_or_none(value__icontains=v)
+    def find_one_or_none(v: str) -> Label[LTerm, Term] | None:
+        lb = LTerm.nodes.get_or_none(value=v)
         if lb is None:
             return None
-        return Term.to_model(lb)
+        return Label(label=lb, model=Term)
