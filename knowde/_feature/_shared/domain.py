@@ -15,8 +15,7 @@ TZ = timezone(timedelta(hours=9), "Asia/Tokyo")
 
 
 def jst_now() -> datetime:
-    """Jst datetime now truncated microsecond."""
-    return datetime.now(tz=TZ).replace(microsecond=0)
+    return datetime.now(tz=TZ)
 
 
 class DomainModel(BaseModel, frozen=True):

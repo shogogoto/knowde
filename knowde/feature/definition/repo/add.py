@@ -45,7 +45,7 @@ def rel_manager(
     ).build_manager(source, name="")  # nameが何に使われているのか不明
 
 
-def create_definition(name: str, explain: str) -> Definition:
+def add_definition(name: str, explain: str) -> Definition:
     """Create new definition."""
     t = TermQuery.find_one_or_none(name)
     s = SentenceQuery.find_one_or_none(explain)
@@ -70,8 +70,8 @@ def create_definition(name: str, explain: str) -> Definition:
     )
 
 
-def find_definition(term_uid: UUID) -> Definition | None:
-    """neomodelではrelationを検索できないのでcypherで書く."""
+def get_rel(term_uid: UUID) -> RelBase | None:
+    """Get StructuredRel object."""
     res = query_cypher(
         """
         MATCH (t:Term)-[rel:DEFINE]->(Sentence)
@@ -81,7 +81,14 @@ def find_definition(term_uid: UUID) -> Definition | None:
     ).results
     if len(res) == 0:
         return None
-    rel = res[0][0]
+    return res[0][0]
+
+
+def find_definition(term_uid: UUID) -> Definition | None:
+    """neomodelではrelationを検索できないのでcypherで書く."""
+    rel = get_rel(term_uid)
+    if rel is None:
+        return None
     t = Term.to_model(rel.start_node())
     s = Sentence.to_model(rel.end_node())
     return Definition(
@@ -93,9 +100,24 @@ def find_definition(term_uid: UUID) -> Definition | None:
     )
 
 
-# def change_definition(
-#     d: Definition,
-#     name: str | None = None,
-#     explain: str | None = None,
-# ) -> None:
-#     """定義の変更."""
+def change_definition(
+    d: Definition,
+    name: str | None = None,
+    explain: str | None = None,
+) -> Definition:
+    """定義の変更."""
+    rel = get_rel(d.term.valid_uid)
+
+    t = term_util.change(d.term.valid_uid, value=name).to_model()
+    s = s_util.change(d.sentence.valid_uid, value=explain).to_model()
+
+    if any([name, explain]):
+        rel.save()
+
+    return Definition(
+        term=t,
+        sentence=s,
+        uid=rel.uid,
+        created=rel.created,
+        updated=rel.updated,
+    )
