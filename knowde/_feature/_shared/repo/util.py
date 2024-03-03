@@ -70,3 +70,12 @@ class LabelUtil(BaseModel, Generic[L, M], frozen=True):
     def create(self, **kwargs) -> Label[L, M]:  # noqa: ANN003
         saved = self.label(**kwargs).save()
         return self.to_label(saved)
+
+    def change(self, uid: UUID, **kwargs) -> Label[L, M]:  # noqa: ANN003
+        lb = self.find_one(uid).label
+        for k, v in kwargs.items():
+            if v is not None:
+                setattr(lb, k, v)
+        if any(kwargs.values()):  # どれか１つでも変更した場合
+            return self.to_label(lb.save())
+        return self.to_label(lb)
