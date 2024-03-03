@@ -46,3 +46,8 @@ class Definition(DomainModel, frozen=True):
     def explain(self) -> str:
         """Description sentence alias."""
         return self.sentence.value
+
+    @property
+    def oneline(self) -> str:
+        """1行のテキスト表現."""
+        return f"{self.name}: {self.explain}"

@@ -26,6 +26,9 @@ class LabelUtil(BaseModel, Generic[L, M], frozen=True):
     label: type[L]
     model: type[M]
 
+    def to_neolabel(self, model: M) -> L:
+        return self.label(**model.model_dump())
+
     def to_label(self, label: L) -> Label[L, M]:
         return Label(label=label, model=self.model)
 

@@ -9,7 +9,7 @@ class TimestampMixin:
     created = DateTimeProperty()
     updated = DateTimeProperty()
 
-    def set_datetime(self) -> None:
+    def pre_save(self) -> None:
         """Set updated datetime now."""
         now = jst_now()
         if self.created is None:
@@ -21,12 +21,6 @@ class LBase(StructuredNode, TimestampMixin):
     __abstract_node__ = True
     uid = UniqueIdProperty()
 
-    def pre_save(self) -> None:
-        self.set_datetime()
-
 
 class RelBase(StructuredRel, TimestampMixin):
     uid = UniqueIdProperty()
-
-    def post_save(self) -> None:
-        self.set_datetime()
