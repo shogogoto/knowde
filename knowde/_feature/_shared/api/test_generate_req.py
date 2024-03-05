@@ -84,7 +84,7 @@ def test_put(requests_mock: Mocker) -> None:
     OneParamPartial = create_partial_model(OneParam)  # noqa: N806
 
     def change(uid: UUID, p: OneParamPartial) -> OneModel:
-        lb = util.find_one(uid).label
+        lb = util.find_by_id(uid).label
         for k, v in p.model_dump().items():
             if v is not None:
                 setattr(lb, k, v)
@@ -126,7 +126,7 @@ def test_generate_get(requests_mock: Mocker) -> None:
     """取得APIの生成."""
 
     def f() -> list[OneModel]:
-        return util.find_all().to_model()
+        return util.find().to_model()
 
     r = APIRouter(prefix=PREFIX)
     req = APIRequests(router=r).get(f)

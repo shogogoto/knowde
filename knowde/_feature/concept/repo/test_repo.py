@@ -29,7 +29,7 @@ def test_list() -> None:
     """Find all concepts."""
     prop = SaveProp(name="test_list")
     save_concept(prop)
-    ls = util_concept.find_all()
+    ls = util_concept.find()
     assert prop.name in [e.name for e in ls]
 
 
@@ -37,10 +37,10 @@ def test_delete() -> None:
     """Test."""
     prop = SaveProp(name="test_delete")
     saved = save_concept(prop)
-    ls = util_concept.find_all()
+    ls = util_concept.find()
     assert prop.name in [e.name for e in ls]
     util_concept.delete(saved.valid_uid)
-    ls = util_concept.find_all()
+    ls = util_concept.find()
     assert prop.name not in [e.name for e in ls]
 
 
@@ -50,13 +50,13 @@ def test_change() -> None:
     saved = save_concept(prop)
     chname = "changed_name"
     change_concept(saved.valid_uid, name=chname)
-    one = util_concept.find_one(saved.valid_uid).to_model()
+    one = util_concept.find_by_id(saved.valid_uid).to_model()
     assert one.name == chname
     assert one.explain is None
 
     chexplain = "changed_explain"
     change_concept(saved.valid_uid, explain=chexplain)
-    one = util_concept.find_one(saved.valid_uid).to_model()
+    one = util_concept.find_by_id(saved.valid_uid).to_model()
     assert one.name == chname
     assert one.explain == chexplain
 
@@ -95,5 +95,5 @@ def test_complete() -> None:
 def test_find_one() -> None:
     name = "m2l"
     m = save_concept(SaveProp(name=name))
-    one = util_concept.find_one(m.valid_uid).to_model()
+    one = util_concept.find_by_id(m.valid_uid).to_model()
     assert m.valid_uid == one.valid_uid

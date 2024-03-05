@@ -26,7 +26,7 @@ class EndpointFuncs(BaseModel, frozen=True):
         return self.util.complete(pref_uid).to_model()
 
     def ls(self) -> list[DomainModel]:
-        return self.util.find_all().to_model()
+        return self.util.find().to_model()
 
     def add_factory(self, t_in: type[BaseModel]) -> Add:
         def add(p: t_in) -> DomainModel:

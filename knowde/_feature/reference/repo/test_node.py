@@ -59,7 +59,7 @@ def test_add_part() -> None:
 def test_add_author() -> None:
     ref = add_root("with_author")
     author = add_author("oresama", ref)
-    assert author == author_util.find_one(author.valid_uid).to_model()
+    assert author == author_util.find_by_id(author.valid_uid).to_model()
     g_roots = find_roots()
     root = ModelList(root=list(g_roots.G.nodes)).first("name", "with_author")
 

@@ -28,7 +28,7 @@ def change_concept(
     explain: Optional[str] = None,
 ) -> Concept:
     """Change concept properties."""
-    lb = util_concept.find_one(uid).label
+    lb = util_concept.find_by_id(uid).label
     if name is not None:
         lb.name = name
     if explain is not None:
