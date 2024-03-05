@@ -14,10 +14,8 @@ from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature.sentence import s_util
 from knowde._feature.sentence.domain import Sentence
 from knowde._feature.sentence.repo.label import LSentence
-from knowde._feature.sentence.repo.query import SentenceQuery
 from knowde._feature.term import term_util
 from knowde._feature.term.domain import Term
-from knowde._feature.term.repo.query import TermQuery
 from knowde.feature.definition.domain.domain import Definition
 from knowde.feature.definition.repo.errors import AlreadyDefinedError
 
@@ -47,8 +45,8 @@ def rel_manager(
 
 def add_definition(name: str, explain: str) -> Definition:
     """Create new definition."""
-    t = TermQuery.find_one_or_none(name)
-    s = SentenceQuery.find_one_or_none(explain)
+    t = term_util.find_one_or_none(value=name)
+    s = s_util.find_one_or_none(value=explain)
     if t is None:
         t = term_util.create(value=name)
     if s is None:

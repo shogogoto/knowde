@@ -72,6 +72,8 @@ class LabelUtil(BaseModel, Generic[L, M], frozen=True):
 
     def find_one_or_none(self, **kwargs) -> Label[L, M] | None:  # noqa: ANN003
         lb = self.label.nodes.get_or_none(**kwargs)
+        if lb is None:
+            return None
         return self.to_label(lb)
 
     def delete(self, uid: UUID) -> None:
