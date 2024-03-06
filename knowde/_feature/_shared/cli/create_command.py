@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import (
     TYPE_CHECKING,
-    Callable,
 )
 
 import click
@@ -23,19 +22,11 @@ if TYPE_CHECKING:
     from knowde._feature._shared.api.client_factory import APIClientFactory
 
 
-def to_command(
-    name: str,
-    f: Callable,
-    helpmsg: str | None = None,
-) -> click.Command:
-    """ただのショートカット."""
-    return click.command(name, help=helpmsg)(f)
-
-
 def set_basic_commands(
     g: click.Group,
     factory: APIClientFactory,
 ) -> None:
+    """独自のclickparamが存在しないコマンド."""
     clients = factory.create_basics()
     out_name = factory.t_out.__name__
 

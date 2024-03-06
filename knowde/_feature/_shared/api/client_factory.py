@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 from uuid import UUID
 
 from fastapi import APIRouter  # noqa: TCH002
@@ -19,6 +19,7 @@ from knowde._feature._shared.api.types import (
     Add,
     BasicClients,
     Change,
+    CheckResponse,
     Complete,
 )
 from knowde._feature._shared.repo.util import LabelUtil  # noqa: TCH001
@@ -33,33 +34,32 @@ if TYPE_CHECKING:
 
 
 def create_add_client(
-    util: LabelUtil,
     router: APIRouter,
+    f: Callable,
     t_in: type[BaseModel],
+    t_out: type[DomainModel],
+    check_response: CheckResponse | None = None,
 ) -> Add:
     reqs = APIRequests(router=router)
-    epfs = EndpointFuncs(util=util)
-
     req_add = reqs.post(
-        inject_signature(epfs.add_factory(t_in), [t_in], util.model),
+        inject_signature(f, [t_in], t_out),
     )
-    return add_client(req_add, t_in, util.model)
+    return add_client(req_add, t_in, t_out, check_response)
 
 
 def create_change_client(
-    util: LabelUtil,
     router: APIRouter,
+    f: Callable,
     t_in: type[BaseModel],
+    t_out: type[DomainModel],
     complete_client: Complete,
 ) -> Change:
     reqs = APIRequests(router=router)
-    epfs = EndpointFuncs(util=util)
-
     OPT = create_partial_model(t_in)  # noqa: N806
     req_ch = reqs.put(
-        inject_signature(epfs.ch_factory(t_in), [UUID, OPT], util.model),
+        inject_signature(f, [UUID, OPT], t_out),
     )
-    return change_client(req_ch, OPT, util.model, complete_client)
+    return change_client(req_ch, OPT, t_out, complete_client)
 
 
 def create_basic_clients(
@@ -105,19 +105,24 @@ class APIClientFactory(
         self,
         t_in: type[BaseModel],
     ) -> Add:
+        epfs = EndpointFuncs(util=self.util)
         return create_add_client(
-            self.util,
             self.router,
+            epfs.add_factory(t_in),
             t_in,
+            self.util.model,
         )
 
     def create_change(
         self,
         t_in: type[BaseModel],
     ) -> Change:
+        epfs = EndpointFuncs(util=self.util)
+        f = epfs.ch_factory(t_in)
         return create_change_client(
-            self.util,
             self.router,
+            f,
             t_in,
+            self.util.model,
             self.create_basics().complete,
         )

@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from pydantic import BaseModel
 
     from knowde._feature._shared.api.types import (
+        CheckResponse,
         Complete,
         ListMethod,
         Remove,
@@ -64,10 +65,13 @@ def add_client(
     req: RequestMethod,
     t_in: type[BaseModel],
     t_out: type[DomainModel],
+    check_response: CheckResponse | None = None,
 ) -> Callable:
     def add(**kwargs) -> t_out:  # noqa: ANN003
-        p = t_in.validate(kwargs)
+        p = t_in.model_validate(kwargs)
         res = req(json=p.model_dump())
+        if check_response is not None:
+            check_response(res)
         return t_out.model_validate(res.json())
 
     return add

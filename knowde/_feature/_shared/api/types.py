@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Callable, NamedTuple, Protocol, TypeAlias
 
 from pydantic import BaseModel
+from requests import Response
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -10,6 +11,8 @@ if TYPE_CHECKING:
     import requests
 
     from knowde._feature._shared.domain import DomainModel
+
+CheckResponse: TypeAlias = Callable[[Response], None]
 
 
 class Remove(Protocol):
