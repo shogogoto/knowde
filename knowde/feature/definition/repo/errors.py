@@ -1,9 +1,16 @@
 """definition repo errors."""
 
 
+from fastapi import status
+
+from knowde._feature._shared.errors.errors import DomainError
+
+
 class UndefinedMarkedTermError(Exception):
     """説明文中のマークに対応する用語が未定義だった."""
 
 
-class AlreadyDefinedError(Exception):
+class AlreadyDefinedError(DomainError):
     """定義済み."""
+
+    status_code = status.HTTP_409_CONFLICT

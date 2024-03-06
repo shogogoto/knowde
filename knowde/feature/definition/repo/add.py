@@ -16,7 +16,7 @@ from knowde._feature.sentence.domain import Sentence
 from knowde._feature.sentence.repo.label import LSentence
 from knowde._feature.term import term_util
 from knowde._feature.term.domain import Term
-from knowde.feature.definition.domain.domain import Definition
+from knowde.feature.definition.domain.domain import Definition, DefinitionParam
 from knowde.feature.definition.repo.errors import AlreadyDefinedError
 
 if TYPE_CHECKING:
@@ -43,8 +43,10 @@ def rel_manager(
     ).build_manager(source, name="")  # nameが何に使われているのか不明
 
 
-def add_definition(name: str, explain: str) -> Definition:
+def add_definition(p: DefinitionParam) -> Definition:
     """Create new definition."""
+    name = p.name
+    explain = p.explain
     t = term_util.find_one_or_none(value=name)
     s = s_util.find_one_or_none(value=explain)
     if t is None:
