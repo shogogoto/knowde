@@ -3,44 +3,28 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from neomodel import (
-    RelationshipManager,
-    RelationshipTo,
-    ZeroOrMore,
-)
-
 from knowde._feature._shared.repo.base import RelBase
 from knowde._feature._shared.repo.query import query_cypher
+from knowde._feature._shared.repo.rel import RelUtil
 from knowde._feature.sentence import s_util
 from knowde._feature.sentence.domain import Sentence
 from knowde._feature.sentence.repo.label import LSentence
 from knowde._feature.term import term_util
 from knowde._feature.term.domain import Term
+from knowde._feature.term.repo.label import LTerm
 from knowde.feature.definition.domain.domain import Definition, DefinitionParam
 from knowde.feature.definition.repo.errors import AlreadyDefinedError
 
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from knowde._feature.term.repo.label import LTerm
 
-
-def rel_manager(
-    source: LTerm,
-) -> RelationshipManager:
-    """関係先を紐付ける.
-
-    以下のためにStructuredNodeとは切り離して関数化した.
-    - StructuredNodeにRelPropertyをつけると他のStructuredNodeと依存して
-      パッケージの独立性が侵される
-    - neomodelのtypingを補完する
-    """
-    return RelationshipTo(
-        cls_name=LSentence,
-        relation_type="DEFINE",  # edge名
-        cardinality=ZeroOrMore,
-        model=RelBase,  # StructuredRel
-    ).build_manager(source, name="")  # nameが何に使われているのか不明
+rel_def = RelUtil(
+    t_source=LTerm,
+    t_target=LSentence,
+    name="DEFINE",
+    t_rel=RelBase,
+)
 
 
 def add_definition(p: DefinitionParam) -> Definition:
@@ -54,13 +38,12 @@ def add_definition(p: DefinitionParam) -> Definition:
     if s is None:
         s = s_util.create(value=explain)
 
-    mgr = rel_manager(t.label)
     d = find_definition(t.to_model().valid_uid)
     if d:
         msg = f"定義済みです: {d.oneline}"
         raise AlreadyDefinedError(msg)
 
-    rel = mgr.connect(s.label).save()
+    rel = rel_def.connect(t.label, s.label)
     return Definition(
         term=t.to_model(),
         sentence=s.to_model(),
@@ -73,8 +56,8 @@ def add_definition(p: DefinitionParam) -> Definition:
 def get_rel(term_uid: UUID) -> RelBase | None:
     """Get StructuredRel object."""
     res = query_cypher(
-        """
-        MATCH (t:Term)-[rel:DEFINE]->(Sentence)
+        f"""
+        MATCH (t:Term)-[rel:{rel_def.name}]->(Sentence)
         WHERE t.uid = $uid
         RETURN rel """,
         params={"uid": term_uid.hex},

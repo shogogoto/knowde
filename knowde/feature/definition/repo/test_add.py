@@ -2,11 +2,7 @@
 
 新規作成: {新規、既存} * {新規, 既存} の4通り
 - 用語、説明両方とも新規
-- 既存のsentenceに新規用語をつける
-
-
-- 普通にtermとsetencenを紐付ける
-
+- 既存のsentenceに新規用語をくっつける
 """
 
 
@@ -67,7 +63,7 @@ def test_change_definition() -> None:
     """既存の定義の変更.
 
     - 値の変更 term.value, sentence.value
-    - 紐付けを変更はしない
+    - 紐付けは変更しない
     """
     d = add_definition(_p("term1", "sentence1"))
     d2 = change_definition(d, name="term2")
