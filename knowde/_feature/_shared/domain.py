@@ -45,7 +45,7 @@ class DomainModel(BaseModel, frozen=True):
         return cls.model_validate(lb.__properties__)
 
     @classmethod
-    def to_models(cls, lbs: LBase) -> list[Self]:
+    def to_models(cls, lbs: list[LBase]) -> list[Self]:
         return [cls.to_model(lb) for lb in lbs]
 
 
