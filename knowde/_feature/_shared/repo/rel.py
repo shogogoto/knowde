@@ -66,22 +66,32 @@ class RelUtil(
 
     def find_by_source_id(self, source_uid: UUID) -> list[R]:
         """Get StructuredRel object."""
+        sl, tl = self.labels
         return query_cypher(
             f"""
-        MATCH (t:{self.t_source.label()})-[rel:{self.name}]->({self.t_target.label()})
-        WHERE t.uid = $uid
-        RETURN rel
-        """,
+            MATCH (t:{sl})-[rel:{self.name}]->({tl})
+            WHERE t.uid = $uid
+            RETURN rel
+            """,
             params={"uid": source_uid.hex},
         ).get("rel")
 
     def find_by_target_id(self, target_uid: UUID) -> list[R]:
         """Get StructuredRel object."""
+        sl, tl = self.labels
         return query_cypher(
             f"""
-        MATCH (t:{self.t_source.label()})-[rel:{self.name}]->(s:{self.t_target.label()})
-        WHERE s.uid = $uid
-        RETURN rel
-        """,
+            MATCH (t:{sl})-[rel:{self.name}]->({tl})
+            WHERE s.uid = $uid
+            RETURN rel
+            """,
             params={"uid": target_uid.hex},
         ).get("rel")
+
+    @property
+    def labels(self) -> tuple[str, str]:
+        """Return source and target labels."""
+        return (
+            self.t_source.label(),
+            self.t_target.label(),
+        )
