@@ -1,8 +1,17 @@
 from __future__ import annotations
 
-from neomodel import DateTimeProperty, StructuredNode, StructuredRel, UniqueIdProperty
+from neomodel import (
+    DateTimeProperty,
+    StructuredNode,
+    StructuredRel,
+    UniqueIdProperty,
+)
 
 from knowde._feature._shared.domain import jst_now
+
+
+class LBaseNameError(Exception):
+    """LBaseの子クラス名は'L'から始まるべし."""
 
 
 class TimestampMixin:
@@ -20,6 +29,16 @@ class TimestampMixin:
 class LBase(StructuredNode, TimestampMixin):
     __abstract_node__ = True
     uid = UniqueIdProperty()
+
+    @classmethod
+    def label(cls) -> str:
+        """neo4j上でのnode label名."""
+        # Class propertyにしたかったがpython3.13+で非推奨なのでclassmethod.
+        name = cls.__name__
+        if name[0] == "L":
+            return name[1:]
+        msg = f"{name}は'L'から始まる名前にしてください"
+        raise LBaseNameError(msg)
 
 
 class RelBase(StructuredRel, TimestampMixin):

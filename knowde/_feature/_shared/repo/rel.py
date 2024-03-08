@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Generic, TypeVar
+from typing import TYPE_CHECKING, Generic, TypeVar
 
 from neomodel import (
     RelationshipFrom,
@@ -10,7 +10,12 @@ from neomodel import (
 )
 from pydantic import BaseModel
 
+from knowde._feature._shared.repo.query import query_cypher
+
 from .base import LBase, RelBase
+
+if TYPE_CHECKING:
+    from uuid import UUID
 
 S = TypeVar("S", bound=LBase)
 T = TypeVar("T", bound=LBase)
@@ -58,3 +63,25 @@ class RelUtil(
 
     def connect(self, s: S, t: T) -> R:
         return self.to(s).connect(t).save()
+
+    def find_by_source_id(self, source_uid: UUID) -> list[R]:
+        """Get StructuredRel object."""
+        return query_cypher(
+            f"""
+        MATCH (t:{self.t_source.label()})-[rel:{self.name}]->({self.t_target.label()})
+        WHERE t.uid = $uid
+        RETURN rel
+        """,
+            params={"uid": source_uid.hex},
+        ).get("rel")
+
+    def find_by_target_id(self, target_uid: UUID) -> list[R]:
+        """Get StructuredRel object."""
+        return query_cypher(
+            f"""
+        MATCH (t:{self.t_source.label()})-[rel:{self.name}]->(s:{self.t_target.label()})
+        WHERE s.uid = $uid
+        RETURN rel
+        """,
+            params={"uid": target_uid.hex},
+        ).get("rel")
