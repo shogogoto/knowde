@@ -11,4 +11,4 @@ class LSentence(LBase):
     value = StringProperty(max_length=MAX_CHARS)
 
 
-s_util = LabelUtil(label=LSentence, model=Sentence)
+SentenceUtil = LabelUtil(label=LSentence, model=Sentence)

@@ -7,7 +7,7 @@ from knowde._feature.term.domain import MAX_CHARS, Term
 
 class LTerm(LBase):
     __label__ = "Term"
-    value = StringProperty(max_length=MAX_CHARS)
+    value = StringProperty(max_length=MAX_CHARS, index=True)
 
 
-term_util = LabelUtil(label=LTerm, model=Term)
+TermUtil = LabelUtil(label=LTerm, model=Term)

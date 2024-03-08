@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING
 from knowde._feature._shared.repo.base import RelBase
 from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature._shared.repo.rel import RelUtil
-from knowde._feature.sentence import s_util
+from knowde._feature.sentence import SentenceUtil
 from knowde._feature.sentence.domain import Sentence
 from knowde._feature.sentence.repo.label import LSentence
-from knowde._feature.term import term_util
+from knowde._feature.term import TermUtil
 from knowde._feature.term.domain import Term
 from knowde._feature.term.repo.label import LTerm
 from knowde.feature.definition.domain.domain import Definition, DefinitionParam
@@ -31,12 +31,12 @@ def add_definition(p: DefinitionParam) -> Definition:
     """Create new definition."""
     name = p.name
     explain = p.explain
-    t = term_util.find_one_or_none(value=name)
-    s = s_util.find_one_or_none(value=explain)
+    t = TermUtil.find_one_or_none(value=name)
+    s = SentenceUtil.find_one_or_none(value=explain)
     if t is None:
-        t = term_util.create(value=name)
+        t = TermUtil.create(value=name)
     if s is None:
-        s = s_util.create(value=explain)
+        s = SentenceUtil.create(value=explain)
 
     d = find_definition(t.to_model().valid_uid)
     if d:
@@ -91,8 +91,8 @@ def change_definition(
     """定義の変更."""
     rel = get_rel(d.term.valid_uid)
 
-    t = term_util.change(d.term.valid_uid, value=name).to_model()
-    s = s_util.change(d.sentence.valid_uid, value=explain).to_model()
+    t = TermUtil.change(d.term.valid_uid, value=name).to_model()
+    s = SentenceUtil.change(d.sentence.valid_uid, value=explain).to_model()
 
     if any([name, explain]):
         rel.save()

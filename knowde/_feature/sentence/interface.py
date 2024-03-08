@@ -10,10 +10,10 @@ from knowde._feature._shared.cli.create_command import (
 )
 from knowde._feature.sentence.domain import SentenceParam
 
-from .repo.label import s_util
+from .repo.label import SentenceUtil
 
 s_router = Endpoint.Sentence.create_router()
-factory = APIClientFactory(util=s_util, router=s_router)
+factory = APIClientFactory(util=SentenceUtil, router=s_router)
 
 
 @click.group("sentence")
