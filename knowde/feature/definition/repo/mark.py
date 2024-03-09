@@ -4,7 +4,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from knowde._feature._shared import RelBase, RelUtil
-from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature.sentence import SentenceUtil
 from knowde._feature.sentence.repo.label import LSentence
 from knowde._feature.term import TermUtil
@@ -20,15 +19,12 @@ if TYPE_CHECKING:
     from uuid import UUID
 
 
-rel_mark = RelUtil(
+RelMark = RelUtil(
     t_source=LSentence,
     t_target=LTerm,
     name="MARK",
     t_rel=RelBase,
 )
-
-SentenceUtil  # noqa: B018
-TermUtil  # noqa: B018
 
 
 def mark_sentence(sentence_uid: UUID) -> PlaceHeldDescription:
@@ -40,48 +36,28 @@ def mark_sentence(sentence_uid: UUID) -> PlaceHeldDescription:
         if t is None:
             msg = f"用語'{mv.value}'は見つかりませんでした'"
             raise UndefinedMarkedTermError(msg)
-        rel_mark.connect(s.label, t.label)  # 順番が必要な場合はここをいじる
+        RelMark.connect(s.label, t.label)  # 順番が必要な場合はここをいじる
     return d.placeheld
 
 
 def find_marked_terms(sentence_uid: UUID) -> list[Term]:
     """文章にマークされた用語を取得."""
-    res = query_cypher(
-        f"""
-        MATCH (s:Sentence)-[rel:{rel_mark.name}]->(t:Term)
-        WHERE s.uid=$uid
-        return t
-        """,
-        params={"uid": sentence_uid.hex},
-    )
-    return Term.to_models(res.get("t"))
+    lbs = RelMark.find_by_source_id(sentence_uid)
+    return [Term.to_model(lb.end_node()) for lb in lbs]
 
 
-# def remove_mark(sentence_uid: UUID) -> None:
-#     res = query_cypher(
-#         f"""
-#         MATCH (s:Sentence)-[rel:{rel_mark.name}]->(t:Term)
-#         WHERE s.uid=$uid
-#         return t
-#         """,
-#         params={"uid": sentence_uid.hex},
-#     )
+def remove_marks(sentence_uid: UUID) -> None:
+    """文章のマークをすべて削除.
+
+    markの変更はdelete insertで行うため、mark関係を一部残す
+    ことはしない
+    """
+    for lb in RelMark.find_by_source_id(sentence_uid):
+        RelMark.disconnect(lb.start_node(), lb.end_node())
 
 
-# def resolve_description(d: Description) -> list[Description]:
-#     """説明文にマークされた用語Termをみつける."""
-#     # query_cypher(
-#     #     """
-#     #     (s:Term)-[rel:DEFINE]->(s:Sentence)
-
-#     #     RETURN rel
-#     #         """,
-#     # )
-#     retval = []
-#     for mv in d.markvalues:
-#         t = find_marked_term(mv)
-#         d = find_definition(t.valid_uid)
-#         if d is None:
-#             raise Exception
-#         retval.append(d)
-#     return retval
+def remark_sentence(s_uid: UUID, value: str) -> None:
+    """Reconnect by delete insert."""
+    remove_marks(s_uid)
+    SentenceUtil.change(s_uid, value=value)
+    mark_sentence(s_uid)

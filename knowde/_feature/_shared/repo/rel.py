@@ -64,6 +64,9 @@ class RelUtil(
     def connect(self, s: S, t: T) -> R:
         return self.to(s).connect(t).save()
 
+    def disconnect(self, s: S, t: T) -> None:
+        return self.to(s).disconnect(t)
+
     def find_by_source_id(self, source_uid: UUID) -> list[R]:
         """Get StructuredRel object."""
         sl, tl = self.labels
