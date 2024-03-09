@@ -11,12 +11,13 @@ import pytest
 from knowde._feature.sentence import SentenceUtil
 from knowde._feature.term.repo.label import TermUtil
 from knowde.feature.definition.domain.domain import DefinitionParam
-from knowde.feature.definition.repo.add import (
+
+from .definition import (
     add_definition,
     change_definition,
     find_definition,
 )
-from knowde.feature.definition.repo.errors import AlreadyDefinedError
+from .errors import AlreadyDefinedError
 
 
 def _p(name: str, explain: str) -> DefinitionParam:
