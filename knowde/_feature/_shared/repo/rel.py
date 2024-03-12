@@ -61,8 +61,11 @@ class RelUtil(
             model=self.t_rel,  # StructuredRel
         ).build_manager(target, name="")  # nameが何に使われているのか不明
 
-    def connect(self, s: S, t: T) -> R:
-        return self.to(s).connect(t).save()
+    def connect(self, s: S, t: T, **kwargs) -> R:  # noqa: ANN003
+        rel = self.to(s).connect(t)
+        for k, v in kwargs.items():
+            setattr(rel, k, v)
+        return rel.save()
 
     def disconnect(self, s: S, t: T) -> None:
         return self.to(s).disconnect(t)
