@@ -42,7 +42,12 @@ def mark2placeholder(s: str) -> str:
     return MARK_PATTERN.sub(PLACE_HOLDER, s)
 
 
-def inject2placeholder(s: str, values: list[str]) -> str:
+def inject2placeholder(
+    s: str,
+    values: list[str],
+    prefix: str = "",
+    suffix: str = "",
+) -> str:
     """プレースホルダーに順次文字列を埋め込む."""
     ret = s
     n_ph = ret.count(PLACE_HOLDER)
@@ -52,7 +57,7 @@ def inject2placeholder(s: str, values: list[str]) -> str:
         raise PlaceHolderMappingError(msg)
     c = re.compile(r"\$\@")
     for v in values:
-        ret = c.sub(v, ret, count=1)
+        ret = c.sub(v, prefix + ret + suffix, count=1)
     return ret
 
 
