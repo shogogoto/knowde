@@ -11,6 +11,7 @@ import pytest
 from knowde._feature.sentence import SentenceUtil
 from knowde._feature.term.repo.label import TermUtil
 from knowde.feature.definition.domain.domain import DefinitionParam
+from knowde.feature.definition.repo.mark import find_marked_terms
 
 from .definition import (
     add_definition,
@@ -83,3 +84,11 @@ def test_change_definition() -> None:
     d4 = change_definition(d)
     assert d.created == d4.created
     assert d.updated == d4.updated
+
+
+def test_add_with_mark() -> None:
+    """markを解決して定義を追加."""
+    d1 = add_definition(_p("t1", "xxx"))
+    d2 = add_definition(_p("t2", "xx{t1}xx"))
+    assert d2.sentence.value == "xx$@xx"
+    assert find_marked_terms(d2.sentence.valid_uid) == [d1.term]

@@ -41,7 +41,12 @@ class PlaceHeldDescription(BaseModel, frozen=True):
 
     value: str
 
-    def inject(self, values: list[str]) -> Description:
+    def inject(
+        self,
+        values: list[str],
+        prefix: str = "",
+        suffix: str = "",
+    ) -> Description:
         """プレースホルダーを置換."""
-        v = inject2placeholder(self.value, values)
+        v = inject2placeholder(self.value, values, prefix, suffix)
         return Description(value=v)
