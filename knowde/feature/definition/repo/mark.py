@@ -87,9 +87,8 @@ def add_description(d: Description) -> ReturnMarkedDescription:
 
 def find_marked_terms(sentence_uid: UUID) -> list[Term]:
     """文章にマークされた用語を取得."""
-    lbs = RelMarkUtil.find_by_source_id(sentence_uid)
-    lbs = sorted(lbs, key=attrgetter("order"))
-    return [Term.to_model(lb.end_node()) for lb in lbs]
+    rels = RelMarkUtil.find_by_source_id(sentence_uid)
+    return RelMark.sort(rels)
 
 
 def remove_marks(

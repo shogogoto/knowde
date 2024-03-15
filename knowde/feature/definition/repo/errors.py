@@ -14,3 +14,9 @@ class AlreadyDefinedError(DomainError):
     """定義済み."""
 
     status_code = status.HTTP_409_CONFLICT
+
+
+class DuplicateDefinedError(DomainError):
+    """１つの用語に複数定義."""
+
+    status_code = status.HTTP_409_CONFLICT

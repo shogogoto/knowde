@@ -15,7 +15,10 @@ from knowde._feature.term.domain import Term
 from knowde._feature.term.repo.label import LTerm
 from knowde.feature.definition.domain.description import Description
 from knowde.feature.definition.domain.domain import Definition, DefinitionParam
-from knowde.feature.definition.repo.errors import AlreadyDefinedError
+from knowde.feature.definition.repo.errors import (
+    AlreadyDefinedError,
+    DuplicateDefinedError,
+)
 from knowde.feature.definition.repo.mark import add_description, remark_sentence
 
 if TYPE_CHECKING:
@@ -84,7 +87,7 @@ def find_definition(term_uid: UUID) -> Definition | None:
     if len(rels) == 0:
         return None
     if len(rels) > 1:
-        raise ValueError  # 仮実装
+        raise DuplicateDefinedError  # 仮実装
     rel = rels[0]
     t = Term.to_model(rel.start_node())
     s = Sentence.to_model(rel.end_node())
