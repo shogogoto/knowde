@@ -4,6 +4,8 @@ from __future__ import annotations
 from pydantic import BaseModel, Field
 
 from knowde.feature.definition.domain.mark import (
+    MARK_CLOSE,
+    MARK_OPEN,
     inject2placeholder,
     mark2placeholder,
     pick_marks,
@@ -44,9 +46,7 @@ class PlaceHeldDescription(BaseModel, frozen=True):
     def inject(
         self,
         values: list[str],
-        prefix: str = "",
-        suffix: str = "",
     ) -> Description:
         """プレースホルダーを置換."""
-        v = inject2placeholder(self.value, values, prefix, suffix)
+        v = inject2placeholder(self.value, values, prefix=MARK_OPEN, suffix=MARK_CLOSE)
         return Description(value=v)
