@@ -1,7 +1,7 @@
 """new create repository."""
 from __future__ import annotations
 
-from uuid import UUID
+from typing import TYPE_CHECKING
 
 from neomodel import ZeroOrOne
 
@@ -17,6 +17,9 @@ from knowde.feature.definition.domain.description import Description
 from knowde.feature.definition.domain.domain import Definition, DefinitionParam
 from knowde.feature.definition.repo.errors import AlreadyDefinedError
 from knowde.feature.definition.repo.mark import add_description, remark_sentence
+
+if TYPE_CHECKING:
+    from uuid import UUID
 
 RelDefUtil = RelUtil(
     t_source=LTerm,
@@ -50,7 +53,7 @@ def add_definition(p: DefinitionParam) -> Definition:
     )
 
 
-def find_marked_definitions(sentence_uid: UUID) -> list[UUID]:
+def find_marked_definitions(sentence_uid: UUID) -> list[Definition]:
     """文章にマークされた定義を一回層分取得."""
     res = query_cypher(
         """
@@ -64,7 +67,7 @@ def find_marked_definitions(sentence_uid: UUID) -> list[UUID]:
     for m, d in zip(res.get("mark"), res.get("def"), strict=True):
         orders.append(m.order)
         defs.append(
-            UUID(
+            Definition(
                 term=Term.to_model(d.start_node()),
                 sentence=Sentence.to_model(d.end_node()),
                 uid=d.uid,

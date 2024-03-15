@@ -53,11 +53,11 @@ def inject2placeholder(
     n_ph = ret.count(PLACE_HOLDER)
     n_v = len(values)
     if n_ph != n_v:
-        msg = f"プレースホルダー数{n_ph} != 置換する値の数{n_v}"
+        msg = f"プレースホルダー数{ret} != 置換する値の数{values}"
         raise PlaceHolderMappingError(msg)
     c = re.compile(r"\$\@")
     for v in values:
-        ret = c.sub(v, prefix + ret + suffix, count=1)
+        ret = c.sub(prefix + v + suffix, ret, count=1)
     return ret
 
 

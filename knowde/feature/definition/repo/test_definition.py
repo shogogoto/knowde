@@ -92,3 +92,7 @@ def test_add_with_mark() -> None:
     d2 = add_definition(_p("t2", "xx{t1}xx"))
     assert d2.sentence.value == "xx$@xx"
     assert find_marked_terms(d2.sentence.valid_uid) == [d1.term]
+    d3 = add_definition(_p("t3", "xx{t2}xx"))
+
+    assert d3.sentence.value == "xx$@xx"
+    assert find_marked_terms(d3.sentence.valid_uid) == [d2.term]
