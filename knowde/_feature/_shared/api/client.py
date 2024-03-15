@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from knowde._feature._shared.api.types import (
         CheckResponse,
         Complete,
-        ListMethod,
+        ListClient,
         Remove,
         RequestMethod,
     )
@@ -44,9 +44,17 @@ def complete_client(
 def list_client(
     req: RequestMethod,
     t_out: type[DomainModel],
-) -> ListMethod:
-    def ls() -> list[t_out]:
-        res = req()
+    t_in: type[BaseModel] | None = None,
+    check_response: CheckResponse | None = None,
+) -> ListClient:
+    def ls(**kwargs) -> list[t_out]:  # noqa: ANN003
+        if t_in is None:
+            res = req()
+        else:
+            p = t_in.model_validate(kwargs)
+            res = req(json=p.model_dump())
+        if check_response is not None:
+            check_response(res)
         return [t_out.model_validate(e) for e in res.json()]
 
     return ls
