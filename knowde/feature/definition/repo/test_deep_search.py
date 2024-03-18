@@ -26,9 +26,12 @@ def test_resolve_marks_lv1() -> None:
     d22 = add_definition(_p("t22", "xxxx"))
     d1 = add_definition(_p("t1", "xx{t21}xx{t22}"))
 
-    res = find_recursively(d1.term.valid_uid)
+    res = find_recursively(d1.valid_uid)
     assert res.rootdef == d1
     assert res.get_children(d1) == [d21, d22]
     assert res.get_children(d21) == [d3]
     assert res.get_children(d22) == []
     assert res.get_children(d3) == []
+
+    # res = find_recursively(uuid4())
+    # print(res.build())

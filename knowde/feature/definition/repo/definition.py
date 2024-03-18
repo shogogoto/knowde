@@ -19,7 +19,10 @@ from knowde.feature.definition.repo.errors import (
     AlreadyDefinedError,
     DuplicateDefinedError,
 )
-from knowde.feature.definition.repo.mark import add_description, remark_sentence
+from knowde.feature.definition.repo.mark import (
+    add_description,
+    remark_sentence,
+)
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -45,7 +48,7 @@ def add_definition(p: DefinitionParam) -> Definition:
         raise AlreadyDefinedError(msg)
     d = add_description(Description(value=p.explain))
     rel = RelDefUtil.connect(t.label, d.label)
-    return Definition.create(rel, d.terms)
+    return Definition.from_rel(rel, d.terms)
 
 
 def find_marked_definitions(sentence_uid: UUID) -> list[Definition]:
@@ -80,7 +83,7 @@ def find_definition(term_uid: UUID) -> Definition | None:
         return None
     if len(rels) > 1:
         raise DuplicateDefinedError  # 仮実装
-    return Definition.create(rels[0])
+    return Definition.from_rel(rels[0])
 
 
 def change_definition(
@@ -99,4 +102,16 @@ def change_definition(
     rel = RelDefUtil.find_by_source_id(d.term.valid_uid)[0]
     if any([name, explain]):
         rel.save()
-    return Definition.create(rel)
+    return Definition.from_rel(rel)
+
+
+def remove_definition(term_uid: UUID) -> None:
+    """定義の削除."""
+    query_cypher(
+        """
+        MATCH (:Term {uid: $uid})-[def:DEFINE]->(s:Sentence)
+        OPTIONAL MATCH (s)-[mark:MARK]->(:Term)
+        DELETE def, mark
+        """,
+        params={"uid": term_uid.hex},
+    )

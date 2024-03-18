@@ -1,6 +1,4 @@
 """deep search."""
-
-
 from uuid import UUID
 
 import networkx as nx
@@ -9,13 +7,14 @@ from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature.sentence.domain import Sentence
 from knowde._feature.term.domain import Term
 from knowde.feature.definition.domain.domain import (
+    Definition,
     DefinitionTree,
 )
 from knowde.feature.definition.repo.definition import RelDefUtil
 from knowde.feature.definition.repo.mark import RelMark, RelMarkUtil
 
 
-def find_recursively(term_uid: UUID) -> DefinitionTree:
+def find_recursively(def_uid: UUID) -> DefinitionTree:
     """ある定義に依存するすべての定義を返す.
 
     定義詳細の一覧性のための機能が１つは欲しい
@@ -25,14 +24,18 @@ def find_recursively(term_uid: UUID) -> DefinitionTree:
     dn = RelDefUtil.name
     res = query_cypher(
         f"""
-        MATCH (t1:Term {{uid: $uid}})
-        OPTIONAL MATCH p = (t1)-[:DEFINE]->(:Sentence)
-            -[:{mn}|{dn}]->*(:Term)-[:{dn}]->(:Sentence)
-        RETURN p
+        MATCH (t1:Term)-[def:{dn} {{uid: $uid}}]->(s:Sentence)
+        OPTIONAL MATCH p = (s)-[:{mn}|{dn}]->*(:Term)-[:{dn}]->(:Sentence)
+        RETURN p, def
         """,
-        params={"uid": term_uid.hex},
+        params={"uid": def_uid.hex},
     )
     g = nx.DiGraph()
+
+    rel = next(iter(res.get("def")))
+    d = Definition.from_rel(rel)
+    g.add_edge(d.term, d.sentence, rel=rel)
+
     for elm in res.get("p"):
         for rel in elm.relationships:
             start = rel.start_node()
@@ -44,4 +47,4 @@ def find_recursively(term_uid: UUID) -> DefinitionTree:
                 n1 = Sentence.to_model(start)
                 n2 = Term.to_model(end)
             g.add_edge(n1, n2, rel=rel)
-    return DefinitionTree(root_term_uid=term_uid, g=g)
+    return DefinitionTree(root_term_uid=d.term.valid_uid, g=g)

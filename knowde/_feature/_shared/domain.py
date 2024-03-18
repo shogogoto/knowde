@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
-from typing import TYPE_CHECKING, Any, Self, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, Self, TypeVar
 from uuid import UUID  # noqa: TCH003
 
 from pydantic import BaseModel, Field, RootModel, field_validator
@@ -63,3 +63,19 @@ class ModelList(RootModel[list[M]], frozen=True):
                 self.root,
             ),
         )
+
+
+T = TypeVar("T")
+
+
+class Composite(BaseModel, Generic[T], frozen=True):
+    parent: T
+    children: list[Composite[T]] = Field(default_factory=list)
+
+    # @property
+    # def output(self) -> str:
+    #     """複数行のテキスト表現."""
+    #     txt = self.parent.output
+    #     for c in self.children:
+    #         txt += "\n" + indent(c.output, " " * 2)
+    #     return txt
