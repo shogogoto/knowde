@@ -67,15 +67,22 @@ class RelUtil(
             setattr(rel, k, v)
         return rel.save()
 
-    def disconnect(self, s: S, t: T) -> None:
-        return self.to(s).disconnect(t)
+    def disconnect(self, rel: R) -> None:
+        sl, tl = self.labels
+        query_cypher(
+            f"""
+            MATCH (:{sl})-[rel:{self.name} {{uid: $uid}}]->(:{tl})
+            DELETE rel
+            """,
+            params={"uid": rel.uid},
+        )
 
     def find_by_source_id(self, source_uid: UUID) -> list[R]:
         """Get StructuredRel object."""
         sl, tl = self.labels
         return query_cypher(
             f"""
-            MATCH (t:{sl})-[rel:{self.name}]->({tl})
+            MATCH (t:{sl})-[rel:{self.name}]->(:{tl})
             WHERE t.uid = $uid
             RETURN rel
             """,

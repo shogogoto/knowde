@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from knowde._feature._shared import RelBase, RelUtil
 from knowde._feature._shared.repo.label import Label  # noqa: TCH001
 from knowde._feature.sentence import SentenceUtil
-from knowde._feature.sentence.domain import Sentence
+from knowde._feature.sentence.domain import Sentence  # noqa: TCH001
 from knowde._feature.sentence.repo.label import LSentence
 from knowde._feature.term import TermUtil
 from knowde._feature.term.domain import Term
@@ -93,28 +93,23 @@ def find_marked_terms(sentence_uid: UUID) -> list[Term]:
 
 def remove_marks(
     sentence_uid: UUID,
-    prefix: str = "",
-    suffix: str = "",
 ) -> Label[LSentence, Sentence]:
     """文章のマークをすべて削除し、文字列をマーク前に戻す.
 
     markの変更はdelete insertで行うため、mark関係を一部残す
     ことはしない
     """
-    tvalues = []
-    orders = []
-    for rel in RelMarkUtil.find_by_source_id(sentence_uid):
-        sent_lb = rel.start_node()
-        s = Sentence.to_model(sent_lb)
-        term_lb = rel.end_node()
-        orders.append(rel.order)
-        tvalues.append(term_lb.value)
-        RelMarkUtil.disconnect(sent_lb, term_lb)
-
+    rels = RelMarkUtil.find_by_source_id(sentence_uid)
+    for rel in rels:
+        RelMarkUtil.disconnect(rel)
     s = SentenceUtil.find_by_id(sentence_uid).to_model()
-    _sorted = [tvalues[i] for i in orders]
-    new = inject2placeholder(s.value, _sorted, prefix, suffix)
-    return SentenceUtil.change(sentence_uid, value=new)
+    return SentenceUtil.change(
+        sentence_uid,
+        value=inject2placeholder(
+            s.value,
+            [t.value for t in RelMark.sort(rels)],
+        ),
+    )
 
 
 def remark_sentence(s_uid: UUID, d: Description) -> ReturnMarkedDescription:
