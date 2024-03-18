@@ -45,15 +45,7 @@ def add_definition(p: DefinitionParam) -> Definition:
         raise AlreadyDefinedError(msg)
     d = add_description(Description(value=p.explain))
     rel = RelDefUtil.connect(t.label, d.label)
-
-    return Definition(
-        term=t.to_model(),
-        sentence=d.to_model(),
-        deps=d.terms,
-        uid=rel.uid,
-        created=rel.created,
-        updated=rel.updated,
-    )
+    return Definition.create(rel, d.terms)
 
 
 def find_marked_definitions(sentence_uid: UUID) -> list[Definition]:
@@ -88,16 +80,7 @@ def find_definition(term_uid: UUID) -> Definition | None:
         return None
     if len(rels) > 1:
         raise DuplicateDefinedError  # 仮実装
-    rel = rels[0]
-    t = Term.to_model(rel.start_node())
-    s = Sentence.to_model(rel.end_node())
-    return Definition(
-        term=t,
-        sentence=s,
-        uid=rel.uid,
-        created=rel.created,
-        updated=rel.updated,
-    )
+    return Definition.create(rels[0])
 
 
 def change_definition(
@@ -106,25 +89,14 @@ def change_definition(
     explain: str | None = None,
 ) -> Definition:
     """定義の変更."""
-    if name is None:
-        t = d.term
-    else:
-        t = TermUtil.change(d.term.valid_uid, value=name).to_model()
+    if name is not None:
+        TermUtil.change(d.term.valid_uid, value=name)
 
-    if explain is None:
-        s = d.sentence
-    else:
+    if explain is not None:
         dscr = Description(value=explain)
-        s = remark_sentence(d.sentence.valid_uid, dscr).to_model()
+        remark_sentence(d.sentence.valid_uid, dscr).to_model()
 
     rel = RelDefUtil.find_by_source_id(d.term.valid_uid)[0]
     if any([name, explain]):
         rel.save()
-
-    return Definition(
-        term=t,
-        sentence=s,
-        uid=rel.uid,
-        created=rel.created,
-        updated=rel.updated,
-    )
+    return Definition.create(rel)

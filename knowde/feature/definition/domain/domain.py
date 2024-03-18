@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from textwrap import indent
+from typing import TYPE_CHECKING, Optional, Self
 from uuid import UUID  # noqa: TCH003
 
 import networkx as nx
@@ -18,10 +19,14 @@ from pydantic import BaseModel, Field, field_validator
 from typing_extensions import override
 
 from knowde._feature._shared.domain import DomainModel
+from knowde._feature._shared.types import NXGraph  # noqa: TCH001
 from knowde._feature.sentence.domain import Sentence, SentenceParam
 from knowde._feature.term.domain import Term, TermParam
 from knowde.feature.definition.domain.description import PlaceHeldDescription
 from knowde.feature.definition.repo.mark import RelMark
+
+if TYPE_CHECKING:
+    from knowde._feature._shared.repo.base import RelBase
 
 
 class DefinitionParam(BaseModel, frozen=True):
@@ -74,12 +79,31 @@ class Definition(DomainModel, OutputProtocol, frozen=True):
         """1行のテキスト表現."""
         return f"{self.name}: {self.explain} ({self.valid_uid})"
 
+    @classmethod
+    def create(
+        cls,
+        rel: RelBase,
+        deps: Optional[list[Term]] = None,
+    ) -> Self:
+        """Create from Relationship."""
+        if deps is None:
+            deps = []
+        t = Term.to_model(rel.start_node())
+        s = Sentence.to_model(rel.end_node())
+        return cls(
+            term=t,
+            sentence=s,
+            deps=deps,
+            uid=rel.uid,
+            created=rel.created,
+            updated=rel.updated,
+        )
+
 
 class DefinitionComposite(
     BaseModel,
     OutputProtocol,
     frozen=True,
-    arbitrary_types_allowed=True,
 ):
     """入れ子定義."""
 
@@ -99,22 +123,16 @@ class DefinitionComposite(
 class DefinitionTree(
     BaseModel,
     frozen=True,
-    arbitrary_types_allowed=True,
 ):
     """定義文章に依存する定義."""
 
     root_term_uid: UUID
-    g: nx.DiGraph
-
-    @property
-    def root(self) -> Term:
-        """rootの文章."""
-        return next(filter(lambda n: n.valid_uid == self.root_term_uid, self.g.nodes))
+    g: NXGraph
 
     @property
     def rootdef(self) -> Definition:
         """rootの定義."""
-        return self.get_definition(self.root)
+        return self.get_definition(self._root_term)
 
     def get_definition(self, term: Term) -> Definition:
         """Create definition by term model."""
@@ -141,7 +159,12 @@ class DefinitionTree(
 
     def build(self) -> DefinitionComposite:
         """Return recursive definition."""
-        return self._build(self.root)
+        return self._build(self._root_term)
+
+    @property
+    def _root_term(self) -> Term:
+        """rootの文章."""
+        return next(filter(lambda n: n.valid_uid == self.root_term_uid, self.g.nodes))
 
     def _build(self, term: Term) -> DefinitionComposite:
         p = self.get_definition(term)
