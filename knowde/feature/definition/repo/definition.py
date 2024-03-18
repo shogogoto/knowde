@@ -8,10 +8,8 @@ from neomodel import ZeroOrOne
 from knowde._feature._shared.repo.base import RelBase
 from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature._shared.repo.rel import RelUtil
-from knowde._feature.sentence.domain import Sentence
 from knowde._feature.sentence.repo.label import LSentence
 from knowde._feature.term import TermUtil
-from knowde._feature.term.domain import Term
 from knowde._feature.term.repo.label import LTerm
 from knowde.feature.definition.domain.description import Description
 from knowde.feature.definition.domain.domain import Definition, DefinitionParam
@@ -49,31 +47,6 @@ def add_definition(p: DefinitionParam) -> Definition:
     d = add_description(Description(value=p.explain))
     rel = RelDefUtil.connect(t.label, d.label)
     return Definition.from_rel(rel, d.terms)
-
-
-def find_marked_definitions(sentence_uid: UUID) -> list[Definition]:
-    """文章にマークされた定義を一回層分取得."""
-    res = query_cypher(
-        """
-        MATCH (t:Term)-[def:DEFINE]->(:Sentence {uid: $uid})
-        RETURN t
-        """,
-        params={"uid": sentence_uid.hex},
-    )
-    orders = []
-    defs = []
-    for m, d in zip(res.get("mark"), res.get("def"), strict=True):
-        orders.append(m.order)
-        defs.append(
-            Definition(
-                term=Term.to_model(d.start_node()),
-                sentence=Sentence.to_model(d.end_node()),
-                uid=d.uid,
-                created=d.created,
-                updated=d.updated,
-            ),
-        )
-    return [defs[i] for i in orders]
 
 
 def find_definition(term_uid: UUID) -> Definition | None:

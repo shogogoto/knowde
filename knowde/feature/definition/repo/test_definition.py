@@ -17,6 +17,7 @@ from .definition import (
     add_definition,
     change_definition,
     find_definition,
+    remove_definition,
 )
 from .errors import AlreadyDefinedError
 
@@ -96,3 +97,12 @@ def test_add_with_mark() -> None:
 
     assert d3.sentence.value == "xx$@xx"
     assert find_marked_terms(d3.sentence.valid_uid) == [d2.term]
+
+
+def test_remove_with_marks() -> None:
+    """markも一緒に削除する."""
+    d1 = add_definition(_p("t1", "xxx"))
+    d2 = add_definition(_p("t2", "xx{t1}xx"))
+    assert find_marked_terms(d2.sentence.valid_uid) == [d1.term]
+    remove_definition(d2.term.valid_uid)
+    assert find_marked_terms(d2.sentence.valid_uid) == []
