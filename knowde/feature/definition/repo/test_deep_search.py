@@ -10,7 +10,7 @@ def _p(name: str, explain: str) -> DefinitionParam:
     return DefinitionParam(name=name, explain=explain)
 
 
-def test_resolve_marks_lv1() -> None:
+def test_resolve_marks_lv4() -> None:
     """文章にマークされた用語の定義をさらに遡ってマークを辿る.
 
     入力(s1:Sentence)から(t2:Term)を出力する
@@ -32,6 +32,3 @@ def test_resolve_marks_lv1() -> None:
     assert res.get_children(d21) == [d3]
     assert res.get_children(d22) == []
     assert res.get_children(d3) == []
-
-    # res = find_recursively(uuid4())
-    # print(res.build())

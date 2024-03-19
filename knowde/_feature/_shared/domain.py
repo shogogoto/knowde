@@ -65,17 +65,12 @@ class ModelList(RootModel[list[M]], frozen=True):
         )
 
 
-T = TypeVar("T")
+T = TypeVar("T", bound=BaseModel)
 
 
 class Composite(BaseModel, Generic[T], frozen=True):
     parent: T
     children: list[Composite[T]] = Field(default_factory=list)
 
-    # @property
-    # def output(self) -> str:
-    #     """複数行のテキスト表現."""
-    #     txt = self.parent.output
-    #     for c in self.children:
-    #         txt += "\n" + indent(c.output, " " * 2)
-    #     return txt
+
+Composite.model_rebuild()

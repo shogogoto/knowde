@@ -18,20 +18,20 @@ def view_detail(composite: Composite[Definition]) -> str:
     return txt
 
 
-class TermIdParam(BaseModel, frozen=True):
+class DetailParam(BaseModel, frozen=True):
     """term uuid param for api."""
 
-    pref_term_uid: str = Field(description="用語のuuidへ前方一致")
+    pref_def_uid: str = Field(description="用語のuuidへ前方一致")
 
 
 class DetailView(BaseModel, frozen=True):
     """show definition composite."""
 
-    detail: Composite[Definition] | None
+    detail: Composite[Definition] | None = None
 
     def echo(self) -> None:
         """Print for cli."""
         if self.detail is None:
-            click.echo(self.detail)
+            click.echo("not detail")
         else:
             click.echo(view_detail(self.detail))

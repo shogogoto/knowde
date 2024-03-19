@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from typing import TYPE_CHECKING, Callable
 
 from fastapi import status
@@ -19,10 +20,6 @@ if TYPE_CHECKING:
     from knowde._feature._shared.domain import DomainModel
 
 
-class APIClientError(Exception):
-    pass
-
-
 def complete_client(
     req: RequestMethod,
     t_out: type[DomainModel],
@@ -35,7 +32,8 @@ def complete_client(
         if res.status_code != status.HTTP_200_OK:
             msg = res.json()["detail"]["message"]
             msg = f"[{res.status_code}]:{msg}"
-            raise APIClientError(msg)
+            print(msg)  # noqa: T201
+            sys.exit()
         return t_out.model_validate(res.json())
 
     return complete

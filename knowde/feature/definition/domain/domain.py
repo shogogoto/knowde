@@ -125,7 +125,7 @@ class DefinitionTree(BaseModel, frozen=True):
     def _build(self, term: Term) -> Composite[Definition]:
         p = self.get_definition(term)
         children = [self._build(t) for t in self._marked_terms(p.sentence)]
-        return Composite(
+        return Composite[Definition](
             parent=p,
             children=children,
         )
