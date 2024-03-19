@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from neomodel import (
     RelationshipFrom,
@@ -9,8 +9,10 @@ from neomodel import (
     ZeroOrMore,
 )
 from pydantic import BaseModel
+from typing_extensions import override
 
 from knowde._feature._shared.repo.query import query_cypher
+from knowde._feature.concept.error import CompleteMultiHitError, CompleteNotFoundError
 
 from .base import LBase, RelBase
 
@@ -41,6 +43,16 @@ class RelUtil(
     name: str
     t_rel: type[R]
     cardinality: type[RelationshipManager] = ZeroOrMore
+
+    @override
+    def model_post_init(self, __context: Any) -> None:
+        # for add register to db._NODE_CLASS_REGISTRY
+        RelationshipTo(
+            cls_name=self.t_target,
+            relation_type=self.name,
+            cardinality=ZeroOrMore,
+            model=self.t_rel,  # StructuredRel
+        )
 
     def to(
         self,
@@ -82,8 +94,7 @@ class RelUtil(
         sl, tl = self.labels
         return query_cypher(
             f"""
-            MATCH (t:{sl})-[rel:{self.name}]->(:{tl})
-            WHERE t.uid = $uid
+            MATCH (:{sl}{{uid: $uid}})-[rel:{self.name}]->(:{tl})
             RETURN rel
             """,
             params={"uid": source_uid.hex},
@@ -94,8 +105,7 @@ class RelUtil(
         sl, tl = self.labels
         return query_cypher(
             f"""
-            MATCH (t:{sl})-[rel:{self.name}]->({tl})
-            WHERE s.uid = $uid
+            MATCH (:{sl})-[rel:{self.name}]->(:{tl}{{uid: $uid}})
             RETURN rel
             """,
             params={"uid": target_uid.hex},
@@ -108,3 +118,24 @@ class RelUtil(
             self.t_source.label(),
             self.t_target.label(),
         )
+
+    def complete(self, pref_uid: str) -> R:
+        """関係のuidを前方一致で検索."""
+        sl, tl = self.labels
+        rels = query_cypher(
+            f"""
+            MATCH p = (:{sl})-[rel:{self.name}]->(:{tl})
+            WHERE rel.uid STARTS WITH $pref_uid
+            RETURN rel
+            """,
+            params={"pref_uid": pref_uid},
+        ).get("rel")
+
+        n = len(rels)
+        if n == 0:
+            msg = "ヒットしませんでした."
+            raise CompleteNotFoundError(msg)
+        if n > 1:
+            msg = f"{n}件ヒット.1つだけヒットするよう入力桁を増やしてみてね."
+            raise CompleteMultiHitError(msg)
+        return rels[0]
