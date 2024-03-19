@@ -8,6 +8,8 @@ import click
 from knowde._feature._shared.api.client_factory import (
     create_add_client,
     create_complete_client,
+    create_list_client,
+    create_remove_client,
 )
 from knowde._feature._shared.api.endpoint import Endpoint
 from knowde._feature._shared.api.generate_req import APIRequests, inject_signature
@@ -44,6 +46,16 @@ req_detail = reqs.get(
     "/detail/{def_uid}",
 )
 
+list_client = create_list_client(
+    def_router,
+    list_definitions,
+    t_out=Definition,
+)
+remove_client = create_remove_client(
+    def_router,
+    remove_definition,
+)
+
 
 @click.group("def")
 def def_cli() -> None:
@@ -73,7 +85,7 @@ def detail(pref_def_uid: str) -> None:
 @def_cli.command("ls")
 def _ls() -> None:
     """定義一覧."""
-    for d in list_definitions():
+    for d in list_client():
         click.echo(d.output)
 
 
@@ -84,5 +96,5 @@ def _ls() -> None:
 )
 def _rm(d: Definition) -> None:
     """定義を削除."""
-    remove_definition(d.valid_uid)
+    remove_client(d.valid_uid)
     click.echo(f"{d.output}を削除しました")
