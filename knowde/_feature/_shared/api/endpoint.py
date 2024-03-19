@@ -19,6 +19,7 @@ class Endpoint(Enum):
     Concept = "concepts"
     Reference = "references"
     Sentence = "sentences"
+    Definition = "definitions"
 
     Test = "tests"  # test用
 

@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 from knowde._feature._shared.domain import DomainModel
 
-MAX_CHARS = 2**6
+MAX_CHARS = 128
 
 
 class SentenceParam(BaseModel, frozen=True):

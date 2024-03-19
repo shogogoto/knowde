@@ -35,8 +35,8 @@ def _validate_graph(v: Any, info: ValidationInfo) -> DiGraph:  # noqa: ARG001 AN
     raise TypeError
 
 
-Graph = Annotated[
+NXGraph = Annotated[
     DiGraph,
     PlainValidator(_validate_graph),
-    PlainSerializer(lambda x: nx.node_link_graph(x)),
+    PlainSerializer(lambda x: nx.node_link_data(x)),
 ]

@@ -18,13 +18,13 @@ def add_root(name: str) -> Reference:
 
 
 def change_name(ref_id: UUID, name: str) -> Reference:
-    lb = ref_util.find_one(ref_id).label
+    lb = ref_util.find_by_id(ref_id).label
     lb.name = name
     return Reference.to_model(lb.save())
 
 
 def add_part(parent_id: UUID, name: str) -> Reference:
-    parent = ref_util.find_one(parent_id)
+    parent = ref_util.find_by_id(parent_id)
     part = ref_util.create(name=name)
     part.label.parent.connect(parent.label)
     return part.to_model()
@@ -36,7 +36,7 @@ def add_author(
 ) -> Author:
     a = author_util.create(name=name)
     if ref is not None:
-        r = ref_util.find_one(ref.valid_uid)
+        r = ref_util.find_by_id(ref.valid_uid)
         r.label.author.connect(a.label)
     return a.to_model()
 

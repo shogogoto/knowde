@@ -26,7 +26,7 @@ class EndpointFuncs(BaseModel, frozen=True):
         return self.util.complete(pref_uid).to_model()
 
     def ls(self) -> list[DomainModel]:
-        return self.util.find_all().to_model()
+        return self.util.find().to_model()
 
     def add_factory(self, t_in: type[BaseModel]) -> Add:
         def add(p: t_in) -> DomainModel:
@@ -40,10 +40,6 @@ class EndpointFuncs(BaseModel, frozen=True):
 
         def change(uid: UUID, p: Opt) -> DomainModel:
             with db.transaction:
-                lb = self.util.find_one(uid).label
-                for k, v in p.model_dump().items():
-                    if v is not None:
-                        setattr(lb, k, v)
-                return self.util.model.to_model(lb.save())
+                return self.util.change(uid, **p.model_dump()).to_model()
 
         return change

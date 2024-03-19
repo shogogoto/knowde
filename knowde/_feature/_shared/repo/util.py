@@ -26,6 +26,9 @@ class LabelUtil(BaseModel, Generic[L, M], frozen=True):
     label: type[L]
     model: type[M]
 
+    def to_neolabel(self, model: M) -> L:
+        return self.label(**model.model_dump())
+
     def to_label(self, label: L) -> Label[L, M]:
         return Label(label=label, model=self.model)
 
@@ -49,21 +52,42 @@ class LabelUtil(BaseModel, Generic[L, M], frozen=True):
             raise CompleteMultiHitError(msg)
         return self.to_label(lbs[0])
 
-    def find_one(self, uid: UUID) -> Label[L, M]:
+    def find_by_id(self, uid: UUID) -> Label[L, M]:
         try:
             lb = self.label.nodes.get(uid=uid.hex)
             return self.to_label(lb)
         except DoesNotExist as e:
             raise NeomodelNotFoundError(msg=str(e)) from e
 
-    def find_all(self) -> Labels[L, M]:
+    def find(self, **kwargs) -> Labels[L, M]:  # noqa: ANN003
         """TODO:pagingが未実装."""
-        ls = self.label.nodes.all()
+        ls = self.label.nodes.filter(**kwargs)
         return self.to_labels(ls)
 
+    def find_one(self, **kwargs) -> Label[L, M]:  # noqa: ANN003
+        lb = self.find_one_or_none(**kwargs)
+        if lb is None:
+            raise NeomodelNotFoundError
+        return lb
+
+    def find_one_or_none(self, **kwargs) -> Label[L, M] | None:  # noqa: ANN003
+        lb = self.label.nodes.get_or_none(**kwargs)
+        if lb is None:
+            return None
+        return self.to_label(lb)
+
     def delete(self, uid: UUID) -> None:
-        self.find_one(uid).label.delete()
+        self.find_by_id(uid).label.delete()
 
     def create(self, **kwargs) -> Label[L, M]:  # noqa: ANN003
         saved = self.label(**kwargs).save()
         return self.to_label(saved)
+
+    def change(self, uid: UUID, **kwargs) -> Label[L, M]:  # noqa: ANN003
+        lb = self.find_by_id(uid).label
+        for k, v in kwargs.items():
+            if v is not None:
+                setattr(lb, k, v)
+        if any(kwargs.values()):  # どれか１つでも変更した場合
+            return self.to_label(lb.save())
+        return self.to_label(lb)

@@ -14,4 +14,8 @@ services:
       - ./.docker/neo4j/logs:/logs
       - ./.docker/neo4j/conf:/conf
     environment:
+      - NEO4J_PLUGINS=["apoc"]
       - NEO4J_AUTH=neo4j/passwordneo # user/password
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_apoc_import_file_use__neo4j__config=true

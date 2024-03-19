@@ -5,7 +5,7 @@ from typing import Final, Optional
 from networkx import tree_data
 from pydantic import BaseModel, Field
 
-from knowde._feature._shared import DomainModel, Graph
+from knowde._feature._shared import DomainModel, NXGraph
 
 
 class RefMixin(BaseModel):
@@ -25,7 +25,7 @@ class Author(DomainModel, frozen=True):
 
 
 class ReferenceGraph(BaseModel, frozen=True):
-    G: Graph
+    G: NXGraph
     roots: list[Reference]
 
     def tree(

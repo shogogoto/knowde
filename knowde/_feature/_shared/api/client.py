@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from typing import TYPE_CHECKING, Callable
 
 from fastapi import status
@@ -10,16 +11,13 @@ if TYPE_CHECKING:
     from pydantic import BaseModel
 
     from knowde._feature._shared.api.types import (
+        CheckResponse,
         Complete,
-        ListMethod,
+        ListClient,
         Remove,
         RequestMethod,
     )
     from knowde._feature._shared.domain import DomainModel
-
-
-class APIClientError(Exception):
-    pass
 
 
 def complete_client(
@@ -34,7 +32,8 @@ def complete_client(
         if res.status_code != status.HTTP_200_OK:
             msg = res.json()["detail"]["message"]
             msg = f"[{res.status_code}]:{msg}"
-            raise APIClientError(msg)
+            print(msg)  # noqa: T201
+            sys.exit()
         return t_out.model_validate(res.json())
 
     return complete
@@ -43,9 +42,17 @@ def complete_client(
 def list_client(
     req: RequestMethod,
     t_out: type[DomainModel],
-) -> ListMethod:
-    def ls() -> list[t_out]:
-        res = req()
+    t_in: type[BaseModel] | None = None,
+    check_response: CheckResponse | None = None,
+) -> ListClient:
+    def ls(**kwargs) -> list[t_out]:  # noqa: ANN003
+        if t_in is None:
+            res = req()
+        else:
+            p = t_in.model_validate(kwargs)
+            res = req(json=p.model_dump())
+        if check_response is not None:
+            check_response(res)
         return [t_out.model_validate(e) for e in res.json()]
 
     return ls
@@ -64,10 +71,13 @@ def add_client(
     req: RequestMethod,
     t_in: type[BaseModel],
     t_out: type[DomainModel],
+    check_response: CheckResponse | None = None,
 ) -> Callable:
     def add(**kwargs) -> t_out:  # noqa: ANN003
-        p = t_in.validate(kwargs)
+        p = t_in.model_validate(kwargs)
         res = req(json=p.model_dump())
+        if check_response is not None:
+            check_response(res)
         return t_out.model_validate(res.json())
 
     return add

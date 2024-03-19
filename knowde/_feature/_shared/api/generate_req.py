@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Callable
 
 from fastapi import APIRouter, status
 from makefun import create_function
+from neomodel import db
 from pydantic import BaseModel
 
 from .endpoint import Endpoint
@@ -27,6 +28,13 @@ def inject_signature(
     return create_function(
         Signature(replaced, return_annotation=t_out),
         f,
+    )
+
+
+def transaction_wraps(f: Callable) -> Callable:
+    return create_function(
+        signature(f),
+        db.transaction(f),
     )
 
 

@@ -5,14 +5,14 @@ from typing import Any, Callable, Generic, Hashable, Self, TypeVar
 import networkx as nx
 from pydantic import BaseModel, Field, model_validator
 
-from knowde._feature._shared.types import Graph
+from knowde._feature._shared.types import NXGraph
 
 T = TypeVar("T", bound=Hashable)
 U = TypeVar("U", bound=Hashable)
 
 
 class GraphPaths(BaseModel, Generic[T]):
-    G: Graph = Field(default_factory=Graph)
+    G: NXGraph = Field(default_factory=NXGraph)
     init: list[T] = Field(default_factory=list)
 
     @model_validator(mode="after")
@@ -30,7 +30,7 @@ def _identify(x: Any) -> Any:  # noqa: ANN401
 
 
 class GraphReplacer(BaseModel, Generic[T, U]):
-    G: Graph = Field(default_factory=Graph)
+    G: NXGraph = Field(default_factory=NXGraph)
     init: list[Any] = Field(default_factory=list)
     to_domain: Callable[[Any], T] = _identify  # 定義域 Domain = T
     to_range: Callable[[Any], U] = _identify  # 値域 Range = U
@@ -51,7 +51,7 @@ class GraphReplacer(BaseModel, Generic[T, U]):
 
     def __call__(
         self,
-        g: Graph,
+        g: NXGraph,
         # updater: Callable[[T], Any],
     ) -> None:
         mapping = {}
