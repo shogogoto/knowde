@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from uuid import UUID
+
 from neomodel import (
     DateTimeProperty,
     StructuredNode,
@@ -8,6 +10,7 @@ from neomodel import (
 )
 
 from knowde._feature._shared.domain import jst_now
+from knowde._feature._shared.errors.domain import NotExistsUidAccessError
 
 
 class LBaseNameError(Exception):
@@ -43,3 +46,9 @@ class LBase(StructuredNode, TimestampMixin):
 
 class RelBase(StructuredRel, TimestampMixin):
     uid = UniqueIdProperty()
+
+    @property
+    def valid_uid(self) -> UUID:
+        if self.uid is None:
+            raise NotExistsUidAccessError
+        return UUID(self.uid)

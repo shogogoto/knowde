@@ -1,8 +1,9 @@
 """define api and cli."""
+from __future__ import annotations
+
 from uuid import UUID
 
 import click
-from fastapi import status
 
 from knowde._feature._shared.api.client_factory import (
     create_add_client,
@@ -10,12 +11,15 @@ from knowde._feature._shared.api.client_factory import (
 )
 from knowde._feature._shared.api.endpoint import Endpoint
 from knowde._feature._shared.api.generate_req import APIRequests, inject_signature
+from knowde._feature._shared.cli.click_decorators import each_args
 from knowde._feature._shared.cli.field.model2click import model2decorator
 from knowde.feature.definition.domain.domain import Definition, DefinitionParam
 from knowde.feature.definition.dto import DetailParam, DetailView
 from knowde.feature.definition.repo.definition import (
     add_definition,
     complete_definition,
+    list_definitions,
+    remove_definition,
 )
 from knowde.feature.definition.service import detail_service
 
@@ -63,6 +67,22 @@ def detail(pref_def_uid: str) -> None:
     """定義の依存関係含めて表示."""
     d = complete_client(pref_uid=pref_def_uid)
     res = req_detail(relative=f"/detail/{d.valid_uid}")
-    if res.status_code == status.HTTP_404_NOT_FOUND:
-        click.echo(f"uid={pref_def_uid}...の定義は見つかりませんでした")
     DetailView.model_validate(res.json()).echo()
+
+
+@def_cli.command("ls")
+def _ls() -> None:
+    """定義一覧."""
+    for d in list_definitions():
+        click.echo(d.output)
+
+
+@def_cli.command("rm")
+@each_args(
+    "pref_uids",
+    converter=lambda pref_uid: complete_client(pref_uid),
+)
+def _rm(d: Definition) -> None:
+    """定義を削除."""
+    remove_definition(d.valid_uid)
+    click.echo(f"{d.output}を削除しました")

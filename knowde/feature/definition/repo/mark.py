@@ -101,7 +101,7 @@ def remove_marks(
     """
     rels = RelMarkUtil.find_by_source_id(sentence_uid)
     for rel in rels:
-        RelMarkUtil.disconnect(rel)
+        RelMarkUtil.disconnect(rel.valid_uid)
     s = SentenceUtil.find_by_id(sentence_uid).to_model()
     return SentenceUtil.change(
         sentence_uid,

@@ -79,14 +79,14 @@ class RelUtil(
             setattr(rel, k, v)
         return rel.save()
 
-    def disconnect(self, rel: R) -> None:
+    def disconnect(self, uid: UUID) -> None:
         sl, tl = self.labels
         query_cypher(
             f"""
             MATCH (:{sl})-[rel:{self.name} {{uid: $uid}}]->(:{tl})
             DELETE rel
             """,
-            params={"uid": rel.uid},
+            params={"uid": uid.hex},
         )
 
     def find_by_source_id(self, source_uid: UUID) -> list[R]:
