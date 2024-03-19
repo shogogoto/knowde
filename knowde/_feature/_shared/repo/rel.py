@@ -139,3 +139,17 @@ class RelUtil(
             msg = f"{n}件ヒット.1つだけヒットするよう入力桁を増やしてみてね."
             raise CompleteMultiHitError(msg)
         return rels[0]
+
+    def find_one_or_none(self, rel_uid: UUID) -> R | None:
+        sl, tl = self.labels
+        rels = query_cypher(
+            f"""
+            MATCH (:{sl})-[rel:{self.name} {{uid: $uid}}]->(:{tl})
+            RETURN rel
+            """,
+            params={"uid": rel_uid.hex},
+        ).get("rel")
+
+        if len(rels) == 1:
+            return rels[0]
+        return None

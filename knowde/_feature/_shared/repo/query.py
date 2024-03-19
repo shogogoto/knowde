@@ -32,14 +32,14 @@ class QueryResult(BaseModel, frozen=True):
 
     def get(
         self,
-        retvar: str,
+        var: str,
         convert: Callable[[Any], Any] = lambda x: x,
         row_convert: Callable[[Any], Any] = lambda x: x,
     ) -> list[Any]:
-        i = self.meta.index(retvar)
+        i = self.meta.index(var)
         return list(
             map(
                 convert,
-                [row_convert(row[i]) for row in self.results if row[i]],  # None削除
+                [row_convert(row[i]) for row in self.results],  # None削除
             ),
         )
