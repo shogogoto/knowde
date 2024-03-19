@@ -16,9 +16,9 @@ from knowde.feature.definition.domain.description import Description
 from knowde.feature.definition.domain.domain import Definition, DefinitionParam
 from knowde.feature.definition.repo.errors import (
     AlreadyDefinedError,
-    DuplicateDefinedError,
 )
 from knowde.feature.definition.repo.mark import (
+    RelMark,
     add_description,
     find_marked_terms,
     remark_sentence,
@@ -43,23 +43,14 @@ def add_definition(p: DefinitionParam) -> Definition:
     t = TermUtil.find_one_or_none(value=name)
     if t is None:
         t = TermUtil.create(value=name)
-    d = find_definition(t.to_model().valid_uid)
-    if d:
-        msg = f"定義済みです: {d.output}"
+
+    rels = RelDefUtil.find_by_source_id(t.to_model().valid_uid)
+    if len(rels) >= 1:
+        msg = "定義済みです"
         raise AlreadyDefinedError(msg)
     d = add_description(Description(value=p.explain))
     rel = RelDefUtil.connect(t.label, d.label)
     return Definition.from_rel(rel, d.terms)
-
-
-def find_definition(term_uid: UUID) -> Definition | None:
-    """neomodelではrelationを検索できないのでcypherで書く."""
-    rels = RelDefUtil.find_by_source_id(term_uid)
-    if len(rels) == 0:
-        return None
-    if len(rels) > 1:
-        raise DuplicateDefinedError  # 仮実装
-    return Definition.from_rel(rels[0])
 
 
 def change_definition(
@@ -81,22 +72,42 @@ def change_definition(
     return Definition.from_rel(rel)
 
 
-def remove_definition(term_uid: UUID) -> None:
+def remove_definition(def_uid: UUID) -> None:
     """定義の削除."""
     query_cypher(
         """
-        MATCH (:Term {uid: $uid})-[def:DEFINE]->(s:Sentence)
+        MATCH (:Term)-[def:DEFINE {uid: $uid}]->(s:Sentence)
         OPTIONAL MATCH (s)-[mark:MARK]->(:Term)
         DELETE def, mark
         """,
-        params={"uid": term_uid.hex},
+        params={"uid": def_uid.hex},
     )
 
 
 def complete_definition(pref_uid: str) -> Definition:
     """前方一致検索."""
-    # print(RelDefUtil.find_by_source_id(UUID(pref_uid)))
     rel = RelDefUtil.complete(pref_uid=pref_uid)
     s = Sentence.to_model(rel.end_node())
     terms = find_marked_terms(s.valid_uid)
     return Definition.from_rel(rel, deps=terms)
+
+
+def list_definitions() -> list[Definition]:
+    """とりあえず一覧を返す.
+
+    本当は依存関係の統計値も返したいが、開発が進んでから再検討しよう
+    """
+    res = query_cypher(
+        """
+        MATCH (:Term)-[def:DEFINE]->(s:Sentence)
+        WITH def, s
+        OPTIONAL MATCH (s)-[m:MARK]->(:Term)
+        RETURN def, collect(m) as marks
+        """,
+    )
+    drels = res.get("def")
+    terms = res.get("marks", RelMark.sort, row_convert=lambda x: x[0])
+    retvals = []
+    for d, t in zip(drels, terms, strict=True):
+        retvals.append(Definition.from_rel(d, t))
+    return retvals

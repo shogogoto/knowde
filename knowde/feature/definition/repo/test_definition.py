@@ -7,6 +7,7 @@
 
 
 import pytest
+from pytest_unordered import unordered
 
 from knowde._feature.sentence import SentenceUtil
 from knowde._feature.term.repo.label import TermUtil
@@ -16,7 +17,7 @@ from knowde.feature.definition.repo.mark import find_marked_terms
 from .definition import (
     add_definition,
     change_definition,
-    find_definition,
+    list_definitions,
     remove_definition,
 )
 from .errors import AlreadyDefinedError
@@ -59,7 +60,7 @@ def test_add_exists() -> None:
 def test_find_definition() -> None:
     """定義をIDから見つける."""
     d = add_definition(_p("new_term1", "sentence"))
-    assert d == find_definition(d.term.valid_uid)
+    assert d == list_definitions()[0]
 
 
 def test_change_definition() -> None:
@@ -104,5 +105,14 @@ def test_remove_with_marks() -> None:
     d1 = add_definition(_p("t1", "xxx"))
     d2 = add_definition(_p("t2", "xx{t1}xx"))
     assert find_marked_terms(d2.sentence.valid_uid) == [d1.term]
-    remove_definition(d2.term.valid_uid)
+    remove_definition(d2.valid_uid)
     assert find_marked_terms(d2.sentence.valid_uid) == []
+
+
+def test_list_definitions() -> None:
+    """List definitions."""
+    d1 = add_definition(_p("t1", "xxx"))
+    d2 = add_definition(_p("t2", "xx{t1}xx"))
+    d3 = add_definition(_p("t3", "xx{t2}xx"))
+    d4 = add_definition(_p("t4", "xx{t1}x{t2}x{t3}xx"))
+    assert list_definitions() == unordered([d1, d2, d3, d4])
