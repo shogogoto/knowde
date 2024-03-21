@@ -43,7 +43,7 @@ class StatusCodeGrant(
     frozen=True,
     arbitrary_types_allowed=True,
 ):
-    """APIRouterにステータスコードを付与."""
+    """APIRouterにステータスコードを付与しrouterからendpointメソッドへ変換."""
 
     router: APIRouter
 
@@ -51,7 +51,7 @@ class StatusCodeGrant(
     def endpoint(self) -> Endpoint:
         return Endpoint.of(self.router.prefix)
 
-    def post(
+    def to_post(
         self,
         f: Callable,
         path: str = "",
@@ -62,7 +62,7 @@ class StatusCodeGrant(
         )(f)
         return self.endpoint.post
 
-    def put(
+    def to_put(
         self,
         f: Callable,
         path: str = "/{uid}",
@@ -70,7 +70,7 @@ class StatusCodeGrant(
         self.router.put(path)(f)
         return self.endpoint.put
 
-    def get(
+    def to_get(
         self,
         f: Callable,
         path: str = "",
@@ -78,7 +78,7 @@ class StatusCodeGrant(
         self.router.get(path)(f)
         return self.endpoint.get
 
-    def delete(
+    def to_delete(
         self,
         f: Callable,
         path: str = "/{uid}",

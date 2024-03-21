@@ -41,7 +41,7 @@ complete_client = create_complete_client(
 
 
 reqs = StatusCodeGrant(router=def_router)
-req_detail = reqs.get(
+req_detail = reqs.to_get(
     inject_signature(detail_service, [UUID], DetailView),
     "/detail/{def_uid}",
 )

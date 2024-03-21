@@ -43,7 +43,7 @@ def create_add_client(
     check_response: CheckResponse | None = None,
 ) -> Add:
     reqs = StatusCodeGrant(router=router)
-    req_add = reqs.post(
+    req_add = reqs.to_post(
         inject_signature(f, [t_in], t_out),
     )
     return add_client(req_add, t_in, t_out, check_response)
@@ -58,7 +58,7 @@ def create_change_client(
 ) -> Change:
     reqs = StatusCodeGrant(router=router)
     OPT = create_partial_model(t_in)  # noqa: N806
-    req_ch = reqs.put(
+    req_ch = reqs.to_put(
         inject_signature(f, [UUID, OPT], t_out),
     )
     return change_client(req_ch, OPT, t_out, complete_client)
@@ -70,7 +70,7 @@ def create_complete_client(
     t_out: type[DomainModel],
 ) -> Complete:
     reqs = StatusCodeGrant(router=router)
-    req_complete = reqs.get(
+    req_complete = reqs.to_get(
         inject_signature(f, [str], t_out),
         "/completion",
     )
@@ -82,7 +82,7 @@ def create_remove_client(
     f: Remove,
 ) -> Remove:
     reqs = StatusCodeGrant(router=router)
-    req_rm = reqs.delete(inject_signature(f, [UUID]))
+    req_rm = reqs.to_delete(inject_signature(f, [UUID]))
     return remove_client(req_rm)
 
 
@@ -98,7 +98,7 @@ def create_list_client(
         f_di = inject_signature(f, [], list[t_out])
     else:
         f_di = inject_signature(f, [t_in], list[t_out])
-    req_ls = reqs.get(f_di)
+    req_ls = reqs.to_get(f_di)
     return list_client(req_ls, t_out, t_in, check_response)
 
 

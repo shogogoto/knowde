@@ -31,7 +31,7 @@ def _post(prop: SaveProp) -> AdjacentConcept:
         return save_concept(prop)
 
 
-reqs.post(_post)
+reqs.to_post(_post)
 
 
 def _put(
@@ -42,4 +42,4 @@ def _put(
     return change_concept(concept_id, prop.name, prop.explain)
 
 
-reqs.put(_put)
+reqs.to_put(_put)
