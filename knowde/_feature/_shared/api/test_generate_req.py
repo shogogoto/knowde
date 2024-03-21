@@ -14,7 +14,7 @@ from knowde._feature._shared.domain import DomainModel
 from knowde._feature._shared.repo.base import LBase
 from knowde._feature._shared.repo.util import LabelUtil
 
-from .generate_req import APIRequests, inject_signature
+from .generate_req import StatusCodeGrant, inject_signature
 
 if TYPE_CHECKING:
     from requests_mock.mocker import Mocker
@@ -73,7 +73,7 @@ def test_fail_with_lost_type() -> None:
 
     r = APIRouter(prefix=PREFIX)
     with pytest.raises(PydanticUndefinedAnnotation):
-        APIRequests(router=r).put(change, path="/{uid}")
+        StatusCodeGrant(router=r).put(change, path="/{uid}")
 
 
 def test_put(requests_mock: Mocker) -> None:
@@ -91,7 +91,7 @@ def test_put(requests_mock: Mocker) -> None:
         return OneModel.to_model(lb.save())
 
     r = APIRouter(prefix=PREFIX)
-    req = APIRequests(router=r).put(
+    req = StatusCodeGrant(router=r).put(
         inject_signature(change, [UUID, OneParam], OneModel),
     )
     m = util.create(name="pre").to_model()
@@ -111,7 +111,7 @@ def test_post(requests_mock: Mocker) -> None:
         return util.create(**p.model_dump()).to_model()
 
     r = APIRouter(prefix=PREFIX)
-    req = APIRequests(router=r).post(f)
+    req = StatusCodeGrant(router=r).post(f)
 
     res = to_client(r).post(url=PREFIX, json={"name": "n1"})
     assert res.status_code == status.HTTP_201_CREATED
@@ -129,7 +129,7 @@ def test_generate_get(requests_mock: Mocker) -> None:
         return util.find().to_model()
 
     r = APIRouter(prefix=PREFIX)
-    req = APIRequests(router=r).get(f)
+    req = StatusCodeGrant(router=r).get(f)
 
     res = to_client(r).get(url=PREFIX)
     assert res.status_code == status.HTTP_200_OK
@@ -145,7 +145,7 @@ def test_generate_get_with_param(requests_mock: Mocker) -> None:
         return util.complete(pref_uid).to_model()
 
     r = APIRouter(prefix=PREFIX)
-    req = APIRequests(router=r).get(f, path="/completion")
+    req = StatusCodeGrant(router=r).get(f, path="/completion")
 
     m = util.create(name="completion").to_model()
     pref_uid = m.valid_uid.hex[0]

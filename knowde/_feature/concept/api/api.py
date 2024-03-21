@@ -7,7 +7,7 @@ from neomodel import db
 
 from knowde._feature._shared import Endpoint
 from knowde._feature._shared.api.client_factory import create_basic_clients
-from knowde._feature._shared.api.generate_req import APIRequests
+from knowde._feature._shared.api.generate_req import StatusCodeGrant
 from knowde._feature.concept.domain import (  # noqa: TCH001
     AdjacentConcept,
     ChangeProp,
@@ -22,7 +22,7 @@ from knowde._feature.concept.repo.repo import (
 
 concept_router = Endpoint.Concept.create_router()
 _ = create_basic_clients(util_concept, concept_router)
-reqs = APIRequests(router=concept_router)
+reqs = StatusCodeGrant(router=concept_router)
 
 
 def _post(prop: SaveProp) -> AdjacentConcept:

@@ -38,11 +38,13 @@ def transaction_wraps(f: Callable) -> Callable:
     )
 
 
-class APIRequests(
+class StatusCodeGrant(
     BaseModel,
     frozen=True,
     arbitrary_types_allowed=True,
 ):
+    """APIRouterにステータスコードを付与."""
+
     router: APIRouter
 
     @property

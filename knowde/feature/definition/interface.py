@@ -12,7 +12,7 @@ from knowde._feature._shared.api.client_factory import (
     create_remove_client,
 )
 from knowde._feature._shared.api.endpoint import Endpoint
-from knowde._feature._shared.api.generate_req import APIRequests, inject_signature
+from knowde._feature._shared.api.generate_req import StatusCodeGrant, inject_signature
 from knowde._feature._shared.cli.click_decorators import each_args
 from knowde._feature._shared.cli.field.model2click import model2decorator
 from knowde.feature.definition.domain.domain import Definition, DefinitionParam
@@ -40,7 +40,7 @@ complete_client = create_complete_client(
 )
 
 
-reqs = APIRequests(router=def_router)
+reqs = StatusCodeGrant(router=def_router)
 req_detail = reqs.get(
     inject_signature(detail_service, [UUID], DetailView),
     "/detail/{def_uid}",
@@ -77,6 +77,11 @@ def add(**kwargs) -> None:  # noqa: ANN003
 @model2decorator(DetailParam)
 def detail(pref_def_uid: str) -> None:
     """定義の依存関係含めて表示."""
+    # reqs = APIRequests(router=def_router)
+    # req_detail = reqs.get(
+    #     inject_signature(detail_service, [UUID], DetailView),
+    #     "/detail/{def_uid}",
+    # )
     d = complete_client(pref_uid=pref_def_uid)
     res = req_detail(relative=f"/detail/{d.valid_uid}")
     DetailView.model_validate(res.json()).echo()

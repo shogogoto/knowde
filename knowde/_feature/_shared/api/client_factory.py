@@ -27,7 +27,7 @@ from knowde._feature._shared.api.types import (
 from knowde._feature._shared.repo.util import LabelUtil  # noqa: TCH001
 
 from .generate_req import (
-    APIRequests,
+    StatusCodeGrant,
     inject_signature,
 )
 
@@ -42,7 +42,7 @@ def create_add_client(
     t_out: type[DomainModel],
     check_response: CheckResponse | None = None,
 ) -> Add:
-    reqs = APIRequests(router=router)
+    reqs = StatusCodeGrant(router=router)
     req_add = reqs.post(
         inject_signature(f, [t_in], t_out),
     )
@@ -56,7 +56,7 @@ def create_change_client(
     t_out: type[DomainModel],
     complete_client: Complete,
 ) -> Change:
-    reqs = APIRequests(router=router)
+    reqs = StatusCodeGrant(router=router)
     OPT = create_partial_model(t_in)  # noqa: N806
     req_ch = reqs.put(
         inject_signature(f, [UUID, OPT], t_out),
@@ -69,7 +69,7 @@ def create_complete_client(
     f: Complete,
     t_out: type[DomainModel],
 ) -> Complete:
-    reqs = APIRequests(router=router)
+    reqs = StatusCodeGrant(router=router)
     req_complete = reqs.get(
         inject_signature(f, [str], t_out),
         "/completion",
@@ -81,7 +81,7 @@ def create_remove_client(
     router: APIRouter,
     f: Remove,
 ) -> Remove:
-    reqs = APIRequests(router=router)
+    reqs = StatusCodeGrant(router=router)
     req_rm = reqs.delete(inject_signature(f, [UUID]))
     return remove_client(req_rm)
 
@@ -93,7 +93,7 @@ def create_list_client(
     t_in: type[BaseModel] | None = None,
     check_response: CheckResponse | None = None,
 ) -> ListClient:
-    reqs = APIRequests(router=router)
+    reqs = StatusCodeGrant(router=router)
     if t_in is None:
         f_di = inject_signature(f, [], list[t_out])
     else:
