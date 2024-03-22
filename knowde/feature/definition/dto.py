@@ -6,7 +6,7 @@ from textwrap import indent
 import click
 from pydantic import BaseModel, Field
 
-from knowde._feature._shared.domain import Composite  # noqa: TCH001
+from knowde._feature._shared.domain import APIReturn, Composite
 from knowde.feature.definition.domain.domain import Definition  # noqa: TCH001
 
 
@@ -24,7 +24,7 @@ class DetailParam(BaseModel, frozen=True):
     pref_def_uid: str = Field(description="用語のuuidへ前方一致")
 
 
-class DetailView(BaseModel, frozen=True):
+class DetailView(APIReturn, frozen=True):
     """show definition composite."""
 
     detail: Composite[Definition] | None = None

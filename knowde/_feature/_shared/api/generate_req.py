@@ -86,5 +86,6 @@ class StatusCodeGrant(
         self.router.delete(
             path,
             status_code=status.HTTP_204_NO_CONTENT,
+            response_model=None,
         )(f)
         return self.endpoint.delete

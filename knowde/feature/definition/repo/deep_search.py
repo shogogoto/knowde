@@ -37,6 +37,8 @@ def find_recursively(def_uid: UUID) -> DefinitionTree:
     g.add_edge(d.term, d.sentence, rel=rel)
 
     for elm in res.get("p"):
+        if elm is None:
+            continue
         for rel in elm.relationships:
             start = rel.start_node()
             end = rel.end_node()

@@ -1,7 +1,7 @@
 """new create repository."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from uuid import UUID  # noqa: TCH003
 
 from neomodel import ZeroOrOne
 
@@ -23,10 +23,6 @@ from knowde.feature.definition.repo.mark import (
     find_marked_terms,
     remark_sentence,
 )
-
-if TYPE_CHECKING:
-    from uuid import UUID
-
 
 RelDefUtil = RelUtil(
     t_source=LTerm,

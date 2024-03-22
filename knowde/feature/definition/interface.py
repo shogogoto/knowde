@@ -1,19 +1,14 @@
 """define api and cli."""
 from __future__ import annotations
 
-from uuid import UUID
-
 import click
+from compose import compose
 
+from knowde._feature._shared import Endpoint, each_args
 from knowde._feature._shared.api.client_factory import (
-    create_add_client,
-    create_complete_client,
-    create_list_client,
-    create_remove_client,
+    RequestPartial,
 )
-from knowde._feature._shared.api.endpoint import Endpoint
-from knowde._feature._shared.api.generate_req import StatusCodeGrant, inject_signature
-from knowde._feature._shared.cli.click_decorators import each_args
+from knowde._feature._shared.api.generate_req import StatusCodeGrant
 from knowde._feature._shared.cli.field.model2click import model2decorator
 from knowde.feature.definition.domain.domain import Definition, DefinitionParam
 from knowde.feature.definition.dto import DetailParam, DetailView
@@ -26,35 +21,21 @@ from knowde.feature.definition.repo.definition import (
 from knowde.feature.definition.service import detail_service
 
 def_router = Endpoint.Definition.create_router()
-add_client = create_add_client(
-    def_router,
-    add_definition,
-    DefinitionParam,
-    Definition,
+grant = StatusCodeGrant(router=def_router)
+add_req = RequestPartial().body(DefinitionParam)(grant.to_post, add_definition)
+complete_req = (
+    RequestPartial()
+    .path("", "/completion")
+    .query("pref_uid")(grant.to_get, complete_definition)
 )
+detail_req = RequestPartial().path("def_uid")(grant.to_get, detail_service)
+list_req = RequestPartial()(grant.to_get, list_definitions)
+remove_req = RequestPartial().path("def_uid")(grant.to_delete, remove_definition)
 
-complete_client = create_complete_client(
-    def_router,
-    complete_definition,
-    Definition,
-)
-
-
-reqs = StatusCodeGrant(router=def_router)
-req_detail = reqs.to_get(
-    inject_signature(detail_service, [UUID], DetailView),
-    "/detail/{def_uid}",
-)
-
-list_client = create_list_client(
-    def_router,
-    list_definitions,
-    t_out=Definition,
-)
-remove_client = create_remove_client(
-    def_router,
-    remove_definition,
-)
+add_client = compose(Definition.of, add_req)
+complete_client = compose(Definition.of, complete_req)
+detail_client = compose(DetailView.of, detail_req)
+list_client = compose(Definition.ofs, list_req)
 
 
 @click.group("def")
@@ -77,14 +58,8 @@ def add(**kwargs) -> None:  # noqa: ANN003
 @model2decorator(DetailParam)
 def detail(pref_def_uid: str) -> None:
     """定義の依存関係含めて表示."""
-    # reqs = APIRequests(router=def_router)
-    # req_detail = reqs.get(
-    #     inject_signature(detail_service, [UUID], DetailView),
-    #     "/detail/{def_uid}",
-    # )
     d = complete_client(pref_uid=pref_def_uid)
-    res = req_detail(relative=f"/detail/{d.valid_uid}")
-    DetailView.model_validate(res.json()).echo()
+    detail_client(def_uid=d.valid_uid).echo()
 
 
 @def_cli.command("ls")
@@ -97,9 +72,9 @@ def _ls() -> None:
 @def_cli.command("rm")
 @each_args(
     "pref_uids",
-    converter=lambda pref_uid: complete_client(pref_uid),
+    converter=lambda pref_uid: complete_client(pref_uid=pref_uid),
 )
 def _rm(d: Definition) -> None:
     """定義を削除."""
-    remove_client(d.valid_uid)
+    remove_req(def_uid=d.valid_uid)
     click.echo(f"{d.output}を削除しました")

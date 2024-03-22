@@ -9,6 +9,8 @@ from pydantic import BaseModel, Field, RootModel, field_validator
 from .errors import NotExistsUidAccessError
 
 if TYPE_CHECKING:
+    from requests import Response
+
     from knowde._feature._shared.repo import LBase
 
 TZ = timezone(timedelta(hours=9), "Asia/Tokyo")
@@ -18,7 +20,17 @@ def jst_now() -> datetime:
     return datetime.now(tz=TZ)
 
 
-class DomainModel(BaseModel, frozen=True):
+class APIReturn(BaseModel, frozen=True):
+    @classmethod
+    def of(cls, res: Response) -> Self:
+        return cls.model_validate(res.json())
+
+    @classmethod
+    def ofs(cls, res: Response) -> list[Self]:
+        return [cls.model_validate(d) for d in res.json()]
+
+
+class DomainModel(APIReturn, frozen=True):
     uid: UUID | None = None
     created: datetime | None = Field(None, repr=False)
     updated: datetime | None = Field(None, repr=False)
