@@ -52,9 +52,9 @@ def test_bind_path_param() -> None:
         ("var", "", "/{var}"),
         ("var", "/", "/{var}"),
         ("var", "//", "/{var}"),
-        ("var", "base", "base/{var}"),
+        ("var", "base", "/base/{var}"),
         ("var", "/base", "/base/{var}"),
-        ("var", "base/", "base/{var}"),
+        ("var", "base/", "/base/{var}"),
         ("var", "/base/", "/base/{var}"),
     ],
 )

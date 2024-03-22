@@ -8,7 +8,6 @@ from typing import (
     Callable,
     Self,
 )
-from urllib.parse import urljoin
 
 from pydantic import BaseModel, Field
 from typing_extensions import override
@@ -44,18 +43,24 @@ class PathParam(BaseModel, APIParam, frozen=True):
     def path(self) -> str:
         if self.is_null:
             return self.prefix
-        return urljoin(f"{self.prefix}/", f"{self.var}")
+        p = []
+        p.extend(self.prefix.split("/"))
+        p.extend(self.var.split("/"))
+        return "/" + "/".join([e for e in p if e != ""])
 
     def bind(self, to_req: ToRequest, f: Callable) -> RequestMethod:
         return to_req(f, path=self.path)
 
-    def getvalue(self, kwargs: dict) -> Any:  # noqa: ANN401
-        if self.name == "":
+    def getvalue(self, kwargs: dict) -> str | None:
+        if self.is_null:
             return None
+        if self.name == "":
+            return self.path
         if self.name not in kwargs:
             msg = f"{self.name}は{list(kwargs.keys())}に含まれていません"
             raise APIParamBindError(msg)
-        return kwargs.get(self.name)
+        v = kwargs.get(self.name)
+        return self.path.replace(self.name, f"{v}")
 
     @classmethod
     @cache

@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable, Self
 from uuid import UUID
 
-from fastapi import APIRouter  # noqa: TCH002
+from fastapi import APIRouter  # noqa:TCH002
 from pydantic import BaseModel, Field
 from pydantic_partial.partial import create_partial_model
 
@@ -64,8 +64,8 @@ class RequestPartial(BaseModel):
         def _client(**kwargs) -> requests.Response:  # noqa: ANN003
             return req(
                 relative=self.path_.getvalue(kwargs),
-                json=ComplexQueryParam(members=self.queries_).getvalue(kwargs),
-                params=self.body_.getvalue(kwargs),
+                params=ComplexQueryParam(members=self.queries_).getvalue(kwargs),
+                json=self.body_.getvalue(kwargs),
             )
 
         return _client
