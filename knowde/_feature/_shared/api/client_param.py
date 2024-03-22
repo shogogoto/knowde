@@ -60,7 +60,7 @@ class PathParam(BaseModel, APIParam, frozen=True):
             msg = f"{self.name}は{list(kwargs.keys())}に含まれていません"
             raise APIParamBindError(msg)
         v = kwargs.get(self.name)
-        return self.path.replace(self.name, f"{v}")
+        return self.path.replace(self.var, f"{v}")
 
     @classmethod
     @cache

@@ -67,7 +67,7 @@ def test_get_path_value_from_kwargs() -> None:
     uid = uuid4()
     kwargs = {"uid": uid}
     p = PathParam(name="uid")
-    assert p.getvalue(kwargs) == uid
+    assert p.getvalue(kwargs) == f"/{uid}"
 
 
 def test_get_query_param_value_from_kwargs() -> None:
