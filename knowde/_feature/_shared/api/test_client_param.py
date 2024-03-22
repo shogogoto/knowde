@@ -6,13 +6,20 @@
 - query paramの値をkwargsから取得
 - bodyの値をkwargsから取得
 """
+from __future__ import annotations
+
 from uuid import UUID, uuid4
 
+import pytest
 from fastapi import APIRouter, FastAPI
 from fastapi.testclient import TestClient
 from pydantic import BaseModel
 
-from knowde._feature._shared.api.client_param import BodyParam, PathParam, QueryParam
+from knowde._feature._shared.api.client_param import (
+    BodyParam,
+    PathParam,
+    QueryParam,
+)
 from knowde._feature._shared.api.endpoint import Endpoint
 from knowde._feature._shared.api.generate_req import StatusCodeGrant
 
@@ -37,6 +44,23 @@ def test_bind_path_param() -> None:
     p.bind(grant.to_get, _f)
     res = to_client(grant.router).get(f"/tests/{uid}")
     assert UUID(res.json()) == uid
+
+
+@pytest.mark.parametrize(
+    ("name", "prefix", "expected"),
+    [
+        ("var", "", "/{var}"),
+        ("var", "/", "/{var}"),
+        ("var", "//", "/{var}"),
+        ("var", "base", "base/{var}"),
+        ("var", "/base", "/base/{var}"),
+        ("var", "base/", "base/{var}"),
+        ("var", "/base/", "/base/{var}"),
+    ],
+)
+def test_path(name: str, prefix: str, expected: str) -> None:
+    """/が2回続くような不正なパスが作られない."""
+    assert PathParam(name=name, prefix=prefix).path == expected
 
 
 def test_get_path_value_from_kwargs() -> None:

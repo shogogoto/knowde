@@ -1,6 +1,14 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, NamedTuple, Protocol, TypeAlias
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    NamedTuple,
+    Protocol,
+    TypeAlias,
+    TypeVar,
+)
 
 from pydantic import BaseModel
 from requests import Response
@@ -74,4 +82,16 @@ class RequestMethod(Protocol):
         params: dict | None = None,
         json: object = None,
     ) -> requests.Response:
+        ...
+
+
+T = TypeVar("T")
+
+
+class ToRequest(Protocol):
+    def __call__(
+        self,
+        f: Callable[..., T],
+        path: str,
+    ) -> RequestMethod:
         ...

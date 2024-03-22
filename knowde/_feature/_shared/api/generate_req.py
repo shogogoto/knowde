@@ -8,7 +8,7 @@ from makefun import create_function
 from neomodel import db
 from pydantic import BaseModel
 
-from .endpoint import Endpoint
+from knowde._feature._shared.api.endpoint import Endpoint
 
 if TYPE_CHECKING:
     from .types import RequestMethod
