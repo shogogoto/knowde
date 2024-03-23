@@ -1,7 +1,7 @@
 """new create repository."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from uuid import UUID  # noqa: TCH003
 
 from neomodel import ZeroOrOne
 
@@ -23,10 +23,6 @@ from knowde.feature.definition.repo.mark import (
     find_marked_terms,
     remark_sentence,
 )
-
-if TYPE_CHECKING:
-    from uuid import UUID
-
 
 RelDefUtil = RelUtil(
     t_source=LTerm,
@@ -72,7 +68,7 @@ def change_definition(
     return Definition.from_rel(rel)
 
 
-def remove_definition(uid: UUID) -> None:
+def remove_definition(def_uid: UUID) -> None:
     """定義の削除."""
     query_cypher(
         """
@@ -80,7 +76,7 @@ def remove_definition(uid: UUID) -> None:
         OPTIONAL MATCH (s)-[mark:MARK]->(:Term)
         DELETE def, mark
         """,
-        params={"uid": uid.hex},
+        params={"uid": def_uid.hex},
     )
 
 

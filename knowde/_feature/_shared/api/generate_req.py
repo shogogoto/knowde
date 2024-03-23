@@ -8,7 +8,7 @@ from makefun import create_function
 from neomodel import db
 from pydantic import BaseModel
 
-from .endpoint import Endpoint
+from knowde._feature._shared.api.endpoint import Endpoint
 
 if TYPE_CHECKING:
     from .types import RequestMethod
@@ -38,18 +38,20 @@ def transaction_wraps(f: Callable) -> Callable:
     )
 
 
-class APIRequests(
+class StatusCodeGrant(
     BaseModel,
     frozen=True,
     arbitrary_types_allowed=True,
 ):
+    """APIRouterにステータスコードを付与しrouterからendpointメソッドへ変換."""
+
     router: APIRouter
 
     @property
     def endpoint(self) -> Endpoint:
         return Endpoint.of(self.router.prefix)
 
-    def post(
+    def to_post(
         self,
         f: Callable,
         path: str = "",
@@ -60,7 +62,7 @@ class APIRequests(
         )(f)
         return self.endpoint.post
 
-    def put(
+    def to_put(
         self,
         f: Callable,
         path: str = "/{uid}",
@@ -68,7 +70,7 @@ class APIRequests(
         self.router.put(path)(f)
         return self.endpoint.put
 
-    def get(
+    def to_get(
         self,
         f: Callable,
         path: str = "",
@@ -76,7 +78,7 @@ class APIRequests(
         self.router.get(path)(f)
         return self.endpoint.get
 
-    def delete(
+    def to_delete(
         self,
         f: Callable,
         path: str = "/{uid}",
@@ -84,5 +86,6 @@ class APIRequests(
         self.router.delete(
             path,
             status_code=status.HTTP_204_NO_CONTENT,
+            response_model=None,
         )(f)
         return self.endpoint.delete

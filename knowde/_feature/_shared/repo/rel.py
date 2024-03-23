@@ -11,8 +11,11 @@ from neomodel import (
 from pydantic import BaseModel
 from typing_extensions import override
 
+from knowde._feature._shared.errors.domain import (
+    CompleteMultiHitError,
+    CompleteNotFoundError,
+)
 from knowde._feature._shared.repo.query import query_cypher
-from knowde._feature.concept.error import CompleteMultiHitError, CompleteNotFoundError
 
 from .base import LBase, RelBase
 
