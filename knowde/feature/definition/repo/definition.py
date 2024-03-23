@@ -68,7 +68,7 @@ def change_definition(
     return Definition.from_rel(rel)
 
 
-def remove_definition(uid: UUID) -> None:
+def remove_definition(def_uid: UUID) -> None:
     """定義の削除."""
     query_cypher(
         """
@@ -76,7 +76,7 @@ def remove_definition(uid: UUID) -> None:
         OPTIONAL MATCH (s)-[mark:MARK]->(:Term)
         DELETE def, mark
         """,
-        params={"uid": uid.hex},
+        params={"uid": def_uid.hex},
     )
 
 

@@ -2,9 +2,13 @@
 from __future__ import annotations
 
 import click
-from compose import compose
 
 from knowde._feature._shared import Endpoint, each_args
+from knowde._feature._shared.api.check_response import (
+    check_delete,
+    check_get,
+    check_post,
+)
 from knowde._feature._shared.api.client_factory import (
     RequestPartial,
 )
@@ -22,20 +26,34 @@ from knowde.feature.definition.service import detail_service
 
 def_router = Endpoint.Definition.create_router()
 grant = StatusCodeGrant(router=def_router)
-add_req = RequestPartial().body(DefinitionParam)(grant.to_post, add_definition)
-complete_req = (
+add_client = (
+    RequestPartial()
+    .body(DefinitionParam)
+    .to_client(
+        grant.to_post,
+        add_definition,
+        Definition.of,
+        check_post,
+    )
+)
+complete_client = (
     RequestPartial()
     .path("", "/completion")
-    .query("pref_uid")(grant.to_get, complete_definition)
+    .query("pref_uid")
+    .to_client(grant.to_get, complete_definition, Definition.of, check_get)
 )
-detail_req = RequestPartial().path("def_uid")(grant.to_get, detail_service)
-list_req = RequestPartial()(grant.to_get, list_definitions)
+detail_client = (
+    RequestPartial()
+    .path("def_uid")
+    .to_client(grant.to_get, detail_service, DetailView.of, check_get)
+)
+list_client = RequestPartial().to_client(
+    grant.to_get,
+    list_definitions,
+    Definition.ofs,
+    check_get,
+)
 remove_req = RequestPartial().path("def_uid")(grant.to_delete, remove_definition)
-
-add_client = compose(Definition.of, add_req)
-complete_client = compose(Definition.of, complete_req)
-detail_client = compose(DetailView.of, detail_req)
-list_client = compose(Definition.ofs, list_req)
 
 
 @click.group("def")
@@ -76,5 +94,6 @@ def _ls() -> None:
 )
 def _rm(d: Definition) -> None:
     """定義を削除."""
-    remove_req(def_uid=d.valid_uid)
+    res = remove_req(def_uid=d.valid_uid)
+    check_delete(res)
     click.echo(f"{d.output}を削除しました")
