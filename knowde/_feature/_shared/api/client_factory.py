@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, Self, TypeVar
 
-from compose import compose
 from pydantic import BaseModel, Field
 
 from knowde._feature._shared.api.client_param import (
@@ -77,17 +76,3 @@ class RequestPartial(BaseModel):
     def body(self, annotation: type[BaseModel]) -> Self:
         self.body_ = BodyParam(annotation=annotation)
         return self
-
-
-def to_client(
-    req: Callable[..., requests.Response],
-    t: type[T],
-) -> Callable[..., T]:
-    return compose(t.of, req)
-
-
-def to_client_return_list(
-    req: Callable[..., requests.Response],
-    t: type[T],
-) -> Callable[..., list[T]]:
-    return compose(t.ofs, req)
