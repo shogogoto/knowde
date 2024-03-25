@@ -9,12 +9,10 @@ from pydantic import BaseModel, Field
 
 from knowde._feature._shared import RelBase, RelUtil
 from knowde._feature._shared.repo.label import Label  # noqa: TCH001
-from knowde._feature.sentence import SentenceUtil
+from knowde._feature.sentence import LSentence, SentenceUtil
 from knowde._feature.sentence.domain import Sentence  # noqa: TCH001
-from knowde._feature.sentence.repo.label import LSentence
-from knowde._feature.term import TermUtil
+from knowde._feature.term import LTerm, TermUtil
 from knowde._feature.term.domain import Term
-from knowde._feature.term.repo.label import LTerm
 from knowde.feature.definition.domain.mark import (
     inject2placeholder,
 )

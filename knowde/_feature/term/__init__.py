@@ -1,1 +1,1 @@
-from .repo.label import TermUtil  # noqa: F401
+from .label import LTerm, TermUtil  # noqa: F401
