@@ -4,7 +4,7 @@ from knowde._feature._shared import LBase
 from knowde._feature._shared.repo.rel import RelUtil
 from knowde._feature._shared.repo.rel_label import RelOrder
 from knowde._feature._shared.repo.util import LabelUtil
-from knowde._feature.reference.domain import Book, WebResource
+from knowde._feature.reference.domain import Book, Web
 
 
 # Referenceは議論や主張をsポートするための情報源というニュアンス
@@ -23,7 +23,7 @@ class LBook(LReference):
     __label__ = "Book"
 
 
-class LWebResource(LReference):
+class LWeb(LReference):
     __label__ = "Web"
     url = StringProperty()
 
@@ -45,7 +45,7 @@ class LSection(LBase):
 
 
 BookUtil = LabelUtil(label=LBook, model=Book)
-WebUtil = LabelUtil(label=LWebResource, model=WebResource)
+WebUtil = LabelUtil(label=LWeb, model=Web)
 
 RelChapterBookUtil = RelUtil(
     t_source=LChapter,
@@ -57,7 +57,7 @@ RelChapterBookUtil = RelUtil(
 
 RelChapterWebUtil = RelUtil(
     t_source=LChapter,
-    t_target=LWebResource,
+    t_target=LWeb,
     name="COMPOSE",
     t_rel=RelOrder,
     cardinality=One,

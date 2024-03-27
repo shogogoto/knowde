@@ -44,7 +44,7 @@ class RelUtil(
     t_source: type[S]
     t_target: type[T]
     name: str
-    t_rel: type[R]
+    t_rel: type[R] | None = None
     cardinality: type[RelationshipManager] = ZeroOrMore
 
     @override

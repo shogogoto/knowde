@@ -19,7 +19,7 @@ class Book(Reference, frozen=True):
     pass
 
 
-class WebResource(Reference, frozen=True):
+class Web(Reference, frozen=True):
     url: Url
 
 
