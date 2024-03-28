@@ -17,3 +17,7 @@ class CompleteMultiHitError(DomainError):
 
 class NeomodelNotFoundError(DomainError):
     status_code = status.HTTP_404_NOT_FOUND
+
+
+class AlreadyExistsError(DomainError):
+    status_code = status.HTTP_409_CONFLICT

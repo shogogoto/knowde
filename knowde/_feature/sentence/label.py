@@ -8,7 +8,7 @@ from knowde._feature.sentence.domain import MAX_CHARS, Sentence
 class LSentence(LBase):
     __label__ = "Sentence"
     # Twitterのように短く読みやすい投稿を1単位としたい
-    value = StringProperty(max_length=MAX_CHARS)
+    value = StringProperty(index=True, max_length=MAX_CHARS)
 
 
 SentenceUtil = LabelUtil(label=LSentence, model=Sentence)

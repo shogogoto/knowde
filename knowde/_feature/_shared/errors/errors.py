@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from fastapi import status
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
@@ -28,7 +29,7 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
 
 
 class DomainError(Exception):
-    status_code: int
+    status_code: int = status.HTTP_400_BAD_REQUEST
     msg: str = "domain error"
     headers: dict[str, str] | None = None
 

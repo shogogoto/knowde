@@ -1,1 +1,1 @@
-from .repo.label import SentenceUtil  # noqa: F401
+from .label import LSentence, SentenceUtil  # noqa: F401

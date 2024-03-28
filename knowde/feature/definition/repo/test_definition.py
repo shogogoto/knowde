@@ -10,7 +10,7 @@ import pytest
 from pytest_unordered import unordered
 
 from knowde._feature.sentence import SentenceUtil
-from knowde._feature.term.repo.label import TermUtil
+from knowde._feature.term import TermUtil
 from knowde.feature.definition.domain.domain import DefinitionParam
 from knowde.feature.definition.repo.mark import find_marked_terms
 
