@@ -1,4 +1,4 @@
-from neomodel import DateProperty, StringProperty
+from neomodel import StringProperty
 
 from knowde._feature._shared.repo.base import LBase
 from knowde._feature._shared.repo.util import LabelUtil
@@ -10,9 +10,10 @@ class LPerson(LBase):
     __abstract_node__ = True
     name = StringProperty(index=True)
 
-    # TimeLineに分離するかも
-    birth = DateProperty(index=True)
-    death = DateProperty(index=True)
+    # 別フィーチャーに分離するかも
+    # 不明な値がある場合9で埋める e.g. 月と日が不明な場合 20249999
+    birth = StringProperty(index=True)
+    death = StringProperty(index=True)
 
 
 class LAuthor(LPerson):
