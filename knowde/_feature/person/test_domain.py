@@ -4,7 +4,7 @@ import pytest
 from pydantic import ValidationError
 
 from .domain import LifeDate
-from .errors import UnclearLifeDateError
+from .errors import LifeDateInvalidError
 
 
 @pytest.mark.parametrize(
@@ -25,15 +25,9 @@ def test_lifedate_valid(
     assert LifeDate(year=year, month=month, day=day).to_str() == expected
 
 
-@pytest.mark.parametrize(
-    ("year", "month", "day"),
-    [
-        (2024, None, 28),
-    ],
-)
-def test_lifedate_invalid(year: int, month: int | None, day: int | None) -> None:
-    with pytest.raises(UnclearLifeDateError):
-        LifeDate(year=year, month=month, day=day)
+def test_lifedate_invalid() -> None:
+    with pytest.raises(LifeDateInvalidError):
+        LifeDate(year=2024, month=None, day=28)
 
 
 @pytest.mark.parametrize(
@@ -50,3 +44,21 @@ def test_lifedate_invalid(year: int, month: int | None, day: int | None) -> None
 def test_lifedate_invalid_value(year: int, month: int | None, day: int | None) -> None:
     with pytest.raises(ValidationError):
         LifeDate(year=year, month=month, day=day)
+
+
+@pytest.mark.parametrize(
+    ("year", "month", "day", "s"),
+    [
+        (2024, 3, 28, "20240328"),
+        (2024, 3, None, "20240399"),
+        (2024, None, None, "20249999"),
+        (-500, None, None, "-5009999"),
+    ],
+)
+def test_from_str(
+    year: int,
+    month: int | None,
+    day: int | None,
+    s: str,
+) -> None:
+    assert LifeDate.from_str(s) == LifeDate(year=year, month=month, day=day)
