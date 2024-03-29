@@ -9,38 +9,6 @@ from knowde._feature._shared.domain import DomainModel
 from knowde._feature.person.errors import LifeDateInvalidError
 
 
-class AuthorParam(BaseModel, frozen=True):
-    name: str
-    # 別フィーチャーに分離するかも
-    birth: LifeDate | None = Field(None, title="誕生日")
-    death: LifeDate | None = Field(None, title="命日")
-
-
-OptionalAuthorParam = create_partial_model(AuthorParam)
-
-
-class Author(DomainModel, frozen=True):
-    name: str
-    # 別フィーチャーに分離するかも
-    birth: str | None
-    death: str | None
-
-
-NULL_EXPRESSION = "99"
-
-
-def to_str(v: int | None) -> str:
-    if v is None:
-        return NULL_EXPRESSION
-    return str(v).zfill(2)
-
-
-def to_int(v: str) -> int | None:
-    if v == NULL_EXPRESSION:
-        return None
-    return int(v)
-
-
 class LifeDate(BaseModel, frozen=True):
     """誕生日や命日を扱う.
 
@@ -72,3 +40,35 @@ class LifeDate(BaseModel, frozen=True):
         if y is None:
             raise LifeDateInvalidError
         return cls(year=y, month=m, day=d)
+
+
+class AuthorParam(BaseModel, frozen=True):
+    name: str
+    # 別フィーチャーに分離するかも
+    birth: LifeDate | None = Field(default=None, title="誕生日")
+    death: LifeDate | None = Field(default=None, title="命日")
+
+
+OptionalAuthorParam = create_partial_model(AuthorParam)
+
+
+class Author(DomainModel, frozen=True):
+    name: str
+    # 別フィーチャーに分離するかも
+    birth: str | None
+    death: str | None
+
+
+NULL_EXPRESSION = "99"
+
+
+def to_str(v: int | None) -> str:
+    if v is None:
+        return NULL_EXPRESSION
+    return str(v).zfill(2)
+
+
+def to_int(v: str) -> int | None:
+    if v == NULL_EXPRESSION:
+        return None
+    return int(v)
