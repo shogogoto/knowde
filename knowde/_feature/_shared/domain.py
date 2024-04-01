@@ -83,6 +83,3 @@ T = TypeVar("T", bound=BaseModel)
 class Composite(BaseModel, Generic[T], frozen=True):
     parent: T
     children: list[Composite[T]] = Field(default_factory=list)
-
-
-Composite.model_rebuild()

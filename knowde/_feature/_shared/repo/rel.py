@@ -64,7 +64,7 @@ class RelUtil(
         return RelationshipTo(
             cls_name=self.t_target,
             relation_type=self.name,
-            cardinality=ZeroOrMore,
+            cardinality=self.cardinality,
             model=self.t_rel,  # StructuredRel
         ).build_manager(source, name="")  # nameが何に使われているのか不明
 
