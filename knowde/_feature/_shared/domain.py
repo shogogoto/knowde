@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any, Generic, Self, TypeVar
 from uuid import UUID  # noqa: TCH003
 
@@ -18,6 +18,11 @@ TZ = timezone(timedelta(hours=9), "Asia/Tokyo")
 
 def jst_now() -> datetime:
     return datetime.now(tz=TZ)
+
+
+def to_date(s: str) -> date:
+    dt = datetime.strptime(s, "%Y-%m-%d").astimezone(TZ)
+    return dt.date()
 
 
 class APIReturn(BaseModel, frozen=True):

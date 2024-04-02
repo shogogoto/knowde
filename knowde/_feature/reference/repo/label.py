@@ -1,4 +1,4 @@
-from neomodel import One, RelationshipFrom, StringProperty
+from neomodel import DateProperty, One, StringProperty
 
 from knowde._feature._shared import LBase
 from knowde._feature._shared.repo.rel import RelUtil
@@ -16,11 +16,12 @@ from knowde._feature.reference.domain import Book, Web
 class LReference(LBase):
     __label__ = "Reference"
     __abstract_node__ = True
-    title = StringProperty()
+    title = StringProperty(index=True)
 
 
 class LBook(LReference):
     __label__ = "Book"
+    first_edited = DateProperty()
 
 
 class LWeb(LReference):
@@ -33,7 +34,6 @@ class LChapter(LBase):
 
     __label__ = "Chapter"
     value = StringProperty()
-    parent = RelationshipFrom("LReference", "PARTS", cardinality=One)
 
 
 class LSection(LBase):
@@ -41,31 +41,30 @@ class LSection(LBase):
 
     __label__ = "Section"
     value = StringProperty()
-    parent = RelationshipFrom("LChapter", "PARTS", cardinality=One)
 
 
 BookUtil = LabelUtil(label=LBook, model=Book)
 WebUtil = LabelUtil(label=LWeb, model=Web)
 
 RelChapterBookUtil = RelUtil(
-    t_source=LChapter,
-    t_target=LBook,
+    t_source=LBook,
+    t_target=LChapter,
     name="COMPOSE",
     t_rel=RelOrder,
     cardinality=One,
 )
 
 RelChapterWebUtil = RelUtil(
-    t_source=LChapter,
-    t_target=LWeb,
+    t_source=LWeb,
+    t_target=LChapter,
     name="COMPOSE",
     t_rel=RelOrder,
     cardinality=One,
 )
 
-RelSectionChapterUtil = RelUtil(
-    t_source=LSection,
-    t_target=LChapter,
+RelSectionUtil = RelUtil(
+    t_target=LSection,
+    t_source=LChapter,
     name="COMPOSE",
     t_rel=RelOrder,
     cardinality=One,

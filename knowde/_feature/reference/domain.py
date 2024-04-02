@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from datetime import date  # noqa: TCH003
+from typing import TYPE_CHECKING, Generic, TypeVar
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 from knowde._feature._shared.domain import DomainModel
 
@@ -12,18 +13,36 @@ if TYPE_CHECKING:
 
 class Reference(DomainModel, frozen=True):
     title: str
-    capters: list[Capter] = Field(default_factory=list)
 
 
 class Book(Reference, frozen=True):
-    pass
+    """参考文献."""
+
+    first_edited: date | None = Field(title="初版発行日")
 
 
 class Web(Reference, frozen=True):
+    """参考ウェブリソース."""
+
     url: Url
 
 
-class Capter(DomainModel, frozen=True):
+T = TypeVar("T", bound=Reference)
+
+
+class ReferenceTree(BaseModel, Generic[T], frozen=True):
+    root: T
+    chapters: list[Chapter] = Field(default_factory=list)
+    title: str
+
+
+class Headline(DomainModel, frozen=True):
+    """章節の総称."""
+
+    value: str
+
+
+class Chapter(DomainModel, frozen=True):
     value: str
     sections: list[Section] = Field(default_factory=list)
 
