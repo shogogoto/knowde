@@ -28,6 +28,20 @@ def swap_chapter_order(book_uid: UUID, p: SwapParam) -> None:
     rel2.save()
 
 
+def change_chapter(
+    chap_uid: UUID,
+    value: str,
+) -> Chapter:
+    ChapterUtil.change(uid=chap_uid, value=value)
+    rel = RelChapterBookUtil.find_by_source_id(chap_uid)[0]
+    return Chapter.from_rel(rel=rel)
+
+
+def remove_chapter(chap_uid: UUID) -> None:
+    """配下のSectionsも一緒に削除するバージョンも欲しい."""
+    ChapterUtil.delete(chap_uid)
+
+
 # def add_section(chap_uid: UUID, p: HeadlineParam) -> None:
 #     pass
 

@@ -31,23 +31,25 @@ def change_book(uid: UUID, p: PartialBookParam) -> Book:
 def find_reftree(book_uid: UUID) -> ReferenceTree[Book]:
     res = query_cypher(
         """
-        MATCH (b:Book {uid: $uid})
+        MATCH (r:Reference {uid: $uid})
         // Chapterが親を1つだけ持つneomodel制約Oneのためのedgeの向き
         OPTIONAL MATCH (b)<-[crel:COMPOSE]-(c:Chapter)
         OPTIONAL MATCH (c)<-[:COMPOSE]-(s:Section)
         RETURN
-            b,
+            r,
             crel,
             collect(s) as secs
         """,
         params={"uid": book_uid.hex},
     )
-    book = res.get("b", convert=Book.to_model)[0]
+    book = res.get("r", convert=Book.to_model)[0]
     chaps = []
     for c, secs in zip(
         res.get("crel"),
         res.get("secs", row_convert=itemgetter(0)),
     ):
+        if c is None:
+            continue
         chap = Chapter.from_rel(c, secs)
         chaps.append(chap)
     return ReferenceTree(

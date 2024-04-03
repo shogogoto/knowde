@@ -77,6 +77,9 @@ class LabelUtil(BaseModel, Generic[L, M], frozen=True):
         return self.to_label(lb)
 
     def delete(self, uid: UUID) -> None:
+        # 存在チェックはしない
+        # 構成要素にrelationshipが含まれるようなmodelでは
+        # Label.to_model()が失敗するため用途が限定されるのを避ける
         self.find_by_id(uid).label.delete()
 
     def create(self, **kwargs) -> Label[L, M]:  # noqa: ANN003
