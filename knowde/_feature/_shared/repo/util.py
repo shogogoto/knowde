@@ -77,8 +77,7 @@ class LabelUtil(BaseModel, Generic[L, M], frozen=True):
         return self.to_label(lb)
 
     def delete(self, uid: UUID) -> None:
-        one = self.find_by_id(uid).to_model()
-        self.find_by_id(one.valid_uid).label.delete()
+        self.find_by_id(uid).label.delete()
 
     def create(self, **kwargs) -> Label[L, M]:  # noqa: ANN003
         saved = self.label(**kwargs).save()

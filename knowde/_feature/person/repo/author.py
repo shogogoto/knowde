@@ -40,4 +40,5 @@ def change_author(uid: UUID, p: OptionalAuthorParam) -> Author:
 
 
 def remove_author(uid: UUID) -> None:
-    AuthorUtil.delete(uid)
+    one = AuthorUtil.find_by_id(uid).to_model()
+    AuthorUtil.delete(one.valid_uid)
