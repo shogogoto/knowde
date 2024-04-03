@@ -59,16 +59,16 @@ RelChapterBookUtil = RelUtil(
 )
 
 RelChapterWebUtil = RelUtil(
-    t_source=LWeb,
-    t_target=LChapter,
+    t_source=LChapter,
+    t_target=LWeb,
     name="COMPOSE",
     t_rel=RelOrder,
     cardinality=One,
 )
 
 RelSectionUtil = RelUtil(
-    t_target=LSection,
-    t_source=LChapter,
+    t_target=LChapter,
+    t_source=LSection,
     name="COMPOSE",
     t_rel=RelOrder,
     cardinality=One,

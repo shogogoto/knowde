@@ -73,6 +73,13 @@ class Section(DomainModel, frozen=True):
     value: str
     order: int
 
-    # @classmethod
-    # def from_rel(cls, rel: RelOrder) -> None:
-    #     return cls()
+    @classmethod
+    def from_rel(cls, rel: RelOrder) -> Self:
+        lb = rel.start_node()
+        return cls(
+            value=lb.value,
+            order=rel.order,
+            uid=lb.uid,
+            created=lb.created,
+            updated=lb.updated,
+        )
