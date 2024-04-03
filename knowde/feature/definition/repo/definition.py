@@ -81,7 +81,7 @@ def remove_definition(def_uid: UUID) -> None:
 
 def complete_definition(pref_uid: str) -> Definition:
     """前方一致検索."""
-    rel = RelDefUtil.complete(pref_uid=pref_uid)
+    rel = RelDefUtil.complete(pref_rel_uid=pref_uid)
     s = Sentence.to_model(rel.end_node())
     terms = find_marked_terms(s.valid_uid)
     return Definition.from_rel(rel, deps=terms)

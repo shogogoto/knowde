@@ -4,7 +4,7 @@ from knowde._feature._shared import LBase
 from knowde._feature._shared.repo.rel import RelUtil
 from knowde._feature._shared.repo.rel_label import RelOrder
 from knowde._feature._shared.repo.util import LabelUtil
-from knowde._feature.reference.domain import Book, Web
+from knowde._feature.reference.domain import Book, Chapter, Section, Web
 
 
 # Referenceは議論や主張をsポートするための情報源というニュアンス
@@ -45,10 +45,14 @@ class LSection(LBase):
 
 BookUtil = LabelUtil(label=LBook, model=Book)
 WebUtil = LabelUtil(label=LWeb, model=Web)
+ChapterUtil = LabelUtil(label=LChapter, model=Chapter)
+SectionUtil = LabelUtil(label=LSection, model=Section)
 
+
+# 章は１つの本にのみ属す
 RelChapterBookUtil = RelUtil(
-    t_source=LBook,
-    t_target=LChapter,
+    t_source=LChapter,
+    t_target=LBook,
     name="COMPOSE",
     t_rel=RelOrder,
     cardinality=One,

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from datetime import date  # noqa: TCH003
+from typing import Self
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, model_validator
 from pydantic_partial.partial import create_partial_model
 
 
@@ -19,11 +20,22 @@ PartialBookParam = create_partial_model(BookParam)
 
 
 class SwapParam(BaseModel, frozen=True):
-    order1: int
-    order2: int
+    order1: int = Field(ge=0)
+    order2: int = Field(ge=0)
 
-    # @model_validator
-    # def _validate()
+    @model_validator(mode="after")
+    def _validate(self) -> Self:
+        if self.order1 == self.order2:
+            msg = "orders must be difference value"
+            raise ValueError(msg)
+        return self
+
+    @classmethod
+    def create(cls, order1: int, order2: int) -> Self:
+        return cls(
+            order1=order1,
+            order2=order2,
+        )
 
 
 class HeadlineParam(BaseModel, frozen=True):
