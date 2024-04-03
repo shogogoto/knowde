@@ -36,12 +36,17 @@ def test_swap_chapter() -> None:
 def test_crud_chapter() -> None:
     b = BookUtil.create(title="book").to_model()
     c1 = add_book_chapter(b.valid_uid, h("h1"))
-    c2 = change_chapter(c1.valid_uid, value="h2")
+    c2 = change_chapter(c1.valid_uid, h("h2"))
     assert c2.value == "h2"
     assert c1.valid_uid == c2.valid_uid
     tree = find_reftree(b.valid_uid)
     assert tree.chapters == [c2]
 
-    remove_chapter(c2.valid_uid)
+    c = add_book_chapter(b.valid_uid, h("h3"))
+    add_book_chapter(b.valid_uid, h("h4"))
+    remove_chapter(c.valid_uid)
+
     tree = find_reftree(b.valid_uid)
-    assert tree.chapters == []
+    chaps = tree.chapters
+    assert [c.value for c in chaps] == ["h2", "h4"]
+    assert [c.order for c in chaps] == [0, 1]

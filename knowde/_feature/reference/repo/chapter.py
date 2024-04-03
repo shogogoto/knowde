@@ -1,3 +1,4 @@
+from operator import attrgetter
 from uuid import UUID
 
 from knowde._feature._shared.repo.query import query_cypher
@@ -30,20 +31,28 @@ def swap_chapter_order(book_uid: UUID, p: SwapParam) -> None:
 
 def change_chapter(
     chap_uid: UUID,
-    value: str,
+    p: HeadlineParam,
 ) -> Chapter:
-    ChapterUtil.change(uid=chap_uid, value=value)
+    ChapterUtil.change(uid=chap_uid, value=p.value)
     rel = RelChapterBookUtil.find_by_source_id(chap_uid)[0]
     return Chapter.from_rel(rel=rel)
 
 
 def remove_chapter(chap_uid: UUID) -> None:
-    """配下のSectionsも一緒に削除するバージョンも欲しい."""
-    query_cypher(
+    """兄弟chapterをreorderして配下sectionを削除."""
+    rels = query_cypher(
         """
-        MATCH (c:Chapter {uid: $uid})
-        OPTIONAL MATCH (c)<-[:COMPOSE]-(s:Section)
-        DETACH DELETE c, s
+        MATCH (tgt:Chapter {uid: $uid})-[:COMPOSE]->(r:Reference)
+        OPTIONAL MATCH (tgt)<-[:COMPOSE]-(s:Section)
+        DETACH DELETE tgt, s
+        WITH r
+        OPTIONAL MATCH (r)<-[rel:COMPOSE]-(c:Chapter)
+        RETURN rel
         """,
         params={"uid": chap_uid.hex},
-    )
+    ).get("rel")
+    rels = [rel for rel in rels if rel]  # exlcude None
+    rels = sorted(rels, key=attrgetter("order"))
+    for i, rel in enumerate(rels):
+        rel.order = i
+        rel.save()

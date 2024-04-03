@@ -30,9 +30,9 @@ def swap_section_order(chap_uid: UUID, p: SwapParam) -> None:
 
 def change_section(
     sec_uid: UUID,
-    value: str,
+    p: HeadlineParam,
 ) -> Section:
-    SectionUtil.change(uid=sec_uid, value=value)
+    SectionUtil.change(uid=sec_uid, value=p.value)
     rel = RelSectionUtil.find_by_source_id(sec_uid)[0]
     return Section.from_rel(rel=rel)
 
