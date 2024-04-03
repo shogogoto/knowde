@@ -1,5 +1,6 @@
 from uuid import UUID
 
+from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature.reference.domain import Chapter
 from knowde._feature.reference.dto import HeadlineParam, SwapParam
 from knowde._feature.reference.repo.label import (
@@ -38,4 +39,11 @@ def change_chapter(
 
 def remove_chapter(chap_uid: UUID) -> None:
     """配下のSectionsも一緒に削除するバージョンも欲しい."""
-    ChapterUtil.delete(chap_uid)
+    query_cypher(
+        """
+        MATCH (c:Chapter {uid: $uid})
+        OPTIONAL MATCH (c)<-[:COMPOSE]-(s:Section)
+        DETACH DELETE c, s
+        """,
+        params={"uid": chap_uid.hex},
+    )

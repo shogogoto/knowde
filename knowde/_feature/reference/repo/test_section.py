@@ -1,7 +1,7 @@
 from knowde._feature.reference.dto import HeadlineParam, SwapParam
 from knowde._feature.reference.repo.book import find_reftree
-from knowde._feature.reference.repo.chapter import add_book_chapter
-from knowde._feature.reference.repo.label import BookUtil
+from knowde._feature.reference.repo.chapter import add_book_chapter, remove_chapter
+from knowde._feature.reference.repo.label import BookUtil, SectionUtil
 from knowde._feature.reference.repo.section import (
     add_section,
     remove_section,
@@ -48,3 +48,25 @@ def test_remove_section_and_reorder() -> None:
     secs = tree.chapters[0].sections
     assert [s.value for s in secs] == ["s2", "s4"]
     assert [s.order for s in secs] == [0, 1]
+
+
+def test_remove_chapter_with_sections() -> None:
+    book = BookUtil.create(title="book")
+    b = book.to_model()
+    c1 = add_book_chapter(b.valid_uid, h("h1"))
+    add_section(c1.valid_uid, h("s11"))
+    add_section(c1.valid_uid, h("s12"))
+    add_section(c1.valid_uid, h("s13"))
+    c2 = add_book_chapter(b.valid_uid, h("h2"))
+    s = add_section(c2.valid_uid, h("s21"))
+
+    tree = find_reftree(b.valid_uid)
+    assert len(tree.chapters) == 2  # noqa: PLR2004
+
+    remove_chapter(c1.valid_uid)
+
+    tree = find_reftree(b.valid_uid)
+    assert len(tree.chapters) == 1
+    founds = SectionUtil.find()
+    assert len(founds) == 1
+    assert founds[0].value == s.value
