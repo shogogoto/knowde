@@ -25,12 +25,12 @@ T = TypeVar("T")
 class RequestPartial(BaseModel):
     """APIパラメータのMediator."""
 
-    path_: PathParam = Field(default_factory=PathParam.null, init=False)
+    path_: PathParam = Field(default_factory=PathParam.null, init_var=False)
     queries_: list[QueryParam | ComplexQueryParam] = Field(
         default_factory=list,
-        init=False,
+        init_var=False,
     )
-    body_: BodyParam = Field(default_factory=BodyParam.null, init=False)
+    body_: BodyParam = Field(default_factory=BodyParam.null, init_var=False)
 
     def __call__(
         self,
