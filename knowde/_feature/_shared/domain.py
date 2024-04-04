@@ -35,7 +35,7 @@ class APIReturn(BaseModel, frozen=True):
         return [cls.model_validate(d) for d in res.json()]
 
 
-class DomainModel(APIReturn, frozen=True):
+class Entity(APIReturn, frozen=True):
     uid: UUID | None = None
     created: datetime | None = Field(None, repr=False)
     updated: datetime | None = Field(None, repr=False)
@@ -66,7 +66,7 @@ class DomainModel(APIReturn, frozen=True):
         return [cls.to_model(lb) for lb in lbs]
 
 
-M = TypeVar("M", bound=DomainModel)
+M = TypeVar("M", bound=Entity)
 
 
 class ModelList(RootModel[list[M]], frozen=True):

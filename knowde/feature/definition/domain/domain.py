@@ -15,7 +15,7 @@ from uuid import UUID  # noqa: TCH003
 import networkx as nx
 from pydantic import BaseModel, Field, field_validator
 
-from knowde._feature._shared.domain import Composite, DomainModel
+from knowde._feature._shared.domain import Composite, Entity
 from knowde._feature._shared.types import NXGraph  # noqa: TCH001
 from knowde._feature.sentence.domain import Sentence, SentenceParam
 from knowde._feature.term.domain import Term, TermParam
@@ -41,7 +41,7 @@ class DefinitionParam(BaseModel, frozen=True):
         return SentenceParam(value=v).value
 
 
-class Definition(DomainModel, frozen=True):
+class Definition(Entity, frozen=True):
     """定義モデル."""
 
     term: Term

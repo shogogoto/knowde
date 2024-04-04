@@ -5,7 +5,7 @@ from typing import Self
 from pydantic import BaseModel, Field, model_validator
 from pydantic_partial.partial import create_partial_model
 
-from knowde._feature._shared.domain import DomainModel
+from knowde._feature._shared.domain import Entity
 from knowde._feature.person.errors import LifeDateInvalidError
 
 
@@ -52,7 +52,7 @@ class AuthorParam(BaseModel, frozen=True):
 OptionalAuthorParam = create_partial_model(AuthorParam)
 
 
-class Author(DomainModel, frozen=True):
+class Author(Entity, frozen=True):
     name: str
     # 別フィーチャーに分離するかも
     birth: str | None

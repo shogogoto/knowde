@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Generic, Self, TypeVar
 
 from pydantic import Field
 
-from knowde._feature._shared.domain import APIReturn, DomainModel
+from knowde._feature._shared.domain import APIReturn, Entity
 
 if TYPE_CHECKING:
     from pydantic_core import Url
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from knowde._feature._shared.repo.rel_label import RelOrder
 
 
-class Reference(DomainModel, frozen=True):
+class Reference(Entity, frozen=True):
     title: str
 
 
@@ -37,13 +37,13 @@ class ReferenceTree(APIReturn, Generic[T], frozen=True):
     chapters: list[Chapter] = Field(default_factory=list)
 
 
-class Headline(DomainModel, frozen=True):
+class Headline(Entity, frozen=True):
     """章節の総称."""
 
     value: str
 
 
-class Chapter(DomainModel, frozen=True):
+class Chapter(Entity, frozen=True):
     parent: Reference
     value: str
     order: int
@@ -69,7 +69,7 @@ class Chapter(DomainModel, frozen=True):
         )
 
 
-class Section(DomainModel, frozen=True):
+class Section(Entity, frozen=True):
     value: str
     order: int
 

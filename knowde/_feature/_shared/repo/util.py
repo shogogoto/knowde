@@ -6,7 +6,7 @@ from uuid import UUID  # noqa: TCH003
 from neomodel import DoesNotExist
 from pydantic import BaseModel
 
-from knowde._feature._shared.domain import DomainModel
+from knowde._feature._shared.domain import Entity
 from knowde._feature._shared.errors.domain import (
     CompleteMultiHitError,
     CompleteNotFoundError,
@@ -17,7 +17,7 @@ from .base import LBase
 from .label import Label, Labels
 
 L = TypeVar("L", bound=LBase)
-M = TypeVar("M", bound=DomainModel)
+M = TypeVar("M", bound=Entity)
 
 
 class LabelUtil(BaseModel, Generic[L, M], frozen=True):
