@@ -22,9 +22,10 @@ def inject_signature(
     """API定義時に型情報が喪失する場合があるので、それを補う."""
     params = signature(f).parameters.values()
     replaced = []
-    for p, t in zip(params, t_in, strict=True):
-        p_new = p.replace(annotation=t)
-        replaced.append(p_new)
+    if len(t_in) != 0:
+        for p, t in zip(params, t_in, strict=True):
+            p_new = p.replace(annotation=t)
+            replaced.append(p_new)
     return create_function(
         Signature(replaced, return_annotation=t_out),
         f,
