@@ -3,9 +3,9 @@ from __future__ import annotations
 from datetime import date  # noqa: TCH003
 from typing import TYPE_CHECKING, Generic, Self, TypeVar
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
-from knowde._feature._shared.domain import DomainModel
+from knowde._feature._shared.domain import APIReturn, DomainModel
 
 if TYPE_CHECKING:
     from pydantic_core import Url
@@ -20,7 +20,7 @@ class Reference(DomainModel, frozen=True):
 class Book(Reference, frozen=True):
     """参考文献."""
 
-    first_edited: date | None = Field(title="初版発行日")
+    first_edited: date | None = Field(default=None, title="初版発行日")
 
 
 class Web(Reference, frozen=True):
@@ -32,7 +32,7 @@ class Web(Reference, frozen=True):
 T = TypeVar("T", bound=Reference)
 
 
-class ReferenceTree(BaseModel, Generic[T], frozen=True):
+class ReferenceTree(APIReturn, Generic[T], frozen=True):
     root: T
     chapters: list[Chapter] = Field(default_factory=list)
 

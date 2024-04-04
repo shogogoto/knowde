@@ -32,8 +32,8 @@ def remove_book(uid: UUID) -> None:
     )
 
 
-def change_book(uid: UUID, p: PartialBookParam) -> Book:
-    return BookUtil.change(uid=uid, **p.model_dump()).to_model()
+def change_book(ref_uid: UUID, p: PartialBookParam) -> Book:
+    return BookUtil.change(uid=ref_uid, **p.model_dump()).to_model()
 
 
 def find_reftree(ref_uid: UUID) -> ReferenceTree[Book]:

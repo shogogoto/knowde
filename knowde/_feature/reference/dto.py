@@ -3,17 +3,17 @@ from __future__ import annotations
 from datetime import date  # noqa: TCH003
 from typing import Self
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import (
+    BaseModel,
+    Field,
+    model_validator,
+)
 from pydantic_partial.partial import create_partial_model
-
-
-class TitleParam(BaseModel, frozen=True):
-    title: str
 
 
 class BookParam(BaseModel, frozen=True):
     title: str
-    first_edited: date
+    first_edited: date | None = Field(default=None, description="初版発行日")
 
 
 PartialBookParam = create_partial_model(BookParam)

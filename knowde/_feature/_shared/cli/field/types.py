@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any, TypedDict
 
+from pydantic import BaseModel, Field
+
 
 class ClickParamAttrs(TypedDict):
     pass
@@ -16,3 +18,7 @@ class OptionAttrs(ClickParamAttrs):
 
 class ArgumentAttrs(ClickParamAttrs):
     pass
+
+
+class PrefUidParam(BaseModel, frozen=True):
+    pref_uid: str = Field(description="uuidへ前方一致で検索")
