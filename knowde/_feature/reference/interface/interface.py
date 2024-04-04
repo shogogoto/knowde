@@ -3,7 +3,7 @@ from __future__ import annotations
 import click
 
 from knowde._feature._shared.api.check_response import check_get, check_post, check_put
-from knowde._feature._shared.api.client_factory import RequestPartial
+from knowde._feature._shared.api.client_factory import RouterConfig
 from knowde._feature._shared.api.endpoint import Endpoint
 from knowde._feature._shared.api.generate_req import StatusCodeGrant, inject_signature
 from knowde._feature._shared.cli.click_decorators import each_args
@@ -24,7 +24,7 @@ ref_router = Endpoint.Reference.create_router()
 grant = StatusCodeGrant(router=ref_router)
 
 add_book_client = (
-    RequestPartial()
+    RouterConfig()
     .body(BookParam)
     .to_client(
         grant.to_post,
@@ -35,7 +35,7 @@ add_book_client = (
 )
 
 complete_client = (
-    RequestPartial()
+    RouterConfig()
     .path("", "/completion")
     .query("pref_uid")
     .to_client(
@@ -47,7 +47,7 @@ complete_client = (
 )
 
 detail_client = (
-    RequestPartial()
+    RouterConfig()
     .path("ref_uid")
     .to_client(
         grant.to_get,
@@ -56,9 +56,9 @@ detail_client = (
         check_get,
     )
 )
-remove_req = RequestPartial().path("ref_uid")(grant.to_delete, remove_book)
+remove_req = RouterConfig().path("ref_uid")(grant.to_delete, remove_book)
 
-list_client = RequestPartial().to_client(
+list_client = RouterConfig().to_client(
     grant.to_get,
     inject_signature(BookUtil.find, [], list[Book]),
     Book.ofs,
@@ -66,7 +66,7 @@ list_client = RequestPartial().to_client(
 )
 
 change_client = (
-    RequestPartial()
+    RouterConfig()
     .path("ref_uid")
     .body(PartialBookParam)
     .to_client(

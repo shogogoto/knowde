@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 T = TypeVar("T")
 
 
-class RequestPartial(BaseModel):
+class RouterConfig(BaseModel):
     """APIパラメータのMediator."""
 
     path_: PathParam = Field(default_factory=PathParam.null, init_var=False)
