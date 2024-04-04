@@ -16,12 +16,20 @@ def add_book(p: BookParam) -> Book:
     if BookUtil.find_one_or_none(title=p.title):
         msg = f"「{p.title}」は既に登録済みです."
         raise AlreadyExistsError(msg)
-    return BookUtil.create(title=p.title).to_model()
+    return BookUtil.create(**p.model_dump()).to_model()
 
 
 def remove_book(uid: UUID) -> None:
     """本配下を削除."""
-    BookUtil.delete(uid)
+    query_cypher(
+        """
+        MATCH (tgt:Reference {uid: $uid})
+        OPTIONAL MATCH (tgt)<-[:COMPOSE]-(c:Chapter)
+        OPTIONAL MATCH (c)<-[:COMPOSE]-(s:Section)
+        DETACH DELETE tgt, c, s
+        """,
+        params={"uid": uid.hex},
+    )
 
 
 def change_book(uid: UUID, p: PartialBookParam) -> Book:
