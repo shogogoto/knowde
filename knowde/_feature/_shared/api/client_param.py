@@ -121,7 +121,7 @@ class BodyParam(BaseModel, APIParam, frozen=True):
                 msg = f"{k}は{list(kwargs.keys())}に含まれていません"
                 raise APIParamBindError(msg)
             d[k] = kwargs[k]
-        return self.annotation.model_validate(d).model_dump()
+        return self.annotation.model_validate(d).model_dump(mode="json")
 
     @classmethod
     @cache
