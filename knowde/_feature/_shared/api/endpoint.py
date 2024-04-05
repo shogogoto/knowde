@@ -18,6 +18,7 @@ class Endpoint(Enum):
 
     Concept = "concepts"
     Reference = "references"
+    Book = "references/books"
     Sentence = "sentences"
     Definition = "definitions"
 
