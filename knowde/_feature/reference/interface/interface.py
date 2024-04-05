@@ -4,32 +4,33 @@ import click
 
 from knowde._feature._shared.api.client_factory import ClientFactory, RouterConfig
 from knowde._feature._shared.api.endpoint import Endpoint
-from knowde._feature._shared.api.generate_req import StatusCodeGrant, inject_signature
+from knowde._feature._shared.api.generate_req import inject_signature
 from knowde._feature._shared.cli.click_decorators import each_args
 from knowde._feature._shared.cli.click_decorators.view.options import view_options
 from knowde._feature._shared.cli.field.model2click import model2decorator
 from knowde._feature._shared.cli.field.types import PrefUidParam
 from knowde._feature.reference.domain import Book, Reference, ReferenceTree
 from knowde._feature.reference.dto import BookParam, PartialBookParam
+from knowde._feature.reference.interface.chapter import chap_cli
 from knowde._feature.reference.repo.book import (
     add_book,
     change_book,
+    complete_book,
     find_reftree,
     remove_book,
 )
 from knowde._feature.reference.repo.label import BookUtil
 
 ref_router = Endpoint.Book.create_router()
-grant = StatusCodeGrant(router=ref_router)
 book_factory = ClientFactory(router=ref_router, rettype=Book)
 
 add_book_client = book_factory.to_post(
     RouterConfig().body(BookParam),
     add_book,
 )
-complete_client = book_factory.to_get(
+complete_book_client = book_factory.to_get(
     RouterConfig().path("", "/completion").query("pref_uid"),
-    lambda pref_uid: BookUtil.complete(pref_uid).to_model(),
+    complete_book,
 )
 remove_client = book_factory.to_delete(
     RouterConfig().path("ref_uid"),
@@ -58,6 +59,17 @@ def ref_cli() -> None:
     """参考情報源."""
 
 
+ref_cli.add_command(chap_cli)
+
+
+@ref_cli.command("detail")
+@model2decorator(PrefUidParam)
+def detail(pref_uid: str) -> None:
+    r = complete_book_client(pref_uid=pref_uid)
+    d = detail_client(ref_uid=r.valid_uid)
+    click.echo(d.output)
+
+
 @ref_cli.command("add")
 @model2decorator(BookParam)
 def add(**kwargs) -> None:  # noqa: ANN003
@@ -76,7 +88,7 @@ def ls() -> list[Book]:
 @ref_cli.command("rm")
 @each_args(
     "pref_uids",
-    converter=lambda pref_uid: complete_client(pref_uid=pref_uid),
+    converter=lambda pref_uid: complete_book_client(pref_uid=pref_uid),
 )
 def rm(r: Reference) -> None:
     """参照情報源とその配下を削除."""
@@ -89,7 +101,7 @@ def rm(r: Reference) -> None:
 @model2decorator(PartialBookParam)
 @view_options
 def ch(pref_uid: str, **kwargs) -> list[Book]:  # noqa: ANN003
-    pre = complete_client(pref_uid=pref_uid)
+    pre = complete_book_client(pref_uid=pref_uid)
     post = change_client(ref_uid=pre.valid_uid, **kwargs)
     click.echo("0から1へ変更しました")
     return [pre, post]

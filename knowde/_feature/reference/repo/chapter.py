@@ -56,3 +56,9 @@ def remove_chapter(chap_uid: UUID) -> None:
     for i, rel in enumerate(rels):
         rel.order = i
         rel.save()
+
+
+def complete_chapter(pref_uid: str) -> Chapter:
+    lb = ChapterUtil.complete(pref_uid).label
+    rel = RelChapterBookUtil.find_by_source_id(UUID(lb.uid))[0]
+    return Chapter.from_rel(rel)

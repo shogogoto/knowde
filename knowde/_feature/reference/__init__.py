@@ -1,1 +1,1 @@
-from .interface import ref_router  # noqa: F401
+from .interface import *  # noqa: F403

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date  # noqa: TCH003
+from textwrap import indent
 from typing import TYPE_CHECKING, Generic, Self, TypeVar
 
 from pydantic import Field
@@ -36,11 +37,31 @@ class ReferenceTree(APIReturn, Generic[T], frozen=True):
     root: T
     chapters: list[Chapter] = Field(default_factory=list)
 
+    @property
+    def output(self) -> str:
+        s = str(self.root)
+        for chap in self.chapters:
+            s += "\n" + indent(str(chap), " " * 2)
+            for sec in chap.sections:
+                s += "\n" + indent(str(sec), " " * 4)
+        return s
 
-class Headline(Entity, frozen=True):
-    """章節の総称."""
 
+# Chapterの前に定義しないとUndefinedAnnotationErrorになる
+class Section(Entity, frozen=True):
     value: str
+    order: int
+
+    @classmethod
+    def from_rel(cls, rel: RelOrder) -> Self:
+        lb = rel.start_node()
+        return cls(
+            value=lb.value,
+            order=rel.order,
+            uid=lb.uid,
+            created=lb.created,
+            updated=lb.updated,
+        )
 
 
 class Chapter(Entity, frozen=True):
@@ -66,20 +87,4 @@ class Chapter(Entity, frozen=True):
             uid=c.uid,
             created=c.created,
             updated=c.updated,
-        )
-
-
-class Section(Entity, frozen=True):
-    value: str
-    order: int
-
-    @classmethod
-    def from_rel(cls, rel: RelOrder) -> Self:
-        lb = rel.start_node()
-        return cls(
-            value=lb.value,
-            order=rel.order,
-            uid=lb.uid,
-            created=lb.created,
-            updated=lb.updated,
         )

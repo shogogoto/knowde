@@ -65,3 +65,7 @@ def find_reftree(ref_uid: UUID) -> ReferenceTree[Book]:
         root=book,
         chapters=sorted(chaps, key=attrgetter("order")),
     )
+
+
+def complete_book(pref_uid: str) -> Book:
+    return BookUtil.complete(pref_uid).to_model()
