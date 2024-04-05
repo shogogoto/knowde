@@ -114,7 +114,3 @@ class Endpoint(Enum):
             prefix=self.prefix,
             tags=[self.single_form],
         )
-
-    # def to_grant(self) -> StatusCodeGrant:
-    #     r = self.create_router()
-    #     return StatusCodeGrant(router=r)

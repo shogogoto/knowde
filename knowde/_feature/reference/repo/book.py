@@ -19,7 +19,7 @@ def add_book(p: BookParam) -> Book:
     return BookUtil.create(**p.model_dump()).to_model()
 
 
-def remove_book(uid: UUID) -> None:
+def remove_book(ref_uid: UUID) -> None:
     """本配下を削除."""
     query_cypher(
         """
@@ -28,7 +28,7 @@ def remove_book(uid: UUID) -> None:
         OPTIONAL MATCH (c)<-[:COMPOSE]-(s:Section)
         DETACH DELETE tgt, c, s
         """,
-        params={"uid": uid.hex},
+        params={"uid": ref_uid.hex},
     )
 
 

@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import click
 
-from knowde._feature._shared.api.check_response import check_get, check_post, check_put
-from knowde._feature._shared.api.client_factory import RouterConfig
+from knowde._feature._shared.api.client_factory import ClientFactory, RouterConfig
 from knowde._feature._shared.api.endpoint import Endpoint
 from knowde._feature._shared.api.generate_req import StatusCodeGrant, inject_signature
 from knowde._feature._shared.cli.click_decorators import each_args
@@ -20,61 +19,37 @@ from knowde._feature.reference.repo.book import (
 )
 from knowde._feature.reference.repo.label import BookUtil
 
-ref_router = Endpoint.Reference.create_router()
+ref_router = Endpoint.Book.create_router()
 grant = StatusCodeGrant(router=ref_router)
+book_factory = ClientFactory(router=ref_router, rettype=Book)
 
-add_book_client = (
-    RouterConfig()
-    .body(BookParam)
-    .to_client(
-        grant.to_post,
-        add_book,
-        Book.of,
-        check_post,
-    )
+add_book_client = book_factory.to_post(
+    RouterConfig().body(BookParam),
+    add_book,
+)
+complete_client = book_factory.to_get(
+    RouterConfig().path("", "/completion").query("pref_uid"),
+    lambda pref_uid: BookUtil.complete(pref_uid).to_model(),
+)
+remove_client = book_factory.to_delete(
+    RouterConfig().path("ref_uid"),
+    remove_book,
 )
 
-complete_client = (
-    RouterConfig()
-    .path("", "/completion")
-    .query("pref_uid")
-    .to_client(
-        grant.to_get,
-        lambda pref_uid: BookUtil.complete(pref_uid).to_model(),
-        Book.of,
-        check_get,
-    )
-)
-
-detail_client = (
-    RouterConfig()
-    .path("ref_uid")
-    .to_client(
-        grant.to_get,
-        find_reftree,
-        ReferenceTree[Book].of,
-        check_get,
-    )
-)
-remove_req = RouterConfig().path("ref_uid")(grant.to_delete, remove_book)
-
-list_client = RouterConfig().to_client(
-    grant.to_get,
+list_client = book_factory.to_gets(
+    RouterConfig(),
     inject_signature(BookUtil.find, [], list[Book]),
-    Book.ofs,
-    check_get,
 )
 
-change_client = (
-    RouterConfig()
-    .path("ref_uid")
-    .body(PartialBookParam)
-    .to_client(
-        grant.to_put,
-        change_book,
-        Book.of,
-        check_put,
-    )
+change_client = book_factory.to_put(
+    RouterConfig().path("ref_uid").body(PartialBookParam),
+    change_book,
+)
+
+detail_factory = ClientFactory(router=ref_router, rettype=ReferenceTree)
+detail_client = detail_factory.to_get(
+    RouterConfig().path("ref_uid"),
+    find_reftree,
 )
 
 
@@ -105,7 +80,7 @@ def ls() -> list[Book]:
 )
 def rm(r: Reference) -> None:
     """参照情報源とその配下を削除."""
-    remove_req(ref_uid=r.valid_uid)
+    remove_client(ref_uid=r.valid_uid)
     click.echo(f"{r}を削除しました")
 
 
