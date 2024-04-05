@@ -9,6 +9,7 @@ from knowde._feature._shared.cli.field.model2click import (
     model2decorator,
     to_clickparam,
 )
+from knowde._feature._shared.cli.to_click import ClickDecorator
 from knowde._feature._shared.cli.typeutils import is_nested
 
 if TYPE_CHECKING:
@@ -32,3 +33,7 @@ def func2clickparams(f: Callable) -> list[ClickParam]:
     for fp in signature(f).parameters.values():
         ret += fparam2clickparams(fp)
     return ret
+
+
+def func2decorator(f: Callable) -> ClickDecorator:
+    return ClickDecorator(params=func2clickparams(f))
