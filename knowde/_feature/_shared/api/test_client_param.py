@@ -94,3 +94,13 @@ def test_body_param_value_from_kwargs() -> None:
     kwargs = {"v1": s, "dummy": "xxx"}
     bp = BodyParam(annotation=OneModel)
     assert bp.getvalue(kwargs) == {"v1": s}
+
+
+def test_complex_path_param() -> None:
+    p1 = PathParam(name="var1", prefix="prefix1")
+    p2 = PathParam(name="var2", prefix="prefix2")
+    p = p1.combine(p2)
+
+    d = {"var1": "xxx", "var2": "yyy"}
+    assert p.getvalue(d) == "/prefix1/xxx/prefix2/yyy"
+    assert p.path == "/prefix1/{var1}/prefix2/{var2}"

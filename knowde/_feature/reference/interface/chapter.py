@@ -52,7 +52,7 @@ def chap_cli() -> None:
 @model2decorator(HeadlineParam)
 def add(pref_uid: str, **kwargs) -> None:  # noqa: ANN003
     """章の追加."""
-    from .interface import complete_book_client  # for avoid cyclic import
+    from .interface import complete_book_client  # for avoiding cyclic import
 
     book = complete_book_client(pref_uid=pref_uid)
     chap = add_client(book_uid=book.valid_uid, **kwargs)

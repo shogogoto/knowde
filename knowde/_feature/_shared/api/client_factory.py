@@ -13,6 +13,7 @@ from knowde._feature._shared.api.check_response import (
 )
 from knowde._feature._shared.api.client_param import (
     BodyParam,
+    ComplexPathParam,
     ComplexQueryParam,
     PathParam,
     QueryParam,
@@ -34,7 +35,10 @@ T = TypeVar("T")
 class RouterConfig(BaseModel):
     """APIパラメータのMediator."""
 
-    path_: PathParam = Field(default_factory=PathParam.null, init_var=False)
+    paths_: list[PathParam] = Field(
+        default_factory=list,
+        init_var=False,
+    )
     queries_: list[QueryParam | ComplexQueryParam] = Field(
         default_factory=list,
         init_var=False,
@@ -46,11 +50,14 @@ class RouterConfig(BaseModel):
         to_req: ToRequest,
         f: Callable,
     ) -> Callable[..., requests.Response]:
-        req = self.path_.bind(to_req, f)
+        p = ComplexPathParam(members=self.paths_)
+        if len(self.paths_) == 0:
+            p = PathParam.null()
+        req = p.bind(to_req, f)
 
         def _request(**kwargs) -> requests.Response:  # noqa: ANN003
             return req(
-                relative=self.path_.getvalue(kwargs),
+                relative=p.getvalue(kwargs),
                 params=ComplexQueryParam(members=self.queries_).getvalue(kwargs),
                 json=self.body_.getvalue(kwargs),
             )
@@ -78,7 +85,7 @@ class RouterConfig(BaseModel):
         return _client
 
     def path(self, name: str, prefix: str = "") -> Self:
-        self.path_ = PathParam(name=name, prefix=prefix)
+        self.paths_.append(PathParam(name=name, prefix=prefix))
         return self
 
     def query(self, name: str) -> Self:
