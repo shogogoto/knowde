@@ -33,17 +33,26 @@ class Web(Reference, frozen=True):
 T = TypeVar("T", bound=Reference)
 
 
+def output_ref(r: Reference) -> str:
+    """Pydanticでabstract methodを使うとエラーが出たので独立の関数として実装."""
+    if isinstance(r, Book):
+        return f"{r.title}@{r.first_edited}({r.valid_uid})"
+    if isinstance(r, Web):
+        return f"{r.title}[{r.url}]({r.valid_uid})"
+    raise TypeError
+
+
 class ReferenceTree(APIReturn, Generic[T], frozen=True):
     root: T
     chapters: list[Chapter] = Field(default_factory=list)
 
     @property
     def output(self) -> str:
-        s = str(self.root)
+        s = output_ref(self.root)
         for chap in self.chapters:
-            s += "\n" + indent(str(chap), " " * 2)
+            s += "\n" + indent(chap.output, " " * 2)
             for sec in chap.sections:
-                s += "\n" + indent(str(sec), " " * 4)
+                s += "\n" + indent(sec.output, " " * 4)
         return s
 
 
@@ -62,6 +71,10 @@ class Section(Entity, frozen=True):
             created=lb.created,
             updated=lb.updated,
         )
+
+    @property
+    def output(self) -> str:
+        return f"{self.value}({self.valid_uid})"
 
 
 class Chapter(Entity, frozen=True):
@@ -88,3 +101,7 @@ class Chapter(Entity, frozen=True):
             created=c.created,
             updated=c.updated,
         )
+
+    @property
+    def output(self) -> str:
+        return f"{self.value}({self.valid_uid})"

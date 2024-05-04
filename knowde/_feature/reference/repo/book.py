@@ -19,7 +19,7 @@ def add_book(p: BookParam) -> Book:
     return BookUtil.create(**p.model_dump()).to_model()
 
 
-def remove_book(ref_uid: UUID) -> None:
+def remove_ref(ref_uid: UUID) -> None:
     """本配下を削除."""
     query_cypher(
         """

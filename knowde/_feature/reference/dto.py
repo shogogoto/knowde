@@ -6,6 +6,7 @@ from typing import Self
 from pydantic import (
     BaseModel,
     Field,
+    HttpUrl,
     model_validator,
 )
 from pydantic_partial.partial import create_partial_model
@@ -42,3 +43,13 @@ class HeadlineParam(BaseModel, frozen=True):
     """章節の総称."""
 
     value: str
+
+
+class WebParam(BaseModel, frozen=True):
+    """Webリソース."""
+
+    title: str
+    url: HttpUrl
+
+
+PartialWebParam = create_partial_model(WebParam)

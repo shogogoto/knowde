@@ -1,6 +1,6 @@
 """referenceとpersonに依存."""
 from knowde._feature._shared.repo.rel import RelUtil
-from knowde._feature.person.label import AuthorUtil, LAuthor
+from knowde._feature.person.repo.label import AuthorUtil, LAuthor
 from knowde._feature.reference.repo.label import BookUtil, LBook
 from knowde.feature.reference.domain import BookParam
 

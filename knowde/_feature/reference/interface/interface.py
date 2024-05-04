@@ -17,7 +17,7 @@ from knowde._feature.reference.repo.book import (
     change_book,
     complete_book,
     find_reftree,
-    remove_book,
+    remove_ref,
 )
 from knowde._feature.reference.repo.label import BookUtil
 
@@ -34,7 +34,7 @@ complete_book_client = book_factory.to_get(
 )
 remove_client = book_factory.to_delete(
     RouterConfig().path("ref_uid"),
-    remove_book,
+    remove_ref,
 )
 
 list_client = book_factory.to_gets(
@@ -47,7 +47,7 @@ change_client = book_factory.to_put(
     change_book,
 )
 
-detail_factory = ClientFactory(router=ref_router, rettype=ReferenceTree)
+detail_factory = ClientFactory(router=ref_router, rettype=ReferenceTree[Book])
 detail_client = detail_factory.to_get(
     RouterConfig().path("ref_uid"),
     find_reftree,
