@@ -1,3 +1,4 @@
+
 from neomodel import DateProperty, One, StringProperty
 
 from knowde._feature._shared import LBase

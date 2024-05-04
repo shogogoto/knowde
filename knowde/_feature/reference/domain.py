@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date  # noqa: TCH003
+from enum import Enum
 from textwrap import indent
 from typing import TYPE_CHECKING, Generic, Self, TypeVar
 
@@ -33,27 +34,34 @@ class Web(Reference, frozen=True):
 T = TypeVar("T", bound=Reference)
 
 
-def output_ref(r: Reference) -> str:
-    """Pydanticでabstract methodを使うとエラーが出たので独立の関数として実装."""
-    if isinstance(r, Book):
-        return f"{r.title}@{r.first_edited}({r.valid_uid})"
-    if isinstance(r, Web):
-        return f"{r.title}[{r.url}]({r.valid_uid})"
-    raise TypeError
+class RefType(Enum):
+    Book = "book"
+    Web = "web"
 
 
 class ReferenceTree(APIReturn, Generic[T], frozen=True):
     root: T
     chapters: list[Chapter] = Field(default_factory=list)
+    reftype: RefType
 
     @property
     def output(self) -> str:
-        s = output_ref(self.root)
+        s = self.output_root
         for chap in self.chapters:
             s += "\n" + indent(chap.output, " " * 2)
             for sec in chap.sections:
                 s += "\n" + indent(sec.output, " " * 4)
         return s
+
+    @property
+    def output_root(self) -> str:
+        if self.reftype == "book":
+            r = Book.model_validate(self.root.model_dump())
+            return f"{r.title}@{r.first_edited}({r.valid_uid})"
+        if self.reftype == "web":
+            r = Web.model_validate(self.root.model_dump())
+            return f"{r.title}[{r.url}]({r.valid_uid})"
+        raise TypeError
 
 
 # Chapterの前に定義しないとUndefinedAnnotationErrorになる

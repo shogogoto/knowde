@@ -1,7 +1,7 @@
 from knowde._feature.reference.dto import HeadlineParam, SwapParam
-from knowde._feature.reference.repo.book import find_reftree
 from knowde._feature.reference.repo.chapter import add_book_chapter, remove_chapter
 from knowde._feature.reference.repo.label import BookUtil, SectionUtil
+from knowde._feature.reference.repo.reference import find_reftree
 from knowde._feature.reference.repo.section import (
     add_section,
     remove_section,

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from knowde._feature.reference.dto import HeadlineParam, SwapParam
-from knowde._feature.reference.repo.book import find_reftree
 from knowde._feature.reference.repo.chapter import (
     add_book_chapter,
     change_chapter,
@@ -9,6 +8,7 @@ from knowde._feature.reference.repo.chapter import (
     swap_chapter_order,
 )
 from knowde._feature.reference.repo.label import BookUtil
+from knowde._feature.reference.repo.reference import find_reftree
 
 
 def h(s: str) -> HeadlineParam:
