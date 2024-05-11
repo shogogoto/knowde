@@ -7,11 +7,11 @@ from pydantic import (
     model_serializer,
 )
 
-from knowde._feature._shared.domain import DomainModel
+from knowde._feature._shared.domain import Entity
 from knowde._feature._shared.types import NeoModel
 
 L = TypeVar("L", bound=NeoModel)
-M = TypeVar("M", bound=DomainModel)
+M = TypeVar("M", bound=Entity)
 
 
 class Label(BaseModel, Generic[L, M], frozen=True):

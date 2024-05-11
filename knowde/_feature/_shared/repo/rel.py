@@ -44,8 +44,8 @@ class RelUtil(
     t_source: type[S]
     t_target: type[T]
     name: str
-    t_rel: type[R]
-    cardinality: type[RelationshipManager] = ZeroOrMore
+    t_rel: type[R] | None = None
+    cardinality: type[RelationshipManager] = ZeroOrMore  # source to target cardinality
 
     @override
     def model_post_init(self, __context: Any) -> None:
@@ -64,20 +64,22 @@ class RelUtil(
         return RelationshipTo(
             cls_name=self.t_target,
             relation_type=self.name,
-            cardinality=ZeroOrMore,
+            cardinality=self.cardinality,
             model=self.t_rel,  # StructuredRel
         ).build_manager(source, name="")  # nameが何に使われているのか不明
 
-    def from_(self, target: T) -> RelationshipManager:
+    def from_(
+        self,
+        target: T,
+    ) -> RelationshipManager:
         return RelationshipFrom(
             cls_name=self.t_source,
             relation_type=self.name,
-            cardinality=self.cardinality,
             model=self.t_rel,  # StructuredRel
         ).build_manager(target, name="")  # nameが何に使われているのか不明
 
     def connect(self, s: S, t: T, **kwargs) -> R:  # noqa: ANN003
-        rel = self.to(s).connect(t)
+        rel = self.to(s).connect(t, properties=kwargs)
         for k, v in kwargs.items():
             setattr(rel, k, v)
         return rel.save()
@@ -122,7 +124,7 @@ class RelUtil(
             self.t_target.label(),
         )
 
-    def complete(self, pref_uid: str) -> R:
+    def complete(self, pref_rel_uid: str) -> R:
         """関係のuidを前方一致で検索."""
         sl, tl = self.labels
         rels = query_cypher(
@@ -131,7 +133,7 @@ class RelUtil(
             WHERE rel.uid STARTS WITH $pref_uid
             RETURN rel
             """,
-            params={"pref_uid": pref_uid},
+            params={"pref_uid": pref_rel_uid},
         ).get("rel")
 
         n = len(rels)
@@ -156,3 +158,23 @@ class RelUtil(
         if len(rels) == 1:
             return rels[0]
         return None
+
+    def count_targets(self, source_uid: UUID) -> int:
+        sl, tl = self.labels
+        return query_cypher(
+            f"""
+            MATCH (:{sl}{{uid: $uid}})-[rel:{self.name}]->(:{tl})
+            RETURN count(rel) as count
+            """,
+            params={"uid": source_uid.hex},
+        ).get("count")[0]
+
+    def count_sources(self, target_uid: UUID) -> int:
+        sl, tl = self.labels
+        return query_cypher(
+            f"""
+            MATCH (:{sl})-[rel:{self.name}]->(:{tl}{{uid: $uid}})
+            RETURN count(rel) as count
+            """,
+            params={"uid": target_uid.hex},
+        ).get("count")[0]

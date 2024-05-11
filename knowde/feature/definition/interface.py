@@ -10,7 +10,7 @@ from knowde._feature._shared.api.check_response import (
     check_post,
 )
 from knowde._feature._shared.api.client_factory import (
-    RequestPartial,
+    RouterConfig,
 )
 from knowde._feature._shared.api.generate_req import StatusCodeGrant
 from knowde._feature._shared.cli.field.model2click import model2decorator
@@ -27,7 +27,7 @@ from knowde.feature.definition.service import detail_service
 def_router = Endpoint.Definition.create_router()
 grant = StatusCodeGrant(router=def_router)
 add_client = (
-    RequestPartial()
+    RouterConfig()
     .body(DefinitionParam)
     .to_client(
         grant.to_post,
@@ -37,23 +37,23 @@ add_client = (
     )
 )
 complete_client = (
-    RequestPartial()
+    RouterConfig()
     .path("", "/completion")
     .query("pref_uid")
     .to_client(grant.to_get, complete_definition, Definition.of, check_get)
 )
 detail_client = (
-    RequestPartial()
+    RouterConfig()
     .path("def_uid")
     .to_client(grant.to_get, detail_service, DetailView.of, check_get)
 )
-list_client = RequestPartial().to_client(
+list_client = RouterConfig().to_client(
     grant.to_get,
     list_definitions,
     Definition.ofs,
     check_get,
 )
-remove_req = RequestPartial().path("def_uid")(grant.to_delete, remove_definition)
+remove_req = RouterConfig().path("def_uid")(grant.to_delete, remove_definition)
 
 
 @click.group("def")

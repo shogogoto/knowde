@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any, Generic, Self, TypeVar
 from uuid import UUID  # noqa: TCH003
 
@@ -20,6 +20,11 @@ def jst_now() -> datetime:
     return datetime.now(tz=TZ)
 
 
+def to_date(s: str) -> date:
+    dt = datetime.strptime(s, "%Y-%m-%d").astimezone(TZ)
+    return dt.date()
+
+
 class APIReturn(BaseModel, frozen=True):
     @classmethod
     def of(cls, res: Response) -> Self:
@@ -30,7 +35,7 @@ class APIReturn(BaseModel, frozen=True):
         return [cls.model_validate(d) for d in res.json()]
 
 
-class DomainModel(APIReturn, frozen=True):
+class Entity(APIReturn, frozen=True):
     uid: UUID | None = None
     created: datetime | None = Field(None, repr=False)
     updated: datetime | None = Field(None, repr=False)
@@ -61,7 +66,7 @@ class DomainModel(APIReturn, frozen=True):
         return [cls.to_model(lb) for lb in lbs]
 
 
-M = TypeVar("M", bound=DomainModel)
+M = TypeVar("M", bound=Entity)
 
 
 class ModelList(RootModel[list[M]], frozen=True):
@@ -83,6 +88,3 @@ T = TypeVar("T", bound=BaseModel)
 class Composite(BaseModel, Generic[T], frozen=True):
     parent: T
     children: list[Composite[T]] = Field(default_factory=list)
-
-
-Composite.model_rebuild()

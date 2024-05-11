@@ -10,7 +10,7 @@ from neomodel import StringProperty
 from pydantic import BaseModel, PydanticUndefinedAnnotation
 from pydantic_partial.partial import create_partial_model
 
-from knowde._feature._shared.domain import DomainModel
+from knowde._feature._shared.domain import Entity
 from knowde._feature._shared.repo.base import LBase
 from knowde._feature._shared.repo.util import LabelUtil
 
@@ -47,7 +47,7 @@ class OneParam(BaseModel, frozen=True):
     value: str | None = None
 
 
-class OneModel(OneParam, DomainModel, frozen=True):
+class OneModel(OneParam, Entity, frozen=True):
     pass
 
 

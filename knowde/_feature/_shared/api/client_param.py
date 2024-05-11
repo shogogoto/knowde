@@ -51,9 +51,9 @@ class PathParam(BaseModel, APIParam, frozen=True):
     def bind(self, to_req: ToRequest, f: Callable) -> RequestMethod:
         return to_req(f, path=self.path)
 
-    def getvalue(self, kwargs: dict) -> str | None:
+    def getvalue(self, kwargs: dict) -> str:
         if self.is_null:
-            return None
+            return ""
         if self.name == "":
             return self.path
         if self.name not in kwargs:
@@ -66,6 +66,35 @@ class PathParam(BaseModel, APIParam, frozen=True):
     @cache
     def null(cls) -> PathParam:
         return cls(name="dummy", is_null=True)
+
+    def combine(self, other: Self) -> ComplexPathParam:
+        return ComplexPathParam(members=[self, other])
+
+
+class ComplexPathParam(BaseModel, APIParam, frozen=True):
+    """relative引数と紐づく."""
+
+    members: list[PathParam | ComplexPathParam] | list[PathParam]
+
+    @property
+    def path(self) -> str:
+        let = []
+        for p in [p.path for p in self.members]:
+            let.extend(p.split("/"))
+        return "/" + "/".join([e for e in let if e != ""])
+
+    def bind(self, to_req: ToRequest, f: Callable) -> RequestMethod:
+        return to_req(f, path=self.path)
+
+    def combine(self, other: PathParam | ComplexPathParam) -> ComplexPathParam:
+        if isinstance(other, PathParam):
+            return ComplexPathParam(members=[*self.members, other])
+        return ComplexPathParam(members=self.members + other.members)
+
+    @override
+    def getvalue(self, kwargs: dict) -> str:
+        vs = [p.getvalue(kwargs) for p in self.members]
+        return "".join([v for v in vs if v])
 
 
 NullPathParam = PathParam(name="dummy", is_null=True)
@@ -121,7 +150,7 @@ class BodyParam(BaseModel, APIParam, frozen=True):
                 msg = f"{k}は{list(kwargs.keys())}に含まれていません"
                 raise APIParamBindError(msg)
             d[k] = kwargs[k]
-        return self.annotation.model_validate(d).model_dump()
+        return self.annotation.model_validate(d).model_dump(mode="json")
 
     @classmethod
     @cache

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import click
 
+from knowde._feature.reference.interface import ref_cli
 from knowde.feature import def_cli
 
 __version__ = "0.0.0"
@@ -20,3 +21,4 @@ def version() -> None:
 
 
 cli.add_command(def_cli)
+cli.add_command(ref_cli)

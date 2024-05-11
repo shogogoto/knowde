@@ -8,10 +8,9 @@ from neomodel import ZeroOrOne
 from knowde._feature._shared.repo.base import RelBase
 from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature._shared.repo.rel import RelUtil
+from knowde._feature.sentence import LSentence
 from knowde._feature.sentence.domain import Sentence
-from knowde._feature.sentence.repo.label import LSentence
-from knowde._feature.term import TermUtil
-from knowde._feature.term.repo.label import LTerm
+from knowde._feature.term import LTerm, TermUtil
 from knowde.feature.definition.domain.description import Description
 from knowde.feature.definition.domain.domain import Definition, DefinitionParam
 from knowde.feature.definition.repo.errors import (
@@ -82,7 +81,7 @@ def remove_definition(def_uid: UUID) -> None:
 
 def complete_definition(pref_uid: str) -> Definition:
     """前方一致検索."""
-    rel = RelDefUtil.complete(pref_uid=pref_uid)
+    rel = RelDefUtil.complete(pref_rel_uid=pref_uid)
     s = Sentence.to_model(rel.end_node())
     terms = find_marked_terms(s.valid_uid)
     return Definition.from_rel(rel, deps=terms)

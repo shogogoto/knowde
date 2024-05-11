@@ -1,16 +1,25 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Self, TypeVar
+from typing import TYPE_CHECKING, Callable, Generic, Self, TypeVar
 
-from compose import compose
+from fastapi import APIRouter  # noqa: TCH002
 from pydantic import BaseModel, Field
 
+from knowde._feature._shared.api.check_response import (
+    check_delete,
+    check_get,
+    check_post,
+    check_put,
+)
 from knowde._feature._shared.api.client_param import (
     BodyParam,
+    ComplexPathParam,
     ComplexQueryParam,
     PathParam,
     QueryParam,
 )
+from knowde._feature._shared.api.generate_req import StatusCodeGrant
+from knowde._feature._shared.domain import APIReturn
 
 if TYPE_CHECKING:
     import requests
@@ -23,26 +32,32 @@ if TYPE_CHECKING:
 T = TypeVar("T")
 
 
-class RequestPartial(BaseModel):
+class RouterConfig(BaseModel):
     """APIパラメータのMediator."""
 
-    path_: PathParam = Field(default_factory=PathParam.null, init=False)
+    paths_: list[PathParam] = Field(
+        default_factory=list,
+        init_var=False,
+    )
     queries_: list[QueryParam | ComplexQueryParam] = Field(
         default_factory=list,
-        init=False,
+        init_var=False,
     )
-    body_: BodyParam = Field(default_factory=BodyParam.null, init=False)
+    body_: BodyParam = Field(default_factory=BodyParam.null, init_var=False)
 
     def __call__(
         self,
         to_req: ToRequest,
         f: Callable,
     ) -> Callable[..., requests.Response]:
-        req = self.path_.bind(to_req, f)
+        p = ComplexPathParam(members=self.paths_)
+        if len(self.paths_) == 0:
+            p = PathParam.null()
+        req = p.bind(to_req, f)
 
         def _request(**kwargs) -> requests.Response:  # noqa: ANN003
             return req(
-                relative=self.path_.getvalue(kwargs),
+                relative=p.getvalue(kwargs),
                 params=ComplexQueryParam(members=self.queries_).getvalue(kwargs),
                 json=self.body_.getvalue(kwargs),
             )
@@ -56,7 +71,10 @@ class RequestPartial(BaseModel):
         convert: Callable[[requests.Response], T],
         *check_response: CheckResponse,
     ) -> Callable[..., T]:
-        req = self(to_req, f)
+        req = self(
+            to_req,
+            f,
+        )
 
         def _client(**kwargs) -> T:  # noqa: ANN003
             res = req(**kwargs)
@@ -67,7 +85,7 @@ class RequestPartial(BaseModel):
         return _client
 
     def path(self, name: str, prefix: str = "") -> Self:
-        self.path_ = PathParam(name=name, prefix=prefix)
+        self.paths_.append(PathParam(name=name, prefix=prefix))
         return self
 
     def query(self, name: str) -> Self:
@@ -79,15 +97,90 @@ class RequestPartial(BaseModel):
         return self
 
 
-def to_client(
-    req: Callable[..., requests.Response],
-    t: type[T],
-) -> Callable[..., T]:
-    return compose(t.of, req)
+U = TypeVar("U", bound=APIReturn)
 
 
-def to_client_return_list(
-    req: Callable[..., requests.Response],
-    t: type[T],
-) -> Callable[..., list[T]]:
-    return compose(t.ofs, req)
+class ClientFactory(
+    BaseModel,
+    Generic[U],
+    frozen=True,
+    arbitrary_types_allowed=True,
+):
+    """RouterConfigを利用してちょっと簡単にAPIClientを作る."""
+
+    router: APIRouter
+    rettype: type[U]
+
+    @property
+    def grant(self) -> StatusCodeGrant:
+        return StatusCodeGrant(router=self.router)
+
+    def to_gets(
+        self,
+        config: RouterConfig,
+        f: Callable[..., U],
+        *check_response: CheckResponse,
+    ) -> Callable[..., list[U]]:
+        """listを返すget method client."""
+        return config.to_client(
+            self.grant.to_get,
+            f,
+            self.rettype.ofs,
+            *[check_get, *check_response],
+        )
+
+    def to_get(
+        self,
+        config: RouterConfig,
+        f: Callable[..., U],
+        *check_response: CheckResponse,
+    ) -> Callable[..., U]:
+        """単一要素を返すget method client."""
+        return config.to_client(
+            self.grant.to_get,
+            f,
+            self.rettype.of,
+            *[check_get, *check_response],
+        )
+
+    def to_post(
+        self,
+        config: RouterConfig,
+        f: Callable[..., U],
+        *check_response: CheckResponse,
+    ) -> Callable[..., U]:
+        return config.to_client(
+            self.grant.to_post,
+            f,
+            self.rettype.of,
+            *[check_post, *check_response],
+        )
+
+    def to_put(
+        self,
+        config: RouterConfig,
+        f: Callable[..., U],
+        *check_response: CheckResponse,
+    ) -> Callable[..., U]:
+        return config.to_client(
+            self.grant.to_put,
+            f,
+            self.rettype.of,
+            *[check_put, *check_response],
+        )
+
+    def to_delete(
+        self,
+        config: RouterConfig,
+        f: Callable[..., None],
+        *check_response: CheckResponse,
+    ) -> Callable[..., None]:
+        def convert(_res: requests.Response) -> None:
+            return None
+
+        return config.to_client(
+            self.grant.to_delete,
+            f,
+            convert,
+            *[check_delete, *check_response],
+        )
