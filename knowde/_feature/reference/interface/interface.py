@@ -69,13 +69,19 @@ def detail(pref_uid: str) -> None:
     click.echo(d.output)
 
 
-@ref_cli.command("add")
+@ref_cli.command("add_book")
 @model2decorator(BookParam)
-def add(**kwargs) -> None:  # noqa: ANN003
+def add_book(**kwargs) -> None:  # noqa: ANN003
     """本の追加."""
     book: Book = add_book_client(**kwargs)
     click.echo("以下を作成しました")
     click.echo(book)
+
+
+# @ref_cli.command("add_web")
+# # @model2decorator(WebParam)
+# def add_web(**kwargs) -> None:
+#     click.echo(kwargs)
 
 
 @ref_cli.command("ls")
