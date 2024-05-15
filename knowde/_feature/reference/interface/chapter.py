@@ -36,7 +36,7 @@ remove_client = factory.to_delete(
 )
 
 
-complete_client = factory.to_get(
+complete_chapter_client = factory.to_get(
     RouterConfig().path("", "/completion").query("pref_uid"),
     complete_chapter,
 )
@@ -66,7 +66,7 @@ def add(pref_uid: str, **kwargs) -> None:  # noqa: ANN003
 @view_options
 def ch(pref_uid: str, **kwargs) -> list[Chapter]:  # noqa: ANN003
     """章タイトルの変更."""
-    pre = complete_client(pref_uid=pref_uid)
+    pre = complete_chapter_client(pref_uid=pref_uid)
     post = change_client(chap_uid=pre.valid_uid, **kwargs)
     click.echo("0から1へ変更しました")
     return [pre, post]
@@ -75,7 +75,7 @@ def ch(pref_uid: str, **kwargs) -> list[Chapter]:  # noqa: ANN003
 @chap_cli.command("rm")
 @each_args(
     "pref_uids",
-    converter=lambda pref_uid: complete_client(pref_uid=pref_uid),
+    converter=lambda pref_uid: complete_chapter_client(pref_uid=pref_uid),
 )
 def rm(c: Chapter) -> None:
     """章の削除."""

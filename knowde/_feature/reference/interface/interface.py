@@ -12,6 +12,7 @@ from knowde._feature._shared.cli.field.types import PrefUidParam
 from knowde._feature.reference.domain import Book, Reference, ReferenceTree
 from knowde._feature.reference.dto import BookParam, PartialBookParam
 from knowde._feature.reference.interface.chapter import chap_cli
+from knowde._feature.reference.interface.section import sec_cli
 from knowde._feature.reference.repo.book import (
     add_book,
     change_book,
@@ -59,6 +60,7 @@ def ref_cli() -> None:
 
 
 ref_cli.add_command(chap_cli)
+ref_cli.add_command(sec_cli)
 
 
 @ref_cli.command("detail")
