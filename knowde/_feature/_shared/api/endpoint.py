@@ -20,6 +20,7 @@ class Endpoint(Enum):
     Reference = "references"
     Book = "references/books"
     Chapter = "references/chapters"
+    Section = "references/sections"
     Sentence = "sentences"
     Definition = "definitions"
 

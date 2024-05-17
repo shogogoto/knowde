@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from operator import attrgetter, itemgetter
-from typing import TYPE_CHECKING
 from uuid import UUID  # noqa: TCH003
 
 from knowde._feature._shared.repo.query import query_cypher
@@ -13,10 +12,7 @@ from knowde._feature.reference.domain import (
     Section,
     Web,
 )
-from knowde._feature.reference.repo.label import LBook
-
-if TYPE_CHECKING:
-    from knowde._feature.reference.repo.label import LReference
+from knowde._feature.reference.repo.label import LBook, LReference
 
 
 def to_refmodel(r: LReference) -> tuple[Book | Web, RefType]:

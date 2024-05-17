@@ -47,3 +47,10 @@ def remove_section(sec_uid: UUID) -> None:
     for i, rel in enumerate(rels):
         rel.order = i
         rel.save()
+
+
+def complete_section(pref_uid: str) -> Section:
+    lb = SectionUtil.complete(pref_uid)
+    m = lb.to_model()
+    rel = RelSectionUtil.find_by_source_id(m.valid_uid)[0]
+    return Section.from_rel(rel)
