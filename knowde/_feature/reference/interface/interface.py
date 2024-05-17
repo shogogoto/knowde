@@ -28,6 +28,8 @@ add_book_client = book_factory.to_post(
     RouterConfig().body(BookParam),
     add_book,
 )
+
+
 complete_book_client = book_factory.to_get(
     RouterConfig().path("", "/completion").query("pref_uid"),
     complete_book,
@@ -47,7 +49,7 @@ change_client = book_factory.to_put(
     change_book,
 )
 
-detail_factory = ClientFactory(router=ref_router, rettype=ReferenceTree)
+detail_factory = ClientFactory(router=ref_router, rettype=ReferenceTree[Book])
 detail_client = detail_factory.to_get(
     RouterConfig().path("ref_uid"),
     find_reftree,
@@ -73,7 +75,7 @@ def detail(pref_uid: str) -> None:
 
 @ref_cli.command("add_book")
 @model2decorator(BookParam)
-def add_book(**kwargs) -> None:  # noqa: ANN003
+def add_book_(**kwargs) -> None:  # noqa: ANN003
     """本の追加."""
     book: Book = add_book_client(**kwargs)
     click.echo("以下を作成しました")
