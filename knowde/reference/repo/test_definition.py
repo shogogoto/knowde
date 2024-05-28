@@ -8,9 +8,14 @@ from pytest_unordered import unordered
 from knowde._feature.reference.dto import BookParam
 from knowde._feature.reference.repo.book import add_book
 from knowde.feature.definition.domain.domain import DefinitionParam
-from knowde.feature.definition.repo.definition import add_definition
+from knowde.feature.definition.repo.definition import add_definition, list_definitions
 from knowde.reference.dto import RefDefParam
-from knowde.reference.repo.definition import add_def2ref, add_refdef, list_refdefs
+from knowde.reference.repo.definition import (
+    add_def2ref,
+    add_refdef,
+    disconnect_refdef,
+    list_refdefs,
+)
 
 
 def _p(uid: UUID, name: str, explain: str) -> RefDefParam:
@@ -27,8 +32,8 @@ def test_add_refdef() -> None:
     assert rd.defs == unordered([d1, d2])
 
 
-def test_add_def2ref() -> None:
-    """定義を参考に紐付ける."""
+def test_add_def2ref_and_disconnect() -> None:
+    """定義を参考に紐付けて解除する."""
     book = add_book(BookParam(title="ref"))
     d1 = add_definition(DefinitionParam(name="d1", explain="e1"))
     d2 = add_definition(DefinitionParam(name="d2", explain="e2"))
@@ -40,3 +45,10 @@ def test_add_def2ref() -> None:
     rd = list_refdefs()[0]
     assert rd.book == book
     assert rd.defs == unordered([d1, d2, d3])
+
+    disconnect_refdef(book.valid_uid, uids[0:2])
+    rd = list_refdefs()[0]
+    assert rd.defs == [d3]
+
+    # relは削除されたけど定義自体は削除しない
+    assert list_definitions() == unordered([d1, d2, d3])

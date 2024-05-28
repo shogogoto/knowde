@@ -90,8 +90,8 @@ def add_def2ref(ref_uid: UUID, def_uids: list[UUID]) -> None:
     dn = RelDefUtil.name
     query_cypher(
         f"""
-        MATCH (r:Reference {{uid: $ref_uid}})
-        MATCH (t:Term)-[def:{dn} WHERE def.uid IN $def_uids]->(s:Sentence)
+        MATCH (r:Reference {{uid: $ref_uid}}),
+            (t:Term)-[def:{dn} WHERE def.uid IN $def_uids]->(s:Sentence)
         CREATE (t)-[:REFER]->(r), (s)-[:REFER]->(r)
         """,
         params={
@@ -101,17 +101,21 @@ def add_def2ref(ref_uid: UUID, def_uids: list[UUID]) -> None:
     )
 
 
-# def rm_refdef(ref_uid: UUID, def_uid: UUID) -> None:
-#     """本と定義の紐付けを解除する."""
-#     dn = RelDefUtil.name
-#     query_cypher(
-#         f"""
-#         MATCH (t:Term)-[def:{dn}{{uid: $def_uid}}]->(s:Sentence),
-#             (r:Reference {{uid: $ref_uid}})
-#         CREATE (t)-[:REFER]->(r), (s)-[:REFER]->(r)
-#         """,
-#         params={
-#             "ref_uid": ref_uid.hex,
-#             "def_uid": def_uid.hex,
-#         },
-#     )
+def disconnect_refdef(ref_uid: UUID, def_uids: list[UUID]) -> None:
+    """本と定義の紐付けを解除する.
+
+    定義自体を削除したいのなら、definitionパッケージの機能を使えば良い
+    """
+    dn = RelDefUtil.name
+    query_cypher(
+        f"""
+        MATCH (r:Reference {{uid: $ref_uid}}),
+            (t:Term)-[def:{dn} WHERE def.uid IN $def_uids]->(s:Sentence)
+            -[rrel:REFER]->(r)
+        DELETE rrel
+        """,
+        params={
+            "ref_uid": ref_uid.hex,
+            "def_uids": [uid.hex for uid in def_uids],
+        },
+    )
