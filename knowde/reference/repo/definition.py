@@ -13,6 +13,8 @@ from knowde.feature.definition.repo.definition import RelDefUtil, add_definition
 from knowde.reference.domain import RefDefinitions
 
 if TYPE_CHECKING:
+    from uuid import UUID
+
     from knowde.reference.dto import BookParam, RefDefParam
 
 RelAuthorUtil = RelUtil(
@@ -39,7 +41,10 @@ def add_book_with_author(p: BookParam) -> None:
 
 
 def add_refdef(p: RefDefParam) -> tuple[Definition, Book]:
-    """本から引用した定義を追加."""
+    """本から引用した定義を追加.
+
+    どんな記述があったかが大事なので、Termは引用に含めないことにする
+    """
     d = add_definition(p.to_defparam())
     dn = RelDefUtil.name
     res = query_cypher(
@@ -47,7 +52,7 @@ def add_refdef(p: RefDefParam) -> tuple[Definition, Book]:
         MATCH
             (t:Term)-[def:{dn} {{uid: $d_uid}}]->(s:Sentence),
             (r:Reference {{uid: $uid}})
-        CREATE (t)-[:REFER]->(r), (s)-[:REFER]->(r)
+        CREATE (s)-[:REFER]->(r)
         RETURN def, r
         """,
         params={
@@ -78,14 +83,35 @@ def list_refdefs() -> list[RefDefinitions]:
         )
         rds.append(rd)
     return rds
-    # for x in res.results:
-    #     print(x)
-    # # print(res.results)
 
 
-# def connect_def2ref() -> None:
-#     """本と定義を紐付ける."""
+def add_def2ref(ref_uid: UUID, def_uids: list[UUID]) -> None:
+    """本と定義を紐付ける."""
+    dn = RelDefUtil.name
+    query_cypher(
+        f"""
+        MATCH (r:Reference {{uid: $ref_uid}})
+        MATCH (t:Term)-[def:{dn} WHERE def.uid IN $def_uids]->(s:Sentence)
+        CREATE (t)-[:REFER]->(r), (s)-[:REFER]->(r)
+        """,
+        params={
+            "ref_uid": ref_uid.hex,
+            "def_uids": [uid.hex for uid in def_uids],
+        },
+    )
 
 
-# def disconnect_def_from_ref() -> None:
+# def rm_refdef(ref_uid: UUID, def_uid: UUID) -> None:
 #     """本と定義の紐付けを解除する."""
+#     dn = RelDefUtil.name
+#     query_cypher(
+#         f"""
+#         MATCH (t:Term)-[def:{dn}{{uid: $def_uid}}]->(s:Sentence),
+#             (r:Reference {{uid: $ref_uid}})
+#         CREATE (t)-[:REFER]->(r), (s)-[:REFER]->(r)
+#         """,
+#         params={
+#             "ref_uid": ref_uid.hex,
+#             "def_uid": def_uid.hex,
+#         },
+#     )

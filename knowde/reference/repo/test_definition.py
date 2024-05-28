@@ -7,8 +7,10 @@ from pytest_unordered import unordered
 
 from knowde._feature.reference.dto import BookParam
 from knowde._feature.reference.repo.book import add_book
+from knowde.feature.definition.domain.domain import DefinitionParam
+from knowde.feature.definition.repo.definition import add_definition
 from knowde.reference.dto import RefDefParam
-from knowde.reference.repo.definition import add_refdef, list_refdefs
+from knowde.reference.repo.definition import add_def2ref, add_refdef, list_refdefs
 
 
 def _p(uid: UUID, name: str, explain: str) -> RefDefParam:
@@ -23,3 +25,18 @@ def test_add_refdef() -> None:
     rd = list_refdefs()[0]
     assert rd.book == book
     assert rd.defs == unordered([d1, d2])
+
+
+def test_add_def2ref() -> None:
+    """定義を参考に紐付ける."""
+    book = add_book(BookParam(title="ref"))
+    d1 = add_definition(DefinitionParam(name="d1", explain="e1"))
+    d2 = add_definition(DefinitionParam(name="d2", explain="e2"))
+    d3 = add_definition(DefinitionParam(name="d3", explain="e3"))
+
+    uids = [d.valid_uid for d in [d1, d2, d3]]
+    add_def2ref(book.valid_uid, uids)
+
+    rd = list_refdefs()[0]
+    assert rd.book == book
+    assert rd.defs == unordered([d1, d2, d3])
