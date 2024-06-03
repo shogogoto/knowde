@@ -12,3 +12,7 @@ class RefDefinitions(BaseModel, frozen=True):
 
     book: Book
     defs: list[Definition]
+
+    def to_tuple(self) -> tuple[list[Definition], Book]:
+        """To tuple."""
+        return (self.defs, self.book)

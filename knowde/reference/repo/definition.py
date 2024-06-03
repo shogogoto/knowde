@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from neomodel import db
+
 from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature._shared.repo.rel import RelUtil
 from knowde._feature.person.repo.label import AuthorUtil, LAuthor
@@ -40,7 +42,7 @@ def add_book_with_author(p: BookParam) -> None:
         RelAuthorUtil.connect(author.label, book.label)
 
 
-def add_refdef(p: RefDefParam) -> tuple[Definition, Book]:
+def add_refdef(p: RefDefParam) -> RefDefinitions:
     """本から引用した定義を追加.
 
     どんな記述があったかが大事なので、Termは引用に含めないことにする
@@ -60,9 +62,9 @@ def add_refdef(p: RefDefParam) -> tuple[Definition, Book]:
             "d_uid": d.valid_uid.hex,
         },
     )
-    return (
-        res.get("def", convert=Definition.from_rel)[0],
-        res.get("r", convert=Book.to_model)[0],
+    return RefDefinitions(
+        book=res.get("r", convert=Book.to_model)[0],
+        defs=res.get("def", convert=Definition.from_rel),
     )
 
 
@@ -119,3 +121,14 @@ def disconnect_refdef(ref_uid: UUID, def_uids: list[UUID]) -> None:
             "def_uids": [uid.hex for uid in def_uids],
         },
     )
+
+
+@db.transaction
+def change_def2ref(
+    old_uid: UUID,
+    new_uid: UUID,
+    def_uids: list[UUID],
+) -> None:
+    """引用の紐付けを変更."""
+    disconnect_refdef(old_uid, def_uids)
+    add_def2ref(new_uid, def_uids)

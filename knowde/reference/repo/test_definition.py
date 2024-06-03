@@ -25,11 +25,11 @@ def _p(uid: UUID, name: str, explain: str) -> RefDefParam:
 def test_add_refdef() -> None:
     """引用付き定義追加."""
     book = add_book(BookParam(title="ref"))
-    d1, _ = add_refdef(_p(book.valid_uid, "def1", "e1"))
-    d2, _ = add_refdef(_p(book.valid_uid, "def2", "e2"))
+    ds1, _ = add_refdef(_p(book.valid_uid, "def1", "e1")).to_tuple()
+    ds2, _ = add_refdef(_p(book.valid_uid, "def2", "e2")).to_tuple()
     rd = list_refdefs()[0]
     assert rd.book == book
-    assert rd.defs == unordered([d1, d2])
+    assert rd.defs == unordered([ds1[0], ds2[0]])
 
 
 def test_add_def2ref_and_disconnect() -> None:
