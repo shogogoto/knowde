@@ -5,13 +5,12 @@ from enum import Enum
 from textwrap import indent
 from typing import TYPE_CHECKING, Generic, Self, TypeVar
 
-from pydantic import Field
+from pydantic import BaseModel, Field
+from pydantic_core import Url  # noqa: TCH002
 
 from knowde._feature._shared.domain import APIReturn, Entity
 
 if TYPE_CHECKING:
-    from pydantic_core import Url
-
     from knowde._feature._shared.repo.rel_label import RelOrder
 
 
@@ -24,14 +23,77 @@ class Book(Reference, frozen=True):
 
     first_edited: date | None = Field(default=None, title="初版発行日")
 
+    @property
+    def output(self) -> str:
+        r = self
+        return f"{r.title}@{r.first_edited}({r.valid_uid})"
+
 
 class Web(Reference, frozen=True):
     """参考ウェブリソース."""
 
     url: Url
 
+    @property
+    def output(self) -> str:
+        r = self
+        return f"{r.title}[{r.url}]({r.valid_uid})"
+
 
 T = TypeVar("T", bound=Reference)
+
+
+# Chapterの前に定義しないとUndefinedAnnotationErrorになる
+class Section(Reference, frozen=True):
+    order: int
+
+    @classmethod
+    def from_rel(cls, rel: RelOrder) -> Self:
+        lb = rel.start_node()
+        return cls(
+            title=lb.value,
+            order=rel.order,
+            uid=lb.uid,
+            created=lb.created,
+            updated=lb.updated,
+        )
+
+    @property
+    def output(self) -> str:
+        return f"{self.title}({self.valid_uid})"
+
+
+class Chapter(Reference, frozen=True):
+    parent: Reference
+    order: int
+    sections: list[Section] = Field(default_factory=list)
+
+    @classmethod
+    def from_rel(
+        cls,
+        rel: RelOrder,
+        sections: list[Section] | None = None,
+    ) -> Self:
+        if sections is None:
+            sections = []
+        c = rel.start_node()
+        return cls(
+            parent=Book.to_model(rel.end_node()),
+            title=c.value,
+            order=rel.order,
+            sections=sections,
+            uid=c.uid,
+            created=c.created,
+            updated=c.updated,
+        )
+
+    @property
+    def output(self) -> str:
+        return f"{self.title}({self.valid_uid})"
+
+    @classmethod
+    def isinstance(cls, t: type) -> bool:
+        return cls == t
 
 
 class RefType(Enum):
@@ -57,59 +119,23 @@ class ReferenceTree(APIReturn, Generic[T], frozen=True):
     def output_root(self) -> str:
         if self.reftype == "book":
             r = Book.model_validate(self.root.model_dump())
-            return f"{r.title}@{r.first_edited}({r.valid_uid})"
+            return r.output
         if self.reftype == "web":
             r = Web.model_validate(self.root.model_dump())
-            return f"{r.title}[{r.url}]({r.valid_uid})"
+            return r.output
         raise TypeError
 
 
-# Chapterの前に定義しないとUndefinedAnnotationErrorになる
-class Section(Entity, frozen=True):
-    value: str
-    order: int
+# def discriminate_rel(rel: RelOrder) -> None:
+#     """ReferenceTreeの関係を識別."""
+#     e = rel.end_node()
 
-    @classmethod
-    def from_rel(cls, rel: RelOrder) -> Self:
-        lb = rel.start_node()
-        return cls(
-            value=lb.value,
-            order=rel.order,
-            uid=lb.uid,
-            created=lb.created,
-            updated=lb.updated,
-        )
+#     if isinstance(e, LBook):
+#         Chapter.from_rel(rel)
 
-    @property
-    def output(self) -> str:
-        return f"{self.value}({self.valid_uid})"
+#     if isinstance(e, Chapter):
+#         pass
 
 
-class Chapter(Entity, frozen=True):
-    parent: Reference
-    value: str
-    order: int
-    sections: list[Section] = Field(default_factory=list)
-
-    @classmethod
-    def from_rel(
-        cls,
-        rel: RelOrder,
-        sections: list[Section] | None = None,
-    ) -> Self:
-        if sections is None:
-            sections = []
-        c = rel.start_node()
-        return cls(
-            parent=Book.to_model(rel.end_node()),
-            value=c.value,
-            order=rel.order,
-            sections=sections,
-            uid=c.uid,
-            created=c.created,
-            updated=c.updated,
-        )
-
-    @property
-    def output(self) -> str:
-        return f"{self.value}({self.valid_uid})"
+class ReferenceGraph(BaseModel, frozen=True):
+    target: Reference

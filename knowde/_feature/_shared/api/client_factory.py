@@ -84,7 +84,7 @@ class RouterConfig(BaseModel):
 
         return _client
 
-    def path(self, name: str, prefix: str = "") -> Self:
+    def path(self, name: str = "", prefix: str = "") -> Self:
         self.paths_.append(PathParam(name=name, prefix=prefix))
         return self
 
