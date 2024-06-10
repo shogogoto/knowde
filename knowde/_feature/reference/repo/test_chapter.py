@@ -12,7 +12,7 @@ from knowde._feature.reference.repo.reference import find_reftree
 
 
 def h(s: str) -> HeadlineParam:
-    return HeadlineParam(value=s)
+    return HeadlineParam(title=s)
 
 
 def test_swap_chapter() -> None:

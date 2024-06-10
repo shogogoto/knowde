@@ -13,7 +13,7 @@ from knowde._feature.reference.repo.label import (
 
 def add_book_chapter(book_uid: UUID, p: HeadlineParam) -> Chapter:
     book = BookUtil.find_by_id(book_uid)
-    chap = ChapterUtil.create(value=p.value)
+    chap = ChapterUtil.create(title=p.title)
     count = RelChapterBookUtil.count_sources(book_uid)
     rel = RelChapterBookUtil.connect(chap.label, book.label, order=count)
     return Chapter.from_rel(rel)
@@ -33,7 +33,7 @@ def change_chapter(
     chap_uid: UUID,
     p: HeadlineParam,
 ) -> Chapter:
-    ChapterUtil.change(uid=chap_uid, value=p.value)
+    ChapterUtil.change(uid=chap_uid, title=p.title)
     rel = RelChapterBookUtil.find_by_source_id(chap_uid)[0]
     return Chapter.from_rel(rel=rel)
 

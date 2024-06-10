@@ -42,7 +42,7 @@ class SwapParam(BaseModel, frozen=True):
 class HeadlineParam(BaseModel, frozen=True):
     """章節の総称."""
 
-    value: str
+    title: str
 
 
 class WebParam(BaseModel, frozen=True):

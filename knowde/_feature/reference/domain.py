@@ -51,7 +51,7 @@ class Section(Reference, frozen=True):
     def from_rel(cls, rel: RelOrder) -> Self:
         lb = rel.start_node()
         return cls(
-            title=lb.value,
+            title=lb.title,
             order=rel.order,
             uid=lb.uid,
             created=lb.created,
@@ -79,7 +79,7 @@ class Chapter(Reference, frozen=True):
         c = rel.start_node()
         return cls(
             parent=Book.to_model(rel.end_node()),
-            title=c.value,
+            title=c.title,
             order=rel.order,
             sections=sections,
             uid=c.uid,

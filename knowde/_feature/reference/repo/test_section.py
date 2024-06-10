@@ -10,7 +10,7 @@ from knowde._feature.reference.repo.section import (
 
 
 def h(s: str) -> HeadlineParam:
-    return HeadlineParam(value=s)
+    return HeadlineParam(title=s)
 
 
 def test_swap_section() -> None:
@@ -69,4 +69,4 @@ def test_remove_chapter_with_sections() -> None:
     assert len(tree.chapters) == 1
     founds = SectionUtil.find()
     assert len(founds) == 1
-    assert founds[0].value == s.title
+    assert founds[0].title == s.title

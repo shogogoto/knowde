@@ -1,3 +1,4 @@
+from __future__ import annotations
 
 from neomodel import DateProperty, One, StringProperty
 
@@ -17,31 +18,32 @@ from knowde._feature.reference.domain import Book, Chapter, Section, Web
 class LReference(LBase):
     __label__ = "Reference"
     __abstract_node__ = True
-    title = StringProperty(index=True)
 
 
 class LBook(LReference):
     __label__ = "Book"
+    title = StringProperty(index=True)
     first_edited = DateProperty()
 
 
 class LWeb(LReference):
     __label__ = "Web"
+    title = StringProperty(index=True)
     url = StringProperty()
 
 
-class LChapter(LBase):
+class LChapter(LReference):
     """章:Ref直下."""
 
     __label__ = "Chapter"
-    value = StringProperty()
+    title = StringProperty()
 
 
-class LSection(LBase):
+class LSection(LReference):
     """節:章の直下."""
 
     __label__ = "Section"
-    value = StringProperty()
+    title = StringProperty()
 
 
 BookUtil = LabelUtil(label=LBook, model=Book)
