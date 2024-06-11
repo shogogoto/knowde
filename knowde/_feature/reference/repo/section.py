@@ -15,7 +15,8 @@ def add_section(chap_uid: UUID, p: HeadlineParam) -> Section:
     s = SectionUtil.create(title=p.title)
     count = RelSectionUtil.count_sources(chap_uid)
     rel = RelSectionUtil.connect(s.label, c.label, order=count)
-    return Section.from_rel(rel)
+    # return Section.from_rel(rel)
+    return Section.to_model(rel.start_node())
 
 
 def swap_section_order(chap_uid: UUID, p: SwapParam) -> None:
@@ -53,4 +54,4 @@ def complete_section(pref_uid: str) -> Section:
     lb = SectionUtil.complete(pref_uid)
     m = lb.to_model()
     rel = RelSectionUtil.find_by_source_id(m.valid_uid)[0]
-    return Section.from_rel(rel)
+    return Section.to_model(rel.start_node())

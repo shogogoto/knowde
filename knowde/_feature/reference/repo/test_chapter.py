@@ -40,7 +40,7 @@ def test_crud_chapter() -> None:
     assert c2.title == "h2"
     assert c1.valid_uid == c2.valid_uid
     tree = find_reftree(b.valid_uid)
-    assert tree.chapters == [c2]
+    assert tree.chapters[0].chapter == c2
 
     c = add_book_chapter(b.valid_uid, h("h3"))
     add_book_chapter(b.valid_uid, h("h4"))

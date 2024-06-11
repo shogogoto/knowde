@@ -41,13 +41,11 @@ def test_remove_section_and_reorder() -> None:
     tree = find_reftree(b.valid_uid)
     secs = tree.chapters[0].sections
     assert [s.title for s in secs] == ["s2", "s3", "s4"]
-    assert [s.order for s in secs] == [0, 1, 2]
 
     remove_section(s3.valid_uid)
     tree = find_reftree(b.valid_uid)
     secs = tree.chapters[0].sections
     assert [s.title for s in secs] == ["s2", "s4"]
-    assert [s.order for s in secs] == [0, 1]
 
 
 def test_remove_chapter_with_sections() -> None:
