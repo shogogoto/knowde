@@ -30,7 +30,7 @@ def find_reftree(ref_uid: UUID) -> ReferenceTree:
     ref = res.get("r", convert=to_refmodel)[0]
     t = res.get("r", convert=refroot_type)[0]
 
-    chaps = []
+    chaps = {}
     for chap_rel, sec_rels in zip(
         res.get("crel"),
         res.get("srels", row_convert=itemgetter(0)),
@@ -39,13 +39,11 @@ def find_reftree(ref_uid: UUID) -> ReferenceTree:
             continue
         sorted_sec_rels = sorted(sec_rels, key=attrgetter("order"))
         secs = [Section.to_model(rel.start_node()) for rel in sorted_sec_rels]
-        chap = Chapter.from_rel(chap_rel)
-        chaps.append(
-            chap.with_sections(secs),
-        )
+        chap = Chapter.to_model(chap_rel.start_node())
+        chaps[chap_rel.order] = chap.with_sections(secs)
     return ReferenceTree(
         root=ref,
-        chapters=sorted(chaps, key=attrgetter("order")),
+        chapters=[chaps[i] for i in sorted(chaps.keys())],
         reftype=t,
     )
 

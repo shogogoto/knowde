@@ -49,7 +49,6 @@ def test_crud_chapter() -> None:
     tree = find_reftree(b.valid_uid)
     chaps = tree.chapters
     assert [c.title for c in chaps] == ["h2", "h4"]
-    assert [c.order for c in chaps] == [0, 1]
 
 
 # def test_find_parent_of_chapter() -> None:

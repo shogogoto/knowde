@@ -16,7 +16,7 @@ def add_book_chapter(book_uid: UUID, p: HeadlineParam) -> Chapter:
     chap = ChapterUtil.create(title=p.title)
     count = RelChapterBookUtil.count_sources(book_uid)
     rel = RelChapterBookUtil.connect(chap.label, book.label, order=count)
-    return Chapter.from_rel(rel)
+    return Chapter.to_model(rel.start_node())
 
 
 def swap_chapter_order(book_uid: UUID, p: SwapParam) -> None:
@@ -35,7 +35,8 @@ def change_chapter(
 ) -> Chapter:
     ChapterUtil.change(uid=chap_uid, title=p.title)
     rel = RelChapterBookUtil.find_by_source_id(chap_uid)[0]
-    return Chapter.from_rel(rel=rel)
+    return Chapter.to_model(rel.start_node())
+    # return Chapter.from_rel(rel=rel)
 
 
 def remove_chapter(chap_uid: UUID) -> None:
@@ -62,4 +63,5 @@ def complete_chapter(pref_uid: str) -> Chapter:
     lb = ChapterUtil.complete(pref_uid)
     m = lb.to_model()
     rel = RelChapterBookUtil.find_by_source_id(m.valid_uid)[0]
-    return Chapter.from_rel(rel)
+    return Chapter.to_model(rel.start_node())
+    # return Chapter.from_rel(rel)

@@ -3,16 +3,13 @@ from __future__ import annotations
 from datetime import date  # noqa: TCH003
 from enum import Enum
 from textwrap import indent
-from typing import TYPE_CHECKING, Generic, Self, TypeVar
+from typing import Generic, TypeVar
 
 from pydantic import BaseModel, Field
 from pydantic_core import Url  # noqa: TCH002
 from typing_extensions import override
 
 from knowde._feature._shared.domain import APIReturn, Entity
-
-if TYPE_CHECKING:
-    from knowde._feature._shared.repo.rel_label import RelOrder
 
 
 class Reference(Entity, frozen=True):
@@ -49,27 +46,12 @@ class Web(Reference, frozen=True):
 T = TypeVar("T", bound=Reference)
 
 
-class OrderedReference(Reference, frozen=True):
-    order: int
-
-    @classmethod
-    def from_rel(cls, rel: RelOrder) -> Self:
-        lb = rel.start_node()
-        return cls(
-            title=lb.title,
-            order=rel.order,
-            uid=lb.uid,
-            created=lb.created,
-            updated=lb.updated,
-        )
-
-
 # Chapterの前に定義しないとUndefinedAnnotationErrorになる
 class Section(Reference, frozen=True):
     pass
 
 
-class Chapter(OrderedReference, frozen=True):
+class Chapter(Reference, frozen=True):
     def with_sections(
         self,
         sections: list[Section],
@@ -87,10 +69,6 @@ class ChapteredSections(BaseModel, frozen=True):
     @property
     def title(self) -> str:
         return self.chapter.title
-
-    @property
-    def order(self) -> int:
-        return self.chapter.order
 
     @property
     def output(self) -> str:
