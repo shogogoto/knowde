@@ -94,6 +94,7 @@ class RefType(Enum):
 
 class ReferenceTree(APIReturn, Generic[T], frozen=True):
     root: T
+    target: Reference
     chapters: list[ChapteredSections] = Field(default_factory=list)
     reftype: RefType
 
@@ -147,6 +148,7 @@ class ReferenceGraph(
             )
         return ReferenceTree(
             root=r,
+            target=self.target,
             chapters=[chaps[i] for i in sorted(chaps.keys())],
             reftype=RefType.gettype(r),
         )

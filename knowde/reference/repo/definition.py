@@ -13,11 +13,11 @@ from knowde._feature.reference.repo.label import BookUtil, LBook
 from knowde.feature.definition.domain.domain import Definition
 from knowde.feature.definition.repo.definition import RelDefUtil, add_definition
 from knowde.reference.domain import RefDefinitions
+from knowde.reference.dto import BookParam, RefDefParam  # noqa: TCH001
 
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from knowde.reference.dto import BookParam, RefDefParam
 
 RelAuthorUtil = RelUtil(
     t_source=LAuthor,

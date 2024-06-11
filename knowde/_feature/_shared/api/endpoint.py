@@ -21,6 +21,7 @@ class Endpoint(Enum):
     Book = "references/books"
     Chapter = "references/chapters"
     Section = "references/sections"
+    RefDef = "references/definitions"
     Sentence = "sentences"
     Definition = "definitions"
 

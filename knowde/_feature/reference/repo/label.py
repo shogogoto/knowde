@@ -55,6 +55,7 @@ class LSection(LReference):
 
 BookUtil = LabelUtil(label=LBook, model=Book)
 WebUtil = LabelUtil(label=LWeb, model=Web)
+ReferenceUtil = LabelUtil(label=LReference, model=Reference)
 ChapterUtil = LabelUtil(label=LChapter, model=Chapter)
 SectionUtil = LabelUtil(label=LSection, model=Section)
 
