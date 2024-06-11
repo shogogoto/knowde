@@ -6,7 +6,14 @@ from knowde._feature._shared import LBase
 from knowde._feature._shared.repo.rel import RelUtil
 from knowde._feature._shared.repo.rel_label import RelOrder
 from knowde._feature._shared.repo.util import LabelUtil
-from knowde._feature.reference.domain import Book, Chapter, Section, Web
+from knowde._feature.reference.domain import (
+    Book,
+    Chapter,
+    Reference,
+    RefType,
+    Section,
+    Web,
+)
 
 
 # Referenceは議論や主張をsポートするための情報源というニュアンス
@@ -76,3 +83,35 @@ RelSectionUtil = RelUtil(
     t_rel=RelOrder,
     cardinality=One,
 )
+
+
+def refroot_type(r: LWeb | LBook) -> RefType:
+    if isinstance(r, LBook):
+        return RefType.Book
+    return RefType.Web
+
+
+def to_refmodel(r: LReference) -> Reference:
+    if isinstance(r, LBook):
+        return Book.to_model(r)
+    if isinstance(r, LWeb):
+        return Web.to_model(r)
+    if isinstance(r, LChapter):
+        return Chapter.to_model(r)
+    if isinstance(r, LSection):
+        return Section.to_model(r)
+    msg = f"f{type(r)} must be LReference Type."
+    raise TypeError(msg)
+
+
+# def rel_order2ref(rel: RelOrder) -> Reference:
+#     s = rel.start_node()
+#     e = rel.end_node()
+
+#     if isinstance(s, LChapter):
+#         return Chapter.from_rel(rel)
+#     if isinstance(s, LSection):
+#         return Section.from_rel(rel)
+#     if isinstance(s, LReference):
+#         return to_refmodel(s)
+#     raise TypeError
