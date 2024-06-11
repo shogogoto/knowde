@@ -5,6 +5,7 @@ from enum import Enum
 from textwrap import indent
 from typing import Generic, TypeVar
 
+import networkx as nx
 from pydantic import BaseModel, Field
 from pydantic_core import Url  # noqa: TCH002
 from typing_extensions import override
@@ -82,11 +83,22 @@ class RefType(Enum):
     Book = "book"
     Web = "web"
 
+    @classmethod
+    def gettype(cls, r: Reference) -> RefType:
+        if isinstance(r, Book):
+            return cls.Book
+        if isinstance(r, Web):
+            return cls.Web
+        raise TypeError
+
 
 class ReferenceTree(APIReturn, Generic[T], frozen=True):
     root: T
     chapters: list[ChapteredSections] = Field(default_factory=list)
     reftype: RefType
+
+    def get_chapters(self) -> list[Chapter]:
+        return [c.chapter for c in self.chapters]
 
     @property
     def output(self) -> str:
@@ -110,5 +122,26 @@ class ReferenceTree(APIReturn, Generic[T], frozen=True):
         raise TypeError
 
 
-class ReferenceGraph(BaseModel, frozen=True):
+class ReferenceGraph(
+    BaseModel,
+    frozen=True,
+    arbitrary_types_allowed=True,
+):
     target: Reference
+    g: nx.DiGraph
+
+    @property
+    def root(self) -> Reference:
+        return next(n for n, d in self.g.in_degree() if d == 0)
+
+    def to_tree(self) -> ReferenceTree:
+        r = self.root
+        attrs = nx.get_edge_attributes(self.g, "order")
+        chaps = {}
+        for chap in self.g.adj[r]:
+            chaps[attrs[r, chap]] = chap.with_sections([])
+        return ReferenceTree(
+            root=r,
+            chapters=[chaps[i] for i in sorted(chaps.keys())],
+            reftype=RefType.gettype(r),
+        )

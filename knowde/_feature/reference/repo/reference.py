@@ -3,9 +3,12 @@ from __future__ import annotations
 from operator import attrgetter, itemgetter
 from uuid import UUID  # noqa: TCH003
 
+import networkx as nx
+
 from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature.reference.domain import (
     Chapter,
+    ReferenceGraph,
     ReferenceTree,
     Section,
 )
@@ -48,58 +51,27 @@ def find_reftree(ref_uid: UUID) -> ReferenceTree:
     )
 
 
-def find_reftree2(_ref_uid: UUID) -> None:
+def find_reftree2(ref_uid: UUID) -> ReferenceGraph:
     """ChapterやSectionのuidであってもTreeを返す."""
-    # res = query_cypher(
-    #     """
-    #     MATCH (tgt:Reference {uid: $uid})
-    #     // Chapterが親を1つだけ持つneomodel制約Oneのためのedgeの向き
-    #     OPTIONAL MATCH (tgt)-[rel:COMPOSE]-*(:Reference)
-    #     UNWIND rel as rels_
-    #     RETURN
-    #         tgt,
-    #         collect(DISTINCT rels_) as rels
-    #     """,
-    #     params={"uid": ref_uid.hex},
-    # )
-    # ref = res.get("tgt")[0]
-    # print(ref, type(ref))
-    # g = nx.DiGraph()
-
-    # parent = res.get("parent")[0]
-    # if type(parent) == NoneType:
-    #     print("NNNNNNNNNNNNNNNNOOOOOOOOOOOOOOOOO")
-    # if type(parent) == LBook:
-    #     ref = parent
-    #     # print("yyyeeeeeesssssssss")
-    # print(type(parent))
-    # for rel in res.get("rels", row_convert=itemgetter(0))[0]:
-    #     print(rel)
-    #     # p <- c
-    #     # Book Chap
-    #     # Chap Sec
-    #     child = rel.start_node()
-    #     parent = rel.end_node()
-    #     g.add_edge(child.uid, parent.uid, order=rel.order)
-
-    # for e in g.edges:
-    #     print(e)
-    # chaps = []
-    # for chap_rel, sec_rels in zip(
-    #     res.get("crel"),
-    #     res.get("srels", row_convert=itemgetter(0)),
-    # ):
-    #     if chap_rel is None:
-    #         continue
-    #     print("######", ormapper2model(chap_rel))
-    #     secs = [Section.from_rel(rel) for rel in sec_rels]
-    #     chap = Chapter.from_rel(chap_rel, sorted(secs, key=attrgetter("order")))
-    #     chaps.append(chap)
-    # return ReferenceTree(
-    #     root=ref,
-    #     chapters=sorted(chaps, key=attrgetter("order")),
-    #     reftype=t,
-    # )
+    res = query_cypher(
+        """
+        MATCH (tgt:Reference {uid: $uid})
+        // Chapterが親を1つだけ持つneomodel制約Oneのためのedgeの向き
+        OPTIONAL MATCH (tgt)-[rel:COMPOSE]-*(:Reference)
+        UNWIND rel as rels_
+        RETURN
+            tgt,
+            collect(DISTINCT rels_) as rels
+        """,
+        params={"uid": ref_uid.hex},
+    )
+    ref = res.get("tgt", convert=to_refmodel)[0]
+    g = nx.DiGraph()
+    for rel in res.get("rels", row_convert=itemgetter(0))[0]:
+        child = to_refmodel(rel.start_node())
+        parent = to_refmodel(rel.end_node())
+        g.add_edge(parent, child, order=rel.order)  # DB上の向きと逆
+    return ReferenceGraph(target=ref, g=g)
 
 
 def remove_ref(ref_uid: UUID) -> None:
