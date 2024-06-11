@@ -8,7 +8,7 @@ from knowde._feature.reference.repo.chapter import (
     swap_chapter_order,
 )
 from knowde._feature.reference.repo.label import BookUtil
-from knowde._feature.reference.repo.reference import find_reftree, find_reftree2
+from knowde._feature.reference.repo.reference import find_refgraph, find_reftree
 
 
 def h(s: str) -> HeadlineParam:
@@ -55,6 +55,6 @@ def test_find_parent_of_chapter() -> None:
     b = BookUtil.create(title="book").to_model()
     c1 = add_book_chapter(b.valid_uid, h("h1"))
     c2 = add_book_chapter(b.valid_uid, h("h2"))
-    tree = find_reftree2(c1.valid_uid).to_tree()
+    tree = find_refgraph(c1.valid_uid).to_tree()
     assert tree.root == b
     assert tree.get_chapters() == [c1, c2]

@@ -139,7 +139,12 @@ class ReferenceGraph(
         attrs = nx.get_edge_attributes(self.g, "order")
         chaps = {}
         for chap in self.g.adj[r]:
-            chaps[attrs[r, chap]] = chap.with_sections([])
+            secs = {}
+            for sec in self.g.adj[chap]:
+                secs[attrs[chap, sec]] = sec
+            chaps[attrs[r, chap]] = chap.with_sections(
+                [secs[i] for i in sorted(secs.keys())],
+            )
         return ReferenceTree(
             root=r,
             chapters=[chaps[i] for i in sorted(chaps.keys())],
