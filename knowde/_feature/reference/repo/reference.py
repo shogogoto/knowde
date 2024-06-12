@@ -22,9 +22,12 @@ def find_refgraph(ref_uid: UUID) -> ReferenceGraph:
     res = query_cypher(
         """
         MATCH (tgt:Reference {uid: $uid})
-        // Chapterが親を1つだけ持つneomodel制約Oneのためのedgeの向き
         OPTIONAL MATCH (tgt)-[rel:COMPOSE]-*(:Reference)
-        UNWIND rel as rels_
+        UNWIND
+            CASE
+                WHEN rel = [] THEN [null]
+                ELSE rel
+            END as rels_
         RETURN
             tgt,
             collect(DISTINCT rels_) as rels
