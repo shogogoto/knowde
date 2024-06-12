@@ -1,62 +1,46 @@
 from __future__ import annotations
 
-from operator import attrgetter, itemgetter
-from typing import TYPE_CHECKING
+from operator import itemgetter
 from uuid import UUID  # noqa: TCH003
+
+import networkx as nx
 
 from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature.reference.domain import (
-    Book,
-    Chapter,
+    ReferenceGraph,
     ReferenceTree,
-    RefType,
-    Section,
-    Web,
 )
-from knowde._feature.reference.repo.label import LBook
-
-if TYPE_CHECKING:
-    from knowde._feature.reference.repo.label import LReference
-
-
-def to_refmodel(r: LReference) -> tuple[Book | Web, RefType]:
-    if isinstance(r, LBook):
-        return Book.to_model(r), RefType.Book
-    return Web.to_model(r), RefType.Web
+from knowde._feature.reference.repo.label import to_refmodel
 
 
 def find_reftree(ref_uid: UUID) -> ReferenceTree:
+    return find_refgraph(ref_uid).to_tree()
+
+
+def find_refgraph(ref_uid: UUID) -> ReferenceGraph:
+    """ChapterやSectionのuidであってもTreeを返す."""
     res = query_cypher(
         """
-        MATCH (r:Reference {uid: $uid})
-        // Chapterが親を1つだけ持つneomodel制約Oneのためのedgeの向き
-        OPTIONAL MATCH (b)<-[crel:COMPOSE]-(c:Chapter)
-        OPTIONAL MATCH (c)<-[srel:COMPOSE]-(:Section)
+        MATCH (tgt:Reference {uid: $uid})
+        OPTIONAL MATCH (tgt)-[rel:COMPOSE]-*(:Reference)
+        UNWIND
+            CASE
+                WHEN rel = [] THEN [null]
+                ELSE rel
+            END as rels_
         RETURN
-            r,
-            crel,
-            collect(srel) as srels
+            tgt,
+            collect(DISTINCT rels_) as rels
         """,
         params={"uid": ref_uid.hex},
     )
-
-    ref, t = res.get("r", convert=to_refmodel)[0]
-
-    chaps = []
-    for c, srels in zip(
-        res.get("crel"),
-        res.get("srels", row_convert=itemgetter(0)),
-    ):
-        if c is None:
-            continue
-        secs = [Section.from_rel(rel) for rel in srels]
-        chap = Chapter.from_rel(c, sorted(secs, key=attrgetter("order")))
-        chaps.append(chap)
-    return ReferenceTree(
-        root=ref,
-        chapters=sorted(chaps, key=attrgetter("order")),
-        reftype=t,
-    )
+    ref = res.get("tgt", convert=to_refmodel)[0]
+    g = nx.DiGraph()
+    for rel in res.get("rels", row_convert=itemgetter(0))[0]:
+        child = to_refmodel(rel.start_node())
+        parent = to_refmodel(rel.end_node())
+        g.add_edge(parent, child, order=rel.order)  # DB上の向きと逆
+    return ReferenceGraph(target=ref, g=g)
 
 
 def remove_ref(ref_uid: UUID) -> None:

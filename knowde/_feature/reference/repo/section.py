@@ -12,10 +12,11 @@ from knowde._feature.reference.repo.label import (
 
 def add_section(chap_uid: UUID, p: HeadlineParam) -> Section:
     c = ChapterUtil.find_by_id(chap_uid)
-    s = SectionUtil.create(value=p.value)
+    s = SectionUtil.create(title=p.title)
     count = RelSectionUtil.count_sources(chap_uid)
     rel = RelSectionUtil.connect(s.label, c.label, order=count)
-    return Section.from_rel(rel)
+    # return Section.from_rel(rel)
+    return Section.to_model(rel.start_node())
 
 
 def swap_section_order(chap_uid: UUID, p: SwapParam) -> None:
@@ -32,7 +33,7 @@ def change_section(
     sec_uid: UUID,
     p: HeadlineParam,
 ) -> Section:
-    SectionUtil.change(uid=sec_uid, value=p.value)
+    SectionUtil.change(uid=sec_uid, title=p.title)
     rel = RelSectionUtil.find_by_source_id(sec_uid)[0]
     return Section.from_rel(rel=rel)
 
@@ -47,3 +48,10 @@ def remove_section(sec_uid: UUID) -> None:
     for i, rel in enumerate(rels):
         rel.order = i
         rel.save()
+
+
+def complete_section(pref_uid: str) -> Section:
+    lb = SectionUtil.complete(pref_uid)
+    m = lb.to_model()
+    rel = RelSectionUtil.find_by_source_id(m.valid_uid)[0]
+    return Section.to_model(rel.start_node())

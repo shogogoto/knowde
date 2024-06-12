@@ -32,6 +32,7 @@ RelDefUtil = RelUtil(
 )
 
 
+# 引数がDTOなのはこの関数をinterfaceにぶち込んでるから
 def add_definition(p: DefinitionParam) -> Definition:
     """Create new definition."""
     name = p.name

@@ -3,10 +3,10 @@ from __future__ import annotations
 from uuid import UUID  # noqa: TCH003
 
 from knowde._feature._shared.errors.domain import AlreadyExistsError
-from knowde._feature.reference.domain import Book  # noqa: TCH001
+from knowde._feature.reference.domain import Book, Reference  # noqa: TCH001
 from knowde._feature.reference.dto import BookParam, PartialBookParam  # noqa: TCH001
 
-from .label import BookUtil
+from .label import BookUtil, ReferenceUtil
 
 
 # add and change bookはauthorとの絡みがあるため、
@@ -25,3 +25,7 @@ def change_book(ref_uid: UUID, p: PartialBookParam) -> Book:
 
 def complete_book(pref_uid: str) -> Book:
     return BookUtil.complete(pref_uid).to_model()
+
+
+def complete_ref(pref_uid: str) -> Reference:
+    return ReferenceUtil.complete(pref_uid).to_model()

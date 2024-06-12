@@ -32,6 +32,10 @@ if TYPE_CHECKING:
 T = TypeVar("T")
 
 
+def none_return(_res: requests.Response) -> None:
+    pass
+
+
 class RouterConfig(BaseModel):
     """APIパラメータのMediator."""
 
@@ -84,7 +88,7 @@ class RouterConfig(BaseModel):
 
         return _client
 
-    def path(self, name: str, prefix: str = "") -> Self:
+    def path(self, name: str = "", prefix: str = "") -> Self:
         self.paths_.append(PathParam(name=name, prefix=prefix))
         return self
 
@@ -175,12 +179,9 @@ class ClientFactory(
         f: Callable[..., None],
         *check_response: CheckResponse,
     ) -> Callable[..., None]:
-        def convert(_res: requests.Response) -> None:
-            return None
-
         return config.to_client(
             self.grant.to_delete,
             f,
-            convert,
+            none_return,
             *[check_delete, *check_response],
         )

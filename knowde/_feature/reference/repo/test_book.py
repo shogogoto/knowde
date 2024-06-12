@@ -4,6 +4,7 @@ from knowde._feature._shared.domain import to_date
 from knowde._feature.reference.dto import PartialBookParam
 from knowde._feature.reference.repo.book import change_book
 from knowde._feature.reference.repo.label import BookUtil
+from knowde._feature.reference.repo.reference import find_reftree
 
 
 def test_first_edited() -> None:
@@ -14,3 +15,11 @@ def test_first_edited() -> None:
         PartialBookParam(first_edited=to_date("2024-01-02")),
     )
     assert b2.first_edited == date(2024, 1, 2)
+
+
+def test_find_reftree() -> None:
+    b1 = BookUtil.create(title="t1", first_edited=to_date("2024-01-01")).to_model()
+    tree = find_reftree(b1.valid_uid)
+    assert tree.root == b1
+    assert tree.target == b1
+    assert tree.chapters == []

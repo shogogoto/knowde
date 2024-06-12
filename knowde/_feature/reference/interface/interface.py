@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import click
 
+from knowde._feature._shared.api.check_response import check_get
 from knowde._feature._shared.api.client_factory import ClientFactory, RouterConfig
 from knowde._feature._shared.api.endpoint import Endpoint
 from knowde._feature._shared.api.generate_req import inject_signature
@@ -12,6 +13,7 @@ from knowde._feature._shared.cli.field.types import PrefUidParam
 from knowde._feature.reference.domain import Book, Reference, ReferenceTree
 from knowde._feature.reference.dto import BookParam, PartialBookParam
 from knowde._feature.reference.interface.chapter import chap_cli
+from knowde._feature.reference.interface.section import sec_cli
 from knowde._feature.reference.repo.book import (
     add_book,
     change_book,
@@ -20,17 +22,21 @@ from knowde._feature.reference.repo.book import (
 from knowde._feature.reference.repo.label import BookUtil
 from knowde._feature.reference.repo.reference import find_reftree, remove_ref
 
-ref_router = Endpoint.Book.create_router()
-book_factory = ClientFactory(router=ref_router, rettype=Book)
+book_router = Endpoint.Book.create_router()
+book_factory = ClientFactory(router=book_router, rettype=Book)
 
 add_book_client = book_factory.to_post(
     RouterConfig().body(BookParam),
     add_book,
 )
+
+
 complete_book_client = book_factory.to_get(
     RouterConfig().path("", "/completion").query("pref_uid"),
     complete_book,
 )
+
+
 remove_client = book_factory.to_delete(
     RouterConfig().path("ref_uid"),
     remove_ref,
@@ -46,10 +52,11 @@ change_client = book_factory.to_put(
     change_book,
 )
 
-detail_factory = ClientFactory(router=ref_router, rettype=ReferenceTree)
+detail_factory = ClientFactory(router=book_router, rettype=ReferenceTree[Book])
 detail_client = detail_factory.to_get(
     RouterConfig().path("ref_uid"),
     find_reftree,
+    check_get,
 )
 
 
@@ -59,6 +66,7 @@ def ref_cli() -> None:
 
 
 ref_cli.add_command(chap_cli)
+ref_cli.add_command(sec_cli)
 
 
 @ref_cli.command("detail")
@@ -71,11 +79,11 @@ def detail(pref_uid: str) -> None:
 
 @ref_cli.command("add_book")
 @model2decorator(BookParam)
-def add_book(**kwargs) -> None:  # noqa: ANN003
+def add_book_(**kwargs) -> None:  # noqa: ANN003
     """本の追加."""
     book: Book = add_book_client(**kwargs)
     click.echo("以下を作成しました")
-    click.echo(book)
+    click.echo(book.output)
 
 
 # @ref_cli.command("add_web")

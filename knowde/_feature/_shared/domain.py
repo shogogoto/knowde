@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta, timezone
-from typing import TYPE_CHECKING, Any, Generic, Self, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, Optional, Self, TypeVar
 from uuid import UUID  # noqa: TCH003
 
 from pydantic import BaseModel, Field, RootModel, field_validator
@@ -37,8 +37,8 @@ class APIReturn(BaseModel, frozen=True):
 
 class Entity(APIReturn, frozen=True):
     uid: UUID | None = None
-    created: datetime | None = Field(None, repr=False)
-    updated: datetime | None = Field(None, repr=False)
+    created: datetime = Field(repr=False)
+    updated: datetime = Field(repr=False)
 
     @field_validator("created")
     def validate_created(cls, v: datetime) -> datetime:
@@ -58,8 +58,10 @@ class Entity(APIReturn, frozen=True):
         return self.uid
 
     @classmethod
-    def to_model(cls, lb: LBase) -> Self:
-        return cls.model_validate(lb.__properties__)
+    def to_model(cls, lb: LBase, attrs: Optional[dict] = None) -> Self:
+        if attrs is None:
+            attrs = {}
+        return cls.model_validate({**lb.__properties__, **attrs})
 
     @classmethod
     def to_models(cls, lbs: list[LBase]) -> list[Self]:

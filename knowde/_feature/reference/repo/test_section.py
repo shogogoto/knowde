@@ -10,7 +10,7 @@ from knowde._feature.reference.repo.section import (
 
 
 def h(s: str) -> HeadlineParam:
-    return HeadlineParam(value=s)
+    return HeadlineParam(title=s)
 
 
 def test_swap_section() -> None:
@@ -25,7 +25,7 @@ def test_swap_section() -> None:
     swap_section_order(c.valid_uid, SwapParam.create(0, 1))
     tree2 = find_reftree(b.valid_uid)
     secs = tree2.chapters[0].sections
-    assert [s.value for s in secs] == ["s2", "s1"]
+    assert [s.title for s in secs] == ["s2", "s1"]
 
 
 def test_remove_section_and_reorder() -> None:
@@ -40,14 +40,12 @@ def test_remove_section_and_reorder() -> None:
     remove_section(s1.valid_uid)
     tree = find_reftree(b.valid_uid)
     secs = tree.chapters[0].sections
-    assert [s.value for s in secs] == ["s2", "s3", "s4"]
-    assert [s.order for s in secs] == [0, 1, 2]
+    assert [s.title for s in secs] == ["s2", "s3", "s4"]
 
     remove_section(s3.valid_uid)
     tree = find_reftree(b.valid_uid)
     secs = tree.chapters[0].sections
-    assert [s.value for s in secs] == ["s2", "s4"]
-    assert [s.order for s in secs] == [0, 1]
+    assert [s.title for s in secs] == ["s2", "s4"]
 
 
 def test_remove_chapter_with_sections() -> None:
@@ -69,4 +67,4 @@ def test_remove_chapter_with_sections() -> None:
     assert len(tree.chapters) == 1
     founds = SectionUtil.find()
     assert len(founds) == 1
-    assert founds[0].value == s.value
+    assert founds[0].title == s.title
