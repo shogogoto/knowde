@@ -114,10 +114,10 @@ class ReferenceTree(APIReturn, Generic[T], frozen=True):
 
     @property
     def output_root(self) -> str:
-        if self.reftype == "book":
+        if self.reftype == RefType.Book:
             r = Book.model_validate(self.root.model_dump())
             return r.output
-        if self.reftype == "web":
+        if self.reftype == RefType.Web:
             r = Web.model_validate(self.root.model_dump())
             return r.output
         raise TypeError
@@ -136,6 +136,7 @@ class ReferenceGraph(
         return next(n for n, d in self.g.in_degree() if d == 0)
 
     def to_tree(self) -> ReferenceTree:
+        self.g.add_node(self.target)  # rootが空にならないように
         r = self.root
         attrs = nx.get_edge_attributes(self.g, "order")
         chaps = {}

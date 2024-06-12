@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import click
 
+from knowde._feature._shared.api.check_response import check_get
 from knowde._feature._shared.api.client_factory import ClientFactory, RouterConfig
 from knowde._feature._shared.api.endpoint import Endpoint
 from knowde._feature._shared.api.generate_req import inject_signature
@@ -55,6 +56,7 @@ detail_factory = ClientFactory(router=book_router, rettype=ReferenceTree[Book])
 detail_client = detail_factory.to_get(
     RouterConfig().path("ref_uid"),
     find_reftree,
+    check_get,
 )
 
 
@@ -81,7 +83,7 @@ def add_book_(**kwargs) -> None:  # noqa: ANN003
     """本の追加."""
     book: Book = add_book_client(**kwargs)
     click.echo("以下を作成しました")
-    click.echo(book)
+    click.echo(book.output)
 
 
 # @ref_cli.command("add_web")

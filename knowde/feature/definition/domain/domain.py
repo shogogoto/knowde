@@ -63,7 +63,8 @@ class Definition(Entity, frozen=True):
     @property
     def output(self) -> str:
         """1行のテキスト表現."""
-        return f"{self.name}: {self.explain} ({self.valid_uid})"
+        s = self.updated.strftime("%y/%m/%d")
+        return f"{s} {self.name}: {self.explain} ({self.valid_uid})"
 
     @classmethod
     def from_rel(

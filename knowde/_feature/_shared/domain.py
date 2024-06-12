@@ -37,8 +37,8 @@ class APIReturn(BaseModel, frozen=True):
 
 class Entity(APIReturn, frozen=True):
     uid: UUID | None = None
-    created: datetime | None = Field(None, repr=False)
-    updated: datetime | None = Field(None, repr=False)
+    created: datetime = Field(repr=False)
+    updated: datetime = Field(repr=False)
 
     @field_validator("created")
     def validate_created(cls, v: datetime) -> datetime:
