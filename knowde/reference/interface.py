@@ -63,6 +63,17 @@ list_client = (
     )
 )
 
+# conn_client = (
+#     RouterConfig()
+#     .body(ConnectRefDefParam)
+#     .to_client(
+#         grant.to_post,
+#         connect_def2ref,
+#         none_return,
+#         check_post,
+#     )
+# )
+
 
 @click.group("def")
 def refdef_cli() -> None:
@@ -88,3 +99,27 @@ def _ls(pref_uid: str) -> None:
     rds = list_client(ref_uid=r.valid_uid)
     for rd in rds:
         click.echo(rd.output)
+
+
+########## 要らないと思うのでコメントアウト
+
+# @refdef_cli.command("conn")
+# @model2decorator(PrefUidParam)
+# @model2decorator(DefUidParam)
+# def _conn(pref_uid: str, def_uids: list[UUID]) -> None:
+#     """定義を引用と紐付ける."""
+#     r = complete_ref_client(pref_uid=pref_uid)
+
+
+# @refdef_cli.command("disconn")
+# @model2decorator(PrefUidParam)
+# def _disconn(pref_uid: str) -> None:
+#     """参考."""
+
+
+# @refdef_cli.command("replace")
+# @model2decorator(DoublePrefUidParam)
+# def _replace(pref_uid1: str, pref_uid2: str) -> None:
+#     """参考."""
+#     r1 = complete_ref_client(pref_uid=pref_uid1)
+#     r2 = complete_ref_client(pref_uid=pref_uid2)

@@ -85,14 +85,14 @@ def list_refdefs(ref_uid: UUID) -> list[RefDefinitions]:
     return rds
 
 
-def add_def2ref(ref_uid: UUID, def_uids: list[UUID]) -> None:
+def connect_def2ref(ref_uid: UUID, def_uids: list[UUID]) -> None:
     """本と定義を紐付ける."""
     dn = RelDefUtil.name
     query_cypher(
         f"""
         MATCH (r:Reference {{uid: $ref_uid}}),
             (t:Term)-[def:{dn} WHERE def.uid IN $def_uids]->(s:Sentence)
-        CREATE (t)-[:REFER]->(r), (s)-[:REFER]->(r)
+        CREATE (s)-[:REFER]->(r)
         """,
         params={
             "ref_uid": ref_uid.hex,
@@ -101,6 +101,7 @@ def add_def2ref(ref_uid: UUID, def_uids: list[UUID]) -> None:
     )
 
 
+# 紐付けだけ解除するか 定義を削除すればよい
 def disconnect_refdef(ref_uid: UUID, def_uids: list[UUID]) -> None:
     """本と定義の紐付けを解除する.
 
@@ -129,4 +130,4 @@ def change_def2ref(
 ) -> None:
     """引用の紐付けを変更."""
     disconnect_refdef(old_uid, def_uids)
-    add_def2ref(new_uid, def_uids)
+    connect_def2ref(new_uid, def_uids)
