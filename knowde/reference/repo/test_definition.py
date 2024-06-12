@@ -27,7 +27,7 @@ def test_add_refdef() -> None:
     book = add_book(BookParam(title="ref"))
     ds1, _ = add_refdef(_p(book.valid_uid, "def1", "e1")).to_tuple()
     ds2, _ = add_refdef(_p(book.valid_uid, "def2", "e2")).to_tuple()
-    rd = list_refdefs()[0]
+    rd = list_refdefs(book.valid_uid)[0]
     assert rd.book == book
     assert rd.defs == unordered([ds1[0], ds2[0]])
 
@@ -42,12 +42,12 @@ def test_add_def2ref_and_disconnect() -> None:
     uids = [d.valid_uid for d in [d1, d2, d3]]
     add_def2ref(book.valid_uid, uids)
 
-    rd = list_refdefs()[0]
+    rd = list_refdefs(book.valid_uid)[0]
     assert rd.book == book
     assert rd.defs == unordered([d1, d2, d3])
 
     disconnect_refdef(book.valid_uid, uids[0:2])
-    rd = list_refdefs()[0]
+    rd = list_refdefs(book.valid_uid)[0]
     assert rd.defs == [d3]
 
     # relは削除されたけど定義自体は削除しない

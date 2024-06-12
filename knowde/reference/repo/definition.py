@@ -1,7 +1,7 @@
 """referenceとpersonに依存."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from uuid import UUID  # noqa: TCH003
 
 from neomodel import db
 
@@ -14,10 +14,6 @@ from knowde.feature.definition.domain.domain import Definition
 from knowde.feature.definition.repo.definition import RelDefUtil, add_definition
 from knowde.reference.domain import RefDefinitions
 from knowde.reference.dto import BookParam, RefDefParam  # noqa: TCH001
-
-if TYPE_CHECKING:
-    from uuid import UUID
-
 
 RelAuthorUtil = RelUtil(
     t_source=LAuthor,
@@ -68,14 +64,16 @@ def add_refdef(p: RefDefParam) -> RefDefinitions:
     )
 
 
-def list_refdefs() -> list[RefDefinitions]:
+def list_refdefs(ref_uid: UUID) -> list[RefDefinitions]:
     """引用付き定義一覧."""
     dn = RelDefUtil.name
     res = query_cypher(
         f"""
-        MATCH (t:Term)-[def:{dn}]->(s:Sentence)-[:REFER]->(r:Reference)
+        MATCH (t:Term)-[def:{dn}]->(s:Sentence)
+            -[:REFER]->(r:Reference {{uid: $uid}})
         RETURN collect(def) as defs, r
         """,
+        params={"uid": ref_uid.hex},
     )
     rds = []
     for x, y in zip(res.get("defs"), res.get("r", convert=Book.to_model), strict=True):

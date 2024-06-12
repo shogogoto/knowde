@@ -22,11 +22,11 @@ defの統計値
 
 
 """
-
+from __future__ import annotations
 
 import click
 
-from knowde._feature._shared.api.check_response import check_post
+from knowde._feature._shared.api.check_response import check_get, check_post
 from knowde._feature._shared.api.client_factory import RouterConfig
 from knowde._feature._shared.api.endpoint import Endpoint
 from knowde._feature._shared.api.generate_req import StatusCodeGrant
@@ -36,7 +36,7 @@ from knowde._feature.reference.interface.reference import complete_ref_client
 from knowde.feature.definition.domain.domain import DefinitionParam
 from knowde.reference.domain import RefDefinitions
 from knowde.reference.dto import RefDefParam
-from knowde.reference.repo.definition import add_refdef
+from knowde.reference.repo.definition import add_refdef, list_refdefs
 
 refdef_router = Endpoint.RefDef.create_router()
 grant = StatusCodeGrant(router=refdef_router)
@@ -52,6 +52,17 @@ add_client = (
     )
 )
 
+list_client = (
+    RouterConfig()
+    .path("ref_uid")
+    .to_client(
+        grant.to_get,
+        list_refdefs,
+        RefDefinitions.ofs,
+        check_get,
+    )
+)
+
 
 @click.group("def")
 def refdef_cli() -> None:
@@ -64,6 +75,16 @@ def refdef_cli() -> None:
 def _add(pref_uid: str, **kwargs) -> None:  # noqa: ANN003
     """追加."""
     r = complete_ref_client(pref_uid=pref_uid)
-    rd: RefDefinitions = add_client(ref_uid=r.valid_uid, **kwargs)
+    rd = add_client(ref_uid=r.valid_uid, **kwargs)
     click.echo("以下を作成しました")
     click.echo(rd.output)
+
+
+@refdef_cli.command("ls")
+@model2decorator(PrefUidParam)
+def _ls(pref_uid: str) -> None:
+    """追加."""
+    r = complete_ref_client(pref_uid=pref_uid)
+    rds = list_client(ref_uid=r.valid_uid)
+    for rd in rds:
+        click.echo(rd.output)
