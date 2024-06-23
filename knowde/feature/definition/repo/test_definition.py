@@ -60,7 +60,7 @@ def test_add_exists() -> None:
 def test_find_definition() -> None:
     """定義をIDから見つける."""
     d = add_definition(_p("new_term1", "sentence"))
-    assert d == list_definitions()[0]
+    assert d == list_definitions().defs[0]
 
 
 def test_change_definition() -> None:
@@ -115,4 +115,4 @@ def test_list_definitions() -> None:
     d2 = add_definition(_p("t2", "xx{t1}xx"))
     d3 = add_definition(_p("t3", "xx{t2}xx"))
     d4 = add_definition(_p("t4", "xx{t1}x{t2}x{t3}xx"))
-    assert list_definitions() == unordered([d1, d2, d3, d4])
+    assert list_definitions().defs == unordered([d1, d2, d3, d4])

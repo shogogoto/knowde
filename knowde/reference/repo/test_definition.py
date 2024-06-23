@@ -51,4 +51,4 @@ def test_connect_def2ref_and_disconnect() -> None:
     assert rd.defs == [d3]
 
     # relは削除されたけど定義自体は削除しない
-    assert list_definitions() == unordered([d1, d2, d3])
+    assert list_definitions().defs == unordered([d1, d2, d3])

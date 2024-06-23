@@ -52,6 +52,7 @@ class StatsDefinition(APIReturn, frozen=True):
 class StatsDefinitions(RootModel[list[StatsDefinition]], frozen=True):
     """リストの統計付き定義."""
 
+    @property
     def defs(self) -> list[Definition]:
         """Def list."""
         return [sd.definition for sd in self.root]
