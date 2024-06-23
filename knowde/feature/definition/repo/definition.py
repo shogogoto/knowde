@@ -1,6 +1,7 @@
 """new create repository."""
 from __future__ import annotations
 
+from operator import itemgetter
 from uuid import UUID  # noqa: TCH003
 
 from neomodel import ZeroOrOne
@@ -114,16 +115,18 @@ def list_definitions() -> StatsDefinitions:
             max_root_dist
         """,
     )
-    drels = res.get("def")
-    terms = res.get("marks", RelMark.sort, row_convert=lambda x: x[0])
-    n_srcs = res.get("n_src")
-    n_dests = res.get("n_dest")
-    max_leaf_dists = res.get("max_leaf_dist")
-    max_root_dists = res.get("max_root_dist")
+    terms = res.get("marks", RelMark.sort, row_convert=itemgetter(0))
+    drels, n_srcs, n_dests, max_leaf_dists, max_root_dists = res.zipget(
+        "def",
+        "n_src",
+        "n_dest",
+        "max_leaf_dist",
+        "max_root_dist",
+    )
     retvals = []
-    for rel, t, n_src, n_dest, mld, mrd in zip(
-        drels,
+    for t, rel, n_src, n_dest, mld, mrd in zip(
         terms,
+        drels,
         n_srcs,
         n_dests,
         max_leaf_dists,

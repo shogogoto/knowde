@@ -43,3 +43,6 @@ class QueryResult(BaseModel, frozen=True):
                 [row_convert(row[i]) for row in self.results],  # None削除
             ),
         )
+
+    def zipget(self, *vars_: str) -> tuple[Any, ...]:
+        return tuple([self.get(var) for var in vars_])
