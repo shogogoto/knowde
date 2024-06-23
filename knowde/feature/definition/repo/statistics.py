@@ -13,13 +13,13 @@ def find_statistics(def_uid: UUID) -> DepStatistics:
     dn = RelDefUtil.name
     res = query_cypher(
         f"""
-        MATCH (t:Term)-[def:{dn} {{uid: $uid}}]->(s:Sentence)
+        MATCH (:Term)-[def:{dn} {{uid: $uid}}]->(s:Sentence)
         // Sentenceの数だけ数えればよい
-        OPTIONAL MATCH src = (t)<-[:{mn}|{dn}]-+(s_src:Sentence)
-        OPTIONAL MATCH dest = (s)-[:{mn}|{dn}]->+(s_dest:Sentence)
-        OPTIONAL MATCH leaf = (s)<-[:{mn}|{dn}]-+(lf:Sentence)
+        OPTIONAL MATCH src = (s)-[:{mn}|{dn}]->+(s_src:Sentence)
+        OPTIONAL MATCH dest = (s)<-[:{mn}|{dn}]-+(s_dest:Sentence)
+        OPTIONAL MATCH leaf = (s)-[:{mn}|{dn}]->+(lf:Sentence)
             WHERE NOT (lf)<-[:{mn}]-(:Term)
-        OPTIONAL MATCH root = (s)-[:{mn}|{dn}]->+(rt:Sentence)
+        OPTIONAL MATCH root = (s)<-[:{mn}|{dn}]-+(rt:Sentence)
             WHERE NOT (rt)<-[:{mn}]-(:Term)
         RETURN
             leaf,

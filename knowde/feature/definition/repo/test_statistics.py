@@ -20,6 +20,20 @@ def test_1src() -> None:
     d1 = add_definition(_p("p1", "s1"))
     d2 = add_definition(_p("p2", "s2-{p1}"))
     stat1 = find_statistics(d1.valid_uid)
-    assert stat1.nums == (1, 0, 1, 0)
+    assert stat1.nums == (0, 1, 0, 1)
+    stat2 = find_statistics(d2.valid_uid)
+    assert stat2.nums == (1, 0, 1, 0)
+
+
+def test_2sibling() -> None:
+    """兄弟."""
+    d1 = add_definition(_p("p1", "s1"))
+    d2 = add_definition(_p("p2", "s2"))
+    d3 = add_definition(_p("p3", "s3{p1}{p2}"))
+
+    stat1 = find_statistics(d1.valid_uid)
+    assert stat1.nums == (0, 1, 0, 1)
     stat2 = find_statistics(d2.valid_uid)
     assert stat2.nums == (0, 1, 0, 1)
+    stat3 = find_statistics(d3.valid_uid)
+    assert stat3.nums == (2, 0, 1, 0)
