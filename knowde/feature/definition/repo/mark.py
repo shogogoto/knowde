@@ -1,4 +1,7 @@
-"""説明文の依存関係解決."""
+"""説明文の依存関係解決.
+
+(:Sentence)-[:MARK]->(:Term)-[:DEFINE]->(:Sentence)
+"""
 from __future__ import annotations
 
 from operator import attrgetter
