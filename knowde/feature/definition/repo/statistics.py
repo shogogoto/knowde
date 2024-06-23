@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Optional
 
 from knowde._feature._shared.repo.query import query_cypher
 from knowde.feature.definition.domain.statistics import DepStatistics
-from knowde.feature.definition.repo.definition import RelDefUtil
+from knowde.feature.definition.repo.label import REL_DEF_LABEL
 from knowde.feature.definition.repo.mark import RelMarkUtil
 
 if TYPE_CHECKING:
@@ -19,7 +19,7 @@ def statistics_query(
     """依存統計."""
     with_s = "" if with_vars is None else ",".join(with_vars) + ","
     mn = RelMarkUtil.name
-    dn = RelDefUtil.name
+    dn = REL_DEF_LABEL
     s = sentence_var
     return f"""
         // Sentenceの数だけ数えればよい
@@ -41,7 +41,7 @@ def statistics_query(
 
 def find_statistics(def_uid: UUID) -> DepStatistics:
     """定義の依存統計を取得."""
-    dn = RelDefUtil.name
+    dn = REL_DEF_LABEL
     res = query_cypher(
         f"""
         MATCH (:Term)-[def:{dn} {{uid: $uid}}]->(s:Sentence)

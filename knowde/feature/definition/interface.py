@@ -15,6 +15,7 @@ from knowde._feature._shared.api.client_factory import (
 from knowde._feature._shared.api.generate_req import StatusCodeGrant
 from knowde._feature._shared.cli.field.model2click import model2decorator
 from knowde.feature.definition.domain.domain import Definition, DefinitionParam
+from knowde.feature.definition.domain.statistics import StatsDefinition
 from knowde.feature.definition.dto import DetailParam, DetailView
 from knowde.feature.definition.repo.definition import (
     add_definition,
@@ -50,7 +51,7 @@ detail_client = (
 list_client = RouterConfig().to_client(
     grant.to_get,
     list_definitions,
-    Definition.ofs,
+    StatsDefinition.ofs,
     check_get,
 )
 remove_req = RouterConfig().path("def_uid")(grant.to_delete, remove_definition)
