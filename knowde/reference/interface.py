@@ -34,7 +34,7 @@ from knowde._feature._shared.cli.field.model2click import model2decorator
 from knowde._feature._shared.cli.field.types import PrefUidParam
 from knowde._feature.reference.interface.reference import complete_ref_client
 from knowde.feature.definition.domain.domain import DefinitionParam
-from knowde.reference.domain import RefDefinitions
+from knowde.reference.domain import RefDefinition, RefDefinitions
 from knowde.reference.dto import RefDefParam
 from knowde.reference.repo.definition import add_refdef, list_refdefs
 
@@ -47,7 +47,7 @@ add_client = (
     .to_client(
         grant.to_post,
         add_refdef,
-        RefDefinitions.of,
+        RefDefinition.of,
         check_post,
     )
 )
@@ -58,7 +58,7 @@ list_client = (
     .to_client(
         grant.to_get,
         list_refdefs,
-        RefDefinitions.ofs,
+        RefDefinitions.of,
         check_get,
     )
 )
@@ -97,8 +97,7 @@ def _ls(pref_uid: str) -> None:
     """追加."""
     r = complete_ref_client(pref_uid=pref_uid)
     rds = list_client(ref_uid=r.valid_uid)
-    for rd in rds:
-        click.echo(rd.output)
+    click.echo(rds.output)
 
 
 ########## 要らないと思うのでコメントアウト

@@ -4,24 +4,37 @@ from __future__ import annotations
 from textwrap import indent
 
 from knowde._feature._shared.domain import APIReturn
-from knowde._feature.reference.domain import Book  # noqa: TCH001
+from knowde._feature.reference.domain import Reference  # noqa: TCH001
 from knowde.feature.definition.domain.domain import Definition  # noqa: TCH001
+from knowde.feature.definition.domain.statistics import StatsDefinitions  # noqa: TCH001
+
+
+class RefDefinition(APIReturn, frozen=True):
+    """引用付き定義."""
+
+    book: Reference
+    df: Definition
+
+    @property
+    def output(self) -> str:
+        """Expression for CLI."""
+        return self.book.output + "\n" + indent(self.df.output, " " * 2)
 
 
 class RefDefinitions(APIReturn, frozen=True):
     """引用付き定義."""
 
-    book: Book
-    defs: list[Definition]
+    book: Reference
+    defs: StatsDefinitions
 
-    def to_tuple(self) -> tuple[list[Definition], Book]:
+    def to_tuple(self) -> tuple[list[Definition], Reference]:
         """To tuple."""
-        return (self.defs, self.book)
+        return (self.defs.defs, self.book)
 
     @property
     def output(self) -> str:
         """Expression for CLI."""
         s = self.book.output
-        for d in self.defs:
+        for d in self.defs.root:
             s += "\n" + indent(d.output, " " * 2)
         return s

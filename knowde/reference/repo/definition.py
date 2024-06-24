@@ -9,10 +9,20 @@ from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature._shared.repo.rel import RelUtil
 from knowde._feature.person.repo.label import AuthorUtil, LAuthor
 from knowde._feature.reference.domain import Book
-from knowde._feature.reference.repo.label import BookUtil, LBook
+from knowde._feature.reference.repo.label import (
+    BookUtil,
+    LBook,
+    ReferenceUtil,
+    to_refmodel,
+)
 from knowde.feature.definition.domain.domain import Definition
-from knowde.feature.definition.repo.definition import RelDefUtil, add_definition
-from knowde.reference.domain import RefDefinitions
+from knowde.feature.definition.repo.definition import (
+    add_definition,
+    build_statsdefs,
+    q_stats_def,
+)
+from knowde.feature.definition.repo.label import REL_DEF_LABEL
+from knowde.reference.domain import RefDefinition, RefDefinitions
 from knowde.reference.dto import BookParam, RefDefParam  # noqa: TCH001
 
 RelAuthorUtil = RelUtil(
@@ -38,13 +48,13 @@ def add_book_with_author(p: BookParam) -> None:
         RelAuthorUtil.connect(author.label, book.label)
 
 
-def add_refdef(p: RefDefParam) -> RefDefinitions:
+def add_refdef(p: RefDefParam) -> RefDefinition:
     """本から引用した定義を追加.
 
     どんな記述があったかが大事なので、Termは引用に含めないことにする
     """
     d = add_definition(p.to_defparam())
-    dn = RelDefUtil.name
+    dn = REL_DEF_LABEL
     res = query_cypher(
         f"""
         MATCH
@@ -58,36 +68,31 @@ def add_refdef(p: RefDefParam) -> RefDefinitions:
             "d_uid": d.valid_uid.hex,
         },
     )
-    return RefDefinitions(
+    return RefDefinition(
         book=res.get("r", convert=Book.to_model)[0],
-        defs=res.get("def", convert=Definition.from_rel),
+        df=res.get("def", convert=Definition.from_rel)[0],
     )
 
 
-def list_refdefs(ref_uid: UUID) -> list[RefDefinitions]:
+def list_refdefs(ref_uid: UUID) -> RefDefinitions:
     """引用付き定義一覧."""
-    dn = RelDefUtil.name
+    ref = to_refmodel(ReferenceUtil.find_by_id(ref_uid).label)
+    dn = REL_DEF_LABEL
     res = query_cypher(
         f"""
         MATCH (t:Term)-[def:{dn}]->(s:Sentence)
             -[:REFER]->(r:Reference {{uid: $uid}})
-        RETURN collect(def) as defs, r
+        {q_stats_def()}
         """,
         params={"uid": ref_uid.hex},
     )
-    rds = []
-    for x, y in zip(res.get("defs"), res.get("r", convert=Book.to_model), strict=True):
-        rd = RefDefinitions(
-            book=y,
-            defs=[Definition.from_rel(rel) for rel in x[0]],
-        )
-        rds.append(rd)
-    return rds
+    stdefs = build_statsdefs(res)
+    return RefDefinitions(book=ref, defs=stdefs)
 
 
 def connect_def2ref(ref_uid: UUID, def_uids: list[UUID]) -> None:
     """本と定義を紐付ける."""
-    dn = RelDefUtil.name
+    dn = REL_DEF_LABEL
     query_cypher(
         f"""
         MATCH (r:Reference {{uid: $ref_uid}}),
@@ -107,7 +112,7 @@ def disconnect_refdef(ref_uid: UUID, def_uids: list[UUID]) -> None:
 
     定義自体を削除したいのなら、definitionパッケージの機能を使えば良い
     """
-    dn = RelDefUtil.name
+    dn = REL_DEF_LABEL
     query_cypher(
         f"""
         MATCH (r:Reference {{uid: $ref_uid}}),
