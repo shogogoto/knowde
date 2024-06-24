@@ -35,6 +35,6 @@ class RefDefinitions(APIReturn, frozen=True):
     def output(self) -> str:
         """Expression for CLI."""
         s = self.book.output
-        for d in self.defs.root:
+        for d in self.defs.values:
             s += "\n" + indent(d.output, " " * 2)
         return s

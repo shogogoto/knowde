@@ -142,7 +142,7 @@ def build_statsdefs(res: QueryResult) -> StatsDefinitions:
         )
         retvals.append(sd)
 
-    return StatsDefinitions(retvals)
+    return StatsDefinitions(values=retvals)
 
 
 def list_definitions() -> StatsDefinitions:

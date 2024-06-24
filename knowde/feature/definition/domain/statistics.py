@@ -1,7 +1,7 @@
 """依存統計."""
 from __future__ import annotations
 
-from pydantic import BaseModel, Field, RootModel
+from pydantic import BaseModel, Field
 
 from knowde._feature._shared.domain import APIReturn
 from knowde.feature.definition.domain.domain import Definition  # noqa: TCH001
@@ -49,10 +49,12 @@ class StatsDefinition(APIReturn, frozen=True):
         return f"{do} {so}"
 
 
-class StatsDefinitions(RootModel[list[StatsDefinition]], frozen=True):
+class StatsDefinitions(BaseModel, frozen=True):
     """リストの統計付き定義."""
+
+    values: list[StatsDefinition] = Field(default_factory=list)
 
     @property
     def defs(self) -> list[Definition]:
         """Def list."""
-        return [sd.definition for sd in self.root]
+        return [sd.definition for sd in self.values]
