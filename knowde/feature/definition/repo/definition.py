@@ -7,7 +7,7 @@ from uuid import UUID  # noqa: TCH003
 from neomodel import ZeroOrOne
 
 from knowde._feature._shared.repo.base import RelBase
-from knowde._feature._shared.repo.query import query_cypher
+from knowde._feature._shared.repo.query import QueryResult, query_cypher
 from knowde._feature._shared.repo.rel import RelUtil
 from knowde._feature.sentence import LSentence
 from knowde._feature.sentence.domain import Sentence
@@ -96,14 +96,9 @@ def complete_definition(pref_uid: str) -> Definition:
     return Definition.from_rel(rel, deps=terms)
 
 
-def list_definitions() -> StatsDefinitions:
-    """とりあえず一覧を返す.
-
-    本当は依存関係の統計値も返したいが、開発が進んでから再検討しよう
-    """
-    res = query_cypher(
-        f"""
-        MATCH (:Term)-[def:DEFINE]->(s:Sentence)
+def q_stats_def() -> str:
+    """Cypher path pattern."""
+    return f"""
         OPTIONAL MATCH (s)-[m:MARK]->(:Term)
         {statistics_query("s", ["def", "m"])}
         RETURN
@@ -113,10 +108,13 @@ def list_definitions() -> StatsDefinitions:
             n_dest,
             max_leaf_dist,
             max_root_dist
-        """,
-    )
+        """
+
+
+def build_statsdefs(res: QueryResult) -> StatsDefinitions:
+    """Build from query result."""
     terms = res.get("marks", RelMark.sort, row_convert=itemgetter(0))
-    drels, n_srcs, n_dests, max_leaf_dists, max_root_dists = res.zipget(
+    drels, n_srcs, n_dests, max_leaf_dists, max_root_dists = res.zip(
         "def",
         "n_src",
         "n_dest",
@@ -145,3 +143,17 @@ def list_definitions() -> StatsDefinitions:
         retvals.append(sd)
 
     return StatsDefinitions(retvals)
+
+
+def list_definitions() -> StatsDefinitions:
+    """とりあえず一覧を返す.
+
+    本当は依存関係の統計値も返したいが、開発が進んでから再検討しよう
+    """
+    res = query_cypher(
+        f"""
+        MATCH (:Term)-[def:DEFINE]->(s:Sentence)
+        {q_stats_def()}
+        """,
+    )
+    return build_statsdefs(res)

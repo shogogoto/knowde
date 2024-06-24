@@ -45,7 +45,6 @@ def find_statistics(def_uid: UUID) -> DepStatistics:
     res = query_cypher(
         f"""
         MATCH (:Term)-[def:{dn} {{uid: $uid}}]->(s:Sentence)
-        // Sentenceの数だけ数えればよい
         {statistics_query("s")}
         RETURN
             n_src,
