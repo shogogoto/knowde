@@ -103,16 +103,3 @@ def to_refmodel(r: LReference) -> Reference:
         return Section.to_model(r)
     msg = f"f{type(r)} must be LReference Type."
     raise TypeError(msg)
-
-
-# def rel_order2ref(rel: RelOrder) -> Reference:
-#     s = rel.start_node()
-#     e = rel.end_node()
-
-#     if isinstance(s, LChapter):
-#         return Chapter.from_rel(rel)
-#     if isinstance(s, LSection):
-#         return Section.from_rel(rel)
-#     if isinstance(s, LReference):
-#         return to_refmodel(s)
-#     raise TypeError

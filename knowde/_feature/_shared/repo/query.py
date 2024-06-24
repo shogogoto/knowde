@@ -23,10 +23,11 @@ def query_cypher(
         retry_on_session_expire=retry_on_session_expire,
         resolve_objects=resolve_objects,
     )
-    return QueryResult(results=results, meta=meta)
+    return QueryResult(q=_q, results=results, meta=meta)
 
 
 class QueryResult(BaseModel, frozen=True):
+    q: str
     results: list[list[Any]]
     meta: list[str]
 
@@ -43,3 +44,6 @@ class QueryResult(BaseModel, frozen=True):
                 [row_convert(row[i]) for row in self.results],  # None削除
             ),
         )
+
+    def zip(self, *vars_: str) -> tuple[Any, ...]:
+        return tuple([self.get(var) for var in vars_])

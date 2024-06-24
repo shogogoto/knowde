@@ -75,9 +75,9 @@ def ch(pref_uid: str, **kwargs) -> list[Section]:  # noqa: ANN003
 @sec_cli.command("rm")
 @each_args(
     "pref_uids",
-    converter=lambda pref_uid: complete_chapter_client(pref_uid=pref_uid),
+    converter=lambda pref_uid: complete_section_client(pref_uid=pref_uid),
 )
 def rm(s: Section) -> None:
     """節の削除."""
-    remove_client(chap_uid=s.valid_uid)
+    remove_client(sec_uid=s.valid_uid)
     click.echo(f"{s}を削除しました")

@@ -1,32 +1,40 @@
 """new create repository."""
 from __future__ import annotations
 
+from operator import itemgetter
 from uuid import UUID  # noqa: TCH003
 
 from neomodel import ZeroOrOne
 
 from knowde._feature._shared.repo.base import RelBase
-from knowde._feature._shared.repo.query import query_cypher
+from knowde._feature._shared.repo.query import QueryResult, query_cypher
 from knowde._feature._shared.repo.rel import RelUtil
 from knowde._feature.sentence import LSentence
 from knowde._feature.sentence.domain import Sentence
 from knowde._feature.term import LTerm, TermUtil
 from knowde.feature.definition.domain.description import Description
 from knowde.feature.definition.domain.domain import Definition, DefinitionParam
+from knowde.feature.definition.domain.statistics import (
+    DepStatistics,
+    StatsDefinition,
+    StatsDefinitions,
+)
 from knowde.feature.definition.repo.errors import (
     AlreadyDefinedError,
 )
+from knowde.feature.definition.repo.label import REL_DEF_LABEL
 from knowde.feature.definition.repo.mark import (
     RelMark,
     add_description,
     find_marked_terms,
     remark_sentence,
 )
+from knowde.feature.definition.repo.statistics import statistics_query
 
 RelDefUtil = RelUtil(
     t_source=LTerm,
     t_target=LSentence,
-    name="DEFINE",
+    name=REL_DEF_LABEL,
     t_rel=RelBase,
     cardinality=ZeroOrOne,
 )
@@ -88,22 +96,64 @@ def complete_definition(pref_uid: str) -> Definition:
     return Definition.from_rel(rel, deps=terms)
 
 
-def list_definitions() -> list[Definition]:
+def q_stats_def() -> str:
+    """Cypher path pattern."""
+    return f"""
+        OPTIONAL MATCH (s)-[m:MARK]->(:Term)
+        {statistics_query("s", ["def", "m"])}
+        RETURN
+            def,
+            collect(m) as marks,
+            n_src,
+            n_dest,
+            max_leaf_dist,
+            max_root_dist
+        """
+
+
+def build_statsdefs(res: QueryResult) -> StatsDefinitions:
+    """Build from query result."""
+    terms = res.get("marks", RelMark.sort, row_convert=itemgetter(0))
+    drels, n_srcs, n_dests, max_leaf_dists, max_root_dists = res.zip(
+        "def",
+        "n_src",
+        "n_dest",
+        "max_leaf_dist",
+        "max_root_dist",
+    )
+    retvals = []
+    for t, rel, n_src, n_dest, mld, mrd in zip(
+        terms,
+        drels,
+        n_srcs,
+        n_dests,
+        max_leaf_dists,
+        max_root_dists,
+        strict=True,
+    ):
+        sd = StatsDefinition(
+            definition=Definition.from_rel(rel, t),
+            statistics=DepStatistics(
+                n_src=n_src,
+                n_dest=n_dest,
+                max_leaf_dist=mld,
+                max_root_dist=mrd,
+            ),
+        )
+        retvals.append(sd)
+
+    return StatsDefinitions(retvals)
+
+
+def list_definitions() -> StatsDefinitions:
     """とりあえず一覧を返す.
 
     本当は依存関係の統計値も返したいが、開発が進んでから再検討しよう
     """
     res = query_cypher(
-        """
+        f"""
         MATCH (:Term)-[def:DEFINE]->(s:Sentence)
-        WITH def, s
-        OPTIONAL MATCH (s)-[m:MARK]->(:Term)
-        RETURN def, collect(m) as marks
+        {q_stats_def()}
         """,
     )
-    drels = res.get("def")
-    terms = res.get("marks", RelMark.sort, row_convert=lambda x: x[0])
-    retvals = []
-    for d, t in zip(drels, terms, strict=True):
-        retvals.append(Definition.from_rel(d, t))
-    return retvals
+    return build_statsdefs(res)

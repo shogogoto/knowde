@@ -18,7 +18,7 @@ class Reference(Entity, frozen=True):
 
     @property
     def output(self) -> str:
-        return f"{self.title}({self.valid_uid})"
+        return f"{self.title} ({self.valid_uid})"
 
 
 class Book(Reference, frozen=True):
@@ -74,8 +74,9 @@ class ChapteredSections(BaseModel, frozen=True):
     @property
     def output(self) -> str:
         s = self.chapter.output
-        for sec in self.sections:
-            s += "\n" + indent(sec.output, " " * 2)
+        for i, sec in enumerate(self.sections):
+            line = f"{i}. {sec.output}"
+            s += "\n" + indent(line, " " * 2)
         return s
 
 
@@ -104,8 +105,9 @@ class ReferenceTree(APIReturn, Generic[T], frozen=True):
     @property
     def output(self) -> str:
         s = self.output_root
-        for chap in self.chapters:
-            s += "\n" + indent(chap.output, " " * 2)
+        for i, chap in enumerate(self.chapters):
+            line = f"{i}. {chap.output}"
+            s += "\n" + indent(line, " " * 2)
         # for chap in self.chapters:
         #     s += "\n" + indent(chap.output, " " * 2)
         #     for sec in chap.sections:

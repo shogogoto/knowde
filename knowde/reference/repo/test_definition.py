@@ -25,11 +25,12 @@ def _p(uid: UUID, name: str, explain: str) -> RefDefParam:
 def test_add_refdef() -> None:
     """引用付き定義追加."""
     book = add_book(BookParam(title="ref"))
-    ds1, _ = add_refdef(_p(book.valid_uid, "def1", "e1")).to_tuple()
-    ds2, _ = add_refdef(_p(book.valid_uid, "def2", "e2")).to_tuple()
-    rd = list_refdefs(book.valid_uid)[0]
+    d1 = add_refdef(_p(book.valid_uid, "def1", "e1")).df
+    d2 = add_refdef(_p(book.valid_uid, "def2", "e2")).df
+    rd = list_refdefs(book.valid_uid)
+
     assert rd.book == book
-    assert rd.defs == unordered([ds1[0], ds2[0]])
+    assert rd.defs.defs == unordered([d1, d2])
 
 
 def test_connect_def2ref_and_disconnect() -> None:
@@ -42,13 +43,13 @@ def test_connect_def2ref_and_disconnect() -> None:
     uids = [d.valid_uid for d in [d1, d2, d3]]
     connect_def2ref(book.valid_uid, uids)
 
-    rd = list_refdefs(book.valid_uid)[0]
+    rd = list_refdefs(book.valid_uid)
     assert rd.book == book
-    assert rd.defs == unordered([d1, d2, d3])
+    assert rd.defs.defs == unordered([d1, d2, d3])
 
     disconnect_refdef(book.valid_uid, uids[0:2])
-    rd = list_refdefs(book.valid_uid)[0]
-    assert rd.defs == [d3]
+    rd = list_refdefs(book.valid_uid)
+    assert rd.defs.defs == [d3]
 
     # relは削除されたけど定義自体は削除しない
-    assert list_definitions() == unordered([d1, d2, d3])
+    assert list_definitions().defs == unordered([d1, d2, d3])
