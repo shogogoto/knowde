@@ -15,7 +15,7 @@ from knowde._feature._shared.api.client_factory import (
 from knowde._feature._shared.api.generate_req import StatusCodeGrant
 from knowde._feature._shared.cli.field.model2click import model2decorator
 from knowde.feature.definition.domain.domain import Definition, DefinitionParam
-from knowde.feature.definition.domain.statistics import StatsDefinition
+from knowde.feature.definition.domain.statistics import StatsDefinitions
 from knowde.feature.definition.dto import DetailParam, DetailView
 from knowde.feature.definition.repo.definition import (
     add_definition,
@@ -51,7 +51,7 @@ detail_client = (
 list_client = RouterConfig().to_client(
     grant.to_get,
     list_definitions,
-    StatsDefinition.ofs,
+    StatsDefinitions.of,
     check_get,
 )
 remove_req = RouterConfig().path("def_uid")(grant.to_delete, remove_definition)
@@ -84,7 +84,7 @@ def detail(pref_def_uid: str) -> None:
 @def_cli.command("ls")
 def _ls() -> None:
     """定義一覧."""
-    for d in list_client():
+    for d in list_client().values:
         click.echo(d.output)
 
 

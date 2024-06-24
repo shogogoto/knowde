@@ -34,8 +34,8 @@ def statistics_query(
             count(DISTINCT s_src) as n_src,
             count(DISTINCT s_dest) as n_dest,
             // s1<-[:def]<-t1<-[:mark]<-s2 というように2つのrelがあるので割る2
-            max(length(leaf)) / 2 as max_leaf_dist,
-            max(length(root)) / 2 as max_root_dist
+            max(coalesce(length(leaf), 0)) / 2 as max_leaf_dist,
+            max(coalesce(length(root), 0)) / 2 as max_root_dist
     """
 
 

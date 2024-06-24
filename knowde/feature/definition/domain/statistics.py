@@ -49,7 +49,7 @@ class StatsDefinition(APIReturn, frozen=True):
         return f"{do} {so}"
 
 
-class StatsDefinitions(BaseModel, frozen=True):
+class StatsDefinitions(APIReturn, frozen=True):
     """リストの統計付き定義."""
 
     values: list[StatsDefinition] = Field(default_factory=list)
