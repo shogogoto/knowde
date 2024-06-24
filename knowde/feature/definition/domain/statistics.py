@@ -10,10 +10,10 @@ from knowde.feature.definition.domain.domain import Definition  # noqa: TCH001
 class DepStatistics(BaseModel, frozen=True):
     """依存関係の統計."""
 
-    n_src: int = Field(description="依存元数")
-    n_dest: int = Field(description="依存先数")
-    max_root_dist: int = Field(description="最大root距離")
-    max_leaf_dist: int = Field(description="最大leaf距離")
+    n_src: int = Field(default=0, description="依存元数")
+    n_dest: int = Field(default=0, description="依存先数")
+    max_root_dist: int = Field(default=0, description="最大root距離")
+    max_leaf_dist: int = Field(default=0, description="最大leaf距離")
 
     @property
     def nums(self) -> tuple[int, int, int, int]:
