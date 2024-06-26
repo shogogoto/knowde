@@ -1,34 +1,14 @@
 from __future__ import annotations
 
-from inspect import Signature, signature
 from typing import TYPE_CHECKING, Callable
 
 from fastapi import APIRouter, status
-from makefun import create_function
 from pydantic import BaseModel
 
 from knowde._feature._shared.api.endpoint import Endpoint
 
 if TYPE_CHECKING:
     from .types import RequestMethod
-
-
-def inject_signature(
-    f: Callable,
-    t_in: list[type],
-    t_out: type | None = None,
-) -> Callable:
-    """API定義時に型情報が喪失する場合があるので、それを補う."""
-    params = signature(f).parameters.values()
-    replaced = []
-    if len(t_in) != 0:
-        for p, t in zip(params, t_in, strict=True):
-            p_new = p.replace(annotation=t)
-            replaced.append(p_new)
-    return create_function(
-        Signature(replaced, return_annotation=t_out),
-        f,
-    )
 
 
 class StatusCodeGrant(

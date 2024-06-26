@@ -5,11 +5,11 @@ import click
 from knowde._feature._shared.api.check_response import check_get
 from knowde._feature._shared.api.client_factory import ClientFactory, RouterConfig
 from knowde._feature._shared.api.endpoint import Endpoint
-from knowde._feature._shared.api.generate_req import inject_signature
 from knowde._feature._shared.cli.click_decorators import each_args
 from knowde._feature._shared.cli.click_decorators.view.options import view_options
 from knowde._feature._shared.cli.field.model2click import model2decorator
 from knowde._feature._shared.cli.field.types import PrefUidParam
+from knowde._feature._shared.typeutil import inject_signature
 from knowde._feature.reference.domain import Book, Reference, ReferenceTree
 from knowde._feature.reference.dto import BookParam, PartialBookParam
 from knowde._feature.reference.interface.chapter import chap_cli
