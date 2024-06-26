@@ -13,8 +13,9 @@ from pydantic_partial.partial import create_partial_model
 from knowde._feature._shared.domain import Entity
 from knowde._feature._shared.repo.base import LBase
 from knowde._feature._shared.repo.util import LabelUtil
+from knowde._feature._shared.typeutil import inject_signature
 
-from .generate_req import StatusCodeGrant, inject_signature
+from .generate_req import StatusCodeGrant
 
 if TYPE_CHECKING:
     from requests_mock.mocker import Mocker
