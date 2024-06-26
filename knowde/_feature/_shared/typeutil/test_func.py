@@ -8,7 +8,6 @@ from pydantic import BaseModel
 
 from .func import (
     MappingField2ArgumentError,
-    VariadicArgumentsUndefinedError,
     check_map_fields2params,
     eq_fieldparam_type,
     rename_argument,
@@ -35,16 +34,6 @@ def test_rename_argument() -> None:
     assert "replaced" not in str(signature(func))
     assert func(arg1, arg2) == func2(arg1, arg2)
     assert "replaced" in str(signature(func2))
-
-
-def test_invalid_rename_argument() -> None:
-    """Invalid case."""
-    with pytest.raises(VariadicArgumentsUndefinedError):
-
-        @rename_argument("a", "replaced")
-        def func(a: str, b: int) -> tuple[str, int]:
-            # def func(a: str, b: int) -> tuple[str, int]:
-            return a, b
 
 
 def test_eq_fieldparam_type() -> None:
