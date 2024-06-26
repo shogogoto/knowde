@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from types import NoneType
+from types import NoneType, UnionType
 from typing import Any, TypeGuard, get_args
 
 from pydantic import BaseModel
@@ -26,7 +26,7 @@ def is_option(annotation: type[Any] | None) -> bool:
     return is_optional(annotation)
 
 
-def extract_type(t: type | None) -> type:
+def extract_type(t: type | None | UnionType) -> type:
     """NoneTypeを取り除いて返す."""
     if t is None:
         msg = f"{t} must be type"
@@ -35,3 +35,7 @@ def extract_type(t: type | None) -> type:
     if NoneType in args:
         return next(filter(lambda x: x != NoneType, args))
     return t
+
+
+# def has_fieldargs(t: type[BaseModel], f: Callable) -> bool:
+#     return True

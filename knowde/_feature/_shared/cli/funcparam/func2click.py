@@ -10,7 +10,7 @@ from knowde._feature._shared.cli.field.model2click import (
     to_clickparam,
 )
 from knowde._feature._shared.cli.to_click import ClickDecorator
-from knowde._feature._shared.cli.typeutils import is_nested
+from knowde._feature._shared.typeutil import is_nested
 
 if TYPE_CHECKING:
     from knowde._feature._shared.cli.to_click import ClickParam
