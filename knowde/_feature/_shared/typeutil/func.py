@@ -15,6 +15,8 @@ from makefun import create_function
 from pydantic_core import PydanticUndefined
 
 if TYPE_CHECKING:
+    from types import MappingProxyType
+
     from pydantic import BaseModel
     from pydantic.fields import FieldInfo
 
@@ -77,21 +79,21 @@ def eq_fieldparam_type(p: Parameter, f: FieldInfo) -> bool:
     """引数とfieldの型を比較."""
     pt = p.annotation
     ft = f.annotation
-
+    if isinstance(pt, type):
+        return pt == ft
     if isinstance(ft, ForwardRef):  # ft is primitive
         return pt == ft.__forward_arg__
     x = re.findall(r"<class '(.*)'>", str(ft))
     return pt == x[0].split(".")[-1]
 
 
-def check_map_fields2params(t: type[BaseModel], f: Callable) -> None:
-    """引数とfieldが一致するか[name, type, default]."""
-    fields = t.model_fields
-    params = signature(f).parameters
-
+def check_eq_fieldparam_keys(
+    t: type[BaseModel],
+    params: MappingProxyType[str, Parameter],
+) -> None:
+    """引数とfieldのkeysが一致するか."""
+    keys_f = set(t.model_fields.keys())
     keys_p = set(params.keys())
-    keys_f = set(fields.keys())
-
     extra_p = keys_p - keys_f
     if len(extra_p) > 0:
         msg = "func args are extra {extra_p}"
@@ -101,10 +103,15 @@ def check_map_fields2params(t: type[BaseModel], f: Callable) -> None:
         msg = "fields arg extra {extra_f}"
         raise MappingField2ArgumentError(msg)
 
+
+def check_map_fields2params(
+    t: type[BaseModel],
+    params: MappingProxyType[str, Parameter],
+) -> None:
+    """引数とfieldが一致するか[name, type, default]."""
+    check_eq_fieldparam_keys(t, params)
+    fields = t.model_fields
     for k, p in params.items():
-        if k not in fields:
-            msg = f"{k} is not in arguments"
-            raise MappingField2ArgumentError(msg)
         field = fields[k]
         if not eq_fieldparam_type(p, field):
             t = p.annotation

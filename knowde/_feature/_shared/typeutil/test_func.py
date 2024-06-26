@@ -93,13 +93,13 @@ def test_extra_map() -> None:
         pass
 
     with pytest.raises(MappingField2ArgumentError):
-        check_map_fields2params(OneParam, f1)
+        check_map_fields2params(OneParam, signature(f1).parameters)
 
     def f2(p1: str, p2: int, p3: float) -> None:  # noqa: ARG001
         pass
 
     with pytest.raises(MappingField2ArgumentError):
-        check_map_fields2params(OneParam, f2)
+        check_map_fields2params(OneParam, signature(f2).parameters)
 
 
 def test_filedarg_diff_type() -> None:
@@ -113,7 +113,7 @@ def test_filedarg_diff_type() -> None:
         pass
 
     with pytest.raises(MappingField2ArgumentError):
-        check_map_fields2params(OneParam, f1)
+        check_map_fields2params(OneParam, signature(f1).parameters)
 
 
 def test_fieldarg_default() -> None:
@@ -127,4 +127,4 @@ def test_fieldarg_default() -> None:
         pass
 
     with pytest.raises(MappingField2ArgumentError):
-        check_map_fields2params(OneParam, f1)
+        check_map_fields2params(OneParam, signature(f1).parameters)
