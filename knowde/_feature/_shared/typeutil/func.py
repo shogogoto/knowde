@@ -23,10 +23,24 @@ if TYPE_CHECKING:
 P = ParamSpec("P")
 
 
+class VariadicArgumentsUndefinedError(Exception):
+    """*args, **kwargs引数が定義されていないっ関数は対象外."""
+
+
 def rename_argument(old: str, new: str) -> Callable[[Callable], Callable]:
+    """*argsと**kwargsがないとなんか失敗する."""
+
     def wrapper(f: Callable[Concatenate[..., P], Any]) -> Callable:
         sig = signature(f)
         plist = list(sig.parameters.values())
+
+        variadics = [
+            p
+            for p in plist
+            if p.kind in {Parameter.VAR_POSITIONAL, Parameter.VAR_KEYWORD}
+        ]
+        if len(variadics) == 0:
+            raise VariadicArgumentsUndefinedError
 
         p_old = next(p for p in plist if p.name == old)
         p_new = p_old.replace(name=new)
