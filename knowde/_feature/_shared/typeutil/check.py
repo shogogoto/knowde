@@ -24,7 +24,3 @@ def is_option(annotation: type[Any] | None) -> bool:
     if is_nested(annotation):
         return False
     return is_optional(annotation)
-
-
-# def has_fieldargs(t: type[BaseModel], f: Callable) -> bool:
-#     return True

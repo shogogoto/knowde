@@ -1,14 +1,22 @@
 from __future__ import annotations
 
+import re
 from inspect import Parameter, Signature, signature
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     Concatenate,
+    ForwardRef,
     ParamSpec,
 )
 
 from makefun import create_function
+from pydantic_core import PydanticUndefined
+
+if TYPE_CHECKING:
+    from pydantic import BaseModel
+    from pydantic.fields import FieldInfo
 
 P = ParamSpec("P")
 
@@ -59,3 +67,54 @@ def inject_signature(
         Signature(replaced, return_annotation=t_out),
         f,
     )
+
+
+class MappingField2ArgumentError(Exception):
+    """fieldとargのマッピングエラー."""
+
+
+def eq_fieldparam_type(p: Parameter, f: FieldInfo) -> bool:
+    """引数とfieldの型を比較."""
+    pt = p.annotation
+    ft = f.annotation
+
+    if isinstance(ft, ForwardRef):  # ft is primitive
+        return pt == ft.__forward_arg__
+    x = re.findall(r"<class '(.*)'>", str(ft))
+    return pt == x[0].split(".")[-1]
+
+
+def check_map_fields2params(t: type[BaseModel], f: Callable) -> None:
+    """引数とfieldが一致するか[name, type, default]."""
+    fields = t.model_fields
+    params = signature(f).parameters
+
+    keys_p = set(params.keys())
+    keys_f = set(fields.keys())
+
+    extra_p = keys_p - keys_f
+    if len(extra_p) > 0:
+        msg = "func args are extra {extra_p}"
+        raise MappingField2ArgumentError(msg)
+    extra_f = keys_f - keys_p
+    if len(extra_f) > 0:
+        msg = "fields arg extra {extra_f}"
+        raise MappingField2ArgumentError(msg)
+
+    for k, p in params.items():
+        if k not in fields:
+            msg = f"{k} is not in arguments"
+            raise MappingField2ArgumentError(msg)
+        field = fields[k]
+        if not eq_fieldparam_type(p, field):
+            t = p.annotation
+            msg = f"{k} field type [{field.annotation}] != argument type [{t}]"
+            raise MappingField2ArgumentError(msg)
+        is_fd_none = field.default == PydanticUndefined
+        is_pd_none = p.default == Parameter.empty
+        if is_fd_none and is_pd_none:
+            continue
+        if field.default != p.default:
+            d = p.default
+            msg = f"{k} field default [{field.default}] != argument default [{d}]"
+            raise MappingField2ArgumentError(msg)
