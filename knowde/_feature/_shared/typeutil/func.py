@@ -8,6 +8,7 @@ from typing import (
     Callable,
     Concatenate,
     ForwardRef,
+    Mapping,
     ParamSpec,
 )
 
@@ -15,8 +16,6 @@ from makefun import create_function
 from pydantic_core import PydanticUndefined
 
 if TYPE_CHECKING:
-    from types import MappingProxyType
-
     from pydantic import BaseModel
     from pydantic.fields import FieldInfo
 
@@ -91,24 +90,24 @@ def eq_fieldparam_type(p: Parameter, f: FieldInfo) -> bool:
 
 def check_eq_fieldparam_keys(
     t: type[BaseModel],
-    params: MappingProxyType[str, Parameter],
+    params: Mapping[str, Parameter],
 ) -> None:
     """引数とfieldのkeysが一致するか."""
     keys_f = set(t.model_fields.keys())
     keys_p = set(params.keys())
     extra_p = keys_p - keys_f
     if len(extra_p) > 0:
-        msg = "func args are extra {extra_p}"
+        msg = f"func args are extra {extra_p}"
         raise MappingField2ArgumentError(msg)
     extra_f = keys_f - keys_p
     if len(extra_f) > 0:
-        msg = "fields arg extra {extra_f}"
+        msg = f"fields arg extra {extra_f}"
         raise MappingField2ArgumentError(msg)
 
 
 def check_map_fields2params(
     t: type[BaseModel],
-    params: MappingProxyType[str, Parameter],
+    params: Mapping[str, Parameter],
 ) -> None:
     """引数とfieldが一致するか[name, type, default]."""
     check_eq_fieldparam_keys(t, params)
