@@ -13,7 +13,7 @@ from knowde._feature.sentence import LSentence
 from knowde._feature.sentence.domain import Sentence
 from knowde._feature.term import LTerm, TermUtil
 from knowde.feature.definition.domain.description import Description
-from knowde.feature.definition.domain.domain import Definition, DefinitionParam
+from knowde.feature.definition.domain.domain import Definition
 from knowde.feature.definition.domain.statistics import (
     DepStatistics,
     StatsDefinition,
@@ -41,9 +41,8 @@ RelDefUtil = RelUtil(
 
 
 # 引数がDTOなのはこの関数をinterfaceにぶち込んでるから
-def add_definition(p: DefinitionParam) -> Definition:
+def add_definition(name: str, explain: str) -> Definition:
     """Create new definition."""
-    name = p.name
     t = TermUtil.find_one_or_none(value=name)
     if t is None:
         t = TermUtil.create(value=name)
@@ -52,7 +51,7 @@ def add_definition(p: DefinitionParam) -> Definition:
     if len(rels) >= 1:
         msg = "定義済みです"
         raise AlreadyDefinedError(msg)
-    d = add_description(Description(value=p.explain))
+    d = add_description(Description(value=explain))
     rel = RelDefUtil.connect(t.label, d.label)
     return Definition.from_rel(rel, d.terms)
 

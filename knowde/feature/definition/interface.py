@@ -13,6 +13,7 @@ from knowde._feature._shared.api.client_factory import (
     RouterConfig,
 )
 from knowde._feature._shared.api.generate_req import StatusCodeGrant
+from knowde._feature._shared.api.paramfunc import to_apifunc
 from knowde._feature._shared.cli.field.model2click import model2decorator
 from knowde.feature.definition.domain.domain import Definition, DefinitionParam
 from knowde.feature.definition.domain.statistics import StatsDefinitions
@@ -32,10 +33,10 @@ add_client = (
     .body(DefinitionParam)
     .to_client(
         grant.to_post,
-        add_definition,
+        to_apifunc(add_definition, DefinitionParam, Definition),
         Definition.of,
         check_post,
-    )
+    ),
 )
 complete_client = (
     RouterConfig()
