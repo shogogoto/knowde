@@ -15,11 +15,12 @@ from knowde._feature._shared.api.generate_req import StatusCodeGrant
 from knowde._feature._shared.domain import APIReturn
 
 from .api_param import (
-    BodyParam,
-    ComplexPathParam,
-    ComplexQueryParam,
-    PathParam,
-    QueryParam,
+    APIBody,
+    APIPath,
+    APIQuery,
+    BaseAPIPath,
+    ComplexAPIPath,
+    ComplexAPIQuery,
 )
 
 if TYPE_CHECKING:
@@ -27,6 +28,7 @@ if TYPE_CHECKING:
 
     from knowde._feature._shared.api.types import (
         CheckResponse,
+        EndpointMethod,
         ToEndpointMethod,
     )
 
@@ -37,33 +39,53 @@ def none_return(_res: requests.Response) -> None:
     pass
 
 
+def to_request(
+    epm: EndpointMethod,
+    apipath: BaseAPIPath,
+    apiquery: APIQuery | ComplexAPIQuery,
+    apibody: APIBody,
+) -> Callable[..., requests.Response]:
+    def _request(**kwargs) -> requests.Response:  # noqa: ANN003
+        return epm(
+            relative=apipath.getvalue(kwargs),
+            params=apiquery.getvalue(kwargs),
+            json=apibody.getvalue(kwargs),
+        )
+
+    return _request
+
+
 class RouterConfig(BaseModel):
     """APIパラメータのMediator."""
 
-    paths_: list[PathParam] = Field(
+    paths_: list[APIPath] = Field(
         default_factory=list,
         init_var=False,
     )
-    queries_: list[QueryParam | ComplexQueryParam] = Field(
+    queries_: list[APIQuery | ComplexAPIQuery] = Field(
         default_factory=list,
         init_var=False,
     )
-    body_: BodyParam = Field(default_factory=BodyParam.null, init_var=False)
+    body_: APIBody = Field(default_factory=APIBody.null, init_var=False)
+
+    @property
+    def pathparam(self) -> ComplexAPIPath | APIPath:
+        p = ComplexAPIPath(members=self.paths_)
+        if len(self.paths_) == 0:
+            p = APIPath.null()
+        return p
 
     def __call__(
         self,
         to_req: ToEndpointMethod,
         f: Callable,
     ) -> Callable[..., requests.Response]:
-        p = ComplexPathParam(members=self.paths_)
-        if len(self.paths_) == 0:
-            p = PathParam.null()
-        req = p.bind(to_req, f)
+        req = to_req(f, self.pathparam.path)
 
         def _request(**kwargs) -> requests.Response:  # noqa: ANN003
             return req(
-                relative=p.getvalue(kwargs),
-                params=ComplexQueryParam(members=self.queries_).getvalue(kwargs),
+                relative=self.pathparam.getvalue(kwargs),
+                params=ComplexAPIQuery(members=self.queries_).getvalue(kwargs),
                 json=self.body_.getvalue(kwargs),
             )
 
@@ -90,19 +112,23 @@ class RouterConfig(BaseModel):
         return _client
 
     def path(self, name: str = "", prefix: str = "") -> Self:
-        self.paths_.append(PathParam(name=name, prefix=prefix))
+        self.paths_.append(APIPath(name=name, prefix=prefix))
         return self
 
     def query(self, name: str) -> Self:
-        self.queries_.append(QueryParam(name=name))
+        self.queries_.append(APIQuery(name=name))
         return self
 
     def body(self, annotation: type[BaseModel]) -> Self:
-        self.body_ = BodyParam(annotation=annotation)
+        self.body_ = APIBody(annotation=annotation)
         return self
 
 
 U = TypeVar("U", bound=APIReturn)
+
+
+def to_client() -> None:
+    pass
 
 
 class ClientFactory(

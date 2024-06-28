@@ -12,6 +12,7 @@ from requests import Response
 
 if TYPE_CHECKING:
     import requests
+    from fastapi import APIRouter
 
 
 CheckResponse: TypeAlias = Callable[[Response], None]
@@ -32,6 +33,16 @@ class ToEndpointMethod(Protocol):
     def __call__(
         self,
         f: Callable[..., T],
+        path: str,
+    ) -> EndpointMethod:
+        ...
+
+
+class Router2EndpointMethod(Protocol):
+    def __call__(
+        self,
+        router: APIRouter,
+        f: Callable,
         path: str,
     ) -> EndpointMethod:
         ...

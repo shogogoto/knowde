@@ -15,7 +15,13 @@ from typing_extensions import override
 from knowde._feature._shared.api.errors import APIParamBindError
 
 if TYPE_CHECKING:
-    from knowde._feature._shared.api.types import EndpointMethod, ToEndpointMethod
+    from fastapi import APIRouter
+
+    from knowde._feature._shared.api.types import (
+        EndpointMethod,
+        Router2EndpointMethod,
+        ToEndpointMethod,
+    )
 
 
 class APIParam(ABC):
@@ -24,7 +30,22 @@ class APIParam(ABC):
         raise NotImplementedError
 
 
-class PathParam(BaseModel, APIParam, frozen=True):
+class BaseAPIPath(APIParam):
+    @property
+    @abstractmethod
+    def path(self) -> str:
+        raise NotImplementedError
+
+    def to_endpoint_method(
+        self,
+        router: APIRouter,
+        r2epm: Router2EndpointMethod,
+        f: Callable,
+    ) -> EndpointMethod:
+        return r2epm(router, f, self.path)
+
+
+class APIPath(BaseModel, BaseAPIPath, frozen=True):
     """relative引数と紐づく."""
 
     name: str
@@ -48,9 +69,6 @@ class PathParam(BaseModel, APIParam, frozen=True):
         p.extend(self.var.split("/"))
         return "/" + "/".join([e for e in p if e != ""])
 
-    def bind(self, to_req: ToEndpointMethod, f: Callable) -> EndpointMethod:
-        return to_req(f, path=self.path)
-
     def getvalue(self, kwargs: dict) -> str:
         if self.is_null:
             return ""
@@ -64,17 +82,20 @@ class PathParam(BaseModel, APIParam, frozen=True):
 
     @classmethod
     @cache
-    def null(cls) -> PathParam:
+    def null(cls) -> APIPath:
         return cls(name="dummy", is_null=True)
 
-    def combine(self, other: Self) -> ComplexPathParam:
-        return ComplexPathParam(members=[self, other])
+    def combine(self, other: Self) -> ComplexAPIPath:
+        return ComplexAPIPath(members=[self, other])
+
+    def add(self, name: str = "", prefix: str = "") -> ComplexAPIPath:
+        return self.combine(self.__class__(name=name, prefix=prefix))
 
 
-class ComplexPathParam(BaseModel, APIParam, frozen=True):
+class ComplexAPIPath(BaseModel, BaseAPIPath, frozen=True):
     """relative引数と紐づく."""
 
-    members: list[PathParam | ComplexPathParam] | list[PathParam]
+    members: list[APIPath | ComplexAPIPath] | list[APIPath]
 
     @property
     def path(self) -> str:
@@ -86,27 +107,27 @@ class ComplexPathParam(BaseModel, APIParam, frozen=True):
     def bind(self, to_req: ToEndpointMethod, f: Callable) -> EndpointMethod:
         return to_req(f, path=self.path)
 
-    def combine(self, other: PathParam | ComplexPathParam) -> ComplexPathParam:
-        if isinstance(other, PathParam):
-            return ComplexPathParam(members=[*self.members, other])
-        return ComplexPathParam(members=self.members + other.members)
+    def combine(self, other: APIPath | ComplexAPIPath) -> ComplexAPIPath:
+        if isinstance(other, APIPath):
+            return ComplexAPIPath(members=[*self.members, other])
+        return ComplexAPIPath(members=self.members + other.members)
 
     @override
     def getvalue(self, kwargs: dict) -> str:
         vs = [p.getvalue(kwargs) for p in self.members]
         return "".join([v for v in vs if v])
 
+    def add(self, name: str = "", prefix: str = "") -> ComplexAPIPath:
+        return self.combine(APIPath(name=name, prefix=prefix))
 
-NullPathParam = PathParam(name="dummy", is_null=True)
 
-
-class QueryParam(BaseModel, APIParam, frozen=True):
+class APIQuery(BaseModel, APIParam, frozen=True):
     """params引数と紐づく."""
 
     name: str
 
-    def combine(self, other: Self) -> ComplexQueryParam:
-        return ComplexQueryParam(members=[self, other])
+    def combine(self, other: Self) -> ComplexAPIQuery:
+        return ComplexAPIQuery(members=[self, other])
 
     @override
     def getvalue(self, kwargs: dict) -> dict:
@@ -115,16 +136,19 @@ class QueryParam(BaseModel, APIParam, frozen=True):
             raise APIParamBindError(msg)
         return {self.name: kwargs.get(self.name)}
 
+    def add(self, name: str) -> ComplexAPIQuery:
+        return self.combine(self.__class__(name=name))
 
-class ComplexQueryParam(BaseModel, APIParam, frozen=True):
+
+class ComplexAPIQuery(BaseModel, APIParam, frozen=True):
     """params引数と紐づく."""
 
-    members: list[QueryParam | ComplexQueryParam]
+    members: list[APIQuery | ComplexAPIQuery]
 
-    def combine(self, other: QueryParam | ComplexQueryParam) -> ComplexQueryParam:
-        if isinstance(other, QueryParam):
-            return ComplexQueryParam(members=[*self.members, other])
-        return ComplexQueryParam(members=self.members + other.members)
+    def combine(self, other: APIQuery | ComplexAPIQuery) -> ComplexAPIQuery:
+        if isinstance(other, APIQuery):
+            return ComplexAPIQuery(members=[*self.members, other])
+        return ComplexAPIQuery(members=self.members + other.members)
 
     @override
     def getvalue(self, kwargs: dict) -> dict:
@@ -133,8 +157,11 @@ class ComplexQueryParam(BaseModel, APIParam, frozen=True):
             d.update(mbr.getvalue(kwargs))
         return d
 
+    def add(self, name: str) -> ComplexAPIQuery:
+        return self.combine(APIQuery(name=name))
 
-class BodyParam(BaseModel, APIParam, frozen=True):
+
+class APIBody(BaseModel, APIParam, frozen=True):
     """json引数と紐づく."""
 
     annotation: type[BaseModel]
