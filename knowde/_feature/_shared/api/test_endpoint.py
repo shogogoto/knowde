@@ -10,12 +10,11 @@ from neomodel import StringProperty
 from pydantic import BaseModel, PydanticUndefinedAnnotation
 from pydantic_partial.partial import create_partial_model
 
+from knowde._feature._shared.api.endpoint import router2get, router2put, router2tpost
 from knowde._feature._shared.domain import Entity
 from knowde._feature._shared.repo.base import LBase
 from knowde._feature._shared.repo.util import LabelUtil
 from knowde._feature._shared.typeutil import inject_signature
-
-from .generate_req import StatusCodeGrant
 
 if TYPE_CHECKING:
     from requests_mock.mocker import Mocker
@@ -74,7 +73,7 @@ def test_fail_with_lost_type() -> None:
 
     r = APIRouter(prefix=PREFIX)
     with pytest.raises(PydanticUndefinedAnnotation):
-        StatusCodeGrant(router=r).to_put(change, path="/{uid}")
+        router2put(r, change, path="/{uid}")
 
 
 def test_put(requests_mock: Mocker) -> None:
@@ -92,7 +91,8 @@ def test_put(requests_mock: Mocker) -> None:
         return OneModel.to_model(lb.save())
 
     r = APIRouter(prefix=PREFIX)
-    req = StatusCodeGrant(router=r).to_put(
+    req = router2put(
+        r,
         inject_signature(change, [UUID, OneParam], OneModel),
     )
     m = util.create(name="pre").to_model()
@@ -112,7 +112,7 @@ def test_post(requests_mock: Mocker) -> None:
         return util.create(**p.model_dump()).to_model()
 
     r = APIRouter(prefix=PREFIX)
-    req = StatusCodeGrant(router=r).to_post(f)
+    req = router2tpost(r, f)
 
     res = to_client(r).post(url=PREFIX, json={"name": "n1"})
     assert res.status_code == status.HTTP_201_CREATED
@@ -130,7 +130,7 @@ def test_generate_get(requests_mock: Mocker) -> None:
         return util.find().to_model()
 
     r = APIRouter(prefix=PREFIX)
-    req = StatusCodeGrant(router=r).to_get(f)
+    req = router2get(r, f)
 
     res = to_client(r).get(url=PREFIX)
     assert res.status_code == status.HTTP_200_OK
@@ -146,7 +146,7 @@ def test_generate_get_with_param(requests_mock: Mocker) -> None:
         return util.complete(pref_uid).to_model()
 
     r = APIRouter(prefix=PREFIX)
-    req = StatusCodeGrant(router=r).to_get(f, path="/completion")
+    req = router2get(r, f, path="/completion")
 
     m = util.create(name="completion").to_model()
     pref_uid = m.valid_uid.hex[0]

@@ -15,7 +15,7 @@ from typing_extensions import override
 from knowde._feature._shared.api.errors import APIParamBindError
 
 if TYPE_CHECKING:
-    from knowde._feature._shared.api.types import RequestMethod, ToRequest
+    from knowde._feature._shared.api.types import EndpointMethod, ToEndpointMethod
 
 
 class APIParam(ABC):
@@ -48,7 +48,7 @@ class PathParam(BaseModel, APIParam, frozen=True):
         p.extend(self.var.split("/"))
         return "/" + "/".join([e for e in p if e != ""])
 
-    def bind(self, to_req: ToRequest, f: Callable) -> RequestMethod:
+    def bind(self, to_req: ToEndpointMethod, f: Callable) -> EndpointMethod:
         return to_req(f, path=self.path)
 
     def getvalue(self, kwargs: dict) -> str:
@@ -83,7 +83,7 @@ class ComplexPathParam(BaseModel, APIParam, frozen=True):
             let.extend(p.split("/"))
         return "/" + "/".join([e for e in let if e != ""])
 
-    def bind(self, to_req: ToRequest, f: Callable) -> RequestMethod:
+    def bind(self, to_req: ToEndpointMethod, f: Callable) -> EndpointMethod:
         return to_req(f, path=self.path)
 
     def combine(self, other: PathParam | ComplexPathParam) -> ComplexPathParam:

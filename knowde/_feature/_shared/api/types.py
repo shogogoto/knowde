@@ -18,7 +18,7 @@ CheckResponse: TypeAlias = Callable[[Response], None]
 T = TypeVar("T")
 
 
-class RequestMethod(Protocol):
+class EndpointMethod(Protocol):
     def __call__(
         self,
         relative: str | None = None,
@@ -28,10 +28,10 @@ class RequestMethod(Protocol):
         ...
 
 
-class ToRequest(Protocol):
+class ToEndpointMethod(Protocol):
     def __call__(
         self,
         f: Callable[..., T],
         path: str,
-    ) -> RequestMethod:
+    ) -> EndpointMethod:
         ...

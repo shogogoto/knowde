@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 
     from knowde._feature._shared.api.types import (
         CheckResponse,
-        ToRequest,
+        ToEndpointMethod,
     )
 
 T = TypeVar("T")
@@ -52,7 +52,7 @@ class RouterConfig(BaseModel):
 
     def __call__(
         self,
-        to_req: ToRequest,
+        to_req: ToEndpointMethod,
         f: Callable,
     ) -> Callable[..., requests.Response]:
         p = ComplexPathParam(members=self.paths_)
@@ -71,7 +71,7 @@ class RouterConfig(BaseModel):
 
     def to_client(
         self,
-        to_req: ToRequest,
+        to_req: ToEndpointMethod,
         f: Callable,
         convert: Callable[[requests.Response], T],
         *check_response: CheckResponse,

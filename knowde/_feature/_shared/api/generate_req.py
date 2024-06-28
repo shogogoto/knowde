@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from knowde._feature._shared.api.endpoint import Endpoint
 
 if TYPE_CHECKING:
-    from .types import RequestMethod
+    from .types import EndpointMethod
 
 
 class StatusCodeGrant(
@@ -28,7 +28,7 @@ class StatusCodeGrant(
         self,
         f: Callable,
         path: str = "",
-    ) -> RequestMethod:
+    ) -> EndpointMethod:
         self.router.post(
             path,
             status_code=status.HTTP_201_CREATED,
@@ -39,7 +39,7 @@ class StatusCodeGrant(
         self,
         f: Callable,
         path: str = "/{uid}",
-    ) -> RequestMethod:
+    ) -> EndpointMethod:
         self.router.put(path)(f)
         return self.endpoint.put
 
@@ -47,7 +47,7 @@ class StatusCodeGrant(
         self,
         f: Callable,
         path: str = "",
-    ) -> RequestMethod:
+    ) -> EndpointMethod:
         self.router.get(path)(f)
         return self.endpoint.get
 
@@ -55,7 +55,7 @@ class StatusCodeGrant(
         self,
         f: Callable,
         path: str = "/{uid}",
-    ) -> RequestMethod:
+    ) -> EndpointMethod:
         self.router.delete(
             path,
             status_code=status.HTTP_204_NO_CONTENT,
