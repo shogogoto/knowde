@@ -8,6 +8,7 @@ from pydantic import BaseModel
 
 from knowde._feature._shared.typeutil.func import (
     check_map_fields2params,
+    inject_signature,
 )
 
 T = TypeVar("T", bound=BaseModel)
@@ -37,7 +38,10 @@ def to_paramfunc(
     argname: str = "param",
     ignores: Optional[list[str]] = None,
 ) -> Callable:
-    """API用関数に変換."""
+    """API用関数に変換.
+
+    (*ignores, param: t)の引数に変換
+    """
     if ignores is None:
         ignores = []
     params = dict(signature(f).parameters)
@@ -52,4 +56,22 @@ def to_paramfunc(
     return create_function(
         signature(f).replace(parameters=[*remains, newp]),
         _f,
+    )
+
+
+def to_apifunc(
+    f: Callable,
+    t_param: type[BaseModel],
+    t_out: type | None = None,
+    paramname: str = "param",
+    ignores: Optional[list[tuple[str, type]]] = None,
+) -> Callable:
+    if ignores is None:
+        igkeys, igtypes = [], []
+    else:
+        igkeys, igtypes = zip(*ignores)
+    return inject_signature(
+        to_paramfunc(t_param, f, paramname, igkeys),
+        [*igtypes, t_param],
+        t_out,
     )
