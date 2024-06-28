@@ -11,15 +11,16 @@ from knowde._feature._shared.api.check_response import (
     check_post,
     check_put,
 )
-from knowde._feature._shared.api.client_param import (
+from knowde._feature._shared.api.generate_req import StatusCodeGrant
+from knowde._feature._shared.domain import APIReturn
+
+from .api_param import (
     BodyParam,
     ComplexPathParam,
     ComplexQueryParam,
     PathParam,
     QueryParam,
 )
-from knowde._feature._shared.api.generate_req import StatusCodeGrant
-from knowde._feature._shared.domain import APIReturn
 
 if TYPE_CHECKING:
     import requests

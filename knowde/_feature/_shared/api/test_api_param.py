@@ -15,13 +15,14 @@ from fastapi import APIRouter, FastAPI
 from fastapi.testclient import TestClient
 from pydantic import BaseModel
 
-from knowde._feature._shared.api.client_param import (
+from knowde._feature._shared.api.endpoint import Endpoint
+from knowde._feature._shared.api.generate_req import StatusCodeGrant
+
+from .api_param import (
     BodyParam,
     PathParam,
     QueryParam,
 )
-from knowde._feature._shared.api.endpoint import Endpoint
-from knowde._feature._shared.api.generate_req import StatusCodeGrant
 
 
 def to_client(router: APIRouter) -> TestClient:
