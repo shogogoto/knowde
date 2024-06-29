@@ -26,10 +26,8 @@ from __future__ import annotations
 
 import click
 
-from knowde._feature._shared.api.check_response import check_get, check_post
-from knowde._feature._shared.api.client_factory import RouterConfig
-from knowde._feature._shared.api.endpoint import Endpoint
-from knowde._feature._shared.api.generate_req import StatusCodeGrant
+from knowde._feature._shared.api.api_param import APIBody, APIPath, NullPath
+from knowde._feature._shared.api.endpoint import Endpoint, router2get, router2tpost
 from knowde._feature._shared.cli.field.model2click import model2decorator
 from knowde._feature._shared.cli.field.types import PrefUidParam
 from knowde._feature.reference.interface.reference import complete_ref_client
@@ -39,28 +37,18 @@ from knowde.reference.dto import RefDefParam
 from knowde.reference.repo.definition import add_refdef, list_refdefs
 
 refdef_router = Endpoint.RefDef.create_router()
-grant = StatusCodeGrant(router=refdef_router)
-
-add_client = (
-    RouterConfig()
-    .body(RefDefParam)
-    .to_client(
-        grant.to_post,
-        add_refdef,
-        RefDefinition.of,
-        check_post,
-    )
+add_client = NullPath().to_client(
+    refdef_router,
+    router2tpost,
+    add_refdef,
+    apibody=APIBody(annotation=RefDefParam),
+    convert=RefDefinition.of,
 )
-
-list_client = (
-    RouterConfig()
-    .path("ref_uid")
-    .to_client(
-        grant.to_get,
-        list_refdefs,
-        RefDefinitions.of,
-        check_get,
-    )
+list_client = APIPath(name="ref_uid", prefix="").to_client(
+    refdef_router,
+    router2get,
+    list_refdefs,
+    convert=RefDefinitions.of,
 )
 
 # conn_client = (
