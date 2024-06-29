@@ -2,9 +2,14 @@ from __future__ import annotations
 
 import click
 
-from knowde._feature._shared.api.check_response import check_get
-from knowde._feature._shared.api.client_factory import ClientFactory, RouterConfig
-from knowde._feature._shared.api.endpoint import Endpoint
+from knowde._feature._shared.api.api_param import APIBody, APIPath, APIQuery, NullPath
+from knowde._feature._shared.api.endpoint import (
+    Endpoint,
+    router2delete,
+    router2get,
+    router2put,
+    router2tpost,
+)
 from knowde._feature._shared.cli.click_decorators import each_args
 from knowde._feature._shared.cli.click_decorators.view.options import view_options
 from knowde._feature._shared.cli.field.model2click import model2decorator
@@ -23,40 +28,44 @@ from knowde._feature.reference.repo.label import BookUtil
 from knowde._feature.reference.repo.reference import find_reftree, remove_ref
 
 book_router = Endpoint.Book.create_router()
-book_factory = ClientFactory(router=book_router, rettype=Book)
-
-add_book_client = book_factory.to_post(
-    RouterConfig().body(BookParam),
+add_book_client = NullPath().to_client(
+    book_router,
+    router2tpost,
     add_book,
+    apibody=APIBody(annotation=BookParam),
+    convert=Book.of,
 )
-
-
-complete_book_client = book_factory.to_get(
-    RouterConfig().path("", "/completion").query("pref_uid"),
+complete_book_client = APIPath(name="", prefix="/completion").to_client(
+    book_router,
+    router2get,
     complete_book,
+    apiquery=APIQuery(name="pref_uid"),
+    convert=Book.of,
 )
-
-
-remove_client = book_factory.to_delete(
-    RouterConfig().path("ref_uid"),
+p_uid = APIPath(name="ref_uid", prefix="")
+remove_client = p_uid.to_request(
+    book_router,
+    router2delete,
     remove_ref,
 )
-
-list_client = book_factory.to_gets(
-    RouterConfig(),
+list_client = NullPath().to_client(
+    book_router,
+    router2get,
     inject_signature(BookUtil.find, [], list[Book]),
+    convert=Book.ofs,
 )
-
-change_client = book_factory.to_put(
-    RouterConfig().path("ref_uid").body(PartialBookParam),
+change_client = p_uid.to_client(
+    book_router,
+    router2put,
     change_book,
+    apibody=APIBody(annotation=PartialBookParam),
+    convert=Book.of,
 )
-
-detail_factory = ClientFactory(router=book_router, rettype=ReferenceTree[Book])
-detail_client = detail_factory.to_get(
-    RouterConfig().path("ref_uid"),
+detail_client = p_uid.to_client(
+    book_router,
+    router2get,
     find_reftree,
-    check_get,
+    convert=ReferenceTree[Book].of,
 )
 
 

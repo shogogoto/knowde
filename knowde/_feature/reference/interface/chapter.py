@@ -2,8 +2,14 @@ from __future__ import annotations
 
 import click
 
-from knowde._feature._shared.api.client_factory import ClientFactory, RouterConfig
-from knowde._feature._shared.api.endpoint import Endpoint
+from knowde._feature._shared.api.api_param import APIBody, APIPath, APIQuery
+from knowde._feature._shared.api.endpoint import (
+    Endpoint,
+    router2delete,
+    router2get,
+    router2put,
+    router2tpost,
+)
 from knowde._feature._shared.cli.click_decorators import each_args
 from knowde._feature._shared.cli.click_decorators.view.options import view_options
 from knowde._feature._shared.cli.field.model2click import model2decorator
@@ -18,27 +24,30 @@ from knowde._feature.reference.repo.chapter import (
 )
 
 chap_router = Endpoint.Chapter.create_router()
-factory = ClientFactory(router=chap_router, rettype=Chapter)
-
-add_client = factory.to_post(
-    RouterConfig().path("book_uid").body(HeadlineParam),
+add_client = APIPath(name="book_uid", prefix="").to_client(
+    chap_router,
+    router2tpost,
     add_book_chapter,
+    apibody=APIBody(annotation=HeadlineParam),
+    convert=Chapter.of,
 )
-
-change_client = factory.to_put(
-    RouterConfig().path("chap_uid").body(HeadlineParam),
+p_uid = APIPath(name="chap_uid", prefix="")
+change_client = p_uid.to_client(
+    chap_router,
+    router2put,
     change_chapter,
+    apibody=APIBody(annotation=HeadlineParam),
+    convert=Chapter.of,
 )
-
-remove_client = factory.to_delete(
-    RouterConfig().path("chap_uid"),
-    remove_chapter,
-)
-
-
-complete_chapter_client = factory.to_get(
-    RouterConfig().path("", "/completion").query("pref_uid"),
+remove_req = p_uid.to_request(chap_router, router2delete, remove_chapter)
+# ここでは定義順序によるバグは発生しない
+# getメソッド同士があると発生するのかも
+complete_chapter_client = APIPath(name="", prefix="/completion").to_client(
+    chap_router,
+    router2get,
     complete_chapter,
+    apiquery=APIQuery(name="pref_uid"),
+    convert=Chapter.of,
 )
 
 
@@ -79,5 +88,5 @@ def ch(pref_uid: str, **kwargs) -> list[Chapter]:  # noqa: ANN003
 )
 def rm(c: Chapter) -> None:
     """章の削除."""
-    remove_client(chap_uid=c.valid_uid)
+    remove_req(chap_uid=c.valid_uid)
     click.echo(f"{c}を削除しました")

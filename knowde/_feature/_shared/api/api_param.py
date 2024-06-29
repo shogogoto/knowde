@@ -195,7 +195,7 @@ class ComplexAPIQuery(BaseModel, APIParam, frozen=True):
 class APIBody(BaseModel, APIParam, frozen=True):
     """json引数と紐づく."""
 
-    annotation: type[BaseModel] = Field(kw_only=False)
+    annotation: type[BaseModel]
 
     def getvalue(self, kwargs: dict) -> dict:
         self.annotation.model_rebuild()

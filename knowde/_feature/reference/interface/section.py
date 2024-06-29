@@ -2,8 +2,14 @@ from __future__ import annotations
 
 import click
 
-from knowde._feature._shared.api.client_factory import ClientFactory, RouterConfig
-from knowde._feature._shared.api.endpoint import Endpoint
+from knowde._feature._shared.api.api_param import APIBody, APIPath, APIQuery
+from knowde._feature._shared.api.endpoint import (
+    Endpoint,
+    router2delete,
+    router2get,
+    router2put,
+    router2tpost,
+)
 from knowde._feature._shared.cli.click_decorators import each_args
 from knowde._feature._shared.cli.click_decorators.view.options import view_options
 from knowde._feature._shared.cli.field.model2click import model2decorator
@@ -20,27 +26,34 @@ from knowde._feature.reference.repo.section import (
 from .chapter import complete_chapter_client
 
 sec_router = Endpoint.Section.create_router()
-factory = ClientFactory(router=sec_router, rettype=Section)
-
-add_client = factory.to_post(
-    RouterConfig().path("chap_uid").body(HeadlineParam),
+add_client = APIPath(name="chap_uid", prefix="").to_client(
+    sec_router,
+    router2tpost,
     add_section,
+    apibody=APIBody(annotation=HeadlineParam),
+    convert=Section.of,
 )
 
-change_client = factory.to_put(
-    RouterConfig().path("sec_uid").body(HeadlineParam),
+p_uid = APIPath(name="sec_uid", prefix="")
+change_client = p_uid.to_client(
+    sec_router,
+    router2put,
     change_section,
+    apibody=APIBody(annotation=HeadlineParam),
+    convert=Section.of,
 )
 
-remove_client = factory.to_delete(
-    RouterConfig().path("sec_uid"),
-    remove_section,
-)
-
-
-complete_section_client = factory.to_get(
-    RouterConfig().path("", "/completion").query("pref_uid"),
+complete_section_client = APIPath(name="", prefix="/completion").to_client(
+    sec_router,
+    router2get,
     complete_section,
+    apiquery=APIQuery(name="pref_uid"),
+    convert=Section.of,
+)
+remove_req = p_uid.to_request(
+    sec_router,
+    router2delete,
+    remove_section,
 )
 
 
@@ -79,5 +92,5 @@ def ch(pref_uid: str, **kwargs) -> list[Section]:  # noqa: ANN003
 )
 def rm(s: Section) -> None:
     """節の削除."""
-    remove_client(sec_uid=s.valid_uid)
+    remove_req(sec_uid=s.valid_uid)
     click.echo(f"{s}を削除しました")
