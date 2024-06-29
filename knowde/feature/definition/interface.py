@@ -4,7 +4,7 @@ from __future__ import annotations
 import click
 
 from knowde._feature._shared import Endpoint, each_args
-from knowde._feature._shared.api.api_param import APIBody, APIPath, APIQuery, NullPath
+from knowde._feature._shared.api.api_param import APIPath, APIQuery, NullPath
 from knowde._feature._shared.api.check_response import (
     check_delete,
 )
@@ -27,7 +27,7 @@ add_client = NullPath().to_client(
     def_router,
     router2tpost,
     to_apifunc(add_definition, DefinitionParam, Definition),
-    apibody=APIBody(annotation=DefinitionParam),
+    t_body=DefinitionParam,
     convert=Definition.of,
 )
 # なぜかdetailの前でclient定義しないとエラー
@@ -37,7 +37,7 @@ complete_client = APIPath(name="", prefix="/completion").to_client(
     router2get,
     complete_definition,
     convert=Definition.of,
-    apiquery=APIQuery(name="pref_uid"),
+    query=APIQuery(name="pref_uid"),
 )
 p_uid = APIPath(name="def_uid", prefix="")
 detail_client = p_uid.to_client(

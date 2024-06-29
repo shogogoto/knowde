@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import click
 
-from knowde._feature._shared.api.api_param import APIBody, APIPath, APIQuery
+from knowde._feature._shared.api.api_param import APIPath, APIQuery
 from knowde._feature._shared.api.endpoint import (
     Endpoint,
     router2delete,
@@ -28,7 +28,7 @@ add_client = APIPath(name="book_uid", prefix="").to_client(
     chap_router,
     router2tpost,
     add_book_chapter,
-    apibody=APIBody(annotation=HeadlineParam),
+    t_body=HeadlineParam,
     convert=Chapter.of,
 )
 p_uid = APIPath(name="chap_uid", prefix="")
@@ -36,7 +36,7 @@ change_client = p_uid.to_client(
     chap_router,
     router2put,
     change_chapter,
-    apibody=APIBody(annotation=HeadlineParam),
+    t_body=HeadlineParam,
     convert=Chapter.of,
 )
 remove_req = p_uid.to_request(chap_router, router2delete, remove_chapter)
@@ -46,7 +46,7 @@ complete_chapter_client = APIPath(name="", prefix="/completion").to_client(
     chap_router,
     router2get,
     complete_chapter,
-    apiquery=APIQuery(name="pref_uid"),
+    query=APIQuery(name="pref_uid"),
     convert=Chapter.of,
 )
 

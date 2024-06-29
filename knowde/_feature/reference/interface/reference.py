@@ -8,6 +8,6 @@ complete_ref_client = APIPath(name="", prefix="/completion").to_client(
     ref_router,
     router2get,
     complete_ref,
-    apiquery=APIQuery(name="pref_uid"),
+    query=APIQuery(name="pref_uid"),
     convert=Reference.of,
 )

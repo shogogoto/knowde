@@ -52,19 +52,19 @@ class BaseAPIPath(BaseModel, APIParam, frozen=True):
         router: APIRouter,
         r2epm: Router2EndpointMethod,
         f: Callable,
-        apiquery: APIQuery | ComplexAPIQuery | NullParam | None = None,
-        apibody: APIBody | NullParam | None = None,
+        query: APIQuery | ComplexAPIQuery | NullParam | None = None,
+        t_body: type[BaseModel] | None = None,
     ) -> ClientRequest:
         epm = r2epm(router, f, path=self.path)
-        if apiquery is None:
-            apiquery = NullParam()
-        if apibody is None:
-            apibody = NullParam()
+        if query is None:
+            query = NullParam()
+
+        apibody = NullParam() if t_body is None else APIBody(annotation=t_body)
 
         def _request(**kwargs) -> requests.Response:  # noqa: ANN003
             return epm(
                 relative=self.getvalue(kwargs),
-                params=apiquery.getvalue(kwargs),
+                params=query.getvalue(kwargs),
                 json=apibody.getvalue(kwargs),
             )
 
@@ -77,10 +77,10 @@ class BaseAPIPath(BaseModel, APIParam, frozen=True):
         f: Callable,
         convert: Callable[[requests.Response], T],
         *check_response: CheckResponse,
-        apiquery: APIQuery | ComplexAPIQuery | NullParam | None = None,
-        apibody: APIBody | NullParam | None = None,
+        query: APIQuery | ComplexAPIQuery | None = None,
+        t_body: type[BaseModel] | None = None,
     ) -> Callable[..., T]:
-        req = self.to_request(router, r2epm, f, apiquery=apiquery, apibody=apibody)
+        req = self.to_request(router, r2epm, f, query=query, t_body=t_body)
 
         def _client(**kwargs) -> T:  # noqa: ANN003
             res = req(**kwargs)

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import click
 
-from knowde._feature._shared.api.api_param import APIBody, APIPath, APIQuery, NullPath
+from knowde._feature._shared.api.api_param import APIPath, APIQuery, NullPath
 from knowde._feature._shared.api.endpoint import (
     Endpoint,
     router2delete,
@@ -32,14 +32,14 @@ add_book_client = NullPath().to_client(
     book_router,
     router2tpost,
     add_book,
-    apibody=APIBody(annotation=BookParam),
+    t_body=BookParam,
     convert=Book.of,
 )
 complete_book_client = APIPath(name="", prefix="/completion").to_client(
     book_router,
     router2get,
     complete_book,
-    apiquery=APIQuery(name="pref_uid"),
+    query=APIQuery(name="pref_uid"),
     convert=Book.of,
 )
 p_uid = APIPath(name="ref_uid", prefix="")
@@ -58,7 +58,7 @@ change_client = p_uid.to_client(
     book_router,
     router2put,
     change_book,
-    apibody=APIBody(annotation=PartialBookParam),
+    t_body=PartialBookParam,
     convert=Book.of,
 )
 detail_client = p_uid.to_client(

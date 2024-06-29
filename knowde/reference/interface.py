@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import click
 
-from knowde._feature._shared.api.api_param import APIBody, APIPath, NullPath
+from knowde._feature._shared.api.api_param import APIPath, NullPath
 from knowde._feature._shared.api.endpoint import Endpoint, router2get, router2tpost
 from knowde._feature._shared.cli.field.model2click import model2decorator
 from knowde._feature._shared.cli.field.types import PrefUidParam
@@ -41,7 +41,7 @@ add_client = NullPath().to_client(
     refdef_router,
     router2tpost,
     add_refdef,
-    apibody=APIBody(annotation=RefDefParam),
+    t_body=RefDefParam,
     convert=RefDefinition.of,
 )
 list_client = APIPath(name="ref_uid", prefix="").to_client(
