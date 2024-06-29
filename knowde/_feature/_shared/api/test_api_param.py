@@ -15,8 +15,7 @@ from fastapi import APIRouter, FastAPI
 from fastapi.testclient import TestClient
 from pydantic import BaseModel
 
-from knowde._feature._shared.api.endpoint import Endpoint
-from knowde._feature._shared.api.generate_req import StatusCodeGrant
+from knowde._feature._shared.api.endpoint import Endpoint, router2get
 
 from .api_param import (
     APIBody,
@@ -34,7 +33,7 @@ def _to_client(router: APIRouter) -> TestClient:
 
 def test_bind_path_param() -> None:
     """APIRouterにpath paramを定義."""
-    grant = StatusCodeGrant(router=Endpoint.Test.create_router())
+    router = Endpoint.Test.create_router()
     uid = uuid4()
 
     def _f(uid: UUID) -> UUID:
@@ -42,8 +41,8 @@ def test_bind_path_param() -> None:
 
     p = APIPath(name="uid", prefix="")
     assert p.var == "{uid}"
-    grant.to_get(_f, p.path)
-    res = _to_client(grant.router).get(f"/tests/{uid}")
+    router2get(router, _f, p.path)
+    res = _to_client(router).get(f"/tests/{uid}")
     assert UUID(res.json()) == uid
 
 
