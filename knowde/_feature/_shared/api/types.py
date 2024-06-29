@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     import requests
     from fastapi import APIRouter
 
-
+ClientRequest: TypeAlias = Callable[..., Response]
 CheckResponse: TypeAlias = Callable[[Response], None]
 T = TypeVar("T")
 

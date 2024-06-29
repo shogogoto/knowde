@@ -54,7 +54,7 @@ class OneModel(OneParam, Entity, frozen=True):
 util = LabelUtil(label=LTest, model=OneModel)
 
 
-def to_client(router: APIRouter) -> TestClient:
+def _to_client(router: APIRouter) -> TestClient:
     """Test util."""
     api = FastAPI()
     api.include_router(router)
@@ -96,9 +96,11 @@ def test_put(requests_mock: Mocker) -> None:
         inject_signature(change, [UUID, OneParam], OneModel),
     )
     m = util.create(name="pre").to_model()
-    res = to_client(r).put(url=f"{PREFIX}/{m.valid_uid}", json={"name": "post"})
+    res = _to_client(r).put(url=f"{PREFIX}/{m.valid_uid}", json={"name": "post"})
     assert res.status_code == status.HTTP_200_OK
-    res = to_client(r).put(url=f"{PREFIX}/{m.valid_uid}/unknown", json={"name": "post"})
+    res = _to_client(r).put(
+        url=f"{PREFIX}/{m.valid_uid}/unknown", json={"name": "post"},
+    )
     assert res.status_code == status.HTTP_404_NOT_FOUND
 
     requests_mock.put(url=f"{PREFIX}/{m.valid_uid}", json={"name": "n2"})
@@ -114,7 +116,7 @@ def test_post(requests_mock: Mocker) -> None:
     r = APIRouter(prefix=PREFIX)
     req = router2tpost(r, f)
 
-    res = to_client(r).post(url=PREFIX, json={"name": "n1"})
+    res = _to_client(r).post(url=PREFIX, json={"name": "n1"})
     assert res.status_code == status.HTTP_201_CREATED
     m1 = OneModel.model_validate(res.json())
     assert m1.name == "n1"
@@ -132,7 +134,7 @@ def test_generate_get(requests_mock: Mocker) -> None:
     r = APIRouter(prefix=PREFIX)
     req = router2get(r, f)
 
-    res = to_client(r).get(url=PREFIX)
+    res = _to_client(r).get(url=PREFIX)
     assert res.status_code == status.HTTP_200_OK
 
     requests_mock.get(url=PREFIX, json=[])
@@ -152,7 +154,7 @@ def test_generate_get_with_param(requests_mock: Mocker) -> None:
     pref_uid = m.valid_uid.hex[0]
     params = {"pref_uid": pref_uid}
     pref_uid = m.valid_uid.hex[0]
-    res = to_client(r).get(
+    res = _to_client(r).get(
         url=f"{PREFIX}/completion",
         params=params,
     )

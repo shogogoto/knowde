@@ -25,7 +25,7 @@ from .api_param import (
 )
 
 
-def to_client(router: APIRouter) -> TestClient:
+def _to_client(router: APIRouter) -> TestClient:
     """Test util."""
     api = FastAPI()
     api.include_router(router)
@@ -43,7 +43,7 @@ def test_bind_path_param() -> None:
     p = APIPath(name="uid")
     assert p.var == "{uid}"
     grant.to_get(_f, p.path)
-    res = to_client(grant.router).get(f"/tests/{uid}")
+    res = _to_client(grant.router).get(f"/tests/{uid}")
     assert UUID(res.json()) == uid
 
 

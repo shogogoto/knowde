@@ -1,23 +1,26 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from functools import cache
 from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
-    Self,
+    TypeVar,
 )
 
 from pydantic import BaseModel, Field
 from typing_extensions import override
 
+from knowde._feature._shared.api.check_response import check_default
 from knowde._feature._shared.api.errors import APIParamBindError
 
 if TYPE_CHECKING:
+    import requests
     from fastapi import APIRouter
 
     from knowde._feature._shared.api.types import (
+        CheckResponse,
+        ClientRequest,
         EndpointMethod,
         Router2EndpointMethod,
         ToEndpointMethod,
@@ -30,48 +33,93 @@ class APIParam(ABC):
         raise NotImplementedError
 
 
-class BaseAPIPath(APIParam):
+class NullParam(BaseModel, APIParam):
+    def getvalue(self, kwargs: dict) -> Any:  # noqa: ANN401 ARG002
+        return {}
+
+
+T = TypeVar("T")
+
+
+class BaseAPIPath(BaseModel, APIParam, frozen=True):
     @property
     @abstractmethod
     def path(self) -> str:
         raise NotImplementedError
 
-    def to_endpoint_method(
+    def to_request(  # noqa: PLR0913
         self,
         router: APIRouter,
         r2epm: Router2EndpointMethod,
         f: Callable,
-    ) -> EndpointMethod:
-        return r2epm(router, f, self.path)
+        apiquery: APIQuery | ComplexAPIQuery | NullParam | None = None,
+        apibody: APIBody | NullParam | None = None,
+    ) -> ClientRequest:
+        epm = r2epm(router, f, path=self.path)
+        if apiquery is None:
+            apiquery = NullParam()
+        if apibody is None:
+            apibody = NullParam()
+
+        def _request(**kwargs) -> requests.Response:  # noqa: ANN003
+            return epm(
+                relative=self.getvalue(kwargs),
+                params=apiquery.getvalue(kwargs),
+                json=apibody.getvalue(kwargs),
+            )
+
+        return _request
+
+    def to_client(  # noqa: PLR0913
+        self,
+        router: APIRouter,
+        r2epm: Router2EndpointMethod,
+        f: Callable,
+        convert: Callable[[requests.Response], T],
+        *check_response: CheckResponse,
+        apiquery: APIQuery | ComplexAPIQuery | NullParam | None = None,
+        apibody: APIBody | NullParam | None = None,
+    ) -> Callable[..., T]:
+        req = self.to_request(router, r2epm, f, apiquery=apiquery, apibody=apibody)
+
+        def _client(**kwargs) -> T:  # noqa: ANN003
+            res = req(**kwargs)
+            for c in [check_default(r2epm), *check_response]:
+                c(res)
+            return convert(res)
+
+        return _client
 
 
-class APIPath(BaseModel, BaseAPIPath, frozen=True):
+class NullPath(BaseAPIPath, frozen=True):
+    @property
+    def path(self) -> str:
+        return ""
+
+    def getvalue(self, kwargs: dict) -> str:  # noqa: ARG002
+        return ""
+
+
+class APIPath(BaseAPIPath, frozen=True):
     """relative引数と紐づく."""
 
-    name: str
-    prefix: str = ""
-    is_null: bool = Field(default=False)
+    name: str = Field("")
+    prefix: str = Field("")
 
     @property
     def var(self) -> str:
         if self.name == "":
             return ""
-        if self.is_null:
-            return ""
         return f"{{{self.name}}}"
 
     @property
     def path(self) -> str:
-        if self.is_null:
-            return self.prefix
         p = []
         p.extend(self.prefix.split("/"))
         p.extend(self.var.split("/"))
         return "/" + "/".join([e for e in p if e != ""])
 
     def getvalue(self, kwargs: dict) -> str:
-        if self.is_null:
-            return ""
         if self.name == "":
             return self.path
         if self.name not in kwargs:
@@ -80,19 +128,12 @@ class APIPath(BaseModel, BaseAPIPath, frozen=True):
         v = kwargs.get(self.name)
         return self.path.replace(self.var, f"{v}")
 
-    @classmethod
-    @cache
-    def null(cls) -> APIPath:
-        return cls(name="dummy", is_null=True)
-
-    def combine(self, other: Self) -> ComplexAPIPath:
+    def add(self, name: str = "", prefix: str = "") -> ComplexAPIPath:
+        other = self.__class__(name=name, prefix=prefix)
         return ComplexAPIPath(members=[self, other])
 
-    def add(self, name: str = "", prefix: str = "") -> ComplexAPIPath:
-        return self.combine(self.__class__(name=name, prefix=prefix))
 
-
-class ComplexAPIPath(BaseModel, BaseAPIPath, frozen=True):
+class ComplexAPIPath(BaseAPIPath, frozen=True):
     """relative引数と紐づく."""
 
     members: list[APIPath | ComplexAPIPath] | list[APIPath]
@@ -107,27 +148,20 @@ class ComplexAPIPath(BaseModel, BaseAPIPath, frozen=True):
     def bind(self, to_req: ToEndpointMethod, f: Callable) -> EndpointMethod:
         return to_req(f, path=self.path)
 
-    def combine(self, other: APIPath | ComplexAPIPath) -> ComplexAPIPath:
-        if isinstance(other, APIPath):
-            return ComplexAPIPath(members=[*self.members, other])
-        return ComplexAPIPath(members=self.members + other.members)
-
     @override
     def getvalue(self, kwargs: dict) -> str:
         vs = [p.getvalue(kwargs) for p in self.members]
         return "".join([v for v in vs if v])
 
     def add(self, name: str = "", prefix: str = "") -> ComplexAPIPath:
-        return self.combine(APIPath(name=name, prefix=prefix))
+        other = APIPath(name=name, prefix=prefix)
+        return ComplexAPIPath(members=[*self.members, other])
 
 
 class APIQuery(BaseModel, APIParam, frozen=True):
     """params引数と紐づく."""
 
     name: str
-
-    def combine(self, other: Self) -> ComplexAPIQuery:
-        return ComplexAPIQuery(members=[self, other])
 
     @override
     def getvalue(self, kwargs: dict) -> dict:
@@ -137,18 +171,14 @@ class APIQuery(BaseModel, APIParam, frozen=True):
         return {self.name: kwargs.get(self.name)}
 
     def add(self, name: str) -> ComplexAPIQuery:
-        return self.combine(self.__class__(name=name))
+        other = self.__class__(name=name)
+        return ComplexAPIQuery(members=[self, other])
 
 
 class ComplexAPIQuery(BaseModel, APIParam, frozen=True):
     """params引数と紐づく."""
 
     members: list[APIQuery | ComplexAPIQuery]
-
-    def combine(self, other: APIQuery | ComplexAPIQuery) -> ComplexAPIQuery:
-        if isinstance(other, APIQuery):
-            return ComplexAPIQuery(members=[*self.members, other])
-        return ComplexAPIQuery(members=self.members + other.members)
 
     @override
     def getvalue(self, kwargs: dict) -> dict:
@@ -158,18 +188,16 @@ class ComplexAPIQuery(BaseModel, APIParam, frozen=True):
         return d
 
     def add(self, name: str) -> ComplexAPIQuery:
-        return self.combine(APIQuery(name=name))
+        other = APIQuery(name=name)
+        return ComplexAPIQuery(members=[*self.members, other])
 
 
 class APIBody(BaseModel, APIParam, frozen=True):
     """json引数と紐づく."""
 
-    annotation: type[BaseModel]
-    is_null: bool = Field(default=False)
+    annotation: type[BaseModel] = Field(kw_only=False)
 
     def getvalue(self, kwargs: dict) -> dict:
-        if self.is_null:
-            return {}
         self.annotation.model_rebuild()
         d = {}
         for k in self.annotation.model_fields:
@@ -178,11 +206,3 @@ class APIBody(BaseModel, APIParam, frozen=True):
                 raise APIParamBindError(msg)
             d[k] = kwargs[k]
         return self.annotation.model_validate(d).model_dump(mode="json")
-
-    @classmethod
-    @cache
-    def null(cls) -> Self:
-        return cls(
-            annotation=BaseModel,  # dummy argument
-            is_null=True,
-        )

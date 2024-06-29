@@ -21,6 +21,8 @@ from .api_param import (
     BaseAPIPath,
     ComplexAPIPath,
     ComplexAPIQuery,
+    NullParam,
+    NullPath,
 )
 
 if TYPE_CHECKING:
@@ -28,6 +30,7 @@ if TYPE_CHECKING:
 
     from knowde._feature._shared.api.types import (
         CheckResponse,
+        ClientRequest,
         EndpointMethod,
         ToEndpointMethod,
     )
@@ -41,10 +44,10 @@ def none_return(_res: requests.Response) -> None:
 
 def to_request(
     epm: EndpointMethod,
-    apipath: BaseAPIPath,
-    apiquery: APIQuery | ComplexAPIQuery,
-    apibody: APIBody,
-) -> Callable[..., requests.Response]:
+    apipath: BaseAPIPath = NullPath(),
+    apiquery: APIQuery | ComplexAPIQuery | NullParam = NullParam(),
+    apibody: APIBody | NullParam = NullParam(),
+) -> ClientRequest:
     def _request(**kwargs) -> requests.Response:  # noqa: ANN003
         return epm(
             relative=apipath.getvalue(kwargs),
@@ -53,6 +56,20 @@ def to_request(
         )
 
     return _request
+
+
+def to_client(
+    req: ClientRequest,
+    convert: Callable[[requests.Response], T],
+    *check_response: CheckResponse,
+) -> Callable[..., T]:
+    def _client(**kwargs) -> T:  # noqa: ANN003
+        res = req(**kwargs)
+        for c in check_response:
+            c(res)
+        return convert(res)
+
+    return _client
 
 
 class RouterConfig(BaseModel):
@@ -66,13 +83,13 @@ class RouterConfig(BaseModel):
         default_factory=list,
         init_var=False,
     )
-    body_: APIBody = Field(default_factory=APIBody.null, init_var=False)
+    body_: APIBody | NullParam = Field(default_factory=NullParam)
 
     @property
-    def pathparam(self) -> ComplexAPIPath | APIPath:
+    def pathparam(self) -> BaseAPIPath:
         p = ComplexAPIPath(members=self.paths_)
         if len(self.paths_) == 0:
-            p = APIPath.null()
+            p = NullPath()
         return p
 
     def __call__(
@@ -80,16 +97,19 @@ class RouterConfig(BaseModel):
         to_req: ToEndpointMethod,
         f: Callable,
     ) -> Callable[..., requests.Response]:
-        req = to_req(f, self.pathparam.path)
+        return to_request(
+            to_req(f, self.pathparam.path),
+            self.pathparam,
+            ComplexAPIQuery(members=self.queries_),
+            self.body_,
+        )
 
-        def _request(**kwargs) -> requests.Response:  # noqa: ANN003
-            return req(
-                relative=self.pathparam.getvalue(kwargs),
-                params=ComplexAPIQuery(members=self.queries_).getvalue(kwargs),
-                json=self.body_.getvalue(kwargs),
-            )
-
-        return _request
+        # def _request(**kwargs) -> requests.Response:
+        #     return req(
+        #         relative=self.pathparam.getvalue(kwargs),
+        #         params=ComplexAPIQuery(members=self.queries_).getvalue(kwargs),
+        #         json=self.body_.getvalue(kwargs),
+        #     )
 
     def to_client(
         self,
@@ -125,10 +145,6 @@ class RouterConfig(BaseModel):
 
 
 U = TypeVar("U", bound=APIReturn)
-
-
-def to_client() -> None:
-    pass
 
 
 class ClientFactory(
