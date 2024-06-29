@@ -23,15 +23,6 @@ from knowde.feature.definition.repo.definition import (
 from knowde.feature.definition.service import detail_service
 
 def_router = Endpoint.Definition.create_router()
-
-# grant = StatusCodeGrant(router=def_router)
-# complete_client = (
-#     RouterConfig()
-#     .path("", "/completion")
-#     .query("pref_uid")
-#     .to_client(grant.to_get, complete_definition, Definition.of, check_get)
-# )
-
 add_client = NullPath().to_client(
     def_router,
     router2tpost,
@@ -39,17 +30,8 @@ add_client = NullPath().to_client(
     apibody=APIBody(annotation=DefinitionParam),
     convert=Definition.of,
 )
-
 # なぜかdetailの前でclient定義しないとエラー
 #   他のclientの型定義に引きづられる
-p_uid = APIPath(name="def_uid", prefix="")
-detail_client = p_uid.to_client(
-    def_router,
-    router2get,
-    detail_service,
-    convert=DetailView.of,
-)
-
 complete_client = APIPath(name="", prefix="/completion").to_client(
     def_router,
     router2get,
@@ -57,14 +39,19 @@ complete_client = APIPath(name="", prefix="/completion").to_client(
     convert=Definition.of,
     apiquery=APIQuery(name="pref_uid"),
 )
-
+p_uid = APIPath(name="def_uid", prefix="")
+detail_client = p_uid.to_client(
+    def_router,
+    router2get,
+    detail_service,
+    convert=DetailView.of,
+)
 list_client = NullPath().to_client(
     def_router,
     router2get,
     list_definitions,
     StatsDefinitions.of,
 )
-
 remove_req = p_uid.to_request(def_router, router2delete, remove_definition)
 
 

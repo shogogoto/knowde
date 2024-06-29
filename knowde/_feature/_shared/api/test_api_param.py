@@ -40,7 +40,7 @@ def test_bind_path_param() -> None:
     def _f(uid: UUID) -> UUID:
         return uid
 
-    p = APIPath(name="uid")
+    p = APIPath(name="uid", prefix="")
     assert p.var == "{uid}"
     grant.to_get(_f, p.path)
     res = _to_client(grant.router).get(f"/tests/{uid}")
@@ -67,7 +67,7 @@ def test_path(name: str, prefix: str, expected: str) -> None:
 def test_get_path_value_from_kwargs() -> None:
     uid = uuid4()
     kwargs = {"uid": uid}
-    p = APIPath(name="uid")
+    p = APIPath(name="uid", prefix="")
     assert p.getvalue(kwargs) == f"/{uid}"
 
 
@@ -80,8 +80,7 @@ def test_get_query_param_value_from_kwargs() -> None:
     qp1 = APIQuery(name="v1")
     assert qp1.getvalue(kwargs) == {"v1": uid1}
 
-    qp2 = APIQuery(name="v2")
-    qp = qp1.combine(qp2)
+    qp = qp1.add(name="v2")
     assert qp.getvalue(kwargs) == {"v1": uid1, "v2": uid2}
 
 
@@ -99,8 +98,7 @@ def test_body_param_value_from_kwargs() -> None:
 
 def test_complex_path_param() -> None:
     p1 = APIPath(name="var1", prefix="prefix1")
-    p2 = APIPath(name="var2", prefix="prefix2")
-    p = p1.combine(p2)
+    p = p1.add(name="var2", prefix="prefix2")
 
     d = {"var1": "xxx", "var2": "yyy"}
     assert p.getvalue(d) == "/prefix1/xxx/prefix2/yyy"
