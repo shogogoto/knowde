@@ -7,7 +7,6 @@ from pytest_unordered import unordered
 
 from knowde._feature.reference.dto import BookParam
 from knowde._feature.reference.repo.book import add_book
-from knowde.feature.definition.domain.domain import DefinitionParam
 from knowde.feature.definition.repo.definition import add_definition, list_definitions
 from knowde.reference.dto import RefDefParam
 from knowde.reference.repo.definition import (
@@ -36,9 +35,9 @@ def test_add_refdef() -> None:
 def test_connect_def2ref_and_disconnect() -> None:
     """定義を参考に紐付けて解除する."""
     book = add_book(BookParam(title="ref"))
-    d1 = add_definition(DefinitionParam(name="d1", explain="e1"))
-    d2 = add_definition(DefinitionParam(name="d2", explain="e2"))
-    d3 = add_definition(DefinitionParam(name="d3", explain="e3"))
+    d1 = add_definition(name="d1", explain="e1")
+    d2 = add_definition(name="d2", explain="e2")
+    d3 = add_definition(name="d3", explain="e3")
 
     uids = [d.valid_uid for d in [d1, d2, d3]]
     connect_def2ref(book.valid_uid, uids)

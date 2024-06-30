@@ -4,15 +4,12 @@ from __future__ import annotations
 import click
 
 from knowde._feature._shared import Endpoint, each_args
+from knowde._feature._shared.api.api_param import APIPath, APIQuery, NullPath
 from knowde._feature._shared.api.check_response import (
     check_delete,
-    check_get,
-    check_post,
 )
-from knowde._feature._shared.api.client_factory import (
-    RouterConfig,
-)
-from knowde._feature._shared.api.generate_req import StatusCodeGrant
+from knowde._feature._shared.api.endpoint import router2delete, router2get, router2tpost
+from knowde._feature._shared.api.paramfunc import to_apifunc
 from knowde._feature._shared.cli.field.model2click import model2decorator
 from knowde.feature.definition.domain.domain import Definition, DefinitionParam
 from knowde.feature.definition.domain.statistics import StatsDefinitions
@@ -26,35 +23,36 @@ from knowde.feature.definition.repo.definition import (
 from knowde.feature.definition.service import detail_service
 
 def_router = Endpoint.Definition.create_router()
-grant = StatusCodeGrant(router=def_router)
-add_client = (
-    RouterConfig()
-    .body(DefinitionParam)
-    .to_client(
-        grant.to_post,
-        add_definition,
-        Definition.of,
-        check_post,
-    )
+add_client = NullPath().to_client(
+    def_router,
+    router2tpost,
+    to_apifunc(add_definition, DefinitionParam, Definition),
+    t_body=DefinitionParam,
+    convert=Definition.of,
 )
-complete_client = (
-    RouterConfig()
-    .path("", "/completion")
-    .query("pref_uid")
-    .to_client(grant.to_get, complete_definition, Definition.of, check_get)
+# なぜかdetailの前でclient定義しないとエラー
+#   他のclientの型定義に引きづられる
+complete_client = APIPath(name="", prefix="/completion").to_client(
+    def_router,
+    router2get,
+    complete_definition,
+    convert=Definition.of,
+    query=APIQuery(name="pref_uid"),
 )
-detail_client = (
-    RouterConfig()
-    .path("def_uid")
-    .to_client(grant.to_get, detail_service, DetailView.of, check_get)
+p_uid = APIPath(name="def_uid", prefix="")
+detail_client = p_uid.to_client(
+    def_router,
+    router2get,
+    detail_service,
+    convert=DetailView.of,
 )
-list_client = RouterConfig().to_client(
-    grant.to_get,
+list_client = NullPath().to_client(
+    def_router,
+    router2get,
     list_definitions,
     StatsDefinitions.of,
-    check_get,
 )
-remove_req = RouterConfig().path("def_uid")(grant.to_delete, remove_definition)
+remove_req = p_uid.to_request(def_router, router2delete, remove_definition)
 
 
 @click.group("def")

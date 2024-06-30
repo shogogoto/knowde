@@ -10,11 +10,11 @@ from neomodel import StringProperty
 from pydantic import BaseModel, PydanticUndefinedAnnotation
 from pydantic_partial.partial import create_partial_model
 
+from knowde._feature._shared.api.endpoint import router2get, router2put, router2tpost
 from knowde._feature._shared.domain import Entity
 from knowde._feature._shared.repo.base import LBase
 from knowde._feature._shared.repo.util import LabelUtil
-
-from .generate_req import StatusCodeGrant, inject_signature
+from knowde._feature._shared.typeutil import inject_signature
 
 if TYPE_CHECKING:
     from requests_mock.mocker import Mocker
@@ -54,7 +54,7 @@ class OneModel(OneParam, Entity, frozen=True):
 util = LabelUtil(label=LTest, model=OneModel)
 
 
-def to_client(router: APIRouter) -> TestClient:
+def _to_client(router: APIRouter) -> TestClient:
     """Test util."""
     api = FastAPI()
     api.include_router(router)
@@ -73,7 +73,7 @@ def test_fail_with_lost_type() -> None:
 
     r = APIRouter(prefix=PREFIX)
     with pytest.raises(PydanticUndefinedAnnotation):
-        StatusCodeGrant(router=r).to_put(change, path="/{uid}")
+        router2put(r, change, path="/{uid}")
 
 
 def test_put(requests_mock: Mocker) -> None:
@@ -91,13 +91,16 @@ def test_put(requests_mock: Mocker) -> None:
         return OneModel.to_model(lb.save())
 
     r = APIRouter(prefix=PREFIX)
-    req = StatusCodeGrant(router=r).to_put(
+    req = router2put(
+        r,
         inject_signature(change, [UUID, OneParam], OneModel),
     )
     m = util.create(name="pre").to_model()
-    res = to_client(r).put(url=f"{PREFIX}/{m.valid_uid}", json={"name": "post"})
+    res = _to_client(r).put(url=f"{PREFIX}/{m.valid_uid}", json={"name": "post"})
     assert res.status_code == status.HTTP_200_OK
-    res = to_client(r).put(url=f"{PREFIX}/{m.valid_uid}/unknown", json={"name": "post"})
+    res = _to_client(r).put(
+        url=f"{PREFIX}/{m.valid_uid}/unknown", json={"name": "post"},
+    )
     assert res.status_code == status.HTTP_404_NOT_FOUND
 
     requests_mock.put(url=f"{PREFIX}/{m.valid_uid}", json={"name": "n2"})
@@ -111,9 +114,9 @@ def test_post(requests_mock: Mocker) -> None:
         return util.create(**p.model_dump()).to_model()
 
     r = APIRouter(prefix=PREFIX)
-    req = StatusCodeGrant(router=r).to_post(f)
+    req = router2tpost(r, f)
 
-    res = to_client(r).post(url=PREFIX, json={"name": "n1"})
+    res = _to_client(r).post(url=PREFIX, json={"name": "n1"})
     assert res.status_code == status.HTTP_201_CREATED
     m1 = OneModel.model_validate(res.json())
     assert m1.name == "n1"
@@ -129,9 +132,9 @@ def test_generate_get(requests_mock: Mocker) -> None:
         return util.find().to_model()
 
     r = APIRouter(prefix=PREFIX)
-    req = StatusCodeGrant(router=r).to_get(f)
+    req = router2get(r, f)
 
-    res = to_client(r).get(url=PREFIX)
+    res = _to_client(r).get(url=PREFIX)
     assert res.status_code == status.HTTP_200_OK
 
     requests_mock.get(url=PREFIX, json=[])
@@ -145,13 +148,13 @@ def test_generate_get_with_param(requests_mock: Mocker) -> None:
         return util.complete(pref_uid).to_model()
 
     r = APIRouter(prefix=PREFIX)
-    req = StatusCodeGrant(router=r).to_get(f, path="/completion")
+    req = router2get(r, f, path="/completion")
 
     m = util.create(name="completion").to_model()
     pref_uid = m.valid_uid.hex[0]
     params = {"pref_uid": pref_uid}
     pref_uid = m.valid_uid.hex[0]
-    res = to_client(r).get(
+    res = _to_client(r).get(
         url=f"{PREFIX}/completion",
         params=params,
     )

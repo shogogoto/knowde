@@ -24,14 +24,3 @@ def is_option(annotation: type[Any] | None) -> bool:
     if is_nested(annotation):
         return False
     return is_optional(annotation)
-
-
-def extract_type(t: type | None) -> type:
-    """NoneTypeを取り除いて返す."""
-    if t is None:
-        msg = f"{t} must be type"
-        raise ValueError(msg)
-    args = get_args(t)
-    if NoneType in args:
-        return next(filter(lambda x: x != NoneType, args))
-    return t

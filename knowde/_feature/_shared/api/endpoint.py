@@ -3,12 +3,15 @@ from __future__ import annotations
 
 import os
 from enum import Enum
-from typing import Self
+from typing import TYPE_CHECKING, Callable, Self
 from urllib.parse import urljoin
 
 import requests
-from fastapi import APIRouter
+from fastapi import APIRouter, status
 from inflector import Inflector
+
+if TYPE_CHECKING:
+    from knowde._feature._shared.api.types import EndpointMethod
 
 TIMEOUT = 3.0
 
@@ -118,3 +121,46 @@ class Endpoint(Enum):
             prefix=self.prefix,
             tags=[self.single_form],
         )
+
+
+def router2tpost(
+    router: APIRouter,
+    f: Callable,
+    path: str = "",
+) -> EndpointMethod:
+    router.post(
+        path,
+        status_code=status.HTTP_201_CREATED,
+    )(f)
+    return Endpoint.of(router.prefix).post
+
+
+def router2put(
+    router: APIRouter,
+    f: Callable,
+    path: str = "/{uid}",
+) -> EndpointMethod:
+    router.put(path)(f)
+    return Endpoint.of(router.prefix).put
+
+
+def router2get(
+    router: APIRouter,
+    f: Callable,
+    path: str = "",
+) -> EndpointMethod:
+    router.get(path)(f)
+    return Endpoint.of(router.prefix).get
+
+
+def router2delete(
+    router: APIRouter,
+    f: Callable,
+    path: str = "/{uid}",
+) -> EndpointMethod:
+    router.delete(
+        path,
+        status_code=status.HTTP_204_NO_CONTENT,
+        response_model=None,
+    )(f)
+    return Endpoint.of(router.prefix).delete

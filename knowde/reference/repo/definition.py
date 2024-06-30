@@ -53,7 +53,7 @@ def add_refdef(p: RefDefParam) -> RefDefinition:
 
     どんな記述があったかが大事なので、Termは引用に含めないことにする
     """
-    d = add_definition(p.to_defparam())
+    d = add_definition(p.name, p.explain)
     dn = REL_DEF_LABEL
     res = query_cypher(
         f"""

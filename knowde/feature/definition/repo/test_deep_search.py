@@ -21,10 +21,10 @@ def test_resolve_marks_lv4() -> None:
     同じtermが繰り返されるケース
     依存定義が繰り返し現れる場合、その表示を省略したい
     """
-    d3 = add_definition(_p("t3", "xxx"))
-    d21 = add_definition(_p("t21", "xx{t3}xx"))
-    d22 = add_definition(_p("t22", "xxxx"))
-    d1 = add_definition(_p("t1", "xx{t21}xx{t22}"))
+    d3 = add_definition("t3", "xxx")
+    d21 = add_definition("t21", "xx{t3}xx")
+    d22 = add_definition("t22", "xxxx")
+    d1 = add_definition("t1", "xx{t21}xx{t22}")
 
     res = find_recursively(d1.valid_uid)
     assert res.rootdef == d1

@@ -12,13 +12,14 @@ from requests import Response
 
 if TYPE_CHECKING:
     import requests
+    from fastapi import APIRouter
 
-
+ClientRequest: TypeAlias = Callable[..., Response]
 CheckResponse: TypeAlias = Callable[[Response], None]
 T = TypeVar("T")
 
 
-class RequestMethod(Protocol):
+class EndpointMethod(Protocol):
     def __call__(
         self,
         relative: str | None = None,
@@ -28,10 +29,20 @@ class RequestMethod(Protocol):
         ...
 
 
-class ToRequest(Protocol):
+class ToEndpointMethod(Protocol):
     def __call__(
         self,
         f: Callable[..., T],
         path: str,
-    ) -> RequestMethod:
+    ) -> EndpointMethod:
+        ...
+
+
+class Router2EndpointMethod(Protocol):
+    def __call__(
+        self,
+        router: APIRouter,
+        f: Callable,
+        path: str,
+    ) -> EndpointMethod:
         ...

@@ -10,7 +10,7 @@ from knowde._feature._shared.cli.to_click import (
     ClickParam,
     to_clicktype,
 )
-from knowde._feature._shared.cli.typeutils import (
+from knowde._feature._shared.typeutil import (
     extract_type,
     is_nested,
     is_option,
