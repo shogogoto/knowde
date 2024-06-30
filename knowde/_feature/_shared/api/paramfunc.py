@@ -74,4 +74,5 @@ def to_apifunc(
         to_paramfunc(t_param, f, paramname, igkeys),
         [*igtypes, t_param],
         t_out,
+        f.__name__,
     )

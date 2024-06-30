@@ -9,6 +9,7 @@ from typing import (
     Concatenate,
     ForwardRef,
     Mapping,
+    Optional,
     ParamSpec,
 )
 
@@ -58,8 +59,11 @@ def inject_signature(
     f: Callable,
     t_in: list[type],
     t_out: type | None = None,
+    name: Optional[str] = None,
 ) -> Callable:
     """API定義時に型情報が喪失する場合があるので、それを補う."""
+    if name is None:
+        name = f.__name__
     params = signature(f).parameters.values()
     replaced = []
     if len(t_in) != 0:
@@ -69,6 +73,7 @@ def inject_signature(
     return create_function(
         Signature(replaced, return_annotation=t_out),
         f,
+        func_name=name,
     )
 
 
