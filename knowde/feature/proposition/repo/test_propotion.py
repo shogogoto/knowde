@@ -1,6 +1,7 @@
 """命題test."""
 
 
+
 from knowde.feature.proposition.repo.proposition import (
     add_proposition,
     change_proposition,
@@ -9,7 +10,7 @@ from knowde.feature.proposition.repo.proposition import (
 )
 
 
-def crud_prop() -> None:
+def test_crud_prop() -> None:
     """CRUD."""
     p1 = add_proposition("prop1")
     assert list_propositions() == [p1]
@@ -18,3 +19,7 @@ def crud_prop() -> None:
     assert p2.value == "prop2"
     delete_proposition(p2.valid_uid)
     assert list_propositions() == []
+
+
+# def test_theorem() -> None:
+#     """定理."""

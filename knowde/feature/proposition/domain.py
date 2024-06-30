@@ -15,19 +15,14 @@ class Proposition(Entity, frozen=True):
     """命題."""
 
     value: str = Field(title="文章")
-
-
-class Theorem(Proposition, frozen=True):
-    """定理(名前付き命題)."""
-
-    name: str
+    name: str | None = None
 
 
 class Argument(BaseModel, frozen=True):
     """論証."""
 
     value: str = Field(title="文章")
-    premises: list[Proposition | Theorem | Definition] = Field(
+    premises: list[Proposition | Definition] = Field(
         default_factory=list,
         title="前提",
     )
