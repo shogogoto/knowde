@@ -1,12 +1,10 @@
 """pytest hooks."""
-
-
-from neomodel import clear_neo4j_database, config, db
+from neomodel import clear_neo4j_database, db, install_all_labels
 
 
 def pytest_configure() -> None:
     """Pytest hook."""
-    config.AUTO_INSTALL_LABELS = True
+    install_all_labels()
 
 
 def pytest_runtest_teardown() -> None:
