@@ -20,9 +20,7 @@ def test_simple_add() -> None:
         [p1.valid_uid, p2.valid_uid, p3.valid_uid, p4.valid_uid],
         c.valid_uid,
     )
-    assert d.premises == [p1, p2, p3, p4]
-    assert d.conclusion == c
-    assert d.text == txt
+    assert list_deductions() == [d]
 
 
 def test_2chain() -> None:
