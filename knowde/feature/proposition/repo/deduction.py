@@ -45,7 +45,7 @@ def deduct(
             collect(pre) as pres
         UNWIND range(0, size(pres) - 1) as i
         WITH c, d, pre, pres[i] as i_pre, i
-        CREATE (d)-[rel:{pl} {{order: i}}]->(i_pre)
+        CREATE (d)<-[rel:{pl} {{order: i}}]-(i_pre)
         RETURN c, d, i_pre
         """,
         params={
@@ -81,7 +81,7 @@ def list_deductions() -> list[Deduction]:
     res = query_cypher(
         f"""
         MATCH (d:Deduction)-[:{cl}]->(c:Proposition)
-        OPTIONAL MATCH (d)-[rel:{pl}]->(pre:Proposition)
+        OPTIONAL MATCH (d)<-[rel:{pl}]-(pre:Proposition)
         RETURN
             d,
             c,

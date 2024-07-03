@@ -36,7 +36,7 @@ class RelPremise(RelBase):
     def sort(cls, ls: list[Self]) -> list[Proposition]:
         """Sort by order."""
         rels = sorted(ls, key=attrgetter("order"))
-        return [Proposition.to_model(rel.end_node()) for rel in rels]
+        return [Proposition.to_model(rel.start_node()) for rel in rels]
 
 
 REL_CONCLUSION_LABEL = "CONCLUDE"
