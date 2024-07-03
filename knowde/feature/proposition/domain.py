@@ -1,28 +1,22 @@
 """domain."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from knowde._feature._shared.domain import Entity
-
-if TYPE_CHECKING:
-    from knowde.feature.definition.domain.domain import Definition
 
 
 class Proposition(Entity, frozen=True):
     """命題."""
 
-    value: str = Field(title="文章")
-    name: str | None = None
+    text: str = Field(title="文章")
 
 
-class Argument(BaseModel, frozen=True):
+class Deduction(Entity, frozen=True):
     """論証."""
 
-    value: str = Field(title="文章")
-    premises: list[Proposition | Definition] = Field(
+    text: str = Field(title="文章")
+    premises: list[Proposition] = Field(
         default_factory=list,
         title="前提",
     )

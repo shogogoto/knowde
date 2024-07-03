@@ -11,14 +11,14 @@ if TYPE_CHECKING:
     from knowde.feature.proposition.domain import Proposition
 
 
-def add_proposition(value: str) -> Proposition:
+def add_proposition(text: str) -> Proposition:
     """命題の追加."""
-    return PropositionUtil.create(value=value).to_model()
+    return PropositionUtil.create(text=text).to_model()
 
 
-def change_proposition(uid: UUID, value: str) -> Proposition:
+def change_proposition(uid: UUID, text: str) -> Proposition:
     """命題の文章の変更."""
-    return PropositionUtil.change(uid=uid, value=value).to_model()
+    return PropositionUtil.change(uid=uid, text=text).to_model()
 
 
 def delete_proposition(uid: UUID) -> None:
