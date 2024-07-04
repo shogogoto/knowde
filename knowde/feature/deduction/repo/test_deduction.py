@@ -6,12 +6,12 @@ from typing import TYPE_CHECKING
 from pytest_unordered import unordered
 
 from knowde._feature.proposition.repo.repo import add_proposition
-from knowde.feature.proposition.repo.deduction import deduct, list_deductions
+from knowde.feature.deduction.repo.deduction import deduct, list_deductions
 
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from knowde.feature.proposition.domain import Proposition
+    from knowde.feature.deduction.domain import Proposition
 
 
 def _uids(*ps: Proposition) -> list[UUID]:

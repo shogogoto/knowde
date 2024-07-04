@@ -4,8 +4,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Final, Optional
 
 from knowde._feature._shared.repo.query import query_cypher
-from knowde.feature.proposition.domain import DeductionStatistics
-from knowde.feature.proposition.repo.label import (
+from knowde.feature.deduction.domain import DeductionStatistics
+from knowde.feature.deduction.repo.label import (
     REL_CONCLUSION_LABEL,
     REL_PREMISE_LABEL,
 )

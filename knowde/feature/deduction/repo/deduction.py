@@ -8,19 +8,19 @@ from knowde._feature._shared.domain import jst_now
 from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature._shared.repo.util import NeomodelUtil
 from knowde._feature.proposition.domain import Proposition
-from knowde.feature.proposition.domain import (
+from knowde.feature.deduction.domain import (
     Deduction,
     DeductionStatistics,
     StatsDeduction,
     StatsDeductions,
 )
-from knowde.feature.proposition.repo.label import (
+from knowde.feature.deduction.repo.label import (
     REL_CONCLUSION_LABEL,
     REL_PREMISE_LABEL,
     LDeduction,
     RelPremise,
 )
-from knowde.feature.proposition.repo.statistics import (
+from knowde.feature.deduction.repo.statistics import (
     DEDUCTION_STATS_VARS,
     q_deduction_stats,
 )

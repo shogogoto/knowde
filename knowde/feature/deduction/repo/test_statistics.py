@@ -4,13 +4,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from knowde._feature.proposition.repo.repo import add_proposition
-from knowde.feature.proposition.repo.deduction import deduct
-from knowde.feature.proposition.repo.statistics import find_deductstats
+from knowde.feature.deduction.repo.deduction import deduct
+from knowde.feature.deduction.repo.statistics import find_deductstats
 
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from knowde.feature.proposition.domain import Proposition
+    from knowde._feature.proposition.domain import Proposition
 
 
 def _uids(*ps: Proposition) -> list[UUID]:
