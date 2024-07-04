@@ -28,7 +28,7 @@ def test_simple_add() -> None:
     p6 = add_proposition("p6")
     p7 = add_proposition("p7")
     c = add_proposition("conclusion")
-    txt = "これこれよりQED"
+    txt = "QED"
     d = deduct(txt, _uids(p1, p2, p3, p4, p5, p6, p7), c.valid_uid)
     assert list_deductions() == [d]
 

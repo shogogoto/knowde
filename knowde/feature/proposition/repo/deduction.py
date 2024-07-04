@@ -31,9 +31,7 @@ def deduct(
     # neomodelを活かせていない気がする
     res = query_cypher(
         f"""
-        UNWIND $pids as pid
         MATCH (c:Proposition {{uid: $cid}})
-        MATCH (pre:Proposition WHERE pre.uid = pid)
         CREATE (d:Deduction {{
             text: $txt,
             valid: $valid,
@@ -41,12 +39,12 @@ def deduct(
             updated: $now,
             uid: $uid
         }})-[:{cl}]->(c)
-        WITH c, d, pre,
-            collect(pre) as pres
-        UNWIND range(0, size(pres) - 1) as i
-        WITH c, d, pre, pres[i] as i_pre, i
-        CREATE (d)<-[rel:{pl} {{order: i}}]-(i_pre)
-        RETURN c, d, i_pre
+        WITH c, d
+        UNWIND range(0, size($pids) - 1) as i
+        WITH c, d, i, $pids[i] as pid
+        MATCH (pre:Proposition {{uid: pid}})
+        CREATE (pre)-[rel:{pl} {{order: i}}]->(d)
+        RETURN c, d, pre
         """,
         params={
             "txt": txt,
@@ -60,7 +58,7 @@ def deduct(
     d = res.get("d")[0]
     return Deduction(
         text=txt,
-        premises=res.get("i_pre", convert=Proposition.to_model),
+        premises=res.get("pre", convert=Proposition.to_model),
         conclusion=res.get("c", convert=Proposition.to_model)[0],
         valid=valid,
         uid=d.uid,
