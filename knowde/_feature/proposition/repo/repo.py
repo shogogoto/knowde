@@ -1,14 +1,13 @@
-"""命題repo."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from knowde.feature.proposition.repo.label import PropositionUtil
+from knowde._feature.proposition.repo.label import PropositionUtil
 
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from knowde.feature.proposition.domain import Proposition
+    from knowde._feature.proposition.domain import Proposition
 
 
 def add_proposition(text: str) -> Proposition:

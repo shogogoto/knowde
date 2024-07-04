@@ -8,15 +8,8 @@ from neomodel import BooleanProperty, IntegerProperty, StringProperty
 
 from knowde._feature._shared.repo.base import LBase, RelBase
 from knowde._feature._shared.repo.rel import RelUtil
-from knowde._feature._shared.repo.util import LabelUtil
-from knowde.feature.proposition.domain import Proposition
-
-
-class LProposition(LBase):
-    """命題."""
-
-    __label__ = "Proposition"
-    text = StringProperty(index=True)
+from knowde._feature.proposition.domain import Proposition
+from knowde._feature.proposition.repo.label import LProposition
 
 
 class LDeduction(LBase):
@@ -48,6 +41,3 @@ RelPremiseUtil = RelUtil(
     name=REL_PREMISE_LABEL,
     t_rel=RelPremise,
 )
-
-
-PropositionUtil = LabelUtil(label=LProposition, model=Proposition)

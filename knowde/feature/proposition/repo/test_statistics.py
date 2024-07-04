@@ -3,8 +3,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from knowde._feature.proposition.repo.repo import add_proposition
 from knowde.feature.proposition.repo.deduction import deduct
-from knowde.feature.proposition.repo.proposition import add_proposition
 from knowde.feature.proposition.repo.statistics import find_deductstats
 
 if TYPE_CHECKING:

@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING
 
 from pytest_unordered import unordered
 
+from knowde._feature.proposition.repo.repo import add_proposition
 from knowde.feature.proposition.repo.deduction import deduct, list_deductions
-from knowde.feature.proposition.repo.proposition import add_proposition
 
 if TYPE_CHECKING:
     from uuid import UUID

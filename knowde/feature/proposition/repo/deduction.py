@@ -7,10 +7,10 @@ from uuid import uuid4
 from knowde._feature._shared.domain import jst_now
 from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature._shared.repo.util import NeomodelUtil
+from knowde._feature.proposition.domain import Proposition
 from knowde.feature.proposition.domain import (
     Deduction,
     DeductionStatistics,
-    Proposition,
     StatsDeduction,
     StatsDeductions,
 )
