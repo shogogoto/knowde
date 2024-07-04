@@ -14,7 +14,7 @@ jobs:
       fail-fast: true
       matrix:
         python-version: ["3.11"]
-        neo4j-version: ["5.13"]
+        neo4j-version: ["5.20"]
     services:
       db:
         image: neo4j:${{ matrix.neo4j-version }}
