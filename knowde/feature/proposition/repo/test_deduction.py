@@ -30,7 +30,7 @@ def test_simple_add() -> None:
     c = add_proposition("conclusion")
     txt = "QED"
     d = deduct(txt, _uids(p1, p2, p3, p4, p5, p6, p7), c.valid_uid)
-    assert list_deductions() == [d]
+    assert list_deductions().deductions == [d]
 
 
 def test_2chain() -> None:
@@ -41,4 +41,4 @@ def test_2chain() -> None:
     p4 = add_proposition("p4")
     d1 = deduct("xxx", _uids(p1, p2), p3.valid_uid)
     d2 = deduct("yyy", [p3.valid_uid], p4.valid_uid)
-    assert list_deductions() == unordered([d1, d2])
+    assert list_deductions().deductions == unordered([d1, d2])

@@ -1,9 +1,11 @@
 """domain."""
 from __future__ import annotations
 
+from typing import Self
+
 from pydantic import BaseModel, Field
 
-from knowde._feature._shared.domain import Entity
+from knowde._feature._shared.domain import APIReturn, Entity
 
 
 class Proposition(Entity, frozen=True):
@@ -34,6 +36,21 @@ class DeductionStatistics(BaseModel, frozen=True):
     max_axiom_dist: int
     max_leaf_dist: int
 
+    @classmethod
+    def create(cls, nums: list[int]) -> Self:
+        """Create from nums."""
+        if len(nums) != 6:  # noqa: PLR2004
+            msg = "nums must be int list of 6 length"
+            raise ValueError(msg)
+        return cls(
+            n_src=nums[0],
+            n_dest=nums[1],
+            n_axiom=nums[2],
+            n_leaf=nums[3],
+            max_axiom_dist=nums[4],
+            max_leaf_dist=nums[5],
+        )
+
     @property
     def nums(self) -> tuple[int, int, int, int, int, int]:
         """For test conviniency."""
@@ -45,3 +62,21 @@ class DeductionStatistics(BaseModel, frozen=True):
             self.max_axiom_dist,
             self.max_leaf_dist,
         )
+
+
+class StatsDeduction(BaseModel, frozen=True):
+    """統計付き演繹."""
+
+    deduction: Deduction
+    stats: DeductionStatistics
+
+
+class StatsDeductions(APIReturn, frozen=True):
+    """統計付き演繹リスト."""
+
+    values: list[StatsDeduction] = Field(default_factory=list)
+
+    @property
+    def deductions(self) -> list[Deduction]:
+        """Deduction list."""
+        return [v.deduction for v in self.values]

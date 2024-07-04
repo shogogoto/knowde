@@ -45,5 +45,14 @@ class QueryResult(BaseModel, frozen=True):
             ),
         )
 
+    def item(self, i: int, *vars_: str) -> list[Any]:
+        idxs = [self.meta.index(var) for var in vars_]
+        row = self.results[i]
+        return [row[i] for i in idxs]
+
+    def items(self, *vars_: str) -> list[list[Any]]:
+        idxs = [self.meta.index(var) for var in vars_]
+        return [[row[i] for i in idxs] for row in self.results]
+
     def zip(self, *vars_: str) -> tuple[Any, ...]:
         return tuple([self.get(var) for var in vars_])

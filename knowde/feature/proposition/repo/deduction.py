@@ -7,12 +7,22 @@ from uuid import uuid4
 from knowde._feature._shared.domain import jst_now
 from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature._shared.repo.util import NeomodelUtil
-from knowde.feature.proposition.domain import Deduction, Proposition
+from knowde.feature.proposition.domain import (
+    Deduction,
+    DeductionStatistics,
+    Proposition,
+    StatsDeduction,
+    StatsDeductions,
+)
 from knowde.feature.proposition.repo.label import (
     REL_CONCLUSION_LABEL,
     REL_PREMISE_LABEL,
     LDeduction,
     RelPremise,
+)
+from knowde.feature.proposition.repo.statistics import (
+    DEDUCTION_STATS_RETVARS,
+    q_deduction_stats,
 )
 
 if TYPE_CHECKING:
@@ -72,7 +82,7 @@ def remove_deduction(uid: UUID) -> None:
     NeomodelUtil(t=LDeduction).delete(uid)
 
 
-def list_deductions() -> list[Deduction]:
+def list_deductions() -> StatsDeductions:
     """演繹一覧."""
     cl = REL_CONCLUSION_LABEL
     pl = REL_PREMISE_LABEL
@@ -80,13 +90,21 @@ def list_deductions() -> list[Deduction]:
         f"""
         MATCH (d:Deduction)-[:{cl}]->(c:Proposition)
         OPTIONAL MATCH (d)<-[rel:{pl}]-(pre:Proposition)
+        {q_deduction_stats("d", ["d", "c", "rel"])}
         RETURN
+            n_src,
+            n_dest,
+            n_axiom,
+            n_leaf,
+            max_axiom_dist,
+            max_leaf_dist,
             d,
             c,
             rel
         """,
     )
     d = {}
+    cnt = 0
     for lb, c, rel in zip(
         res.get("d"),
         res.get("c", convert=Proposition.to_model),
@@ -94,11 +112,18 @@ def list_deductions() -> list[Deduction]:
         strict=True,
     ):
         if lb.uid not in d:
-            d[lb.uid] = {"lb": lb, "c": c}
+            d[lb.uid] = {
+                "lb": lb,
+                "c": c,
+                "stats": DeductionStatistics.create(
+                    res.item(cnt, *DEDUCTION_STATS_RETVARS),
+                ),
+            }
         if "rels" in d[lb.uid]:
             d[lb.uid]["rels"].append(rel)
         else:
             d[lb.uid]["rels"] = [rel]
+        cnt += 1
 
     retvals = []
     for uid in d:
@@ -114,6 +139,8 @@ def list_deductions() -> list[Deduction]:
             created=lb.created,
             updated=lb.updated,
         )
-        retvals.append(deduction)
+        retvals.append(
+            StatsDeduction(deduction=deduction, stats=d[uid]["stats"]),
+        )
 
-    return retvals
+    return StatsDeductions(values=retvals)
