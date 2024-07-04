@@ -21,7 +21,7 @@ from knowde.feature.proposition.repo.label import (
     RelPremise,
 )
 from knowde.feature.proposition.repo.statistics import (
-    DEDUCTION_STATS_RETVARS,
+    DEDUCTION_STATS_VARS,
     q_deduction_stats,
 )
 
@@ -92,12 +92,7 @@ def list_deductions() -> StatsDeductions:
         OPTIONAL MATCH (d)<-[rel:{pl}]-(pre:Proposition)
         {q_deduction_stats("d", ["d", "c", "rel"])}
         RETURN
-            n_src,
-            n_dest,
-            n_axiom,
-            n_leaf,
-            max_axiom_dist,
-            max_leaf_dist,
+            {",".join(DEDUCTION_STATS_VARS)},
             d,
             c,
             rel
@@ -116,7 +111,7 @@ def list_deductions() -> StatsDeductions:
                 "lb": lb,
                 "c": c,
                 "stats": DeductionStatistics.create(
-                    res.item(cnt, *DEDUCTION_STATS_RETVARS),
+                    res.item(cnt, *DEDUCTION_STATS_VARS),
                 ),
             }
         if "rels" in d[lb.uid]:

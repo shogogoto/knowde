@@ -29,7 +29,3 @@ def delete_proposition(uid: UUID) -> None:
 def list_propositions() -> list[Proposition]:
     """命題一覧."""
     return PropositionUtil.find().to_model()
-
-
-# def name_proposition(uid: UUID) -> None:
-#     pass

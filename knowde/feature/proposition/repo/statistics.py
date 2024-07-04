@@ -42,7 +42,7 @@ def q_deduction_stats(
     """
 
 
-DEDUCTION_STATS_RETVARS: Final = [
+DEDUCTION_STATS_VARS: Final = [
     "n_src",
     "n_dest",
     "n_axiom",
@@ -58,14 +58,8 @@ def find_deductstats(uid: UUID) -> DeductionStatistics:
         f"""
         MATCH (d:Deduction {{uid: $uid}})
         {q_deduction_stats("d")}
-        RETURN
-            n_src,
-            n_dest,
-            n_axiom,
-            n_leaf,
-            max_axiom_dist,
-            max_leaf_dist
+        RETURN {",".join(DEDUCTION_STATS_VARS)}
         """,
         params={"uid": uid.hex},
     )
-    return DeductionStatistics.create(res.item(0, *DEDUCTION_STATS_RETVARS))
+    return DeductionStatistics.create(res.item(0, *DEDUCTION_STATS_VARS))
