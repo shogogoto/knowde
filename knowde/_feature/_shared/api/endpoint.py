@@ -27,6 +27,7 @@ class Endpoint(Enum):
     RefDef = "references/definitions"
     Sentence = "sentences"
     Definition = "definitions"
+    Proposition = "proposition"
 
     Test = "tests"  # test用
 

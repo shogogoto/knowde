@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from uuid import UUID  # noqa: TCH003
 
-from knowde._feature.proposition.repo.label import PropositionUtil
+from knowde._feature.proposition.domain import Proposition  # noqa: TCH001
 
-if TYPE_CHECKING:
-    from uuid import UUID
-
-    from knowde._feature.proposition.domain import Proposition
+from .label import PropositionUtil
 
 
 def add_proposition(text: str) -> Proposition:
@@ -28,3 +25,8 @@ def delete_proposition(uid: UUID) -> None:
 def list_propositions() -> list[Proposition]:
     """命題一覧."""
     return PropositionUtil.find().to_model()
+
+
+def complete_proposition(pref_uid: str) -> Proposition:
+    """補完."""
+    return PropositionUtil.complete(pref_uid=pref_uid).to_model()
