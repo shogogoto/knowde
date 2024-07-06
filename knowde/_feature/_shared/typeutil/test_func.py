@@ -63,6 +63,7 @@ def test_eq_fieldparam_type() -> None:
         p6: datetime
         p7: UUID
         p8: InnerParam
+        p9: list[UUID]
 
     def f(  # noqa: PLR0913
         p1: str,  # noqa: ARG001
@@ -73,6 +74,7 @@ def test_eq_fieldparam_type() -> None:
         p6: datetime,  # noqa: ARG001
         p7: UUID,  # noqa: ARG001
         p8: InnerParam,  # noqa: ARG001
+        p9: list[UUID],  # noqa: ARG001
     ) -> None:
         pass
 
