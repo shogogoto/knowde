@@ -31,7 +31,7 @@ add_client = pf.post(
     to_apifunc(add_proposition, PropositionParam),
     t_body=PropositionParam,
 )
-complete_client = pf.get(
+complete_proposition_client = pf.get(
     APIPath(name="", prefix="/completion"),
     complete_proposition,
     query=APIQuery(name="pref_uid"),
@@ -72,7 +72,7 @@ def _add(text: str) -> Proposition:
 @prop_cli.command("rm")
 @each_args(
     "pref_uids",
-    converter=lambda pref_uid: complete_client(pref_uid=pref_uid),
+    converter=lambda pref_uid: complete_proposition_client(pref_uid=pref_uid),
 )
 def _rm(p: Proposition) -> None:
     """削除."""
@@ -87,7 +87,7 @@ def _rm(p: Proposition) -> None:
 @view_options
 def _ch(pref_uid: str, text: str) -> list[Proposition]:
     """変更."""
-    pre = complete_client(pref_uid=pref_uid)
+    pre = complete_proposition_client(pref_uid=pref_uid)
     post = change_client(uid=pre.valid_uid, text=text)
     click.echo("0->1に変更しました")
     return [pre, post]

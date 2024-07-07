@@ -10,6 +10,15 @@ class DeductionParam(BaseModel, frozen=True):
     """演繹パラメータ."""
 
     txt: str
-    premise_ids: list[UUID]
     conclusion_id: UUID
+    premise_ids: list[UUID]
+    valid: bool = True
+
+
+class DeductionAddCLIParam(BaseModel, frozen=True):
+    """演繹CLIパラメータ."""
+
+    txt: str
+    conclusion_pref_uid: str
+    premise_pref_uids: list[str]
     valid: bool = True
