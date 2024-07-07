@@ -101,15 +101,14 @@ def test_params_order() -> None:
     ]
 
 
-class ParentModel3(BaseModel):
-    nested: NestedModel | None
-    p1_1: str | None
-    p1_2: str | None
-    p2: str
-    p3: str
-
-
 def test_optional_nested() -> None:
+    class ParentModel3(BaseModel):
+        nested: NestedModel | None
+        p1_1: str | None
+        p1_2: str | None
+        p2: str
+        p3: str
+
     deco = model2decorator(ParentModel3)
     assert info(deco) == [
         ("nint1_1", "option"),
