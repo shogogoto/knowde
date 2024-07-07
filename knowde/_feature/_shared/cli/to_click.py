@@ -10,6 +10,8 @@ from click.decorators import FC
 from pydantic import BaseModel
 
 from knowde._feature._shared.domain import TZ
+from knowde._feature._shared.typeutil.check import is_generic_alias
+from knowde._feature._shared.typeutil.operate import extract_generic_alias_type
 
 
 class DateType(ParamType):
@@ -41,6 +43,8 @@ class DateType(ParamType):
 
 
 def to_clicktype(t: type) -> ParamType:
+    if is_generic_alias(t):
+        t = extract_generic_alias_type(t)
     t_map: dict[type, ParamType] = {
         str: click.STRING,
         float: click.FLOAT,

@@ -16,6 +16,7 @@ from knowde._feature._shared.typeutil import (
     is_option,
     is_optional,
 )
+from knowde._feature._shared.typeutil.check import is_generic_alias
 
 if TYPE_CHECKING:
     from pydantic import BaseModel
@@ -25,14 +26,21 @@ if TYPE_CHECKING:
 
 
 def field2option_attrs(info: FieldInfo) -> OptionAttrs:
+    nargs = 1
+    if is_generic_alias(info.annotation):
+        nargs = -1
     return {
         "help": info.description,
         "default": info.default,
+        "nargs": nargs,
     }
 
 
-def field2argument_attrs(info: FieldInfo) -> ArgumentAttrs:  # noqa: ARG001
-    return {}
+def field2argument_attrs(info: FieldInfo) -> ArgumentAttrs:
+    nargs = 1
+    if is_generic_alias(info.annotation):
+        nargs = -1
+    return {"nargs": nargs}
 
 
 def to_clickparam(
@@ -53,7 +61,6 @@ def to_clickparam(
         )
     return click.argument(
         name,
-        nargs=1,
         type=ct,
         **field2argument_attrs(info),
     )

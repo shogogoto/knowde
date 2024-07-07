@@ -26,6 +26,6 @@ def is_option(annotation: type[Any] | None) -> bool:
     return is_optional(annotation)
 
 
-def is_generic_alias(t: type[Any] | None) -> TypeGuard[GenericAlias]:
+def is_generic_alias(t: type[Any] | None) -> TypeGuard[type[GenericAlias]]:
     """listやtupleなどの判別."""
     return isinstance(t, GenericAlias)

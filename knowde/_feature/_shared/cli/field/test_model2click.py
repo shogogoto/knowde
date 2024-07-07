@@ -24,50 +24,32 @@ class NestedModel(BaseModel):
     nstr3: str
 
 
-class OneModel(BaseModel):
-    pstr: str
-    pfloat: float
-    puid: UUID
-    pint: int
-    pbool: bool
-    nested: NestedModel
-    ex: str = Field(exclude=True)
-
-
-OneModelPartial = create_partial_model(OneModel)
-
-
 def test_to_click_param() -> None:
-    def to_param(f: ClickParam) -> click.Parameter:
+    class OneModel(BaseModel):
+        pstr: str
+        pfloat: float
+        puid: UUID
+        pint: int
+        pbool: bool
+        nested: NestedModel
+        ex: str = Field(exclude=True)
+
+    OneModelPartial = create_partial_model(OneModel)  # noqa: N806
+
+    def _to_param(f: ClickParam) -> click.Parameter:
         @f
         def _dummy() -> None:
             pass
 
         return _dummy.__click_params__[0]
 
-    p1 = to_param(to_clickparam("_", OneModel.model_fields["pstr"]))
-    p2 = to_param(to_clickparam("_", OneModelPartial.model_fields["pstr"]))
+    p1 = _to_param(to_clickparam("_", OneModel.model_fields["pstr"]))
+    p2 = _to_param(to_clickparam("_", OneModelPartial.model_fields["pstr"]))
     assert (p1.type, p1.param_type_name) == (click.STRING, "argument")
     assert (p2.type, p2.param_type_name) == (click.STRING, "option")
 
 
-class ParentModel(BaseModel):
-    p1_1: str | None
-    p1_2: str | None
-    p2: str
-    p3: str
-    nested: NestedModel
-
-
-class ParentModel2(BaseModel):
-    p1_1: str | None
-    p1_2: str | None
-    nested: NestedModel
-    p2: str
-    p3: str
-
-
-def info(deco: ClickDecorator) -> list[tuple[str, str]]:
+def _info(deco: ClickDecorator) -> list[tuple[str, str]]:
     @deco
     def _dummy() -> None:
         pass
@@ -76,8 +58,22 @@ def info(deco: ClickDecorator) -> list[tuple[str, str]]:
 
 
 def test_params_order() -> None:
+    class ParentModel(BaseModel):
+        p1_1: str | None
+        p1_2: str | None
+        p2: str
+        p3: str
+        nested: NestedModel
+
+    class ParentModel2(BaseModel):
+        p1_1: str | None
+        p1_2: str | None
+        nested: NestedModel
+        p2: str
+        p3: str
+
     deco = model2decorator(ParentModel)
-    assert info(deco) == [
+    assert _info(deco) == [
         ("p1_1", "option"),
         ("p1_2", "option"),
         ("p2", "argument"),
@@ -89,7 +85,7 @@ def test_params_order() -> None:
     ]
 
     deco2 = model2decorator(ParentModel2)
-    assert info(deco2) == [
+    assert _info(deco2) == [
         ("p1_1", "option"),
         ("p1_2", "option"),
         ("nint1_1", "option"),
@@ -110,7 +106,7 @@ def test_optional_nested() -> None:
         p3: str
 
     deco = model2decorator(ParentModel3)
-    assert info(deco) == [
+    assert _info(deco) == [
         ("nint1_1", "option"),
         ("nint1_2", "option"),
         ("nstr2", "option"),
@@ -120,3 +116,20 @@ def test_optional_nested() -> None:
         ("p2", "argument"),
         ("p3", "argument"),
     ]
+
+
+class WithAlias(BaseModel):
+    p1: list[UUID]
+
+
+def test_alias_field() -> None:
+    """list[UUID]などのGenericAliasの変換."""
+    deco = model2decorator(WithAlias)
+
+    @deco
+    def _f() -> None:
+        pass
+
+    arg: click.Argument = _f.__click_params__[0]
+    assert arg.type == click.UUID
+    assert arg.nargs == -1
