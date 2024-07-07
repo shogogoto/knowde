@@ -1,14 +1,15 @@
 """DTO for proposition."""
 from __future__ import annotations
 
+from uuid import UUID  # noqa: TCH003
+
 from pydantic import BaseModel
-from pydantic_partial.partial import create_partial_model
 
 
-class PropositionParam(BaseModel, frozen=True):
-    """for 命題."""
+class DeductionParam(BaseModel, frozen=True):
+    """演繹パラメータ."""
 
-    text: str
-
-
-PartialPropositionParam = create_partial_model(PropositionParam)
+    txt: str
+    premise_ids: list[UUID]
+    conclusion_id: UUID
+    valid: bool = True

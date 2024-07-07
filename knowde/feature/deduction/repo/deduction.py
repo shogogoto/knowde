@@ -1,8 +1,7 @@
 """論証."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from knowde._feature._shared.domain import jst_now
 from knowde._feature._shared.repo.query import query_cypher
@@ -24,9 +23,6 @@ from knowde.feature.deduction.repo.statistics import (
     DEDUCTION_STATS_VARS,
     q_deduction_stats,
 )
-
-if TYPE_CHECKING:
-    from uuid import UUID
 
 
 def deduct(
@@ -77,11 +73,6 @@ def deduct(
     )
 
 
-def remove_deduction(uid: UUID) -> None:
-    """演繹の削除."""
-    NeomodelUtil(t=LDeduction).delete(uid)
-
-
 def list_deductions() -> StatsDeductions:
     """演繹一覧."""
     cl = REL_CONCLUSION_LABEL
@@ -103,7 +94,7 @@ def list_deductions() -> StatsDeductions:
     for lb, c, rel in zip(
         res.get("d"),
         res.get("c", convert=Proposition.to_model),
-        res.get("rel"),  # , convert=Proposition.to_models),
+        res.get("rel"),
         strict=True,
     ):
         if lb.uid not in d:
@@ -139,3 +130,20 @@ def list_deductions() -> StatsDeductions:
         )
 
     return StatsDeductions(values=retvals)
+
+
+DeductionNeoUtil = NeomodelUtil(t=LDeduction)
+
+
+def remove_deduction(uid: UUID) -> None:
+    """演繹の削除."""
+    DeductionNeoUtil.delete(uid)
+
+
+def complete_deduction_uid(pref_uid: str) -> UUID:
+    """補完."""
+    return DeductionNeoUtil.complete(pref_uid).uid
+
+
+def replace_premises() -> None:
+    """演繹の依存命題を置換."""

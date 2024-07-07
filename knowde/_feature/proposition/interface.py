@@ -14,6 +14,7 @@ from knowde._feature._shared.cli.click_decorators.view.options import view_optio
 from knowde._feature._shared.cli.field.model2click import model2decorator
 from knowde._feature._shared.cli.field.types import PrefUidParam
 from knowde._feature.proposition.domain import Proposition
+from knowde._feature.proposition.dto import PropositionParam
 from knowde._feature.proposition.repo.repo import (
     add_proposition,
     change_proposition,
@@ -21,7 +22,6 @@ from knowde._feature.proposition.repo.repo import (
     delete_proposition,
     list_propositions,
 )
-from knowde.feature.deduction.dto import PropositionParam
 
 p_router = Endpoint.Proposition.create_router()
 pf = ClientFactory(router=p_router, rettype=Proposition)

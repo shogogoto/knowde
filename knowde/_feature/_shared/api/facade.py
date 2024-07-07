@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Generic, Optional, TypeVar
+from typing import TYPE_CHECKING, Callable, Generic, Optional, Self, TypeVar
 
 from fastapi import APIRouter  # noqa: TCH002
 from pydantic import BaseModel
@@ -14,7 +14,6 @@ from knowde._feature._shared.api.endpoint import (
 from knowde._feature._shared.domain import APIReturn
 
 if TYPE_CHECKING:
-
     from knowde._feature._shared.api.api_param import (
         APIQuery,
         BaseAPIPath,
@@ -35,6 +34,9 @@ class ClientFactory(
 
     router: APIRouter
     rettype: type[T]
+
+    def replace(self, rettype: type[APIReturn]) -> Self:
+        return self.__class__(router=self.router, rettype=rettype)
 
     def get(  # noqa: PLR0913
         self,

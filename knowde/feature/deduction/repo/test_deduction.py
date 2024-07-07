@@ -42,3 +42,9 @@ def test_2chain() -> None:
     d1 = deduct("xxx", _uids(p1, p2), p3.valid_uid)
     d2 = deduct("yyy", [p3.valid_uid], p4.valid_uid)
     assert list_deductions().deductions == unordered([d1, d2])
+
+
+# def test_common_premise_and_conclusion() -> None:
+#     """前提と同じ結論は許されない."""
+#     p1 = add_proposition("p1")
+#     d = deduct("xxx", [p1.valid_uid], p1.valid_uid)
