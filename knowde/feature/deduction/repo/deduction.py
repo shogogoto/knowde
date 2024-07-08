@@ -1,11 +1,12 @@
 """論証."""
 from __future__ import annotations
 
+import collections
 from uuid import UUID, uuid4
 
 from knowde._feature._shared.domain import jst_now
 from knowde._feature._shared.repo.query import query_cypher
-from knowde._feature._shared.repo.util import NeomodelUtil
+from knowde._feature._shared.repo.util import LabelUtil, NeomodelUtil
 from knowde._feature.proposition.domain import Proposition
 from knowde.feature.deduction.domain import (
     Deduction,
@@ -13,9 +14,14 @@ from knowde.feature.deduction.domain import (
     StatsDeduction,
     StatsDeductions,
 )
+from knowde.feature.deduction.repo.errors import (
+    CyclicDependencyError,
+    PremiseDuplicationError,
+)
 from knowde.feature.deduction.repo.label import (
     REL_CONCLUSION_LABEL,
     REL_PREMISE_LABEL,
+    DeductionMapper,
     LDeduction,
     RelPremise,
 )
@@ -32,6 +38,16 @@ def deduct(
     valid: bool = True,  # noqa: FBT001 FBT002
 ) -> Deduction:
     """演繹を永続化."""
+    if conclusion_id in premise_ids:
+        msg = f"結論({conclusion_id})が前提に含まれています"
+        raise CyclicDependencyError(msg)
+
+    cnt = collections.Counter(premise_ids)
+    for uid, c in cnt.items():
+        if c > 1:
+            msg = f"前提{uid}が重複しています"
+            raise PremiseDuplicationError(msg)
+
     cl = REL_CONCLUSION_LABEL
     pl = REL_PREMISE_LABEL
     # neomodelを活かせていない気がする
@@ -133,6 +149,7 @@ def list_deductions() -> StatsDeductions:
 
 
 DeductionNeoUtil = NeomodelUtil(t=LDeduction)
+MDeductionUtil = LabelUtil(label=LDeduction, model=DeductionMapper)
 
 
 def remove_deduction(uid: UUID) -> None:
@@ -140,9 +157,9 @@ def remove_deduction(uid: UUID) -> None:
     DeductionNeoUtil.delete(uid)
 
 
-def complete_deduction_uid(pref_uid: str) -> UUID:
+def complete_deduction_mapper(pref_uid: str) -> DeductionMapper:
     """補完."""
-    return DeductionNeoUtil.complete(pref_uid).uid
+    return MDeductionUtil.complete(pref_uid).to_model()
 
 
 def replace_premises() -> None:

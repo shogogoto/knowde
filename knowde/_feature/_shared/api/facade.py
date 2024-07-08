@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Generic, Optional, Self, TypeVar
+from typing import TYPE_CHECKING, Callable, Generic, Optional, TypeVar
 
 from fastapi import APIRouter  # noqa: TCH002
 from pydantic import BaseModel
@@ -34,9 +34,6 @@ class ClientFactory(
 
     router: APIRouter
     rettype: type[T]
-
-    def replace(self, rettype: type[APIReturn]) -> Self:
-        return self.__class__(router=self.router, rettype=rettype)
 
     def get(  # noqa: PLR0913
         self,

@@ -6,6 +6,7 @@ from typing import Self
 
 from neomodel import BooleanProperty, IntegerProperty, StringProperty
 
+from knowde._feature._shared.domain import APIReturn, Entity
 from knowde._feature._shared.repo.base import LBase, RelBase
 from knowde._feature._shared.repo.rel import RelUtil
 from knowde._feature.proposition.domain import Proposition
@@ -18,6 +19,13 @@ class LDeduction(LBase):
     __label__ = "Deduction"
     valid = BooleanProperty()
     text = StringProperty(index=True)
+
+
+class DeductionMapper(Entity, APIReturn, frozen=True):
+    """LabelのMapper."""
+
+    valid: bool
+    text: str
 
 
 class RelPremise(RelBase):

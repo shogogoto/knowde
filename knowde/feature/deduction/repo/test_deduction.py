@@ -3,10 +3,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import pytest
 from pytest_unordered import unordered
 
 from knowde._feature.proposition.repo.repo import add_proposition
 from knowde.feature.deduction.repo.deduction import deduct, list_deductions
+from knowde.feature.deduction.repo.errors import (
+    CyclicDependencyError,
+    PremiseDuplicationError,
+)
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -44,7 +49,16 @@ def test_2chain() -> None:
     assert list_deductions().deductions == unordered([d1, d2])
 
 
-# def test_common_premise_and_conclusion() -> None:
-#     """前提と同じ結論は許されない."""
-#     p1 = add_proposition("p1")
-#     d = deduct("xxx", [p1.valid_uid], p1.valid_uid)
+def test_refuse_cyclic_deps() -> None:
+    """前提と結論が重複."""
+    p = add_proposition("p1")
+    with pytest.raises(CyclicDependencyError):
+        deduct("xxx", _uids(p), p.valid_uid)
+
+
+def test_common_premise_and_conclusion() -> None:
+    """前提と同じ結論は許されない."""
+    p1 = add_proposition("p1")
+    p2 = add_proposition("p1")
+    with pytest.raises(PremiseDuplicationError):
+        deduct("xxx", _uids(p1, p1), p2.valid_uid)
