@@ -9,6 +9,7 @@ from pytest_unordered import unordered
 from knowde._feature.proposition.repo.repo import add_proposition
 from knowde.feature.deduction.repo.deduction import (
     deduct,
+    find_deduction_by_uid,
     list_deductions,
     replace_conclusion,
     replace_premises,
@@ -106,3 +107,12 @@ def test_replace_conclusion() -> None:
     assert d1.valid_uid == d2.valid_uid
     assert d1.premises == d2.premises
     assert d2.conclusion == p4
+
+
+def test_find_deduction() -> None:
+    """前提と結論を含めた演繹の検索."""
+    p1 = add_proposition("p1")
+    p2 = add_proposition("p2")
+    p3 = add_proposition("p3")
+    d = deduct("xxx", _uids(p1, p2), p3.valid_uid)
+    assert d == find_deduction_by_uid(d.valid_uid)

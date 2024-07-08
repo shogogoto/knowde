@@ -72,7 +72,7 @@ def deduct(
         WITH c, d, i, $pids[i] as pid
         MATCH (pre:Proposition {{uid: pid}})
         CREATE (pre)-[rel:{pl} {{order: i}}]->(d)
-        RETURN c, d, pre
+        RETURN c, d, rel
         """,
         params={
             "txt": txt,
@@ -86,12 +86,39 @@ def deduct(
     d = res.get("d")[0]
     return Deduction(
         text=d.text,
-        premises=res.get("pre", convert=Proposition.to_model),
+        premises=RelPremise.sort(res.get("rel")),
         conclusion=res.get("c", convert=Proposition.to_model)[0],
         valid=d.valid,
         uid=d.uid,
         created=d.created,
         updated=d.updated,
+    )
+
+
+def find_deduction_by_uid(uid: UUID) -> Deduction:
+    """前提や結論を含めた演繹を探す."""
+    cl = REL_CONCLUSION_LABEL
+    pl = REL_PREMISE_LABEL
+    res = query_cypher(
+        f"""
+        MATCH (d:Deduction {{uid: $uid}})-[:{cl}]->(c:Proposition),
+            (d)<-[rel:{pl}]-(pre:Proposition)
+        RETURN d, c, rel
+        """,
+        params={"uid": uid.hex},
+    )
+    if len(res.results) == 0:
+        msg = f"{uid}は見つかりませんでした"
+        raise NeomodelNotFoundError(msg)
+    lb = res.get("d")[0]
+    return Deduction(
+        text=lb.text,
+        premises=RelPremise.sort(res.get("rel")),
+        conclusion=res.get("c", convert=Proposition.to_model)[0],
+        valid=lb.valid,
+        uid=lb.uid,
+        created=lb.created,
+        updated=lb.updated,
     )
 
 
