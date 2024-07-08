@@ -86,9 +86,7 @@ class StatsDeduction(BaseModel, frozen=True):
         d = self.deduction
         s = d.updated.strftime("%y/%m/%d")
         st = self.stats
-        o = f"{d.text} ({d.valid_uid}) {st.output} {s}"
-        o += "\n" + d.output
-        return o
+        return f"{st.output} {s}\n{d.output}"
 
 
 class StatsDeductions(APIReturn, frozen=True):

@@ -1,5 +1,5 @@
 """deduction interface."""
-
+from __future__ import annotations
 
 import click
 
@@ -11,12 +11,19 @@ from knowde._feature._shared.api.paramfunc import to_apifunc
 from knowde._feature._shared.cli.click_decorators import each_args
 from knowde._feature._shared.cli.field.model2click import model2decorator
 from knowde.feature.deduction.domain import Deduction, StatsDeductions
-from knowde.feature.deduction.dto import DeductionAddCLIParam, DeductionParam
+from knowde.feature.deduction.dto import (
+    DeductionAddCLIParam,
+    DeductionParam,
+    ReplaceConclusionParam,
+    ReplacePremisesParam,
+)
 from knowde.feature.deduction.repo.deduction import (
     complete_deduction_mapper,
     deduct,
     list_deductions,
     remove_deduction,
+    replace_conclusion,
+    replace_premises,
 )
 from knowde.feature.deduction.repo.label import DeductionMapper
 
@@ -83,3 +90,31 @@ def _rm(m: DeductionMapper) -> None:
     """削除."""
     delete_client(uid=m.valid_uid)
     click.echo(f"{m}を削除しました")
+
+
+@deduct_cli.command("repl_p")
+@model2decorator(ReplacePremisesParam)
+def _repl_p(
+    deduction_pref_uid: str,
+    premise_pref_uids: list[str],
+) -> None:
+    """前提の置換."""
+    m = complete_deduction_mapper(pref_uid=deduction_pref_uid)
+    premises = [complete_proposition_client(pref_uid=pid) for pid in premise_pref_uids]
+    d = replace_premises(m.valid_uid, [p.valid_uid for p in premises])
+    click.echo("前提を置換しました")
+    click.echo(d.output)
+
+
+@deduct_cli.command("repl_c")
+@model2decorator(ReplaceConclusionParam)
+def _repl_c(
+    deduction_pref_uid: str,
+    conclusion_pref_uid: str,
+) -> None:
+    """結論の置換."""
+    m = complete_deduction_mapper(pref_uid=deduction_pref_uid)
+    c = complete_proposition_client(pref_uid=conclusion_pref_uid)
+    d = replace_conclusion(m.valid_uid, c.valid_uid)
+    click.echo("結論を置換しました")
+    click.echo(d.output)

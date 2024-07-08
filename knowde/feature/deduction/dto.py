@@ -22,3 +22,17 @@ class DeductionAddCLIParam(BaseModel, frozen=True):
     conclusion_pref_uid: str
     valid: bool | None = True
     premise_pref_uids: list[str]
+
+
+class ReplacePremisesParam(BaseModel, frozen=True):
+    """前提を置換するCLIパラメータ."""
+
+    deduction_pref_uid: str
+    premise_pref_uids: list[str]
+
+
+class ReplaceConclusionParam(BaseModel, frozen=True):
+    """結論を置換するCLIパラメータ."""
+
+    deduction_pref_uid: str
+    conclusion_pref_uid: str
