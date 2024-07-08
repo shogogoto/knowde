@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from types import NoneType
+from types import GenericAlias, NoneType
 from typing import Any, TypeGuard, get_args
 
 from pydantic import BaseModel
@@ -24,3 +24,8 @@ def is_option(annotation: type[Any] | None) -> bool:
     if is_nested(annotation):
         return False
     return is_optional(annotation)
+
+
+def is_generic_alias(t: type[Any] | None) -> TypeGuard[type[GenericAlias]]:
+    """listやtupleなどの判別."""
+    return isinstance(t, GenericAlias)

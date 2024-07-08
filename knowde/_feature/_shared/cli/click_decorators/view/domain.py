@@ -35,7 +35,9 @@ def filter_props_json(models: list[T], props: set[str] | None) -> list[object]:
         return []
     m = models[0]
     check_includes_props(m.__class__, props)
-    return [m.model_dump(mode="json", include=props) for m in models]
+    return [
+        m.model_dump(mode="json", include=props, exclude={"created"}) for m in models
+    ]
 
 
 def table_view(js: list) -> str:

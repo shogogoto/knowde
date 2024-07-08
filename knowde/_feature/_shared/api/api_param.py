@@ -5,6 +5,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
+    Optional,
     TypeVar,
 )
 
@@ -76,15 +77,17 @@ class BaseAPIPath(BaseModel, APIParam, frozen=True):
         r2epm: Router2EndpointMethod,
         f: Callable,
         convert: Callable[[requests.Response], T],
-        *check_response: CheckResponse,
         query: APIQuery | ComplexAPIQuery | None = None,
         t_body: type[BaseModel] | None = None,
+        check_responses: Optional[list[CheckResponse]] = None,
     ) -> Callable[..., T]:
+        if check_responses is None:
+            check_responses = []
         req = self.to_request(router, r2epm, f, query=query, t_body=t_body)
 
         def _client(**kwargs) -> T:  # noqa: ANN003
             res = req(**kwargs)
-            for c in [check_default(r2epm), *check_response]:
+            for c in [check_default(r2epm), *check_responses]:
                 c(res)
             return convert(res)
 

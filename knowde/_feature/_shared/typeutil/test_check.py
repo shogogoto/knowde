@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from typing import Optional
+from uuid import UUID  # noqa: TCH003
 
 from pydantic import BaseModel, Field
 from pydantic_partial.partial import create_partial_model
 
-from .check import is_nested, is_option
-from .operate import extract_type
+from .check import is_generic_alias, is_nested, is_option
 
 
 class NestedModel(BaseModel):
@@ -20,6 +20,8 @@ class OneModel(BaseModel):
     pex: str = Field(exclude=True)
     nested: NestedModel
     nested_: NestedModel | None
+    uid: UUID
+    uids: list[UUID]
 
 
 OneModelPartial = create_partial_model(OneModel)
@@ -47,8 +49,6 @@ def test_option() -> None:
     assert not is_option(OneModel.model_fields["nested_"].annotation)
 
 
-def test_extract_type() -> None:
-    assert extract_type(str) == str
-    assert extract_type(str | None) == str
-    assert extract_type(Optional[str]) == str
-    assert extract_type(Optional[OneModel]) == OneModel
+def test_alias_type() -> None:
+    assert not is_generic_alias(OneModel.model_fields["uid"].annotation)
+    assert is_generic_alias(OneModel.model_fields["uids"].annotation)

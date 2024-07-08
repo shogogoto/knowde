@@ -13,11 +13,12 @@ class ClickParamAttrs(TypedDict):
 class OptionAttrs(ClickParamAttrs):
     help: str | None
     default: Any
+    nargs: int
     # show_default: bool | None
 
 
 class ArgumentAttrs(ClickParamAttrs):
-    pass
+    nargs: int
 
 
 class PrefUidParam(BaseModel, frozen=True):

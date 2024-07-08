@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from inspect import Parameter, Signature, signature
+from types import GenericAlias
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -81,6 +82,11 @@ class MappingField2ArgumentError(Exception):
     """fieldとargのマッピングエラー."""
 
 
+def _lastname(typestr: str) -> str:
+    """FQCN -> N. e.g. uuid.UUID -> UUID."""
+    return typestr.split(".")[-1]
+
+
 def eq_fieldparam_type(p: Parameter, f: FieldInfo) -> bool:
     """引数とfieldの型を比較."""
     pt = p.annotation
@@ -89,8 +95,14 @@ def eq_fieldparam_type(p: Parameter, f: FieldInfo) -> bool:
         return pt == ft
     if isinstance(ft, ForwardRef):  # ft is primitive
         return pt == ft.__forward_arg__
+    if isinstance(ft, GenericAlias):  # e.g. list[UUID]
+        px = re.findall(r"(.*)\[(.*)\]", str(pt))
+        fx = re.findall(r"(.*)\[(.*)\]", str(ft))
+        eq_alias = px[0][0] == fx[0][0]
+        eq_ln = _lastname(px[0][1]) == _lastname(fx[0][1])
+        return eq_alias and eq_ln
     x = re.findall(r"<class '(.*)'>", str(ft))
-    return pt == x[0].split(".")[-1]
+    return pt == _lastname(x[0])
 
 
 def check_eq_fieldparam_keys(
