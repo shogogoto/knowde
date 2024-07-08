@@ -1,6 +1,8 @@
 """deduction interface."""
 from __future__ import annotations
 
+from uuid import UUID
+
 import click
 
 from knowde._feature import complete_proposition_client
@@ -14,8 +16,10 @@ from knowde.feature.deduction.domain import Deduction, StatsDeductions
 from knowde.feature.deduction.dto import (
     DeductionAddCLIParam,
     DeductionParam,
-    ReplaceConclusionParam,
-    ReplacePremisesParam,
+    ReplaceConclusionAPIParam,
+    ReplaceConclusionCLIParam,
+    ReplacePremisesAPIParam,
+    ReplacePremisesCLIParam,
 )
 from knowde.feature.deduction.repo.deduction import (
     complete_deduction_mapper,
@@ -43,10 +47,31 @@ complete_mapper = APIPath(name="", prefix="/completion").to_client(
     query=APIQuery(name="pref_uid"),
 )
 
-
+pp = APIPath(name="uid", prefix="")
 getf = ClientFactory(router=deduct_router, rettype=StatsDeductions)
 list_client = getf.get(NullPath(), list_deductions)
-delete_client = cf.delete(APIPath(name="uid", prefix=""), remove_deduction)
+delete_client = cf.delete(pp, remove_deduction)
+repl_p_client = cf.put(
+    pp.add(prefix="premises"),
+    to_apifunc(
+        replace_premises,
+        ReplacePremisesAPIParam,
+        Deduction,
+        ignores=[("uid", UUID)],
+    ),
+    t_body=ReplacePremisesAPIParam,
+)
+
+repl_c_client = cf.put(
+    pp.add(prefix="conclusion"),
+    to_apifunc(
+        replace_conclusion,
+        ReplaceConclusionAPIParam,
+        Deduction,
+        ignores=[("uid", UUID)],
+    ),
+    t_body=ReplaceConclusionAPIParam,
+)
 
 
 @click.group("deduct")
@@ -93,7 +118,7 @@ def _rm(m: DeductionMapper) -> None:
 
 
 @deduct_cli.command("repl_p")
-@model2decorator(ReplacePremisesParam)
+@model2decorator(ReplacePremisesCLIParam)
 def _repl_p(
     deduction_pref_uid: str,
     premise_pref_uids: list[str],
@@ -101,13 +126,16 @@ def _repl_p(
     """前提の置換."""
     m = complete_deduction_mapper(pref_uid=deduction_pref_uid)
     premises = [complete_proposition_client(pref_uid=pid) for pid in premise_pref_uids]
-    d = replace_premises(m.valid_uid, [p.valid_uid for p in premises])
+    d = repl_p_client(
+        uid=m.valid_uid,
+        premise_uids=[p.valid_uid for p in premises],
+    )
     click.echo("前提を置換しました")
     click.echo(d.output)
 
 
 @deduct_cli.command("repl_c")
-@model2decorator(ReplaceConclusionParam)
+@model2decorator(ReplaceConclusionCLIParam)
 def _repl_c(
     deduction_pref_uid: str,
     conclusion_pref_uid: str,
@@ -115,6 +143,7 @@ def _repl_c(
     """結論の置換."""
     m = complete_deduction_mapper(pref_uid=deduction_pref_uid)
     c = complete_proposition_client(pref_uid=conclusion_pref_uid)
-    d = replace_conclusion(m.valid_uid, c.valid_uid)
+    # d = replace_conclusion(m.valid_uid, c.valid_uid)
+    d = repl_c_client(uid=m.valid_uid, conclusion_uid=c.valid_uid)
     click.echo("結論を置換しました")
     click.echo(d.output)

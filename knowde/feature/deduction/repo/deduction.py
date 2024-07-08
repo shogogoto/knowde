@@ -167,7 +167,7 @@ def complete_deduction_mapper(pref_uid: str) -> DeductionMapper:
     return MDeductionUtil.complete(pref_uid).to_model()
 
 
-def replace_premises(deduction_uid: UUID, premise_uids: list[UUID]) -> Deduction:
+def replace_premises(uid: UUID, premise_uids: list[UUID]) -> Deduction:
     """演繹の依存命題を置換."""
     cl = REL_CONCLUSION_LABEL
     pl = REL_PREMISE_LABEL
@@ -184,12 +184,12 @@ def replace_premises(deduction_uid: UUID, premise_uids: list[UUID]) -> Deduction
         RETURN c, d, rel
         """,
         params={
-            "did": deduction_uid.hex,
+            "did": uid.hex,
             "pids": [pid.hex for pid in premise_uids],
         },
     )
     if len(res.results) == 0:
-        msg = f"{deduction_uid}は見つかりませんでした"
+        msg = f"{uid}は見つかりませんでした"
         raise NeomodelNotFoundError(msg)
     d = res.get("d")[0]
     return Deduction(
@@ -203,7 +203,7 @@ def replace_premises(deduction_uid: UUID, premise_uids: list[UUID]) -> Deduction
     )
 
 
-def replace_conclusion(deduction_uid: UUID, conclusion_uid: UUID) -> Deduction:
+def replace_conclusion(uid: UUID, conclusion_uid: UUID) -> Deduction:
     """演繹の結論を置換."""
     cl = REL_CONCLUSION_LABEL
     pl = REL_PREMISE_LABEL
@@ -220,12 +220,12 @@ def replace_conclusion(deduction_uid: UUID, conclusion_uid: UUID) -> Deduction:
         RETURN rel, d, c
         """,
         params={
-            "did": deduction_uid.hex,
+            "did": uid.hex,
             "cid": conclusion_uid.hex,
         },
     )
     if len(res.results) == 0:
-        msg = f"{deduction_uid}は見つかりませんでした"
+        msg = f"{uid}は見つかりませんでした"
         raise NeomodelNotFoundError(msg)
     d = res.get("d")[0]
     return Deduction(
