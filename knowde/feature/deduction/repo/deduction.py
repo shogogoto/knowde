@@ -17,6 +17,7 @@ from knowde.feature.deduction.domain import (
 )
 from knowde.feature.deduction.repo.errors import (
     CyclicDependencyError,
+    NoPremiseError,
     PremiseDuplicationError,
 )
 from knowde.feature.deduction.repo.label import (
@@ -42,6 +43,10 @@ def deduct(
     if conclusion_id in premise_ids:
         msg = f"結論({conclusion_id})が前提に含まれています"
         raise CyclicDependencyError(msg)
+
+    if len(premise_ids) == 0:
+        msg = "前提がありません"
+        raise NoPremiseError(msg)
 
     cnt = collections.Counter(premise_ids)
     for uid, c in cnt.items():
@@ -162,7 +167,7 @@ def complete_deduction_mapper(pref_uid: str) -> DeductionMapper:
     return MDeductionUtil.complete(pref_uid).to_model()
 
 
-def replace_premises(dedction_uid: UUID, premise_uids: list[UUID]) -> Deduction:
+def replace_premises(deduction_uid: UUID, premise_uids: list[UUID]) -> Deduction:
     """演繹の依存命題を置換."""
     cl = REL_CONCLUSION_LABEL
     pl = REL_PREMISE_LABEL
@@ -176,20 +181,56 @@ def replace_premises(dedction_uid: UUID, premise_uids: list[UUID]) -> Deduction:
         WITH d, c, i, $pids[i] as pid
         MATCH (pre:Proposition {{uid: pid}})
         CREATE (pre)-[rel:{pl} {{order: i}}]->(d)
-        RETURN c, d, i, pre
+        RETURN c, d, rel
         """,
         params={
-            "did": dedction_uid.hex,
+            "did": deduction_uid.hex,
             "pids": [pid.hex for pid in premise_uids],
         },
     )
     if len(res.results) == 0:
-        msg = f"{dedction_uid}は見つかりませんでした"
+        msg = f"{deduction_uid}は見つかりませんでした"
         raise NeomodelNotFoundError(msg)
     d = res.get("d")[0]
     return Deduction(
         text=d.text,
-        premises=res.get("pre", convert=Proposition.to_model),
+        premises=RelPremise.sort(res.get("rel")),
+        conclusion=res.get("c", convert=Proposition.to_model)[0],
+        valid=d.valid,
+        uid=d.uid,
+        created=d.created,
+        updated=d.updated,
+    )
+
+
+def replace_conclusion(deduction_uid: UUID, conclusion_uid: UUID) -> Deduction:
+    """演繹の結論を置換."""
+    cl = REL_CONCLUSION_LABEL
+    pl = REL_PREMISE_LABEL
+    res = query_cypher(
+        f"""
+        MATCH (d:Deduction {{uid: $did}}),
+            (d)-[old_rel:{cl}]->(:Proposition)
+        DELETE old_rel
+        WITH  d
+        MATCH (c:Proposition {{uid: $cid}})
+        CREATE (d)-[:{cl}]->(c)
+        WITH d, c
+        MATCH (:Proposition)-[rel:{pl}]->(d)
+        RETURN rel, d, c
+        """,
+        params={
+            "did": deduction_uid.hex,
+            "cid": conclusion_uid.hex,
+        },
+    )
+    if len(res.results) == 0:
+        msg = f"{deduction_uid}は見つかりませんでした"
+        raise NeomodelNotFoundError(msg)
+    d = res.get("d")[0]
+    return Deduction(
+        text=d.text,
+        premises=RelPremise.sort(res.get("rel")),
         conclusion=res.get("c", convert=Proposition.to_model)[0],
         valid=d.valid,
         uid=d.uid,

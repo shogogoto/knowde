@@ -14,3 +14,7 @@ class PremiseDuplicationError(DomainError):
     """前提の重複."""
 
     status_code: int = status.HTTP_409_CONFLICT
+
+
+class NoPremiseError(DomainError):
+    """前提がない."""

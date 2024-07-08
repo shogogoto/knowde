@@ -10,10 +10,12 @@ from knowde._feature.proposition.repo.repo import add_proposition
 from knowde.feature.deduction.repo.deduction import (
     deduct,
     list_deductions,
+    replace_conclusion,
     replace_premises,
 )
 from knowde.feature.deduction.repo.errors import (
     CyclicDependencyError,
+    NoPremiseError,
     PremiseDuplicationError,
 )
 
@@ -80,5 +82,27 @@ def test_replace_premises() -> None:
     p4 = add_proposition("p4")
     p5 = add_proposition("p5")
     d2 = replace_premises(d1.valid_uid, _uids(p4, p5))
+    assert d1.valid_uid == d2.valid_uid
     assert d2.premises == [p4, p5]
     assert d2.conclusion == p3
+
+
+def test_no_premise() -> None:
+    """前提がない場合エラー."""
+    p = add_proposition("p1")
+    with pytest.raises(NoPremiseError):
+        deduct("xxx", [], p.valid_uid)
+
+
+def test_replace_conclusion() -> None:
+    """結論の入れ替え."""
+    p1 = add_proposition("p1")
+    p2 = add_proposition("p2")
+    p3 = add_proposition("p3")
+    d1 = deduct("xxx", _uids(p1, p2), p3.valid_uid)
+
+    p4 = add_proposition("p4")
+    d2 = replace_conclusion(d1.valid_uid, p4.valid_uid)
+    assert d1.valid_uid == d2.valid_uid
+    assert d1.premises == d2.premises
+    assert d2.conclusion == p4
