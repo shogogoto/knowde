@@ -1,6 +1,7 @@
 """domain."""
 from __future__ import annotations
 
+from textwrap import indent
 from typing import Self
 
 from pydantic import BaseModel, Field
@@ -20,16 +21,24 @@ class Deduction(Entity, frozen=True):
     conclusion: Proposition = Field(title="結論")
     valid: bool = Field(description="結論の正しさ")
 
+    @property
+    def output(self) -> str:
+        """For CLI output."""
+        s = indent(self.conclusion.output, ":")
+        for pre in self.premises:
+            s += "\n" + indent(pre.output, " " * 2)
+        return s
+
 
 class DeductionStatistics(BaseModel, frozen=True):
     """演繹統計."""
 
-    n_src: int
-    n_dest: int
-    n_axiom: int
-    n_leaf: int
-    max_axiom_dist: int
-    max_leaf_dist: int
+    n_src: int = Field(title="元数")
+    n_dest: int = Field(title="先数")
+    n_axiom: int = Field(title="公理数")
+    n_leaf: int = Field(title="葉数", description="先頭の数")
+    max_axiom_dist: int = Field(title="最大公理距離")
+    max_leaf_dist: int = Field(title="最大葉距離")
 
     @classmethod
     def create(cls, nums: list[int]) -> Self:
@@ -48,7 +57,7 @@ class DeductionStatistics(BaseModel, frozen=True):
 
     @property
     def nums(self) -> tuple[int, int, int, int, int, int]:
-        """For test conviniency."""
+        """For test convinency."""
         return (
             self.n_src,
             self.n_dest,
@@ -58,12 +67,27 @@ class DeductionStatistics(BaseModel, frozen=True):
             self.max_leaf_dist,
         )
 
+    @property
+    def output(self) -> str:
+        """For CLI output."""
+        return "ns:{}, nd:{}, na:{}, nl:{}, mad:{}, mld:{}".format(*self.nums)
+
 
 class StatsDeduction(BaseModel, frozen=True):
     """統計付き演繹."""
 
     deduction: Deduction
     stats: DeductionStatistics
+
+    @property
+    def output(self) -> str:
+        """Str for CLI."""
+        d = self.deduction
+        s = d.updated.strftime("%y/%m/%d")
+        st = self.stats
+        o = f"{d.text} ({d.valid_uid}) {st.output} {s}"
+        o += "\n" + d.output
+        return o
 
 
 class StatsDeductions(APIReturn, frozen=True):

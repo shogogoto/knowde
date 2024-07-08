@@ -20,5 +20,5 @@ class DeductionAddCLIParam(BaseModel, frozen=True):
 
     txt: str
     conclusion_pref_uid: str
+    valid: bool | None = True
     premise_pref_uids: list[str]
-    valid: bool = True
