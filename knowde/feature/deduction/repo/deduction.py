@@ -33,13 +33,8 @@ from knowde.feature.deduction.repo.statistics import (
 )
 
 
-def deduct(
-    txt: str,
-    premise_ids: list[UUID],
-    conclusion_id: UUID,
-    valid: bool = True,  # noqa: FBT001 FBT002
-) -> Deduction:
-    """演繹を永続化."""
+def check_premises_and_conclusion(premise_ids: list[UUID], conclusion_id: UUID) -> None:
+    """前提と結論の妥当性チェック."""
     if conclusion_id in premise_ids:
         msg = f"結論({conclusion_id})が前提に含まれています"
         raise CyclicDependencyError(msg)
@@ -54,6 +49,15 @@ def deduct(
             msg = f"前提{uid}が重複しています"
             raise PremiseDuplicationError(msg)
 
+
+def deduct(
+    txt: str,
+    premise_ids: list[UUID],
+    conclusion_id: UUID,
+    valid: bool = True,  # noqa: FBT001 FBT002
+) -> Deduction:
+    """演繹を永続化."""
+    check_premises_and_conclusion(premise_ids, conclusion_id)
     cl = REL_CONCLUSION_LABEL
     pl = REL_PREMISE_LABEL
     # neomodelを活かせていない気がする
@@ -194,8 +198,19 @@ def complete_deduction_mapper(pref_uid: str) -> DeductionMapper:
     return MDeductionUtil.complete(pref_uid).to_model()
 
 
+def _check_premise_replace(
+    d_id: UUID,
+    premise_ids: list[UUID],
+) -> None:
+    """cyclicチェック."""
+    d = find_deduction_by_uid(d_id)
+    conclusion_id = d.conclusion.valid_uid
+    check_premises_and_conclusion(premise_ids, conclusion_id)
+
+
 def replace_premises(uid: UUID, premise_uids: list[UUID]) -> Deduction:
     """演繹の依存命題を置換."""
+    _check_premise_replace(uid, premise_uids)
     cl = REL_CONCLUSION_LABEL
     pl = REL_PREMISE_LABEL
     res = query_cypher(
@@ -230,8 +245,16 @@ def replace_premises(uid: UUID, premise_uids: list[UUID]) -> Deduction:
     )
 
 
+def _check_conclusion_replace(d_id: UUID, conclusion_id: UUID) -> None:
+    """cyclicチェック."""
+    d = find_deduction_by_uid(d_id)
+    premise_ids = [p.valid_uid for p in d.premises]
+    check_premises_and_conclusion(premise_ids, conclusion_id)
+
+
 def replace_conclusion(uid: UUID, conclusion_uid: UUID) -> Deduction:
     """演繹の結論を置換."""
+    _check_conclusion_replace(uid, conclusion_uid)
     cl = REL_CONCLUSION_LABEL
     pl = REL_PREMISE_LABEL
     res = query_cypher(
