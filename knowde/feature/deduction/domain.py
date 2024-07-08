@@ -24,7 +24,8 @@ class Deduction(Entity, frozen=True):
     @property
     def output(self) -> str:
         """For CLI output."""
-        s = indent(self.conclusion.output, ":")
+        s = f"{self.text} ({self.valid_uid})"
+        s += "\n" + indent(self.conclusion.output, ":")
         for pre in self.premises:
             s += "\n" + indent(pre.output, " " * 2)
         return s

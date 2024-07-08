@@ -5,8 +5,9 @@ import collections
 from uuid import UUID, uuid4
 
 from knowde._feature._shared.domain import jst_now
+from knowde._feature._shared.errors.domain import NeomodelNotFoundError
 from knowde._feature._shared.repo.query import query_cypher
-from knowde._feature._shared.repo.util import LabelUtil, NeomodelUtil
+from knowde._feature._shared.repo.util import LabelUtil
 from knowde._feature.proposition.domain import Proposition
 from knowde.feature.deduction.domain import (
     Deduction,
@@ -79,10 +80,10 @@ def deduct(
     )
     d = res.get("d")[0]
     return Deduction(
-        text=txt,
+        text=d.text,
         premises=res.get("pre", convert=Proposition.to_model),
         conclusion=res.get("c", convert=Proposition.to_model)[0],
-        valid=valid,
+        valid=d.valid,
         uid=d.uid,
         created=d.created,
         updated=d.updated,
@@ -148,13 +149,12 @@ def list_deductions() -> StatsDeductions:
     return StatsDeductions(values=retvals)
 
 
-DeductionNeoUtil = NeomodelUtil(t=LDeduction)
 MDeductionUtil = LabelUtil(label=LDeduction, model=DeductionMapper)
 
 
 def remove_deduction(uid: UUID) -> None:
     """演繹の削除."""
-    DeductionNeoUtil.delete(uid)
+    MDeductionUtil.delete(uid)
 
 
 def complete_deduction_mapper(pref_uid: str) -> DeductionMapper:
@@ -162,5 +162,37 @@ def complete_deduction_mapper(pref_uid: str) -> DeductionMapper:
     return MDeductionUtil.complete(pref_uid).to_model()
 
 
-def replace_premises() -> None:
+def replace_premises(dedction_uid: UUID, premise_uids: list[UUID]) -> Deduction:
     """演繹の依存命題を置換."""
+    cl = REL_CONCLUSION_LABEL
+    pl = REL_PREMISE_LABEL
+    res = query_cypher(
+        f"""
+        MATCH (d:Deduction {{uid: $did}})<-[rel:{pl}]-(:Proposition),
+            (d)-[:{cl}]->(c:Proposition)
+        DELETE rel
+        WITH DISTINCT d, c
+        UNWIND range(0, size($pids) - 1) as i
+        WITH d, c, i, $pids[i] as pid
+        MATCH (pre:Proposition {{uid: pid}})
+        CREATE (pre)-[rel:{pl} {{order: i}}]->(d)
+        RETURN c, d, i, pre
+        """,
+        params={
+            "did": dedction_uid.hex,
+            "pids": [pid.hex for pid in premise_uids],
+        },
+    )
+    if len(res.results) == 0:
+        msg = f"{dedction_uid}は見つかりませんでした"
+        raise NeomodelNotFoundError(msg)
+    d = res.get("d")[0]
+    return Deduction(
+        text=d.text,
+        premises=res.get("pre", convert=Proposition.to_model),
+        conclusion=res.get("c", convert=Proposition.to_model)[0],
+        valid=d.valid,
+        uid=d.uid,
+        created=d.created,
+        updated=d.updated,
+    )
