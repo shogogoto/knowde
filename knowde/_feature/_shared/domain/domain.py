@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta, timezone
-from typing import TYPE_CHECKING, Any, Generic, Optional, Self, TypeVar
+from typing import TYPE_CHECKING, Optional, Self
 from uuid import UUID  # noqa: TCH003
 
-from pydantic import BaseModel, Field, RootModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 
-from .errors import NotExistsUidAccessError
+from knowde._feature._shared.errors.domain import NotExistsUidAccessError
 
 if TYPE_CHECKING:
     from requests import Response
@@ -66,27 +66,3 @@ class Entity(APIReturn, frozen=True):
     @classmethod
     def to_models(cls, lbs: list[LBase]) -> list[Self]:
         return [cls.to_model(lb) for lb in lbs]
-
-
-M = TypeVar("M", bound=Entity)
-
-
-class ModelList(RootModel[list[M]], frozen=True):
-    def attrs(self, key: str) -> list[Any]:
-        return [getattr(m, key) for m in self.root]
-
-    def first(self, key: str, value: Any) -> M:  # noqa: ANN401
-        return next(
-            filter(
-                lambda x: getattr(x, key) == value,
-                self.root,
-            ),
-        )
-
-
-T = TypeVar("T", bound=BaseModel)
-
-
-class Composite(BaseModel, Generic[T], frozen=True):
-    parent: T
-    children: list[Composite[T]] = Field(default_factory=list)
