@@ -12,6 +12,7 @@ from knowde._feature._shared.errors.domain import (
     CompleteNotFoundError,
     NeomodelNotFoundError,
 )
+from knowde._feature._shared.repo.value_util import NodeUtil
 
 from .base import LBase
 from .label import Label, Labels
@@ -20,7 +21,7 @@ L = TypeVar("L", bound=LBase)
 M = TypeVar("M", bound=Entity)
 
 
-class NeomodelUtil(BaseModel, Generic[L], frozen=True):
+class LBaseUtil(NodeUtil[L], frozen=True):
     t: type[L]
 
     def suggest(self, pref_uid: str) -> list[L]:
@@ -61,7 +62,7 @@ class NeomodelUtil(BaseModel, Generic[L], frozen=True):
             return None
         return lb
 
-    def delete(self, uid: UUID) -> None:
+    def delete_by_uid(self, uid: UUID) -> None:
         # 存在チェックはしない
         # 構成要素にrelationshipが含まれるようなmodelでは
         # Label.to_model()が失敗するため用途が限定されるのを避ける
@@ -87,8 +88,8 @@ class LabelUtil(BaseModel, Generic[L, M], frozen=True):
     model: type[M]
 
     @property
-    def util(self) -> NeomodelUtil:
-        return NeomodelUtil(t=self.label)
+    def util(self) -> LBaseUtil:
+        return LBaseUtil(t=self.label)
 
     def to_neolabel(self, model: M) -> L:
         return self.label(**model.model_dump())
