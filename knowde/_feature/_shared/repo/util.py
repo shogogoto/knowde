@@ -46,30 +46,11 @@ class LBaseUtil(NodeUtil[L], frozen=True):
         except DoesNotExist as e:
             raise NeomodelNotFoundError(msg=str(e)) from e
 
-    def find(self, **kwargs) -> L:  # noqa: ANN003
-        """TODO:pagingが未実装."""
-        return self.t.nodes.filter(**kwargs)
-
-    def find_one(self, **kwargs) -> L:  # noqa: ANN003
-        lb = self.find_one_or_none(**kwargs)
-        if lb is None:
-            raise NeomodelNotFoundError
-        return lb
-
-    def find_one_or_none(self, **kwargs) -> L | None:  # noqa: ANN003
-        lb = self.t.nodes.get_or_none(**kwargs)
-        if lb is None:
-            return None
-        return lb
-
     def delete_by_uid(self, uid: UUID) -> None:
         # 存在チェックはしない
         # 構成要素にrelationshipが含まれるようなmodelでは
         # Label.to_model()が失敗するため用途が限定されるのを避ける
         self.find_by_id(uid).delete()
-
-    def create(self, **kwargs) -> L:  # noqa: ANN003
-        return self.t(**kwargs).save()
 
     def change(self, uid: UUID, **kwargs) -> L:  # noqa: ANN003
         lb = self.find_by_id(uid)
