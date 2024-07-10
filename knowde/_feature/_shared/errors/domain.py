@@ -11,7 +11,7 @@ class CompleteNotFoundError(DomainError):
     status_code = status.HTTP_404_NOT_FOUND
 
 
-class CompleteMultiHitError(DomainError):
+class MultiHitError(DomainError):
     status_code = status.HTTP_409_CONFLICT
 
 

@@ -23,11 +23,26 @@ class Day(Entity, frozen=True):
     value: int = Field(ge=1, le=31)
 
 
+class TimeValue(BaseModel, frozen=True):
+    name: str
+    year: int
+    month: int | None = Field(None, ge=1, le=12, init_var=False)
+    day: int | None = Field(None, ge=1, le=31, init_var=False)
+
+
 class Time(BaseModel, frozen=True):
     """時刻."""
 
-    name: str
-    year: int
-    month: int | None = Field(None, ge=1, le=12, init=False)
+    tl: TimelineRoot
+    year: Year
+    month: Month | None = None
+    day: Day | None = None
 
-    day: int | None = Field(None, ge=1, le=31, init=False)
+    @property
+    def value(self) -> TimeValue:
+        return TimeValue(
+            name=self.tl.name,
+            year=self.year.value,
+            month=self.month.value if self.month is not None else None,
+            day=self.day.value if self.day is not None else None,
+        )

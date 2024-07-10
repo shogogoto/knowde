@@ -12,8 +12,8 @@ from pydantic import BaseModel
 from typing_extensions import override
 
 from knowde._feature._shared.errors.domain import (
-    CompleteMultiHitError,
     CompleteNotFoundError,
+    MultiHitError,
 )
 from knowde._feature._shared.repo.query import query_cypher
 
@@ -157,7 +157,7 @@ class RelUtil(
             raise CompleteNotFoundError(msg)
         if n > 1:
             msg = f"{n}件ヒット.1つだけヒットするよう入力桁を増やしてみてね."
-            raise CompleteMultiHitError(msg)
+            raise MultiHitError(msg)
         return rels[0]
 
     def find_one_or_none(self, rel_uid: UUID) -> R | None:

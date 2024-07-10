@@ -8,8 +8,8 @@ from pydantic import BaseModel
 
 from knowde._feature._shared.domain import Entity
 from knowde._feature._shared.errors.domain import (
-    CompleteMultiHitError,
     CompleteNotFoundError,
+    MultiHitError,
     NeomodelNotFoundError,
 )
 from knowde._feature._shared.repo.value_util import NodeUtil
@@ -37,7 +37,7 @@ class LBaseUtil(NodeUtil[L], frozen=True):
         if n > 1:
             uids = [e.uid for e in lbs]
             msg = f"{n}件ヒット.入力桁を増やしてみてね.{uids}"
-            raise CompleteMultiHitError(msg)
+            raise MultiHitError(msg)
         return lbs[0]
 
     def find_by_id(self, uid: UUID) -> L:
