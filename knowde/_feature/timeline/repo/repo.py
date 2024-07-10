@@ -5,8 +5,8 @@ from uuid import uuid4
 
 from knowde._feature._shared.domain.domain import jst_now
 from knowde._feature._shared.repo.query import query_cypher
-from knowde._feature.timeline.domain.domain import Month, Time, TimelineRoot, Year
-from knowde._feature.timeline.domain.errors import MonthRangeError
+from knowde._feature.timeline.domain.domain import Day, Month, Time, TimelineRoot, Year
+from knowde._feature.timeline.domain.errors import DayRangeError, MonthRangeError
 from knowde._feature.timeline.repo.label import (
     LTimeline,
     TLUtil,
@@ -83,8 +83,34 @@ def fetch_month(name: str, year: int, month: int) -> Time:
     )
 
 
-# def fetch_day(name: str, year: int, month: int, day: int) -> Time:
-#     """Get or create year~day of the timeline."""
+def fetch_day(name: str, year: int, month: int, day: int) -> Time:
+    """Get or create year~day of the timeline."""
+    if day < 1 or day > 31:  # noqa: PLR2004
+        msg = f"{month}日は存在しない"
+        raise DayRangeError(msg)
+    t = fetch_month(name, year, month)
+    res = query_cypher(
+        """
+        MERGE (m:Month {uid: $uid_m})-[:DAY]->(d:Day {value: $d})
+        ON CREATE
+            SET d.created = $now,
+                d.updated = $now,
+                d.uid = $uid_d
+        RETURN d
+        """,
+        params={
+            "now": jst_now().timestamp(),
+            "uid_m": t.year.valid_uid.hex,
+            "d": day,
+            "uid_d": uuid4().hex,
+        },
+    )
+    return Time(
+        tl=t.tl,
+        year=t.year,
+        month=t.month,
+        day=res.get("d", convert=Day.to_model)[0],
+    )
 
 
 # def add_time(name: str, year: int, month: int | None, day: int | None) -> None:
