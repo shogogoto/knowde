@@ -46,6 +46,8 @@ def neolabel2model(t: type[T], lb: NeoModel, attrs: Optional[dict] = None) -> T:
 
 
 class Entity(APIReturn, frozen=True):
+    """永続化対象."""
+
     uid: UUID | None = None
     created: datetime = Field(repr=False)
     updated: datetime = Field(repr=False)
