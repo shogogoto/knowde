@@ -113,9 +113,18 @@ def fetch_day(name: str, year: int, month: int, day: int) -> Time:
     )
 
 
-# def add_time(name: str, year: int, month: int | None, day: int | None) -> None:
-#     """日付を追加."""
-#     # if YearUtil.find_one_or_none(value=year):
-#     YearUtil.create(value=year)
-#     MonthUtil.create(value=month)
-#     DayUtil.create(value=day)
+def fetch_time(
+    name: str,
+    year: int,
+    month: int | None = None,
+    day: int | None = None,
+) -> Time:
+    """日付取得のfacade."""
+    if month is None:
+        if day is not None:
+            msg = "月なしで日を指定できません"
+            raise ValueError(msg)
+        return fetch_year(name, year)
+    if day is None:
+        return fetch_month(name, year, month)
+    return fetch_day(name, year, month, day)

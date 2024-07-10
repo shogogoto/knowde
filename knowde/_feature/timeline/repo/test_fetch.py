@@ -1,9 +1,10 @@
 import pytest
 
 from knowde._feature.timeline.domain.errors import DayRangeError, MonthRangeError
-from knowde._feature.timeline.repo.repo import (
+from knowde._feature.timeline.repo.fetch import (
     fetch_day,
     fetch_month,
+    fetch_time,
     fetch_timeline,
     fetch_year,
 )
@@ -47,6 +48,9 @@ def test_fetch_day() -> None:
         fetch_day("xxx", 2024, 1, 32)
 
 
-# def test_add_yyyymmdd() -> None:
-#     ad = add_timeline("A.D.")  # Anno Domini 主の年に
-#     t = add_time("A.D.", 1999, 1, 1)
+def test_fetch_time() -> None:
+    """Facade."""
+    n = "A.D."
+    assert fetch_time(n, 2000) == fetch_year(n, 2000)  # Anno Domini 主の年に
+    assert fetch_time(n, 2001, 1) == fetch_month(n, 2001, 1)
+    assert fetch_time(n, 2002, 2, 1) == fetch_day(n, 2002, 2, 1)
