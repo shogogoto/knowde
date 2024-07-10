@@ -32,20 +32,20 @@ def fetch_year(name: str, year: int) -> Time:
         ON CREATE
             SET tl.created = $now,
                 tl.updated = $now,
-                tl.uid = $uid
+                tl.uid = $uid_tl
         MERGE (tl)-[:YEAR]->(y:Year {value: $y})
         ON CREATE
             SET y.created = $now,
                 y.updated = $now,
-                y.uid = $uid2
+                y.uid = $uid_y
         RETURN tl, y
         """,
         params={
             "name": name,
             "now": jst_now().timestamp(),
-            "uid": uuid4().hex,
+            "uid_tl": uuid4().hex,
             "y": year,
-            "uid2": uuid4().hex,
+            "uid_y": uuid4().hex,
         },
     )
     return Time(
@@ -55,62 +55,36 @@ def fetch_year(name: str, year: int) -> Time:
 
 
 def fetch_month(name: str, year: int, month: int) -> Time:
-    """Get or create year of the timeline."""
+    """Get or create year and month of the timeline."""
     if month < 1 or month > 12:  # noqa: PLR2004
         msg = f"{month}月は存在しない"
         raise MonthRangeError(msg)
+    t = fetch_year(name, year)
     res = query_cypher(
         """
-        MERGE (tl:Timeline {name: $name})
-        ON CREATE
-            SET tl.created = $now,
-                tl.updated = $now,
-                tl.uid = $uid
-        MERGE (tl)-[:YEAR]->(y:Year {value: $y})
-        ON CREATE
-            SET y.created = $now,
-                y.updated = $now,
-                y.uid = $uid2
-        MERGE (y)-[:MONTH]->(m:Month {value: $m})
+        MERGE (y:Year {uid: $uid_y})-[:MONTH]->(m:Month {value: $m})
         ON CREATE
             SET m.created = $now,
                 m.updated = $now,
-                m.uid = $uid3
-        RETURN tl, y, m
+                m.uid = $uid_m
+        RETURN m
         """,
         params={
-            "name": name,
             "now": jst_now().timestamp(),
-            "uid": uuid4().hex,
-            "y": year,
-            "uid2": uuid4().hex,
+            "uid_y": t.year.valid_uid.hex,
             "m": month,
-            "uid3": uuid4().hex,
+            "uid_m": uuid4().hex,
         },
     )
     return Time(
-        tl=res.get("tl", convert=TimelineRoot.to_model)[0],
-        year=res.get("y", convert=Year.to_model)[0],
+        tl=t.tl,
+        year=t.year,
         month=res.get("m", convert=Month.to_model)[0],
     )
-    # t = fetch_year(name, year)
 
-    # # rels = RelTL2Y.find_by_source_id(t.to_model().valid_uid, {"value": year})
-    # # if len(rels) == 0:
-    # #     lb = YearUtil.create(value=year)
-    # #     RelTL2Y.to(tl.label).connect(lb.label)
-    # #     y = lb.to_model()
-    # # elif len(rels) == 1:
-    # #     y = Year.to_model(rels[0].end_node())
-    # # else:
-    # #     msg = f"'{name}'に{year}年は既にあります'"
-    # #     raise MultiHitError(msg)
-    # # return Time(
-    # #     tl=tl.to_model(),
-    # #     year=y,
-    # # )
-    # rels = RelY2M
-    # return None
+
+# def fetch_day(name: str, year: int, month: int, day: int) -> Time:
+#     """Get or create year~day of the timeline."""
 
 
 # def add_time(name: str, year: int, month: int | None, day: int | None) -> None:

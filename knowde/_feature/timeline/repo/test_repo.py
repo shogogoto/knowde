@@ -29,6 +29,11 @@ def test_fetch_month() -> None:
         fetch_month("xxx", 2025, 13)
 
 
+def test_fetch_day() -> None:
+    # ymd = fe
+    pass
+
+
 # def test_add_yyyymmdd() -> None:
 #     ad = add_timeline("A.D.")  # Anno Domini 主の年に
 #     t = add_time("A.D.", 1999, 1, 1)
