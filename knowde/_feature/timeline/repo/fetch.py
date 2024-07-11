@@ -50,7 +50,7 @@ def fetch_year(name: str, year: int) -> Time:
     )
     return Time(
         tl=res.get("tl", convert=TimelineRoot.to_model)[0],
-        year=res.get("y", convert=Year.to_model)[0],
+        y=res.get("y", convert=Year.to_model)[0],
     )
 
 
@@ -71,22 +71,22 @@ def fetch_month(name: str, year: int, month: int) -> Time:
         """,
         params={
             "now": jst_now().timestamp(),
-            "uid_y": t.year.valid_uid.hex,
+            "uid_y": t.y.valid_uid.hex,
             "m": month,
             "uid_m": uuid4().hex,
         },
     )
     return Time(
         tl=t.tl,
-        year=t.year,
-        month=res.get("m", convert=Month.to_model)[0],
+        y=t.y,
+        m=res.get("m", convert=Month.to_model)[0],
     )
 
 
 def fetch_day(name: str, year: int, month: int, day: int) -> Time:
     """Get or create year~day of the timeline."""
     if day < 1 or day > 31:  # noqa: PLR2004
-        msg = f"{month}日は存在しない"
+        msg = f"{month}月{day}日は存在しない"
         raise DayRangeError(msg)
     t = fetch_month(name, year, month)
     res = query_cypher(
@@ -100,16 +100,16 @@ def fetch_day(name: str, year: int, month: int, day: int) -> Time:
         """,
         params={
             "now": jst_now().timestamp(),
-            "uid_m": t.year.valid_uid.hex,
+            "uid_m": t.y.valid_uid.hex,
             "d": day,
             "uid_d": uuid4().hex,
         },
     )
     return Time(
         tl=t.tl,
-        year=t.year,
-        month=t.month,
-        day=res.get("d", convert=Day.to_model)[0],
+        y=t.y,
+        m=t.m,
+        d=res.get("d", convert=Day.to_model)[0],
     )
 
 
