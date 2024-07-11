@@ -4,7 +4,7 @@ import click
 from knowde._feature._shared.api.api_param import APIPath, APIQuery, NullPath
 from knowde._feature._shared.api.endpoint import Endpoint
 from knowde._feature._shared.api.facade import ClientFactory
-from knowde._feature._shared.api.paramfunc import to_apifunc
+from knowde._feature._shared.api.paramfunc import to_apifunc, to_queryfunc
 from knowde._feature._shared.cli.field.model2click import model2decorator
 from knowde._feature.timeline.domain.domain import TimeValue
 from knowde._feature.timeline.interface.dto import (
@@ -13,7 +13,7 @@ from knowde._feature.timeline.interface.dto import (
 )
 from knowde._feature.timeline.repo.fetch import fetch_time
 from knowde._feature.timeline.repo.remove import remove_time
-from knowde._feature.timeline.service import list_time_service
+from knowde._feature.timeline.repo.timeline import list_timeline
 
 tl_router = Endpoint.Timeline.create_router()
 cf = ClientFactory(router=tl_router, rettype=TimeValue)
@@ -25,7 +25,12 @@ add_client = cf.post(
 )
 list_client = cf.gets(
     NullPath(),
-    list_time_service,
+    to_queryfunc(
+        list_timeline,
+        [str, int | None, int | None],
+        list[TimeValue],
+        lambda x: x.values,
+    ),
     query=APIQuery(name="name").add("year").add("month"),
 )
 rm_client = cf.delete(

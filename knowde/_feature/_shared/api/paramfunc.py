@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 from inspect import Parameter, signature
 from typing import Any, Callable, Optional, TypeVar
 
@@ -69,6 +70,7 @@ def to_apifunc(  # noqa: PLR0913
     ignores: Optional[list[tuple[str, type]]] = None,
     convert: Callable = lambda x: x,
 ) -> Callable:
+    """Request bodyを付与する."""
     if ignores is None:
         igkeys, igtypes = [], []
     else:
@@ -79,3 +81,19 @@ def to_apifunc(  # noqa: PLR0913
         t_out,
         f.__name__,
     )
+
+
+def to_queryfunc(
+    f: Callable,
+    t_in: list[type],
+    t_out: type | None = None,
+    convert: Callable = lambda x: x,
+) -> Callable:
+    """Query parameterを付与."""
+
+    @functools.wraps(f)
+    def _f(*args, **kwargs) -> Any:  # noqa: ANN401, ANN003, ANN002
+        out = f(*args, **kwargs)
+        return convert(out)
+
+    return inject_signature(_f, t_in, t_out)
