@@ -17,6 +17,8 @@ from typing import (
 from makefun import create_function
 from pydantic_core import PydanticUndefined
 
+from knowde._feature._shared.typeutil.check import is_option
+
 if TYPE_CHECKING:
     from pydantic import BaseModel
     from pydantic.fields import FieldInfo
@@ -101,6 +103,8 @@ def eq_fieldparam_type(p: Parameter, f: FieldInfo) -> bool:
         eq_alias = px[0][0] == fx[0][0]
         eq_ln = _lastname(px[0][1]) == _lastname(fx[0][1])
         return eq_alias and eq_ln
+    if is_option(ft):
+        return str(ft) == str(pt)
     x = re.findall(r"<class '(.*)'>", str(ft))
     return pt == _lastname(x[0])
 

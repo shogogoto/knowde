@@ -4,7 +4,13 @@ from uuid import uuid4
 
 from knowde._feature._shared.domain.domain import jst_now
 from knowde._feature._shared.repo.query import query_cypher
-from knowde._feature.timeline.domain.domain import Day, Month, Time, TimelineRoot, Year
+from knowde._feature.timeline.domain.domain import (
+    Day,
+    Month,
+    Time,
+    TimelineRoot,
+    Year,
+)
 from knowde._feature.timeline.domain.errors import DayRangeError, MonthRangeError
 from knowde._feature.timeline.repo.label import (
     TLUtil,
@@ -67,7 +73,7 @@ def fetch_month(name: str, year: int, month: int) -> Time:
         """,
         params={
             "now": jst_now().timestamp(),
-            "uid_y": t.y.valid_uid.hex,
+            "uid_y": t.year.valid_uid.hex,
             "m": month,
             "uid_m": uuid4().hex,
         },

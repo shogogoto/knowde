@@ -5,6 +5,7 @@ from typing import Self
 from pydantic import BaseModel, Field
 
 from knowde._feature._shared.domain import Entity
+from knowde._feature._shared.domain.domain import APIReturn
 from knowde._feature._shared.errors.domain import NotExistsAccessError
 from knowde._feature._shared.types import NXGraph  # noqa: TCH001
 
@@ -27,7 +28,7 @@ class Day(Entity, frozen=True):
     value: int = Field(ge=1, le=31)
 
 
-class TimeValue(BaseModel, frozen=True):
+class TimeValue(APIReturn, frozen=True):
     name: str
     year: int | None = Field(default=None, init_var=False)
     month: int | None = Field(default=None, ge=1, le=12, init_var=False)
@@ -72,6 +73,12 @@ class Time(BaseModel, frozen=True):
         if self.m is None:
             raise NotExistsAccessError
         return self.m
+
+    @property
+    def year(self) -> Year:
+        if self.y is None:
+            raise NotExistsAccessError
+        return self.y
 
 
 class Days(BaseModel, frozen=True):
