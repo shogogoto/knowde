@@ -85,20 +85,19 @@ class Timeline(BaseModel, frozen=True):
     @property
     def times(self) -> list[Time]:
         """直積."""
+        if len(self.g.nodes) == 0:
+            return [Time(tl=self.root)]
         times = []
         ys = self.g[self.root]
-        if len(ys) == 0:
-            times.append(Time(tl=self.root))
-        else:
-            for y in ys:
-                ms = self.g[y]
-                if len(ms) == 0:
-                    times.append(Time(tl=self.root, y=y))
-                for m in ms:
-                    ds = self.g[m]
-                    if len(ds) == 0:
-                        times.append(Time(tl=self.root, y=y, m=m))
-                    times.extend([Time(tl=self.root, y=y, m=m, d=d) for d in ds])
+        for y in ys:
+            ms = self.g[y]
+            if len(ms) == 0:
+                times.append(Time(tl=self.root, y=y))
+            for m in ms:
+                ds = self.g[m]
+                if len(ds) == 0:
+                    times.append(Time(tl=self.root, y=y, m=m))
+                times.extend([Time(tl=self.root, y=y, m=m, d=d) for d in ds])
         return times
 
     @property
