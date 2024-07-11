@@ -10,7 +10,7 @@ from neomodel import (
 )
 
 from knowde._feature._shared.domain import jst_now
-from knowde._feature._shared.errors.domain import NotExistsUidAccessError
+from knowde._feature._shared.errors.domain import NotExistsAccessError
 
 
 class LBaseNameError(Exception):
@@ -50,5 +50,5 @@ class RelBase(StructuredRel, TimestampMixin):
     @property
     def valid_uid(self) -> UUID:
         if self.uid is None:
-            raise NotExistsUidAccessError
+            raise NotExistsAccessError
         return UUID(self.uid)

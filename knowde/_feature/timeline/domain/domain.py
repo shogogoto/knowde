@@ -3,6 +3,7 @@ from __future__ import annotations
 from pydantic import BaseModel, Field
 
 from knowde._feature._shared.domain import Entity
+from knowde._feature._shared.errors.domain import NotExistsAccessError
 
 
 class TimelineRoot(Entity, frozen=True):
@@ -31,18 +32,34 @@ class TimeValue(BaseModel, frozen=True):
 
 
 class Time(BaseModel, frozen=True):
-    """時刻."""
+    """日付."""
 
     tl: TimelineRoot
-    year: Year
-    month: Month | None = None
-    day: Day | None = None
+    y: Year
+    m: Month | None = None
+    d: Day | None = None
 
     @property
     def value(self) -> TimeValue:
         return TimeValue(
             name=self.tl.name,
-            year=self.year.value,
-            month=self.month.value if self.month is not None else None,
-            day=self.day.value if self.day is not None else None,
+            year=self.y.value,
+            month=self.m.value if self.m is not None else None,
+            day=self.d.value if self.d is not None else None,
         )
+
+    @property
+    def day(self) -> Day:
+        if self.d is None:
+            raise NotExistsAccessError
+        return self.d
+
+    @property
+    def month(self) -> Month:
+        if self.m is None:
+            raise NotExistsAccessError
+        return self.m
+
+
+class Days(BaseModel, frozen=True):
+    times: list[Time]

@@ -6,7 +6,7 @@ from uuid import UUID  # noqa: TCH003
 
 from pydantic import BaseModel, Field, field_validator
 
-from knowde._feature._shared.errors.domain import NotExistsUidAccessError
+from knowde._feature._shared.errors.domain import NotExistsAccessError
 
 if TYPE_CHECKING:
     from requests import Response
@@ -66,7 +66,7 @@ class Entity(APIReturn, frozen=True):
     def valid_uid(self) -> UUID:
         """Exists in db."""
         if self.uid is None:
-            raise NotExistsUidAccessError
+            raise NotExistsAccessError
         return self.uid
 
     @classmethod
