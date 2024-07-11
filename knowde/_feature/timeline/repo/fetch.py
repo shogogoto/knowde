@@ -62,7 +62,8 @@ def fetch_month(name: str, year: int, month: int) -> Time:
     t = fetch_year(name, year)
     res = query_cypher(
         """
-        MERGE (y:Year {uid: $uid_y})-[:MONTH]->(m:Month {value: $m})
+        MATCH (y:Year {uid: $uid_y})
+        MERGE (y)-[:MONTH]->(m:Month {value: $m})
         ON CREATE
             SET m.created = $now,
                 m.updated = $now,
@@ -91,7 +92,8 @@ def fetch_day(name: str, year: int, month: int, day: int) -> Time:
     t = fetch_month(name, year, month)
     res = query_cypher(
         """
-        MERGE (m:Month {uid: $uid_m})-[:DAY]->(d:Day {value: $d})
+        MATCH (m:Month {uid: $uid_m})
+        MERGE (m)-[:DAY]->(d:Day {value: $d})
         ON CREATE
             SET d.created = $now,
                 d.updated = $now,
@@ -100,7 +102,7 @@ def fetch_day(name: str, year: int, month: int, day: int) -> Time:
         """,
         params={
             "now": jst_now().timestamp(),
-            "uid_m": t.y.valid_uid.hex,
+            "uid_m": t.month.valid_uid.hex,
             "d": day,
             "uid_d": uuid4().hex,
         },
