@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from knowde._feature._shared.domain.domain import jst_now
@@ -8,20 +7,16 @@ from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature.timeline.domain.domain import Day, Month, Time, TimelineRoot, Year
 from knowde._feature.timeline.domain.errors import DayRangeError, MonthRangeError
 from knowde._feature.timeline.repo.label import (
-    LTimeline,
     TLUtil,
 )
 
-if TYPE_CHECKING:
-    from knowde._feature._shared.repo.label import Label
 
-
-def fetch_timeline(name: str) -> Label[LTimeline, TimelineRoot]:
+def fetch_timeline(name: str) -> Time:
     """Get or create timeline."""
     tl = TLUtil.find_one_or_none(name=name)
     if tl is not None:
-        return tl
-    return TLUtil.create(name=name)
+        return Time(tl=tl.to_model())
+    return Time(tl=TLUtil.create(name=name).to_model())
 
 
 def fetch_year(name: str, year: int) -> Time:
@@ -117,11 +112,17 @@ def fetch_day(name: str, year: int, month: int, day: int) -> Time:
 
 def fetch_time(
     name: str,
-    year: int,
+    year: int | None = None,
     month: int | None = None,
     day: int | None = None,
 ) -> Time:
     """日付取得のfacade."""
+    if year is None:
+        if month is not None or day is not None:
+            msg = "年なしで月日をしていできません"
+            raise ValueError(msg)
+        return fetch_timeline(name)
+
     if month is None:
         if day is not None:
             msg = "月なしで日を指定できません"

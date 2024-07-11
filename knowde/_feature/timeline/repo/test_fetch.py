@@ -11,9 +11,9 @@ from knowde._feature.timeline.repo.fetch import (
 
 
 def test_fetch_timeline() -> None:
-    tl1 = fetch_timeline("xxx").to_model()
-    assert tl1 == fetch_timeline("xxx").to_model()
-    assert tl1 != fetch_timeline("yyy").to_model()
+    tl1 = fetch_timeline("xxx")
+    assert tl1 == fetch_timeline("xxx")
+    assert tl1 != fetch_timeline("yyy")
 
 
 def test_fetch_year() -> None:
