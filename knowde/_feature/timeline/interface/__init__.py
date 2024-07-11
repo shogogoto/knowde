@@ -1,1 +1,1 @@
-from .interface import tl_router  # noqa: F401
+from .interface import tl_cli, tl_router  # noqa: F401
