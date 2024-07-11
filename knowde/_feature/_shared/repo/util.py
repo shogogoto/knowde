@@ -117,3 +117,10 @@ class LabelUtil(BaseModel, Generic[L, M], frozen=True):
     def change(self, uid: UUID, **kwargs) -> Label[L, M]:  # noqa: ANN003
         lb = self.util.change(uid, **kwargs)
         return self.to_label(lb)
+
+    def fetch(self, **kwargs) -> Label[L, M]:  # noqa: ANN003
+        """１つだけ作成。既存があればそれを返す."""
+        lb = self.find_one_or_none(**kwargs)
+        if lb is not None:
+            return lb
+        return self.create(**kwargs)
