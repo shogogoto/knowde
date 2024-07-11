@@ -56,3 +56,6 @@ class QueryResult(BaseModel, frozen=True):
 
     def tuple(self, *vars_: str) -> tuple[Any, ...]:
         return tuple([self.get(var) for var in vars_])
+
+    def zip(self, *vars_: str) -> zip:
+        return zip(*self.tuple(*vars_), strict=True)
