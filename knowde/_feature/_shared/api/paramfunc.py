@@ -37,6 +37,7 @@ def to_paramfunc(
     f: Callable,
     argname: str = "param",
     ignores: Optional[list[str]] = None,
+    convert: Callable = lambda x: x,
 ) -> Callable:
     """API用関数に変換.
 
@@ -50,7 +51,8 @@ def to_paramfunc(
 
     def _f(*args, **kwargs) -> Any:  # noqa: ANN401, ANN003, ANN002
         p, newargs, newkw = extract_type_arg(t, args, kwargs)
-        return f(*newargs, **p.model_dump(), **newkw)
+        out = f(*newargs, **p.model_dump(), **newkw)
+        return convert(out)
 
     newp = Parameter(argname, kind=Parameter.POSITIONAL_OR_KEYWORD, annotation=t)
     return create_function(
@@ -59,19 +61,20 @@ def to_paramfunc(
     )
 
 
-def to_apifunc(
+def to_apifunc(  # noqa: PLR0913
     f: Callable,
     t_param: type[BaseModel],
     t_out: type | None = None,
     paramname: str = "param",
     ignores: Optional[list[tuple[str, type]]] = None,
+    convert: Callable = lambda x: x,
 ) -> Callable:
     if ignores is None:
         igkeys, igtypes = [], []
     else:
         igkeys, igtypes = zip(*ignores)
     return inject_signature(
-        to_paramfunc(t_param, f, paramname, igkeys),
+        to_paramfunc(t_param, f, paramname, igkeys, convert),
         [*igtypes, t_param],
         t_out,
         f.__name__,

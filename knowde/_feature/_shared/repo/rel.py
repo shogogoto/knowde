@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar
 
 from neomodel import (
     RelationshipFrom,
@@ -12,8 +12,8 @@ from pydantic import BaseModel
 from typing_extensions import override
 
 from knowde._feature._shared.errors.domain import (
-    CompleteMultiHitError,
     CompleteNotFoundError,
+    MultiHitError,
 )
 from knowde._feature._shared.repo.query import query_cypher
 
@@ -25,6 +25,16 @@ if TYPE_CHECKING:
 S = TypeVar("S", bound=LBase)
 T = TypeVar("T", bound=LBase)
 R = TypeVar("R", bound=RelBase)
+
+
+def dict2query_literal(d: dict[str, str | int]) -> str:
+    s = "{"
+    for k, v in d.items():
+        _v = v
+        if isinstance(v, str):
+            _v = f"'{v}'"
+        s += f"{k}: {_v}"
+    return s + "}"
 
 
 class RelUtil(
@@ -44,7 +54,7 @@ class RelUtil(
     t_source: type[S]
     t_target: type[T]
     name: str
-    t_rel: type[R] | None = None
+    t_rel: type[R] | None = RelBase
     cardinality: type[RelationshipManager] = ZeroOrMore  # source to target cardinality
 
     @override
@@ -94,12 +104,17 @@ class RelUtil(
             params={"uid": uid.hex},
         )
 
-    def find_by_source_id(self, source_uid: UUID) -> list[R]:
+    def find_by_source_id(
+        self,
+        source_uid: UUID,
+        attrs: Optional[dict[str, str | int]] = None,
+    ) -> list[R]:
         """Get StructuredRel object."""
+        s = "" if attrs is None else dict2query_literal(attrs)
         sl, tl = self.labels
         return query_cypher(
             f"""
-            MATCH (:{sl}{{uid: $uid}})-[rel:{self.name}]->(:{tl})
+            MATCH (:{sl}{{uid: $uid}})-[rel:{self.name}]->(:{tl} {s})
             RETURN rel
             """,
             params={"uid": source_uid.hex},
@@ -142,7 +157,7 @@ class RelUtil(
             raise CompleteNotFoundError(msg)
         if n > 1:
             msg = f"{n}件ヒット.1つだけヒットするよう入力桁を増やしてみてね."
-            raise CompleteMultiHitError(msg)
+            raise MultiHitError(msg)
         return rels[0]
 
     def find_one_or_none(self, rel_uid: UUID) -> R | None:

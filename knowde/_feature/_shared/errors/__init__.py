@@ -1,2 +1,2 @@
-from .domain import NotExistsUidAccessError  # noqa: F401
+from .domain import NotExistsAccessError  # noqa: F401
 from .errors import DomainError, ErrorHandlingMiddleware  # noqa: F401

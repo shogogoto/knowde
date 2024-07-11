@@ -29,6 +29,7 @@ class Endpoint(Enum):
     Definition = "definitions"
     Proposition = "propositions"
     Deduction = "deductions"
+    Timeline = "timelines"
 
     Test = "tests"  # test用
 

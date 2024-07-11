@@ -8,10 +8,11 @@ from pydantic import BaseModel
 
 from knowde._feature._shared.domain import Entity
 from knowde._feature._shared.errors.domain import (
-    CompleteMultiHitError,
     CompleteNotFoundError,
+    MultiHitError,
     NeomodelNotFoundError,
 )
+from knowde._feature._shared.repo.value_util import NodeUtil
 
 from .base import LBase
 from .label import Label, Labels
@@ -20,7 +21,7 @@ L = TypeVar("L", bound=LBase)
 M = TypeVar("M", bound=Entity)
 
 
-class NeomodelUtil(BaseModel, Generic[L], frozen=True):
+class LBaseUtil(NodeUtil[L], frozen=True):
     t: type[L]
 
     def suggest(self, pref_uid: str) -> list[L]:
@@ -36,7 +37,7 @@ class NeomodelUtil(BaseModel, Generic[L], frozen=True):
         if n > 1:
             uids = [e.uid for e in lbs]
             msg = f"{n}件ヒット.入力桁を増やしてみてね.{uids}"
-            raise CompleteMultiHitError(msg)
+            raise MultiHitError(msg)
         return lbs[0]
 
     def find_by_id(self, uid: UUID) -> L:
@@ -45,30 +46,11 @@ class NeomodelUtil(BaseModel, Generic[L], frozen=True):
         except DoesNotExist as e:
             raise NeomodelNotFoundError(msg=str(e)) from e
 
-    def find(self, **kwargs) -> L:  # noqa: ANN003
-        """TODO:pagingが未実装."""
-        return self.t.nodes.filter(**kwargs)
-
-    def find_one(self, **kwargs) -> L:  # noqa: ANN003
-        lb = self.find_one_or_none(**kwargs)
-        if lb is None:
-            raise NeomodelNotFoundError
-        return lb
-
-    def find_one_or_none(self, **kwargs) -> L | None:  # noqa: ANN003
-        lb = self.t.nodes.get_or_none(**kwargs)
-        if lb is None:
-            return None
-        return lb
-
-    def delete(self, uid: UUID) -> None:
+    def delete_by_uid(self, uid: UUID) -> None:
         # 存在チェックはしない
         # 構成要素にrelationshipが含まれるようなmodelでは
         # Label.to_model()が失敗するため用途が限定されるのを避ける
         self.find_by_id(uid).delete()
-
-    def create(self, **kwargs) -> L:  # noqa: ANN003
-        return self.t(**kwargs).save()
 
     def change(self, uid: UUID, **kwargs) -> L:  # noqa: ANN003
         lb = self.find_by_id(uid)
@@ -87,8 +69,8 @@ class LabelUtil(BaseModel, Generic[L, M], frozen=True):
     model: type[M]
 
     @property
-    def util(self) -> NeomodelUtil:
-        return NeomodelUtil(t=self.label)
+    def util(self) -> LBaseUtil:
+        return LBaseUtil(t=self.label)
 
     def to_neolabel(self, model: M) -> L:
         return self.label(**model.model_dump())

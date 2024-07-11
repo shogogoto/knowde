@@ -113,7 +113,7 @@ def q_stats_def() -> str:
 def build_statsdefs(res: QueryResult) -> StatsDefinitions:
     """Build from query result."""
     terms = res.get("marks", RelMark.sort, row_convert=itemgetter(0))
-    drels, n_srcs, n_dests, max_leaf_dists, max_root_dists = res.zip(
+    drels, n_srcs, n_dests, max_leaf_dists, max_root_dists = res.tuple(
         "def",
         "n_src",
         "n_dest",
