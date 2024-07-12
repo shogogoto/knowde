@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from uuid import uuid4
 
-from knowde._feature._shared.domain.domain import jst_now
+from knowde._feature._shared import jst_now
 from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature.timeline.domain.domain import (
     Day,

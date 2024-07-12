@@ -9,7 +9,7 @@ from click import Context, Parameter, ParamType
 from click.decorators import FC
 from pydantic import BaseModel
 
-from knowde._feature._shared.domain import TZ
+from knowde._feature._shared.timeutil import TZ
 from knowde._feature._shared.typeutil.check import is_generic_alias
 from knowde._feature._shared.typeutil.operate import extract_generic_alias_type
 

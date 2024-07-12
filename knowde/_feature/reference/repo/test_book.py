@@ -1,6 +1,6 @@
 from datetime import date
 
-from knowde._feature._shared.domain import to_date
+from knowde._feature._shared import to_date
 from knowde._feature.reference.dto import PartialBookParam
 from knowde._feature.reference.repo.book import change_book
 from knowde._feature.reference.repo.label import BookUtil

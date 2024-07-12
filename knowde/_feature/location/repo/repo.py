@@ -3,9 +3,9 @@ from uuid import UUID
 
 import networkx as nx
 
-from knowde._feature._shared.domain.container import Composite
+from knowde._feature._shared.domain.container import Composite, CompositionTree
 from knowde._feature._shared.repo.query import query_cypher
-from knowde._feature.location.domain import CompositionTree, Location
+from knowde._feature.location.domain import Location
 from knowde._feature.location.repo.label import REL_L2L_NAME, LocUtil, RelL2L
 
 
