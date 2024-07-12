@@ -18,7 +18,7 @@ class LDeduction(LBase):
 
     __label__ = "Deduction"
     valid = BooleanProperty()
-    text = StringProperty(index=True)
+    text = StringProperty(index=True, required=True)
 
 
 class DeductionMapper(Entity, APIReturn, frozen=True):

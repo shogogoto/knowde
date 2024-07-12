@@ -10,7 +10,7 @@ class LLocation(LBase):
     """位置."""
 
     __label__ = "Location"
-    name = StringProperty(index=True)
+    name = StringProperty(index=True, required=True)
 
 
 LocUtil = LabelUtil(label=LLocation, model=Location)
