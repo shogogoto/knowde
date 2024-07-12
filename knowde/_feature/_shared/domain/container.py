@@ -28,3 +28,6 @@ T = TypeVar("T", bound=BaseModel)
 class Composite(BaseModel, Generic[T], frozen=True):
     parent: T
     children: list[Composite[T]] = Field(default_factory=list)
+
+    def get_children(self) -> list[T]:
+        return [c.parent for c in self.children]

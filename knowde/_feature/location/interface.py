@@ -8,7 +8,7 @@ from knowde._feature.location.repo.label import LocUtil
 loc_router = Endpoint.Location.create_router()
 cf = ClientFactory(router=loc_router, rettype=Location)
 
-complete_clinet = cf.get(
+complete_client = cf.get(
     CmplPath,
     to_queryfunc(
         LocUtil.complete,

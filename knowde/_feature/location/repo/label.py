@@ -13,9 +13,11 @@ class LLocation(LBase):
     name = StringProperty(index=True, required=True)
 
 
+REL_L2L_NAME = "INCLUDE"
+
 LocUtil = LabelUtil(label=LLocation, model=Location)
 RelL2L = RelUtil(
     t_source=LLocation,
     t_target=LLocation,
-    name="IN",
+    name=REL_L2L_NAME,
 )
