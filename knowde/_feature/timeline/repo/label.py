@@ -21,17 +21,18 @@ class LTime(LBase):
 
 
 class LYear(LTime):
+    __optional_labels__ = ["Time"]  # noqa: RUF012
     __label__ = "Year"
 
 
 class LMonth(LTime):
+    __optional_labels__ = ["Time"]  # noqa: RUF012
     __label__ = "Month"
-    value = IntegerProperty(required=True)
 
 
 class LDay(LTime):
+    __optional_labels__ = ["Time"]  # noqa: RUF012
     __label__ = "Day"
-    value = IntegerProperty(required=True)
 
 
 TLUtil = LabelUtil(label=LTimeline, model=TimelineRoot)
