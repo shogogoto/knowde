@@ -36,6 +36,7 @@ def remove_location(uid: UUID) -> None:
 
 
 def find_location_tree(uid: UUID) -> CompositeTree[Location]:
+    # def find_location_tree(uid: UUID) -> LocationTree:
     n = REL_L2L_NAME
     res = query_cypher(
         f"""
@@ -48,11 +49,14 @@ def find_location_tree(uid: UUID) -> CompositeTree[Location]:
     )
     root = res.get("root", convert=Location.to_model)[0]
     g = nx.DiGraph()
+    g.add_node(root)
     for rel in collapse(res.get("rel")):
+        if rel is None:
+            continue
         s = Location.to_model(rel.start_node())
         e = Location.to_model(rel.end_node())
         g.add_edge(s, e)
-    return CompositeTree[Location](root=root, g=g)
+    return CompositeTree(t=Location, root=root, g=g)
 
 
 def rename_location(uid: UUID, name: str) -> Location:

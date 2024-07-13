@@ -31,23 +31,26 @@ class Composite(APIReturn, Generic[T], frozen=True):
     parent: T
     children: list[Composite[T]] = Field(default_factory=list)
 
-    def get_children(self) -> list[T]:
-        return [c.parent for c in self.children]
+
+def build_composite(t: type[T], g: NXGraph, parent: T) -> Composite[T]:
+    children = [build_composite(t, g, n) for n in g[parent]]
+    # ここで型情報を保持してCompositeに渡さないとjson decode時にtype lostする
+    return Composite[t](
+        parent=parent,
+        children=children,
+    )
 
 
 class CompositeTree(APIReturn, Generic[T], frozen=True):
+    """Composite builder."""
+
+    # ここで型情報を保持してCompositeに渡さないとjson decode時にtype lostする
+    t: type[T]
     root: T
     g: NXGraph
 
     def build(self) -> Composite[T]:
-        return self._build(self.root)
-
-    def _build(self, parent: T) -> Composite[T]:
-        children = [self._build(n) for n in self.g[parent]]
-        return Composite[T](
-            parent=parent,
-            children=children,
-        )
+        return build_composite(self.t, self.g, self.root)
 
     def children(self, k: T) -> list[T]:
         if k in self.g:

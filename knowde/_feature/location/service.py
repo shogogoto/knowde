@@ -5,4 +5,6 @@ from knowde._feature.location.repo.repo import find_location_tree
 
 
 def detail_location_service(uid: UUID) -> LocationDetailView:
-    return LocationDetailView(detail=find_location_tree(uid).build())
+    """直接Genericを返す."""
+    tree = find_location_tree(uid)
+    return LocationDetailView(detail=tree.build())

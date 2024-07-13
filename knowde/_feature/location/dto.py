@@ -12,4 +12,6 @@ class LocationAddParam(BaseModel, frozen=True):
 
 
 class LocationDetailView(APIReturn, frozen=True):
-    detail: Composite[Location] | None = None
+    """GenericのままAPIReturnするとjson decodeに失敗するので中間層."""
+
+    detail: Composite[Location] = Field(description="xxx")

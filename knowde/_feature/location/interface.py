@@ -6,7 +6,7 @@ import click
 
 from knowde._feature._shared.api.api_param import NullPath
 from knowde._feature._shared.api.const import CmplPath, CmplQ, UUIDPath
-from knowde._feature._shared.api.endpoint import Endpoint
+from knowde._feature._shared.api.endpoint import Endpoint, router2get
 from knowde._feature._shared.api.facade import ClientFactory
 from knowde._feature._shared.api.paramfunc import to_bodyfunc, to_queryfunc
 from knowde._feature._shared.cli.click_decorators import each_args
@@ -14,7 +14,7 @@ from knowde._feature._shared.cli.click_decorators.view.options import view_optio
 from knowde._feature._shared.cli.field.model2click import model2decorator
 from knowde._feature._shared.cli.field.types import PrefUidParam
 from knowde._feature.location.domain import Location
-from knowde._feature.location.dto import LocationAddParam
+from knowde._feature.location.dto import LocationAddParam, LocationDetailView
 from knowde._feature.location.repo.label import LocUtil
 from knowde._feature.location.repo.repo import (
     add_location_root,
@@ -23,6 +23,7 @@ from knowde._feature.location.repo.repo import (
     remove_location,
     rename_location,
 )
+from knowde._feature.location.service import detail_location_service
 
 loc_router = Endpoint.Location.create_router()
 cf = ClientFactory(router=loc_router, rettype=Location)
@@ -44,19 +45,21 @@ add_client = cf.post(
     to_bodyfunc(add_location_root, LocationAddParam),
     t_body=LocationAddParam,
 )
-list_client = cf.gets(NullPath(), list_location_root)
 add_sub_client = cf.post(
     UUIDPath,
     to_bodyfunc(add_sub_location, LocationAddParam, ignores=[("uid", UUID)]),
     t_body=LocationAddParam,
 )
 rm_client = cf.delete(UUIDPath, remove_location)
-# detail_client = UUIDPath.to_client(
-#     loc_router,
-#     router2get,
-#     detail_location_service,
-#     convert=LocationDetailView.of,
-# )
+
+
+detail_client = UUIDPath.to_client(
+    loc_router,
+    router2get,
+    detail_location_service,
+    convert=LocationDetailView.of,
+)
+list_client = cf.gets(NullPath(), list_location_root)
 
 
 @click.group("locate")
@@ -114,12 +117,10 @@ def _rm(loc: Location) -> None:
     click.echo(f"{loc.output}を削除しました")
 
 
-# @loc_cli.command("detail")
-# @model2decorator(PrefUidParam)
-# def _detail(pref_uid: str) -> None:
-#     """詳細."""
-#     parent = complete_client(pref_uid=pref_uid)
-#     print(parent)
-#     d = detail_client(uid=parent.valid_uid)
-#     print(d)
-#     # return find
+@loc_cli.command("detail")
+@model2decorator(PrefUidParam)
+def _detail(pref_uid: str) -> None:
+    """詳細."""
+    parent = complete_client(pref_uid=pref_uid)
+    d = detail_client(uid=parent.valid_uid)
+    click.echo(d.model_dump_json(indent=2))
