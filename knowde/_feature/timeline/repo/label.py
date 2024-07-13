@@ -3,7 +3,7 @@ from neomodel import IntegerProperty, StringProperty
 from knowde._feature._shared.repo.base import LBase
 from knowde._feature._shared.repo.rel import RelUtil
 from knowde._feature._shared.repo.util import LabelUtil
-from knowde._feature.timeline.domain.domain import Day, Month, TimelineRoot, Year
+from knowde._feature.timeline.domain.domain import YMD, Day, Month, TimelineRoot, Year
 
 
 class LTimeline(LBase):
@@ -16,26 +16,28 @@ class LTimeline(LBase):
 class LTime(LBase):
     """時間."""
 
+    __label__ = "Time"
     __abstract_node__ = True
     value = IntegerProperty(required=True)
 
 
 class LYear(LTime):
-    __optional_labels__ = ["Time"]  # noqa: RUF012
+    # __optional_labels__ = ["Time"]
     __label__ = "Year"
 
 
 class LMonth(LTime):
-    __optional_labels__ = ["Time"]  # noqa: RUF012
+    # __optional_labels__ = ["Time"]
     __label__ = "Month"
 
 
 class LDay(LTime):
-    __optional_labels__ = ["Time"]  # noqa: RUF012
+    # __optional_labels__ = ["Time"]
     __label__ = "Day"
 
 
 TLUtil = LabelUtil(label=LTimeline, model=TimelineRoot)
+TimeUtil = LabelUtil(label=LTime, model=YMD)
 YearUtil = LabelUtil(label=LYear, model=Year)
 MonthUtil = LabelUtil(label=LMonth, model=Month)
 DayUtil = LabelUtil(label=LDay, model=Day)

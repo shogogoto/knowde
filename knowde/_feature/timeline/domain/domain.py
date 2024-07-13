@@ -16,15 +16,21 @@ class TimelineRoot(Entity, frozen=True):
     name: str
 
 
-class Year(Entity, frozen=True):
+class YMD(Entity, frozen=True):
+    """年月日共通."""
+
     value: int
 
 
-class Month(Entity, frozen=True):
+class Year(YMD, frozen=True):
+    pass
+
+
+class Month(YMD, frozen=True):
     value: int = Field(ge=1, le=12)
 
 
-class Day(Entity, frozen=True):
+class Day(YMD, frozen=True):
     value: int = Field(ge=1, le=31)
 
 
@@ -81,9 +87,13 @@ class Time(BaseModel, frozen=True):
         return self.y
 
     @property
-    def tail(self) -> TimelineRoot | Year | Month | Day:
+    def ymd(self) -> YMD:
         ts = [self.tl, self.y, self.m, self.d]
-        return [t for t in ts if t is not None][-1]
+        ret = [t for t in ts if t is not None][-1]
+        if isinstance(ret, TimelineRoot):
+            msg = "年がありません"
+            raise TypeError(msg)
+        return ret
 
 
 class Timeline(BaseModel, frozen=True):
