@@ -1,3 +1,4 @@
+"""人物."""
 from __future__ import annotations
 
 from typing import Self
@@ -9,10 +10,14 @@ from knowde._feature._shared.errors.errors import DomainError
 
 
 class Person(Entity, frozen=True):
+    """人物."""
+
     name: str
 
 
 class LifeDateInvalidError(DomainError):
+    """不正な人生日付."""
+
     msg = "月が不明なのに日が分かるなどを許さない."
 
 
@@ -33,11 +38,13 @@ class LifeDate(BaseModel, frozen=True):
         return self
 
     def to_str(self) -> str:
+        """文字列化."""
         y = str(self.year)
         return "".join([y, to_str(self.month), to_str(self.day)])
 
     @classmethod
     def from_str(cls, v: str) -> Self:
+        """文字列からinstantiate."""
         i_last = len(v)
         i2 = i_last - 2
         i1 = i2 - 2
@@ -53,12 +60,14 @@ NULL_EXPRESSION = "99"
 
 
 def to_str(v: int | None) -> str:
+    """人生日付int to str."""
     if v is None:
         return NULL_EXPRESSION
     return str(v).zfill(2)
 
 
 def to_int(v: str) -> int | None:
+    """人生日付文字列 to int."""
     if v == NULL_EXPRESSION:
         return None
     return int(v)
