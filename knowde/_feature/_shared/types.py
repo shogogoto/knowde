@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Annotated, Any
 
 import networkx as nx
+from neomodel import StructuredNode
 from networkx import DiGraph
 from pydantic import (
     PlainSerializer,
@@ -10,20 +11,18 @@ from pydantic import (
     ValidationInfo,
 )
 
-from knowde._feature._shared.repo.base import LBase
-
 
 def _validate_neomodel(
     v: Any,  # noqa: ANN401
     info: ValidationInfo,  # noqa: ARG001
-) -> LBase:
-    if isinstance(v, LBase):
+) -> StructuredNode:
+    if isinstance(v, StructuredNode):
         return v
     raise TypeError
 
 
 NeoModel = Annotated[
-    LBase,
+    StructuredNode,
     PlainValidator(_validate_neomodel),
     PlainSerializer(lambda x: x.__properties__),
 ]

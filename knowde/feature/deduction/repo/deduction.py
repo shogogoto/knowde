@@ -4,7 +4,7 @@ from __future__ import annotations
 import collections
 from uuid import UUID, uuid4
 
-from knowde._feature._shared.domain import jst_now
+from knowde._feature._shared import jst_now
 from knowde._feature._shared.errors.domain import NeomodelNotFoundError
 from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature._shared.repo.util import LabelUtil

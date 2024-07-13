@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import networkx as nx
 
@@ -14,6 +14,9 @@ from knowde._feature.timeline.domain.domain import (
     TimelineRoot,
     Year,
 )
+
+if TYPE_CHECKING:
+    from uuid import UUID
 
 
 def _valid_edge(tpl: tuple[Any, Any]) -> bool:
@@ -55,3 +58,11 @@ def list_timeline(
         pairs = [(tl, y), (y, m), (m, d)]
         g.add_edges_from([p for p in pairs if _valid_edge(p)])
     return Timeline(root=tl, g=g)
+
+
+def list_roots() -> None:
+    pass
+
+
+def change_root(_uid: UUID, _name: str) -> None:
+    pass

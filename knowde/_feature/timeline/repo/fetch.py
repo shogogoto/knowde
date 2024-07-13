@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from uuid import uuid4
 
-from knowde._feature._shared.domain.domain import jst_now
+from knowde._feature._shared import jst_now
 from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature.timeline.domain.domain import (
     Day,
@@ -19,10 +19,8 @@ from knowde._feature.timeline.repo.label import (
 
 def fetch_timeline(name: str) -> Time:
     """Get or create timeline."""
-    tl = TLUtil.find_one_or_none(name=name)
-    if tl is not None:
-        return Time(tl=tl.to_model())
-    return Time(tl=TLUtil.create(name=name).to_model())
+    tl = TLUtil.fetch(name=name)
+    return Time(tl=tl.to_model())
 
 
 def fetch_year(name: str, year: int) -> Time:

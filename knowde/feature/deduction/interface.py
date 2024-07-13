@@ -9,7 +9,7 @@ from knowde._feature import complete_proposition_client
 from knowde._feature._shared.api.api_param import APIPath, APIQuery, NullPath
 from knowde._feature._shared.api.endpoint import Endpoint, router2get
 from knowde._feature._shared.api.facade import ClientFactory
-from knowde._feature._shared.api.paramfunc import to_apifunc
+from knowde._feature._shared.api.paramfunc import to_bodyfunc
 from knowde._feature._shared.cli.click_decorators import each_args
 from knowde._feature._shared.cli.field.model2click import model2decorator
 from knowde.feature.deduction.domain import Deduction, StatsDeductions
@@ -36,7 +36,7 @@ cf = ClientFactory(router=deduct_router, rettype=Deduction)
 
 add_client = cf.post(
     NullPath(),
-    to_apifunc(deduct, DeductionParam, Deduction),
+    to_bodyfunc(deduct, DeductionParam, Deduction),
     t_body=DeductionParam,
 )
 complete_mapper = APIPath(name="", prefix="/completion").to_client(
@@ -53,7 +53,7 @@ list_client = getf.get(NullPath(), list_deductions)
 delete_client = cf.delete(pp, remove_deduction)
 repl_p_client = cf.put(
     pp.add(prefix="premises"),
-    to_apifunc(
+    to_bodyfunc(
         replace_premises,
         ReplacePremisesAPIParam,
         Deduction,
@@ -64,7 +64,7 @@ repl_p_client = cf.put(
 
 repl_c_client = cf.put(
     pp.add(prefix="conclusion"),
-    to_apifunc(
+    to_bodyfunc(
         replace_conclusion,
         ReplaceConclusionAPIParam,
         Deduction,

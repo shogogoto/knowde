@@ -29,13 +29,13 @@ class LReference(LBase):
 
 class LBook(LReference):
     __label__ = "Book"
-    title = StringProperty(index=True)
+    title = StringProperty(index=True, required=True)
     first_edited = DateProperty()
 
 
 class LWeb(LReference):
     __label__ = "Web"
-    title = StringProperty(index=True)
+    title = StringProperty(index=True, required=True)
     url = StringProperty()
 
 
@@ -43,14 +43,14 @@ class LChapter(LReference):
     """章:Ref直下."""
 
     __label__ = "Chapter"
-    title = StringProperty()
+    title = StringProperty(required=True)
 
 
 class LSection(LReference):
     """節:章の直下."""
 
     __label__ = "Section"
-    title = StringProperty()
+    title = StringProperty(required=True)
 
 
 BookUtil = LabelUtil(label=LBook, model=Book)

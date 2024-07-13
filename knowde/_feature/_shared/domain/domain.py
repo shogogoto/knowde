@@ -1,29 +1,19 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta, timezone
+from datetime import datetime  # noqa: TCH003
 from typing import TYPE_CHECKING, Optional, Self, TypeVar
 from uuid import UUID  # noqa: TCH003
 
 from pydantic import BaseModel, Field, field_validator
 
 from knowde._feature._shared.errors.domain import NotExistsAccessError
+from knowde._feature._shared.timeutil import TZ
 
 if TYPE_CHECKING:
     from requests import Response
 
     from knowde._feature._shared.repo import LBase
     from knowde._feature._shared.types import NeoModel
-
-TZ = timezone(timedelta(hours=9), "Asia/Tokyo")
-
-
-def jst_now() -> datetime:
-    return datetime.now(tz=TZ)
-
-
-def to_date(s: str) -> date:
-    dt = datetime.strptime(s, "%Y-%m-%d").astimezone(TZ)
-    return dt.date()
 
 
 class APIReturn(BaseModel, frozen=True):

@@ -9,8 +9,8 @@ from neomodel import (
     UniqueIdProperty,
 )
 
-from knowde._feature._shared.domain import jst_now
 from knowde._feature._shared.errors.domain import NotExistsAccessError
+from knowde._feature._shared.timeutil import jst_now
 
 
 class LBaseNameError(Exception):

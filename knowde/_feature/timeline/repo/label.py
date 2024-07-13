@@ -15,17 +15,17 @@ class LTimeline(LBase):
 
 class LYear(LBase):
     __label__ = "Year"
-    value = IntegerProperty()
+    value = IntegerProperty(required=True)
 
 
 class LMonth(LBase):
     __label__ = "Month"
-    value = IntegerProperty()
+    value = IntegerProperty(required=True)
 
 
 class LDay(LBase):
     __label__ = "Day"
-    value = IntegerProperty()
+    value = IntegerProperty(required=True)
 
 
 TLUtil = LabelUtil(label=LTimeline, model=TimelineRoot)
