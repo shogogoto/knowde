@@ -5,6 +5,7 @@ from inspect import Parameter, signature
 from typing import Any, Callable, Optional, TypeVar
 
 from makefun import create_function
+from neomodel import db
 from pydantic import BaseModel
 
 from knowde._feature._shared.typeutil.func import (
@@ -50,6 +51,7 @@ def to_paramfunc(
     remains = [params.pop(k) for k in ignores]
     check_map_fields2params(t, params)
 
+    @db.transaction
     def _f(*args, **kwargs) -> Any:  # noqa: ANN401, ANN003, ANN002
         p, newargs, newkw = extract_type_arg(t, args, kwargs)
         out = f(*newargs, **p.model_dump(), **newkw)
@@ -92,6 +94,7 @@ def to_queryfunc(
     """Query parameterを付与."""
 
     @functools.wraps(f)
+    @db.transaction
     def _f(*args, **kwargs) -> Any:  # noqa: ANN401, ANN003, ANN002
         out = f(*args, **kwargs)
         return convert(out)
