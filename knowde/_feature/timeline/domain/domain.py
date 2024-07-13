@@ -80,9 +80,10 @@ class Time(BaseModel, frozen=True):
             raise NotExistsAccessError
         return self.y
 
-
-class Days(BaseModel, frozen=True):
-    times: list[Time]
+    @property
+    def tail(self) -> TimelineRoot | Year | Month | Day:
+        ts = [self.tl, self.y, self.m, self.d]
+        return [t for t in ts if t is not None][-1]
 
 
 class Timeline(BaseModel, frozen=True):

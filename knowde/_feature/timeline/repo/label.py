@@ -13,17 +13,23 @@ class LTimeline(LBase):
     name = StringProperty(unique=True)
 
 
-class LYear(LBase):
-    __label__ = "Year"
+class LTime(LBase):
+    """時間."""
+
+    __abstract_node__ = True
     value = IntegerProperty(required=True)
 
 
-class LMonth(LBase):
+class LYear(LTime):
+    __label__ = "Year"
+
+
+class LMonth(LTime):
     __label__ = "Month"
     value = IntegerProperty(required=True)
 
 
-class LDay(LBase):
+class LDay(LTime):
     __label__ = "Day"
     value = IntegerProperty(required=True)
 
