@@ -1,1 +1,1 @@
-from .interface import loc_router  # noqa: F401
+from .interface import loc_cli, loc_router  # noqa: F401

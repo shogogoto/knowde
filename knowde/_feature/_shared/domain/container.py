@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, RootModel
 
 from knowde._feature._shared.types import NXGraph  # noqa: TCH001
 
-from .domain import Entity
+from .domain import APIReturn, Entity
 
 M = TypeVar("M", bound=Entity)
 
@@ -27,7 +27,7 @@ class ModelList(RootModel[list[M]], frozen=True):
 T = TypeVar("T", bound=BaseModel)
 
 
-class Composite(BaseModel, Generic[T], frozen=True):
+class Composite(APIReturn, Generic[T], frozen=True):
     parent: T
     children: list[Composite[T]] = Field(default_factory=list)
 
@@ -35,7 +35,7 @@ class Composite(BaseModel, Generic[T], frozen=True):
         return [c.parent for c in self.children]
 
 
-class CompositionTree(BaseModel, Generic[T], frozen=True):
+class CompositeTree(APIReturn, Generic[T], frozen=True):
     root: T
     g: NXGraph
 
