@@ -17,7 +17,7 @@ def add_location_root(name: str) -> Location:
 
 def add_sub_location(uid: UUID, name: str) -> Location:
     parent = LocUtil.find_by_id(uid=uid)
-    sub = LocUtil.fetch(name=name)
+    sub = LocUtil.create(name=name)
     RelL2L.connect(parent.label, sub.label)
     return sub.to_model()
 

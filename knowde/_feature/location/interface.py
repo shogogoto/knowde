@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 import click
+from treelib.tree import Tree
 
 from knowde._feature._shared.api.api_param import NullPath
 from knowde._feature._shared.api.const import CmplPath, CmplQ, UUIDPath
@@ -25,6 +27,9 @@ from knowde._feature.location.repo.repo import (
 )
 from knowde._feature.location.service import detail_location_service
 
+if TYPE_CHECKING:
+    from knowde._feature._shared.domain.container import Composite
+
 loc_router = Endpoint.Location.create_router()
 cf = ClientFactory(router=loc_router, rettype=Location)
 
@@ -39,7 +44,11 @@ complete_client = cf.get(
     query=CmplQ,
 )
 
-rename_client = cf.put(UUIDPath, rename_location)
+rename_client = cf.put(
+    UUIDPath,
+    to_bodyfunc(rename_location, LocationAddParam, ignores=[("uid", UUID)]),
+    t_body=LocationAddParam,
+)
 add_client = cf.post(
     NullPath(),
     to_bodyfunc(add_location_root, LocationAddParam),
@@ -117,10 +126,26 @@ def _rm(loc: Location) -> None:
     click.echo(f"{loc.output}を削除しました")
 
 
+def to_tree(c: Composite[Location]) -> Tree:
+    def add_tree(tree: Tree, parent_uid: UUID, c: Composite[Location]) -> None:
+        parent = c.parent
+        p = tree.create_node(parent.output, parent=parent_uid)
+        for child in c.children:
+            add_tree(tree, parent_uid=p, c=child)
+
+    tree = Tree()
+    p = c.parent
+    tree.create_node(tag=p.output, identifier=p.valid_uid, parent=None)
+    for child in c.children:
+        add_tree(tree, p.valid_uid, child)
+    return tree
+
+
 @loc_cli.command("detail")
 @model2decorator(PrefUidParam)
 def _detail(pref_uid: str) -> None:
     """詳細."""
     parent = complete_client(pref_uid=pref_uid)
     d = detail_client(uid=parent.valid_uid)
-    click.echo(d.model_dump_json(indent=2))
+    tree = to_tree(d.detail)
+    click.echo(tree.show(stdout=False))
