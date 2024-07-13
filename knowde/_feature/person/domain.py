@@ -3,10 +3,17 @@ from __future__ import annotations
 from typing import Self
 
 from pydantic import BaseModel, Field, model_validator
-from pydantic_partial.partial import create_partial_model
 
-from knowde._feature._shared.domain import Entity
-from knowde._feature.person.errors import LifeDateInvalidError
+from knowde._feature._shared.domain.domain import Entity
+from knowde._feature._shared.errors.errors import DomainError
+
+
+class Person(Entity, frozen=True):
+    name: str
+
+
+class LifeDateInvalidError(DomainError):
+    msg = "月が不明なのに日が分かるなどを許さない."
 
 
 class LifeDate(BaseModel, frozen=True):
@@ -40,23 +47,6 @@ class LifeDate(BaseModel, frozen=True):
         if y is None:
             raise LifeDateInvalidError
         return cls(year=y, month=m, day=d)
-
-
-class AuthorParam(BaseModel, frozen=True):
-    name: str
-    # 別フィーチャーに分離するかも
-    birth: LifeDate | None = Field(default=None, title="誕生日")
-    death: LifeDate | None = Field(default=None, title="命日")
-
-
-OptionalAuthorParam = create_partial_model(AuthorParam)
-
-
-class Author(Entity, frozen=True):
-    name: str
-    # 別フィーチャーに分離するかも
-    birth: str | None
-    death: str | None
 
 
 NULL_EXPRESSION = "99"
