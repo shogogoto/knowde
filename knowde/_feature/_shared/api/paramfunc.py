@@ -64,7 +64,7 @@ def to_paramfunc(
     )
 
 
-def to_apifunc(  # noqa: PLR0913
+def to_bodyfunc(  # noqa: PLR0913
     f: Callable,
     t_param: type[BaseModel],
     t_out: type | None = None,

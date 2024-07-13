@@ -9,7 +9,7 @@ from knowde._feature._shared.api.check_response import (
     check_delete,
 )
 from knowde._feature._shared.api.endpoint import router2delete, router2get, router2tpost
-from knowde._feature._shared.api.paramfunc import to_apifunc
+from knowde._feature._shared.api.paramfunc import to_bodyfunc
 from knowde._feature._shared.cli.field.model2click import model2decorator
 from knowde.feature.definition.domain.domain import Definition, DefinitionParam
 from knowde.feature.definition.domain.statistics import StatsDefinitions
@@ -26,7 +26,7 @@ def_router = Endpoint.Definition.create_router()
 add_client = NullPath().to_client(
     def_router,
     router2tpost,
-    to_apifunc(add_definition, DefinitionParam, Definition),
+    to_bodyfunc(add_definition, DefinitionParam, Definition),
     t_body=DefinitionParam,
     convert=Definition.of,
 )

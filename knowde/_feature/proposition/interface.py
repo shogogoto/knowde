@@ -8,7 +8,7 @@ import click
 from knowde._feature._shared.api.api_param import APIPath, APIQuery, NullPath
 from knowde._feature._shared.api.endpoint import Endpoint
 from knowde._feature._shared.api.facade import ClientFactory
-from knowde._feature._shared.api.paramfunc import to_apifunc
+from knowde._feature._shared.api.paramfunc import to_bodyfunc
 from knowde._feature._shared.cli.click_decorators import each_args
 from knowde._feature._shared.cli.click_decorators.view.options import view_options
 from knowde._feature._shared.cli.field.model2click import model2decorator
@@ -28,7 +28,7 @@ pf = ClientFactory(router=p_router, rettype=Proposition)
 
 add_client = pf.post(
     NullPath(),
-    to_apifunc(add_proposition, PropositionParam),
+    to_bodyfunc(add_proposition, PropositionParam),
     t_body=PropositionParam,
 )
 complete_proposition_client = pf.get(
@@ -37,7 +37,7 @@ complete_proposition_client = pf.get(
     query=APIQuery(name="pref_uid"),
 )
 pid = APIPath(name="uid", prefix="")
-_change = to_apifunc(
+_change = to_bodyfunc(
     change_proposition,
     PropositionParam,
     ignores=[("uid", UUID)],
