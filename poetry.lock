@@ -658,6 +658,17 @@ files = [
 ]
 
 [[package]]
+name = "more-itertools"
+version = "10.3.0"
+description = "More routines for operating on iterables, beyond itertools"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "more-itertools-10.3.0.tar.gz", hash = "sha256:e5d93ef411224fbcef366a6e8ddc4c5781bc6359d43412a65dd5964e46111463"},
+    {file = "more_itertools-10.3.0-py3-none-any.whl", hash = "sha256:ea6a02e24a9161e51faad17a8782b92a0df82c12c1c8886fec7f0c3fa1a1b320"},
+]
+
+[[package]]
 name = "mslex"
 version = "1.2.0"
 description = "shlex for windows"
@@ -1831,4 +1842,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "2729df52e4a724294fc2a28acf6b52668baf39cd6b683e489c62fb4ea706e625"
+content-hash = "3df0cb30506edc977e10de455c9743d849c44679eb1a27057c4760b102e24ff3"

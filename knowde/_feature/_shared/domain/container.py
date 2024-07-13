@@ -48,3 +48,7 @@ class CompositionTree(BaseModel, Generic[T], frozen=True):
             parent=parent,
             children=children,
         )
+
+    def children(self, k: T) -> list[T]:
+        ls = self.g[k]
+        return list(ls)
