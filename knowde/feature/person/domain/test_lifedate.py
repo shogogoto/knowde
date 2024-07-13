@@ -1,10 +1,10 @@
-"""domain test."""
+"""人生日付 test."""
 from __future__ import annotations
 
 import pytest
 from pydantic import ValidationError
 
-from .domain import LifeDate, LifeDateInvalidError
+from .lifedate import LifeDate, LifeDateInvalidError
 
 
 @pytest.mark.parametrize(

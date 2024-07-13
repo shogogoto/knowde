@@ -1,18 +1,11 @@
-"""人物."""
+"""人生日付."""
 from __future__ import annotations
 
 from typing import Self
 
 from pydantic import BaseModel, Field, model_validator
 
-from knowde._feature._shared.domain.domain import Entity
 from knowde._feature._shared.errors.errors import DomainError
-
-
-class Person(Entity, frozen=True):
-    """人物."""
-
-    name: str
 
 
 class LifeDateInvalidError(DomainError):
