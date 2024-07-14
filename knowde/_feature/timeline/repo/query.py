@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from knowde._feature.timeline.domain.domain import Time
 
 
-def find_time_from(name: str, uid: UUID) -> list[Time]:
+def find_times_from(name: str, uid: UUID) -> list[Time]:
     """timelineに繋がるNodeのuidからtimeを検索."""
     res = query_cypher(
         """
