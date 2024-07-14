@@ -107,8 +107,8 @@ class Time(BaseModel, frozen=True):
 
 
 class Timeline(BaseModel, frozen=True):
-    g: NXGraph
     root: TimelineRoot
+    g: NXGraph
 
     @property
     def times(self) -> list[Time]:

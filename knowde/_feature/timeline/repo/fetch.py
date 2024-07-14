@@ -106,7 +106,6 @@ def fetch_day(name: str, year: int, month: int, day: int) -> Time:
             "uid_d": uuid4().hex,
         },
     )
-
     return Time(
         tl=t.tl,
         y=t.y,
