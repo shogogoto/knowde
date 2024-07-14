@@ -77,6 +77,23 @@ class LifeDate(BaseModel, frozen=True):
         return (self.year, self.month, self.day)
 
 
+class LifeSpan(BaseModel, frozen=True):
+    """人生."""
+
+    birth: LifeDate | None = None
+    death: LifeDate | None = None
+
+    @model_validator(mode="after")
+    def _validate(self) -> Self:
+        if (
+            self.birth is not None
+            and self.death is not None
+            and self.death.value < self.birth.value
+        ):
+            raise DeathBeforeBirthError
+        return self
+
+
 NULL_EXPRESSION = "99"
 
 

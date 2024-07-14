@@ -29,5 +29,4 @@ REL_DEATH = "DEATH"
 RelBirthUtil = RelUtil(t_source=LPerson, t_target=LTime, name=REL_BIRTH)
 RelDeathUtil = RelUtil(t_source=LPerson, t_target=LTime, name=REL_DEATH)
 
-# MEMO: 西暦紀元後 = AD = Anno Domini = 主の年に
-SOCIETY_TIMELINE = "AD"
+SOCIETY_TIMELINE = "AD"  # = Anno Domini = 主の年に = 西暦紀元後

@@ -7,7 +7,10 @@ from knowde._feature.timeline.repo.fetch import fetch_time
 from knowde._feature.timeline.repo.label import TimeUtil
 from knowde._feature.timeline.repo.timeline import list_timeline
 from knowde.feature.person.domain import Person
-from knowde.feature.person.domain.lifedate import DeathBeforeBirthError, LifeDate
+from knowde.feature.person.domain.lifedate import (
+    LifeDate,
+    LifeSpan,
+)
 from knowde.feature.person.repo.label import (
     SOCIETY_TIMELINE,
     LPerson,
@@ -45,21 +48,17 @@ def add_person(
     p = PersonUtil.create(name=name)
     b = LifeDate.from_str(birth)
     d = LifeDate.from_str(death)
-
-    if b is not None and d is not None and d.value < b.value:
-        raise DeathBeforeBirthError
+    ls = LifeSpan(birth=b, death=d)
     if b is not None:
         add_birth(p.label, b)
     if d is not None:
         add_death(p.label, d)
-
     pm = p.to_model()
     return Person(
         name=pm.name,
         created=pm.created,
         updated=pm.updated,
-        birth=b,
-        death=d,
+        lifespan=ls,
     )
 
 
