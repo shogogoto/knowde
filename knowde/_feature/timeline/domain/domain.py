@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Self
+from typing import Optional, Self
 
 from pydantic import BaseModel, Field
 
@@ -39,6 +39,16 @@ class TimeValue(APIReturn, frozen=True):
     year: int | None = Field(default=None, init_var=False)
     month: int | None = Field(default=None, ge=1, le=12, init_var=False)
     day: int | None = Field(default=None, ge=1, le=31, init_var=False)
+
+    @classmethod
+    def new(
+        cls,
+        name: str,
+        year: Optional[int] = None,
+        month: Optional[int] = None,
+        day: Optional[int] = None,
+    ) -> Self:
+        return cls(name=name, year=year, month=month, day=day)
 
     @property
     def tuple(self) -> tuple[str, int | None, int | None, int | None]:
