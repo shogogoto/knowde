@@ -104,7 +104,7 @@ def eq_fieldparam_type(p: Parameter, f: FieldInfo) -> bool:
         eq_ln = _lastname(px[0][1]) == _lastname(fx[0][1])
         return eq_alias and eq_ln
     if is_option(ft):
-        return str(ft) == str(pt)
+        return _lastname(str(ft)) == _lastname(str(pt))
     x = re.findall(r"<class '(.*)'>", str(ft))
     return pt == _lastname(x[0])
 

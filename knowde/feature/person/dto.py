@@ -1,6 +1,18 @@
 """Data Transfer Object."""
 from __future__ import annotations
 
+from typing import Optional
+
+from pydantic import BaseModel
+
+
+class PersonAddParam(BaseModel, frozen=True):
+    """Person DTO."""
+
+    name: str
+    birth: Optional[str] = None
+    death: Optional[str] = None
+
 
 # class AuthorParam(BaseModel, frozen=True):
 #     name: str

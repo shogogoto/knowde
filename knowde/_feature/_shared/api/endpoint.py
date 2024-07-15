@@ -31,6 +31,7 @@ class Endpoint(Enum):
     Deduction = "deductions"
     Timeline = "timelines"
     Location = "locations"
+    Person = "person"
 
     Test = "tests"  # test用
 
