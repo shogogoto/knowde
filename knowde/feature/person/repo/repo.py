@@ -11,6 +11,7 @@ from knowde._feature.timeline.repo.fetch import fetch_time
 from knowde._feature.timeline.repo.label import TimeUtil
 from knowde._feature.timeline.repo.query import build_time_graph
 from knowde._feature.timeline.repo.timeline import list_timeline
+from knowde.feature.person.domain import Person  # noqa: TCH001
 from knowde.feature.person.domain.lifedate import (
     SOCIETY_TIMELINE,
     LifeDate,
@@ -28,7 +29,6 @@ if TYPE_CHECKING:
     from uuid import UUID
 
     from knowde._feature.timeline.domain.domain import Time
-    from knowde.feature.person.domain import Person
 
 
 def add_birth(pl: LPerson, d: LifeDate) -> Time:
@@ -74,8 +74,49 @@ def list_society_tl(
     return list_timeline(SOCIETY_TIMELINE, year, month)
 
 
+def complete_person(pref_uid: str) -> Person:
+    """補完."""
+    root = fetch_time(SOCIETY_TIMELINE).tl
+    res = query_cypher(
+        """
+        MATCH (p:Person WHERE p.uid STARTS WITH $pref_uid)
+        OPTIONAL MATCH (:Timeline)-[brel]->+(:Time)<-[:BIRTH]-(p)
+        OPTIONAL MATCH (:Timeline)-[drel]->+(:Time)<-[:DEATH]-(p)
+        RETURN p, brel, drel
+        """,
+        params={"pref_uid": pref_uid},
+    )
+    m = res.get("p", PersonMapper.to_model)[0]
+    gb = build_time_graph(collapse(res.get("brel")))
+    gd = build_time_graph(collapse(res.get("drel")))
+    tb = Timeline(root=root, g=gb).times[0]
+    td = Timeline(root=root, g=gd).times[0]
+    return m.to_person(LifeSpan.from_times(tb, td))
+
+
+def find_person_by_id(uid: UUID) -> Person:
+    """Find by uuid."""
+    res = query_cypher(
+        """
+        MATCH (p:Person {uid: $uid})
+        OPTIONAL MATCH (root:Timeline)-[brel]->+(:Time)<-[:BIRTH]-(p)
+        OPTIONAL MATCH (:Timeline)-[drel]->+(:Time)<-[:DEATH]-(p)
+        RETURN p, brel, drel, root
+        """,
+        params={"uid": uid.hex},
+    )
+    m = res.get("p", PersonMapper.to_model)[0]
+    root = res.get("root", TimelineRoot.to_model)[0]
+    gb = build_time_graph(collapse(res.get("brel")))
+    gd = build_time_graph(collapse(res.get("drel")))
+    tb = Timeline(root=root, g=gb).times[0]
+    td = Timeline(root=root, g=gd).times[0]
+    return m.to_person(LifeSpan.from_times(tb, td))
+
+
 def rename_person(uid: UUID, name: str) -> Person:
     """Rename person."""
+    root = fetch_time(SOCIETY_TIMELINE).tl
     res = query_cypher(
         """
         MATCH (p:Person {uid: $uid})
@@ -85,7 +126,6 @@ def rename_person(uid: UUID, name: str) -> Person:
         """,
         params={"uid": uid.hex},
     )
-    root = res.get("root", TimelineRoot.to_model)[0]
     gb = build_time_graph(collapse(res.get("brel")))
     gd = build_time_graph(collapse(res.get("drel")))
     tb = Timeline(root=root, g=gb).times[0]

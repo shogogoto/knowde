@@ -10,3 +10,12 @@ class Person(Entity, frozen=True):
 
     name: str
     lifespan: LifeSpan
+
+    @property
+    def output(self) -> str:
+        """Output for cli."""
+        ls = self.lifespan.to_str()
+        ps = f"{self.name}({self.valid_uid})"
+        if ls == "":
+            return ps
+        return f"{ps} {ls}"

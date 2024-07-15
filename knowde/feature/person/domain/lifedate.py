@@ -135,3 +135,11 @@ class LifeSpan(BaseModel, frozen=True):
         ):
             raise DeathBeforeBirthError
         return self
+
+    def to_str(self) -> str:
+        """To str."""
+        b = "" if self.birth is None else self.birth.to_str()
+        d = "" if self.death is None else self.death.to_str()
+        if b == d == "":
+            return ""
+        return f"{b} ~ {d}"

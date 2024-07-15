@@ -3,15 +3,21 @@ from __future__ import annotations
 
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class PersonAddParam(BaseModel, frozen=True):
     """Person DTO."""
 
-    name: str
-    birth: Optional[str] = None
-    death: Optional[str] = None
+    name: str = Field(description="人物名")
+    birth: Optional[str] = Field(default=None, description="誕生日")
+    death: Optional[str] = Field(default=None, description="命日")
+
+
+class PersonRenameParam(BaseModel, frozen=True):
+    """Person DTO."""
+
+    name: str = Field(description="人物名")
 
 
 # class AuthorParam(BaseModel, frozen=True):

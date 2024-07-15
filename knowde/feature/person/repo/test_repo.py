@@ -7,6 +7,7 @@ from pytest_unordered import unordered
 from knowde.feature.person.domain.lifedate import DeathBeforeBirthError, t_society
 from knowde.feature.person.repo.repo import (
     add_person,
+    complete_person,
     list_person,
     list_society_tl,
     rename_person,
@@ -43,3 +44,10 @@ def test_list() -> None:
     p2 = add_person("anon2", "20000101")
     p3 = add_person("anon3", None, "20240721")
     assert list_person() == unordered([p1, p2, p3])
+
+
+def test_complete() -> None:
+    """補完."""
+    p1 = add_person("anono")
+    p2 = complete_person(p1.valid_uid.hex)
+    assert p1 == p2
