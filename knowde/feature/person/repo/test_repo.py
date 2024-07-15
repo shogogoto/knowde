@@ -21,7 +21,7 @@ def test_person_birth_death() -> None:
 
 def test_rename_person() -> None:
     """人物の名前変更."""
-    p1 = add_person("anon", "2000001", "20240721")
+    p1 = add_person("anon", "20000101", "20240721")
     p2 = rename_person(p1.valid_uid, "anon2")
     assert p2.valid_uid == p1.valid_uid
     assert p2.name == "anon2"
