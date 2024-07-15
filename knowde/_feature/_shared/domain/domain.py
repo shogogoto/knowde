@@ -60,7 +60,7 @@ class Entity(APIReturn, frozen=True):
         return self.uid
 
     @classmethod
-    def to_model(cls, lb: LBase, attrs: Optional[dict] = None) -> Self:
+    def to_model(cls, lb: NeoModel, attrs: Optional[dict] = None) -> Self:
         return neolabel2model(cls, lb, attrs)
 
     @classmethod

@@ -7,3 +7,7 @@ class MonthRangeError(DomainError):
 
 class DayRangeError(DomainError):
     """日が[1, 31]外."""
+
+
+class InvalidTimeYMDError(DomainError):
+    """不正な組YMD."""

@@ -6,12 +6,8 @@ from uuid import UUID  # noqa: TCH003
 from neomodel import db
 
 from knowde._feature._shared.repo.query import query_cypher
-from knowde._feature._shared.repo.rel import RelUtil
-from knowde._feature.person.repo.label import AuthorUtil, LAuthor
 from knowde._feature.reference.domain import Book
 from knowde._feature.reference.repo.label import (
-    BookUtil,
-    LBook,
     ReferenceUtil,
     to_refmodel,
 )
@@ -23,13 +19,13 @@ from knowde.feature.definition.repo.definition import (
 )
 from knowde.feature.definition.repo.label import REL_DEF_LABEL
 from knowde.reference.domain import RefDefinition, RefDefinitions
-from knowde.reference.dto import BookParam, RefDefParam  # noqa: TCH001
+from knowde.reference.dto import RefDefParam  # noqa: TCH001
 
-RelAuthorUtil = RelUtil(
-    t_source=LAuthor,
-    t_target=LBook,
-    name="WRITE",
-)
+# RelAuthorUtil = RelUtil(
+#     t_source=LAuthor,
+#     t_target=LBook,
+#     name="WRITE",
+# )
 
 # RelBookRefUtil = RelUtil(
 #     t_source=LBook,
@@ -38,14 +34,14 @@ RelAuthorUtil = RelUtil(
 #         )
 
 
-def add_book_with_author(p: BookParam) -> None:
-    """著者と本を追加する."""
-    book = BookUtil.create(title=p.title)
-    if p.author_name is not None:
-        author = AuthorUtil.find_one_or_none(name=p.author_name)
-        if author is None:
-            author = AuthorUtil.create(name=p.author_name)
-        RelAuthorUtil.connect(author.label, book.label)
+# def add_book_with_author(p: BookParam) -> None:
+#     """著者と本を追加する."""
+#     book = BookUtil.create(title=p.title)
+#     if p.author_name is not None:
+#         author = AuthorUtil.find_one_or_none(name=p.author_name)
+#         if author is None:
+#             author = AuthorUtil.create(name=p.author_name)
+#         RelAuthorUtil.connect(author.label, book.label)
 
 
 def add_refdef(p: RefDefParam) -> RefDefinition:

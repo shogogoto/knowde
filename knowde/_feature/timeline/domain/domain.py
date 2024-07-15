@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-from typing import Self
+from typing import Optional, Self
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from knowde._feature._shared.domain import Entity
 from knowde._feature._shared.domain.domain import APIReturn
 from knowde._feature._shared.errors.domain import NotExistsAccessError
 from knowde._feature._shared.types import NXGraph  # noqa: TCH001
+from knowde._feature.timeline.domain.errors import InvalidTimeYMDError
 
 
 class TimelineRoot(Entity, frozen=True):
@@ -16,16 +17,37 @@ class TimelineRoot(Entity, frozen=True):
     name: str
 
 
-class Year(Entity, frozen=True):
+class YMD(Entity, frozen=True):
+    """年月日共通."""
+
     value: int
 
 
-class Month(Entity, frozen=True):
+class Year(YMD, frozen=True):
+    pass
+
+
+class Month(YMD, frozen=True):
     value: int = Field(ge=1, le=12)
 
 
-class Day(Entity, frozen=True):
+class Day(YMD, frozen=True):
     value: int = Field(ge=1, le=31)
+
+
+def validate_ymd(
+    y: int | Year | None,
+    m: int | Month | None,
+    d: int | Day | None,
+) -> None:
+    """YMDの組の妥当性チェック."""
+    if y is not None:
+        if m is None and d is not None:
+            msg = "年日があるのに月ない"
+            raise InvalidTimeYMDError(msg)
+    elif m is not None or d is not None:
+        msg = "年がないのに月日あり"
+        raise InvalidTimeYMDError(msg)
 
 
 class TimeValue(APIReturn, frozen=True):
@@ -33,6 +55,21 @@ class TimeValue(APIReturn, frozen=True):
     year: int | None = Field(default=None, init_var=False)
     month: int | None = Field(default=None, ge=1, le=12, init_var=False)
     day: int | None = Field(default=None, ge=1, le=31, init_var=False)
+
+    @model_validator(mode="after")
+    def _validate(self) -> Self:
+        validate_ymd(*self.tuple[1:])
+        return self
+
+    @classmethod
+    def new(
+        cls,
+        name: str,
+        year: Optional[int] = None,
+        month: Optional[int] = None,
+        day: Optional[int] = None,
+    ) -> Self:
+        return cls(name=name, year=year, month=month, day=day)
 
     @property
     def tuple(self) -> tuple[str, int | None, int | None, int | None]:
@@ -49,6 +86,11 @@ class Time(BaseModel, frozen=True):
     y: Year | None = None
     m: Month | None = None
     d: Day | None = None
+
+    @model_validator(mode="after")
+    def _validate(self) -> Self:
+        validate_ymd(self.y, self.m, self.d)
+        return self
 
     def __lt__(self, other: Self) -> bool:
         return self.value.tuple < other.value.tuple
@@ -80,14 +122,23 @@ class Time(BaseModel, frozen=True):
             raise NotExistsAccessError
         return self.y
 
+    @property
+    def ymd(self) -> YMD:
+        """より細かい時刻を返す."""
+        ts = [self.tl, self.y, self.m, self.d]
+        ret = [t for t in ts if t is not None][-1]
+        if isinstance(ret, TimelineRoot):
+            msg = "年がありません"
+            raise TypeError(msg)
+        return ret
 
-class Days(BaseModel, frozen=True):
-    times: list[Time]
+    def only_tl(self) -> bool:
+        return self.y is None and self.m is None and self.d is None
 
 
 class Timeline(BaseModel, frozen=True):
-    g: NXGraph
     root: TimelineRoot
+    g: NXGraph
 
     @property
     def times(self) -> list[Time]:

@@ -35,6 +35,7 @@ httpx = "^0.25.2"
 pytest-unordered = "^0.5.2"
 ruff-lsp = "^0.0.48"
 
+pytest-xdist = {extras = ["psutil"], version = "^3.6.1"}
 [tool.poetry-dynamic-versioning]
 enable = true
 vcs = "git"
@@ -47,8 +48,8 @@ requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
 build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.taskipy.tasks]
-test       = "pytest -s -v"
-test-watch = "pytest-watch -- -v -s --durations=0 --ff"
+test       = "pytest -s -v --durations=10"
+ptw        = "ptw -- -v -s --durations=0 --ff" # pytest-watch
 lint       = "ruff check ."
 lintfix    = "ruff . --fix"
 pre-commit = "pre-commit install"

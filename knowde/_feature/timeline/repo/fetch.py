@@ -32,7 +32,7 @@ def fetch_year(name: str, year: int) -> Time:
             SET tl.created = $now,
                 tl.updated = $now,
                 tl.uid = $uid_tl
-        MERGE (tl)-[:YEAR]->(y:Year {value: $y})
+        MERGE (tl)-[:YEAR]->(y:Year:Time {value: $y})
         ON CREATE
             SET y.created = $now,
                 y.updated = $now,
@@ -62,7 +62,7 @@ def fetch_month(name: str, year: int, month: int) -> Time:
     res = query_cypher(
         """
         MATCH (y:Year {uid: $uid_y})
-        MERGE (y)-[:MONTH]->(m:Month {value: $m})
+        MERGE (y)-[:MONTH]->(m:Month:Time {value: $m})
         ON CREATE
             SET m.created = $now,
                 m.updated = $now,
@@ -92,7 +92,7 @@ def fetch_day(name: str, year: int, month: int, day: int) -> Time:
     res = query_cypher(
         """
         MATCH (m:Month {uid: $uid_m})
-        MERGE (m)-[:DAY]->(d:Day {value: $d})
+        MERGE (m)-[:DAY]->(d:Day:Time {value: $d})
         ON CREATE
             SET d.created = $now,
                 d.updated = $now,

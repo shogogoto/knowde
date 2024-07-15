@@ -1,10 +1,10 @@
+"""人生日付 test."""
 from __future__ import annotations
 
 import pytest
 from pydantic import ValidationError
 
-from .domain import LifeDate
-from .errors import LifeDateInvalidError
+from .lifedate import LifeDate, LifeDateInvalidError
 
 
 @pytest.mark.parametrize(
@@ -22,10 +22,12 @@ def test_lifedate_valid(
     day: int | None,
     expected: str,
 ) -> None:
+    """Valid lifedate."""
     assert LifeDate(year=year, month=month, day=day).to_str() == expected
 
 
 def test_lifedate_invalid() -> None:
+    """Invalid lifedate."""
     with pytest.raises(LifeDateInvalidError):
         LifeDate(year=2024, month=None, day=28)
 
@@ -42,6 +44,7 @@ def test_lifedate_invalid() -> None:
     ],
 )
 def test_lifedate_invalid_value(year: int, month: int | None, day: int | None) -> None:
+    """Invalid lifedate."""
     with pytest.raises(ValidationError):
         LifeDate(year=year, month=month, day=day)
 
@@ -61,4 +64,5 @@ def test_from_str(
     day: int | None,
     s: str,
 ) -> None:
+    """From str instantiate."""
     assert LifeDate.from_str(s) == LifeDate(year=year, month=month, day=day)
