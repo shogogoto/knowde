@@ -40,7 +40,7 @@ rm_client = cf.delete(
 )
 
 
-@click.group("tl")
+@click.group("time")
 def tl_cli() -> None:
     """時系列."""
 
