@@ -10,11 +10,13 @@ from knowde._feature._shared.api.const import CmplPath, CmplQ, UUIDPath
 from knowde._feature._shared.api.endpoint import Endpoint
 from knowde._feature._shared.api.facade import ClientFactory
 from knowde._feature._shared.api.paramfunc import to_bodyfunc
+from knowde._feature._shared.cli.click_decorators import each_args
 from knowde._feature._shared.cli.click_decorators.view.options import view_options
 from knowde._feature._shared.cli.field.model2click import model2decorator
 from knowde._feature._shared.cli.field.types import PrefUidParam
 from knowde.feature.person.domain.person import Person
 from knowde.feature.person.dto import PersonAddParam, PersonRenameParam
+from knowde.feature.person.repo.label import PersonUtil
 from knowde.feature.person.repo.repo import (
     add_person,
     complete_person,
@@ -36,6 +38,7 @@ rename_client = cf.put(
     to_bodyfunc(rename_person, PersonRenameParam, ignores=[("uid", UUID)]),
     t_body=PersonRenameParam,
 )
+remove_client = cf.delete(UUIDPath, PersonUtil.delete)
 
 
 @click.group("person")
@@ -53,10 +56,10 @@ def _add(**kwargs) -> None:  # noqa: ANN003
 
 
 @person_cli.command("ls")
-def _ls() -> None:
+@view_options
+def _ls() -> list[Person]:
     """一覧."""
-    for p in list_client():
-        click.echo(p.output)
+    return list_client()
 
 
 @person_cli.command("rename")
@@ -69,3 +72,14 @@ def _rename(pref_uid: str, name: str) -> list[Person]:
     post = rename_client(uid=pre.valid_uid, name=name)
     click.echo("0->1に変更しました")
     return [pre, post]
+
+
+@person_cli.command("rm")
+@each_args(
+    "pref_uids",
+    converter=lambda pref_uid: complete_client(pref_uid=pref_uid),
+)
+def _rm(p: Person) -> None:
+    """削除."""
+    remove_client(uid=p.valid_uid)
+    click.echo(f"{p.output}を削除しました")
