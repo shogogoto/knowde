@@ -96,16 +96,16 @@ def rename_person(uid: UUID, name: str) -> Person:
 
 def list_person() -> list[Person]:
     """人物一覧."""
+    root = fetch_time(SOCIETY_TIMELINE).tl
     res = query_cypher(
         """
         MATCH (p:Person)
-        OPTIONAL MATCH (root:Timeline)-[brel]->+(:Time)<-[:BIRTH]-(p)
+        OPTIONAL MATCH (:Timeline)-[brel]->+(:Time)<-[:BIRTH]-(p)
         OPTIONAL MATCH (:Timeline)-[drel]->+(:Time)<-[:DEATH]-(p)
-        RETURN p, brel, drel, root
+        RETURN p, brel, drel
         """,
     )
     retvals = []
-    root = TimelineRoot.to_model(res.get("root")[0])
     for p, brel, drel in res.zip("p", "brel", "drel"):
         gb = build_time_graph(collapse(brel))
         gd = build_time_graph(collapse(drel))

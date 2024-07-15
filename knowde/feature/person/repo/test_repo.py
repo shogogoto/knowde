@@ -37,7 +37,9 @@ def test_rename_person() -> None:
 
 def test_list() -> None:
     """人物一覧."""
+    assert list_person() == []
     p1 = add_person("anon1", "20000101", "20240721")
+    assert list_person() == [p1]
     p2 = add_person("anon2", "20000101")
     p3 = add_person("anon3", None, "20240721")
     assert list_person() == unordered([p1, p2, p3])
