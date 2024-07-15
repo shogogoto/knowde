@@ -1,11 +1,13 @@
 """person label."""
-from neomodel import StringProperty
+from neomodel import StringProperty, ZeroOrOne
 
 from knowde._feature._shared.domain.domain import Entity
 from knowde._feature._shared.repo.base import LBase
 from knowde._feature._shared.repo.rel import RelUtil
 from knowde._feature._shared.repo.util import LabelUtil
 from knowde._feature.timeline.repo.label import LTime
+from knowde.feature.person.domain.lifedate import LifeSpan
+from knowde.feature.person.domain.person import Person
 
 
 class LPerson(LBase):
@@ -21,12 +23,30 @@ class PersonMapper(Entity, frozen=True):
 
     name: str
 
+    def to_person(self, lifespan: LifeSpan) -> Person:
+        """Convert."""
+        return Person(
+            uid=self.valid_uid,
+            name=self.name,
+            created=self.created,
+            updated=self.updated,
+            lifespan=lifespan,
+        )
+
 
 PersonUtil = LabelUtil(label=LPerson, model=PersonMapper)
 
 REL_BIRTH = "BIRTH"
 REL_DEATH = "DEATH"
-RelBirthUtil = RelUtil(t_source=LPerson, t_target=LTime, name=REL_BIRTH)
-RelDeathUtil = RelUtil(t_source=LPerson, t_target=LTime, name=REL_DEATH)
-
-SOCIETY_TIMELINE = "AD"  # = Anno Domini = 主の年に = 西暦紀元後
+RelBirthUtil = RelUtil(
+    t_source=LPerson,
+    t_target=LTime,
+    name=REL_BIRTH,
+    cardinality=ZeroOrOne,
+)
+RelDeathUtil = RelUtil(
+    t_source=LPerson,
+    t_target=LTime,
+    name=REL_DEATH,
+    cardinality=ZeroOrOne,
+)

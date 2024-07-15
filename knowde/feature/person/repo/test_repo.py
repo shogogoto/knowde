@@ -5,7 +5,7 @@ import pytest
 from pytest_unordered import unordered
 
 from knowde.feature.person.domain.lifedate import DeathBeforeBirthError, t_society
-from knowde.feature.person.repo.repo import add_person, list_society_tl
+from knowde.feature.person.repo.repo import add_person, list_society_tl, rename_person
 
 
 def test_person_birth_death() -> None:
@@ -17,3 +17,14 @@ def test_person_birth_death() -> None:
     assert list_society_tl().values == unordered(
         [t_society(2000, 1, 1), t_society(2050, 9, 15)],
     )
+
+
+def test_rename_person() -> None:
+    """人物の名前変更."""
+    p1 = add_person("anon", "2000001", "20240721")
+    p2 = rename_person(p1.valid_uid, "anon2")
+    assert p2.valid_uid == p1.valid_uid
+    assert p2.name == "anon2"
+    assert p2.lifespan == p1.lifespan
+    assert p2.created == p1.created
+    assert p2.updated != p1.updated

@@ -6,8 +6,9 @@ from typing import Optional, Self
 from pydantic import BaseModel, Field, model_validator
 
 from knowde._feature._shared.errors.errors import DomainError
-from knowde._feature.timeline.domain.domain import TimeValue
-from knowde.feature.person.repo.label import SOCIETY_TIMELINE
+from knowde._feature.timeline.domain.domain import Time, TimeValue
+
+SOCIETY_TIMELINE = "AD"  # = Anno Domini = 主の年に = 西暦紀元後
 
 
 class LifeDateInvalidError(DomainError):
@@ -34,10 +35,19 @@ class LifeDate(BaseModel, frozen=True):
     def value(self) -> TimeValue:
         """To TimeValue."""
         return TimeValue(
-            name="AD",
+            name=SOCIETY_TIMELINE,
             year=self.year,
             month=self.month,
             day=self.day,
+        )
+
+    @classmethod
+    def from_time(cls, t: Time) -> Self:
+        """From time factory."""
+        return cls(
+            year=t.year.value,
+            month=t.m.value if t.m is not None else None,
+            day=t.d.value if t.d is not None else None,
         )
 
     @classmethod
@@ -77,23 +87,6 @@ class LifeDate(BaseModel, frozen=True):
         return (self.year, self.month, self.day)
 
 
-class LifeSpan(BaseModel, frozen=True):
-    """人生."""
-
-    birth: LifeDate | None = None
-    death: LifeDate | None = None
-
-    @model_validator(mode="after")
-    def _validate(self) -> Self:
-        if (
-            self.birth is not None
-            and self.death is not None
-            and self.death.value < self.birth.value
-        ):
-            raise DeathBeforeBirthError
-        return self
-
-
 NULL_EXPRESSION = "99"
 
 
@@ -118,3 +111,28 @@ def t_society(
 ) -> TimeValue:
     """Util."""
     return TimeValue.new(SOCIETY_TIMELINE, year, month, day)
+
+
+class LifeSpan(BaseModel, frozen=True):
+    """人生."""
+
+    birth: LifeDate | None = None
+    death: LifeDate | None = None
+
+    @classmethod
+    def from_times(cls, t_birth: Time, t_death: Time) -> Self:
+        """From times factory."""
+        return cls(
+            birth=LifeDate.from_time(t_birth),
+            death=LifeDate.from_time(t_death),
+        )
+
+    @model_validator(mode="after")
+    def _validate(self) -> Self:
+        if (
+            self.birth is not None
+            and self.death is not None
+            and self.death.value < self.birth.value
+        ):
+            raise DeathBeforeBirthError
+        return self

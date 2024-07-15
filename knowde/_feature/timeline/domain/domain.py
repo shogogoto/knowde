@@ -98,6 +98,7 @@ class Time(BaseModel, frozen=True):
 
     @property
     def ymd(self) -> YMD:
+        """より細かい時刻を返す."""
         ts = [self.tl, self.y, self.m, self.d]
         ret = [t for t in ts if t is not None][-1]
         if isinstance(ret, TimelineRoot):
