@@ -2,12 +2,13 @@ from __future__ import annotations
 
 from typing import Optional, Self
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from knowde._feature._shared.domain import Entity
 from knowde._feature._shared.domain.domain import APIReturn
 from knowde._feature._shared.errors.domain import NotExistsAccessError
 from knowde._feature._shared.types import NXGraph  # noqa: TCH001
+from knowde._feature.timeline.domain.errors import InvalidTimeYMDError
 
 
 class TimelineRoot(Entity, frozen=True):
@@ -34,11 +35,31 @@ class Day(YMD, frozen=True):
     value: int = Field(ge=1, le=31)
 
 
+def validate_ymd(
+    y: int | Year | None,
+    m: int | Month | None,
+    d: int | Day | None,
+) -> None:
+    """YMDの組の妥当性チェック."""
+    if y is not None:
+        if m is None and d is not None:
+            msg = "年日があるのに月ない"
+            raise InvalidTimeYMDError(msg)
+    elif m is not None or d is not None:
+        msg = "年がないのに月日あり"
+        raise InvalidTimeYMDError(msg)
+
+
 class TimeValue(APIReturn, frozen=True):
     name: str
     year: int | None = Field(default=None, init_var=False)
     month: int | None = Field(default=None, ge=1, le=12, init_var=False)
     day: int | None = Field(default=None, ge=1, le=31, init_var=False)
+
+    @model_validator(mode="after")
+    def _validate(self) -> Self:
+        validate_ymd(*self.tuple[1:])
+        return self
 
     @classmethod
     def new(
@@ -65,6 +86,11 @@ class Time(BaseModel, frozen=True):
     y: Year | None = None
     m: Month | None = None
     d: Day | None = None
+
+    @model_validator(mode="after")
+    def _validate(self) -> Self:
+        validate_ymd(self.y, self.m, self.d)
+        return self
 
     def __lt__(self, other: Self) -> bool:
         return self.value.tuple < other.value.tuple
