@@ -132,6 +132,9 @@ class Time(BaseModel, frozen=True):
             raise TypeError(msg)
         return ret
 
+    def only_tl(self) -> bool:
+        return self.y is None and self.m is None and self.d is None
+
 
 class Timeline(BaseModel, frozen=True):
     root: TimelineRoot

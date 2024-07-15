@@ -18,6 +18,7 @@ from knowde.feature.person.domain.lifedate import (
 )
 from knowde.feature.person.repo.label import (
     LPerson,
+    PersonMapper,
     PersonUtil,
     RelBirthUtil,
     RelDeathUtil,
@@ -91,3 +92,25 @@ def rename_person(uid: UUID, name: str) -> Person:
     td = Timeline(root=root, g=gd).times[0]
     m = PersonUtil.change(uid=uid, name=name).to_model()
     return m.to_person(LifeSpan.from_times(tb, td))
+
+
+def list_person() -> list[Person]:
+    """人物一覧."""
+    res = query_cypher(
+        """
+        MATCH (p:Person)
+        OPTIONAL MATCH (root:Timeline)-[brel]->+(:Time)<-[:BIRTH]-(p)
+        OPTIONAL MATCH (:Timeline)-[drel]->+(:Time)<-[:DEATH]-(p)
+        RETURN p, brel, drel, root
+        """,
+    )
+    retvals = []
+    root = TimelineRoot.to_model(res.get("root")[0])
+    for p, brel, drel in res.zip("p", "brel", "drel"):
+        gb = build_time_graph(collapse(brel))
+        gd = build_time_graph(collapse(drel))
+        tb = Timeline(root=root, g=gb).times[0]
+        td = Timeline(root=root, g=gd).times[0]
+        m = PersonMapper.to_model(p)
+        retvals.append(m.to_person(LifeSpan.from_times(tb, td)))
+    return retvals

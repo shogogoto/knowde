@@ -25,6 +25,8 @@ if TYPE_CHECKING:
 def build_time_graph(rels: Iterator[RelBase]) -> nx.DiGraph:
     g = nx.DiGraph()
     for rel in rels:
+        if rel is None:
+            continue
         s = rel.start_node()
         e = rel.end_node()
         if isinstance(s, LTimeline):

@@ -122,10 +122,9 @@ class LifeSpan(BaseModel, frozen=True):
     @classmethod
     def from_times(cls, t_birth: Time, t_death: Time) -> Self:
         """From times factory."""
-        return cls(
-            birth=LifeDate.from_time(t_birth),
-            death=LifeDate.from_time(t_death),
-        )
+        b = None if t_birth.only_tl() else LifeDate.from_time(t_birth)
+        d = None if t_death.only_tl() else LifeDate.from_time(t_death)
+        return cls(birth=b, death=d)
 
     @model_validator(mode="after")
     def _validate(self) -> Self:
