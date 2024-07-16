@@ -14,7 +14,7 @@ from knowde._feature.timeline.domain.errors import InvalidTimeYMDError
 class TimelineRoot(Entity, frozen=True):
     """時系列ルート."""
 
-    name: str
+    name: str = Field(min_length=1)
 
 
 class YMD(Entity, frozen=True):
@@ -123,7 +123,7 @@ class Time(BaseModel, frozen=True):
         return self.y
 
     @property
-    def ymd(self) -> YMD:
+    def leaf(self) -> YMD:
         """より細かい時刻を返す."""
         ts = [self.tl, self.y, self.m, self.d]
         ret = [t for t in ts if t is not None][-1]

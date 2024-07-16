@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 def add_birth(pl: LPerson, d: LifeDate) -> Time:
     """誕生日追加."""
     t = fetch_time(SOCIETY_TIMELINE, *d.tuple)
-    tlb = TimeUtil.find_by_id(t.ymd.valid_uid)
+    tlb = TimeUtil.find_by_id(t.leaf.valid_uid)
     RelBirthUtil.connect(pl, tlb.label)
     return t
 
@@ -43,7 +43,7 @@ def add_birth(pl: LPerson, d: LifeDate) -> Time:
 def add_death(pl: LPerson, d: LifeDate) -> Time:
     """命日追加."""
     t = fetch_time(SOCIETY_TIMELINE, *d.tuple)
-    tlb = TimeUtil.find_by_id(t.ymd.valid_uid)
+    tlb = TimeUtil.find_by_id(t.leaf.valid_uid)
     RelDeathUtil.connect(pl, tlb.label)
     return t
 
