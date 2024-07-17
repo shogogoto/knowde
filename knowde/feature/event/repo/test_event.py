@@ -1,5 +1,5 @@
 """test event."""
-
+from pytest_unordered import unordered
 
 from knowde._feature.location.repo.repo import add_location_root
 from knowde._feature.timeline.repo.fetch import fetch_time
@@ -15,3 +15,7 @@ def test_add_event() -> None:
     ev = add_event("ev1", loc.valid_uid, t.leaf.valid_uid)
     assert ev == find_event(ev.valid_uid)
     assert list_event() == [ev]
+
+    t2 = fetch_time(SOCIETY_TIMELINE, 2000, 1, 2)
+    ev2 = add_event("ev2", loc.valid_uid, t2.leaf.valid_uid)
+    assert list_event() == unordered([ev, ev2])

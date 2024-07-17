@@ -80,7 +80,7 @@ def list_event() -> list[Event]:
         root = TimelineRoot.to_model(_root)
         t = None
         if root is not None:
-            rels = collapse(res.get("trel"))
+            rels = collapse(_trel)
             t = Timeline(root=root, g=build_time_graph(rels)).times[0]
         ret.append(m.to_domain(loc, t))
     return ret
