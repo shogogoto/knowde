@@ -41,7 +41,7 @@ def add_event(
     return m.to_domain(loc, t)
 
 
-def find_event(uid: UUID) -> None:
+def find_event(uid: UUID) -> Event:
     """Find by event uid."""
     res = query_cypher(
         """
@@ -52,7 +52,7 @@ def find_event(uid: UUID) -> None:
         """,
         params={"uid": uid.hex},
     )
-    m = res.get("ev", EventMapper.to_model)[0]
+    m = EventMapper.to_model(res.get("ev")[0])
     loc = res.get("loc", Location.to_model)[0]
     roots = res.get("root", TimelineRoot.to_model)
     t = None
@@ -61,3 +61,26 @@ def find_event(uid: UUID) -> None:
         rels = collapse(res.get("trel"))
         t = Timeline(root=root, g=build_time_graph(rels)).times[0]
     return m.to_domain(loc, t)
+
+
+def list_event() -> list[Event]:
+    """一覧."""
+    res = query_cypher(
+        """
+        MATCH (ev:Event)
+        OPTIONAL MATCH (root:Timeline)-[trel]->*(:Time)<-[:WHEN]-(ev)
+        OPTIONAL MATCH (loc:Location)<-[:WHERE]-(ev)
+        RETURN ev, trel, loc, root
+        """,
+    )
+    ret = []
+    for _ev, _loc, _root, _trel in res.zip("ev", "loc", "root", "trel"):
+        m = EventMapper.to_model(_ev)
+        loc = Location.to_model(_loc)
+        root = TimelineRoot.to_model(_root)
+        t = None
+        if root is not None:
+            rels = collapse(res.get("trel"))
+            t = Timeline(root=root, g=build_time_graph(rels)).times[0]
+        ret.append(m.to_domain(loc, t))
+    return ret
