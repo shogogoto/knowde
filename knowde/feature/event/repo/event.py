@@ -1,7 +1,7 @@
 """event repository."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from more_itertools import collapse
 
@@ -10,7 +10,7 @@ from knowde._feature.location.domain import Location
 from knowde._feature.location.repo.label import LocUtil
 from knowde._feature.timeline.domain.domain import Timeline, TimelineRoot
 from knowde._feature.timeline.repo.query import build_time_graph, find_times_from
-from knowde.feature.event.repo.label import EventMapper, EventUtil, RelWhere
+from knowde.feature.event.repo.label import EventMapper, EventUtil, LEvent, RelWhere
 from knowde.feature.event.repo.time import add_event_time
 from knowde.feature.person.domain.lifedate import SOCIETY_TIMELINE
 
@@ -41,51 +41,58 @@ def add_event(
     return m.to_domain(loc, t)
 
 
-def find_event(uid: UUID) -> Event:
-    """Find by event uid."""
-    res = query_cypher(
-        """
-        MATCH (ev:Event {uid: $uid})
-        OPTIONAL MATCH (root:Timeline)-[trel]->*(:Time)<-[:WHEN]-(ev)
-        OPTIONAL MATCH (loc:Location)<-[:WHERE]-(ev)
-        RETURN ev, trel, loc, root
-        """,
-        params={"uid": uid.hex},
-    )
-    m = EventMapper.to_model(res.get("ev")[0])
+def ev_q(var: str = "ev") -> str:
+    """共通query."""
+    return f"""
+        OPTIONAL MATCH (root:Timeline)-[trel]->*(:Time)<-[:WHEN]-({var})
+        OPTIONAL MATCH (loc:Location)<-[:WHERE]-({var})
+        RETURN {var}, trel, loc, root
+    """
 
-    locs = excollapse(res.get("loc"), Location.to_model)
+
+def to_event(
+    ev: LEvent,
+    locs: list[Any],
+    roots: list[Any],
+    trels: list,
+) -> Event:
+    """Build Event from query results."""
+    m = EventMapper.to_model(ev)
+    locs = excollapse(locs, Location.to_model)
     loc = None if len(locs) == 0 else locs[0]
-    roots = excollapse(res.get("root"), TimelineRoot.to_model)
+    roots = excollapse(roots, TimelineRoot.to_model)
     root = None if len(roots) == 0 else roots[0]
     t = None
     if len(roots) == 1:
         root = roots[0]
-        rels = collapse(res.get("trel"))
+        rels = collapse(trels)
         t = Timeline(root=root, g=build_time_graph(rels)).times[0]
     return m.to_domain(loc, t)
+
+
+def find_event(uid: UUID) -> Event:
+    """Find by event uid."""
+    res = query_cypher(
+        f"""
+        MATCH (ev:Event {{uid: $uid}})
+        {ev_q()}
+        """,
+        params={"uid": uid.hex},
+    )
+    return to_event(res.get("ev")[0], *res.tuple("loc", "root", "trel"))
 
 
 def list_event() -> list[Event]:
     """一覧."""
     res = query_cypher(
-        """
+        f"""
         MATCH (ev:Event)
-        OPTIONAL MATCH (root:Timeline)-[trel]->*(:Time)<-[:WHEN]-(ev)
-        OPTIONAL MATCH (loc:Location)<-[:WHERE]-(ev)
-        RETURN ev, trel, loc, root
+        {ev_q()}
         """,
     )
     ret = []
     for _ev, _loc, _root, _trel in res.zip("ev", "loc", "root", "trel"):
-        m = EventMapper.to_model(_ev)
-        loc = Location.to_model(_loc)
-        root = TimelineRoot.to_model(_root)
-        t = None
-        if root is not None:
-            rels = collapse(_trel)
-            t = Timeline(root=root, g=build_time_graph(rels)).times[0]
-        ret.append(m.to_domain(loc, t))
+        ret.append(to_event(_ev, _loc, _root, _trel))
     return ret
 
 
