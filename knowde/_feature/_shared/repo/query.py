@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from textwrap import dedent
-from typing import Any, Callable, Optional, TypeVar
+from typing import Any, Callable, Iterable, Optional, TypeVar
 
+from more_itertools import collapse
 from neomodel import db
 from pydantic import BaseModel
 
@@ -62,3 +63,12 @@ class QueryResult(BaseModel, frozen=True):
 
     def zip(self, *vars_: str) -> zip:
         return zip(*self.tuple(*vars_), strict=True)
+
+    def collapse(self, var: str, convert: Callable[..., T]) -> list[T]:
+        vals = self.get(var)
+        return excollapse(vals, convert)
+
+
+def excollapse(it: Iterable[Any], convert: Callable[..., T]) -> list[T]:
+    """Noneを除外してリストを1次元化."""
+    return [convert(e) for e in collapse(it) if e is not None]

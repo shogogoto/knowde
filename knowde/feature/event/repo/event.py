@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from more_itertools import collapse
 
-from knowde._feature._shared.repo.query import query_cypher
+from knowde._feature._shared.repo.query import excollapse, query_cypher
 from knowde._feature.location.domain import Location
 from knowde._feature.location.repo.label import LocUtil
 from knowde._feature.timeline.domain.domain import Timeline, TimelineRoot
@@ -53,8 +53,11 @@ def find_event(uid: UUID) -> Event:
         params={"uid": uid.hex},
     )
     m = EventMapper.to_model(res.get("ev")[0])
-    loc = res.get("loc", Location.to_model)[0]
-    roots = res.get("root", TimelineRoot.to_model)
+
+    locs = excollapse(res.get("loc"), Location.to_model)
+    loc = None if len(locs) == 0 else locs[0]
+    roots = excollapse(res.get("root"), TimelineRoot.to_model)
+    root = None if len(roots) == 0 else roots[0]
     t = None
     if len(roots) == 1:
         root = roots[0]
@@ -84,3 +87,9 @@ def list_event() -> list[Event]:
             t = Timeline(root=root, g=build_time_graph(rels)).times[0]
         ret.append(m.to_domain(loc, t))
     return ret
+
+
+def change_event(uid: UUID, text: str) -> Event:
+    """出来事の記述を変更."""
+    EventUtil.change(uid, text=text)
+    return find_event(uid=uid)
