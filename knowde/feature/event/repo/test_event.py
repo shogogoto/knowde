@@ -1,11 +1,14 @@
 """test event."""
+import pytest
 from pytest_unordered import unordered
 
+from knowde._feature._shared.errors.domain import CompleteNotFoundError
 from knowde._feature.location.repo.repo import add_location_root
 from knowde._feature.timeline.repo.fetch import fetch_time
 from knowde.feature.event.repo.event import (
     add_event,
     change_event,
+    complete_event,
     find_event,
     list_event,
 )
@@ -32,3 +35,13 @@ def test_change_text() -> None:
     ev2 = change_event(ev.valid_uid, "changed")
     assert ev.valid_uid == ev2.valid_uid
     assert ev2.text == "changed"
+
+
+def test_complete_event() -> None:
+    """Eventの補完."""
+    with pytest.raises(CompleteNotFoundError):
+        complete_event("x")
+
+    ev = add_event("xxx")
+    ev2 = complete_event(ev.valid_uid.hex[0])
+    assert ev == ev2

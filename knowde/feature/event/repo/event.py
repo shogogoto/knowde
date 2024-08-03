@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any
 
 from more_itertools import collapse
 
+from knowde._feature._shared.errors.domain import CompleteNotFoundError, MultiHitError
 from knowde._feature._shared.repo.query import excollapse, query_cypher
 from knowde._feature.location.domain import Location
 from knowde._feature.location.repo.label import LocUtil
@@ -100,3 +101,20 @@ def change_event(uid: UUID, text: str) -> Event:
     """出来事の記述を変更."""
     EventUtil.change(uid, text=text)
     return find_event(uid=uid)
+
+
+def complete_event(pref_uid: str) -> Event:
+    """Eventの補完."""
+    res = query_cypher(
+        f"""
+        MATCH (ev:Event WHERE ev.uid STARTS WITH $pref_uid)
+        {ev_q()}
+        """,
+        params={"pref_uid": pref_uid},
+    )
+    evs = res.get("ev")
+    if len(evs) == 0:
+        raise CompleteNotFoundError
+    if len(evs) > 1:
+        raise MultiHitError
+    return to_event(evs[0], *res.tuple("loc", "root", "trel"))
