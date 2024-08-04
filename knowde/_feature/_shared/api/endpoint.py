@@ -32,7 +32,7 @@ class Endpoint(Enum):
     Timeline = "timeline"
     Location = "location"
     Person = "person"
-
+    Event = "event"
     Test = "tests"  # test用
 
     @classmethod

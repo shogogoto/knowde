@@ -12,3 +12,8 @@ class Event(Entity, frozen=True):
     text: str
     when: Time | None = None
     where: Location | None = None
+
+    @property
+    def output(self) -> str:
+        """Output for cli."""
+        return f"{self.text}({self.valid_uid})"

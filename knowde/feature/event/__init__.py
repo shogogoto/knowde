@@ -5,3 +5,4 @@
 * Eventと同レベルの依存度なので同レベルのフィーチャーにすべし
 * よってこのフィーチャーではPersonへ依存させない
 """
+from .interface import ev_router  # noqa: F401
