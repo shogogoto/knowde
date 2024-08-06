@@ -6,9 +6,8 @@ from typing import Optional, Self
 from pydantic import BaseModel, Field, model_validator
 
 from knowde._feature._shared.errors.errors import DomainError
+from knowde._feature.timeline.domain.const import SOCIETY_TIMELINE
 from knowde._feature.timeline.domain.domain import Time, TimeValue
-
-SOCIETY_TIMELINE = "AD"  # = Anno Domini = 主の年に = 西暦紀元後
 
 
 class LifeDateInvalidError(DomainError):
