@@ -31,3 +31,13 @@ def test_timestr(
     v = TimeValue.new(tl, year, month, day)
     assert TimeStr(value=string).val == v
     assert TimeStr.from_val(v).val == v
+
+
+def test_timestr_name() -> None:
+    assert TimeStr(value="2000/1/1").name == "AD"
+    assert TimeStr(value="2000/1/1@XXX").name == "XXX"
+
+
+def test_timestr_without_name() -> None:
+    assert TimeStr(value="2000/1/1").without_name == "2000/1/1"
+    assert TimeStr(value="2000/1/1@XXX").without_name == "2000/1/1"

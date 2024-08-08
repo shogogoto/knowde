@@ -38,6 +38,17 @@ class TimeStr(BaseModel, frozen=True):
     value: str = Field(pattern=TS_PT)
 
     @property
+    def without_name(self) -> str:
+        return self.value.replace(f"@{self.name}", "")
+
+    @property
+    def name(self) -> str:
+        sp = self.value.split("@")
+        if len(sp) == 1:
+            return SOCIETY_TIMELINE
+        return sp[-1]
+
+    @property
     def val(self) -> TimeValue:
         gs = TS_RE.findall(self.value)[0]
         if len(gs) != 4:  # noqa: PLR2004
