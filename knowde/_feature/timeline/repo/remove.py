@@ -64,12 +64,16 @@ def remove_timeline(name: str) -> None:
 
 def remove_time(
     name: str,
-    year: Optional[int] = None,
-    month: Optional[int] = None,
+    year: int | None = None,
+    month: int | None = None,
+    day: int | None = None,
 ) -> None:
     if year is not None:
         remove_year(name, year)
         if month is not None:
-            remove_month(name, year, month)
+            if day is not None:
+                remove_day(name, year, month, day)
+            else:
+                remove_month(name, year, month)
     else:
         remove_timeline(name)
