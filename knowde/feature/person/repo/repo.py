@@ -6,11 +6,11 @@ from typing import TYPE_CHECKING, Iterator, Optional
 from more_itertools import collapse
 
 from knowde._feature._shared.repo.query import query_cypher
-from knowde._feature.timeline.domain.domain import Timeline
+from knowde._feature.timeline.domain.domain import Timeline, TimeValue
 from knowde._feature.timeline.repo.fetch import fetch_time
 from knowde._feature.timeline.repo.label import TimeUtil
 from knowde._feature.timeline.repo.query import build_time_graph
-from knowde._feature.timeline.repo.timeline import list_timeline
+from knowde._feature.timeline.repo.timeline import list_time
 from knowde.feature.person.domain import Person  # noqa: TCH001
 from knowde.feature.person.domain.lifedate import (
     SOCIETY_TIMELINE,
@@ -70,9 +70,9 @@ def add_person(
 def list_society_tl(
     year: int | None = None,
     month: int | None = None,
-) -> Timeline:
+) -> list[TimeValue]:
     """実社会の時系列."""
-    return list_timeline(SOCIETY_TIMELINE, year, month)
+    return list_time(SOCIETY_TIMELINE, year, month)
 
 
 def build_lifespan(

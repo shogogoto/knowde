@@ -20,7 +20,7 @@ def test_person_birth_death() -> None:
         add_person("anonymous", "20000101", "19450915")
 
     add_person("Taro TANAKA", "20000101", "20500915")
-    assert list_society_tl().values == unordered(
+    assert list_society_tl() == unordered(
         [t_society(2000, 1, 1), t_society(2050, 9, 15)],
     )
 

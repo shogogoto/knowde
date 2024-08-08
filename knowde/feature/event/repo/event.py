@@ -10,11 +10,10 @@ from knowde._feature._shared.repo.query import excollapse, query_cypher
 from knowde._feature.location.domain import Location
 from knowde._feature.location.repo.label import LocUtil
 from knowde._feature.timeline.domain.domain import Timeline, TimelineRoot
-from knowde._feature.timeline.repo.query import build_time_graph, find_times_from
+from knowde._feature.timeline.repo.query import build_time_graph
 from knowde.feature.event.domain.event import Event  # noqa: TCH001
 from knowde.feature.event.repo.label import EventMapper, EventUtil, LEvent, RelWhere
 from knowde.feature.event.repo.time import add_event_time
-from knowde.feature.person.domain.lifedate import SOCIETY_TIMELINE
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -24,20 +23,18 @@ def add_event(
     text: str,
     location_uid: UUID | None = None,
     time_uid: UUID | None = None,
-    timename: str = SOCIETY_TIMELINE,
 ) -> Event:
     """何時どこで何が起きたかの記述."""
     ev = EventUtil.create(text=text)
     m = ev.to_model()
     loc = None
-    t = None
     if location_uid is not None:
         loc = LocUtil.find_by_id(uid=location_uid)
         RelWhere.connect(ev.label, loc.label)
         loc = loc.to_model()
+    t = None
     if time_uid is not None:
-        ymd = find_times_from(timename, time_uid)[0].leaf
-        t = add_event_time(m.valid_uid, ymd.valid_uid)
+        t = add_event_time(m.valid_uid, time_uid)
     return m.to_domain(loc, t)
 
 
