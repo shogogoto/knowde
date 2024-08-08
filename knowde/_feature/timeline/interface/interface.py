@@ -7,26 +7,27 @@ from knowde._feature._shared.api.facade import ClientFactory
 from knowde._feature._shared.api.paramfunc import to_bodyfunc, to_queryfunc
 from knowde._feature._shared.cli.field.model2click import model2decorator
 from knowde._feature.timeline.domain.domain import TimeValue
+from knowde._feature.timeline.domain.timestr import TimeStr
 from knowde._feature.timeline.interface.dto import (
-    TimelineAddParam,
-    TimelineListRemoveParam,
+    TimelineParam,
+    TimeStrParam,
 )
 from knowde._feature.timeline.repo.fetch import fetch_time
 from knowde._feature.timeline.repo.remove import remove_time
-from knowde._feature.timeline.repo.timeline import list_timeline
+from knowde._feature.timeline.repo.timeline import list_time
 
 tl_router = Endpoint.Timeline.create_router()
 cf = ClientFactory(router=tl_router, rettype=TimeValue)
 
 add_client = cf.post(
     NullPath(),
-    to_bodyfunc(fetch_time, TimelineAddParam, convert=lambda x: x.value),
-    t_body=TimelineAddParam,
+    to_bodyfunc(fetch_time, TimelineParam, convert=lambda x: x.value),
+    t_body=TimelineParam,
 )
 list_client = cf.gets(
     NullPath(),
     to_queryfunc(
-        list_timeline,
+        list_time,
         [str, int | None, int | None],
         list[TimeValue],
         lambda x: x.values,
@@ -35,37 +36,43 @@ list_client = cf.gets(
 )
 rm_client = cf.delete(
     APIPath(name="name", prefix=""),
-    remove_time,
-    query=APIQuery(name="name").add("year").add("month"),
+    to_bodyfunc(remove_time, TimelineParam),
+    t_body=TimelineParam,
 )
 
 
 @click.group("time")
 def tl_cli() -> None:
-    """時系列."""
+    """時系列.
+
+    時刻文字列(timestr) e.g. yyyy/MM/dd@name, yyyy, yyyy/MM, @name
+    """
 
 
 @tl_cli.command("add")
-@model2decorator(TimelineAddParam)
-def _add(**kwargs) -> None:  # noqa: ANN003
+@model2decorator(TimeStrParam)
+def _add(timestr: str) -> None:
     """追加."""
-    t = add_client(**kwargs)
+    ts = TimeStr(value=timestr)
+    t = add_client(**ts.val.model_dump())
     click.echo("以下を作成しました")
     click.echo(t)
 
 
 @tl_cli.command("ls")
-@model2decorator(TimelineListRemoveParam)
-def _ls(**kwargs) -> None:  # noqa: ANN003
+@model2decorator(TimeStrParam)
+def _ls(timestr: str) -> None:
     """一覧."""
-    ts = list_client(**kwargs)
-    for t in ts:
+    s = TimeStr(value=timestr)
+    ls = list_client(**s.val.model_dump())
+    for t in ls:
         click.echo(t)
 
 
 @tl_cli.command("rm")
-@model2decorator(TimelineListRemoveParam)
-def _rm(**kwargs) -> None:  # noqa: ANN003
+@model2decorator(TimeStrParam)
+def _rm(timestr: str) -> None:
     """削除."""
-    rm_client(**kwargs)
-    click.echo(f"{kwargs}を削除しました")
+    s = TimeStr(value=timestr)
+    rm_client(**s.val.model_dump())
+    click.echo(f"{timestr}を削除しました")
