@@ -8,7 +8,7 @@ from .timestr import TimeStr
 
 
 @pytest.mark.parametrize(
-    ("value", "year", "month", "day", "tl"),
+    ("string", "year", "month", "day", "tl"),
     [
         ("2000/01/01", 2000, 1, 1, SOCIETY_TIMELINE),
         ("2000/01", 2000, 1, None, SOCIETY_TIMELINE),
@@ -22,10 +22,12 @@ from .timestr import TimeStr
     ],
 )
 def test_timestr(
-    value: str,
+    string: str,
     year: int,
     month: int | None,
     day: int | None,
     tl: str,
 ) -> None:
-    assert TimeStr(value=value).val == TimeValue.new(tl, year, month, day)
+    v = TimeValue.new(tl, year, month, day)
+    assert TimeStr(value=string).val == v
+    assert TimeStr.from_val(v).val == v

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from typing import Self
 
 from pydantic import BaseModel, Field
 
@@ -46,3 +47,15 @@ class TimeStr(BaseModel, frozen=True):
         d = to_int(gs[2])
         tl = gs[3][1:] if gs[3] != "" else SOCIETY_TIMELINE
         return TimeValue.new(tl, y, m, d)
+
+    @classmethod
+    def from_val(cls, v: TimeValue) -> Self:
+        n, y, m, d = v.tuple
+        s = f"@{n}"
+        if d is not None:
+            s = f"/{d}{s}"
+        if m is not None:
+            s = f"/{m}{s}"
+        if y is not None:
+            s = f"{y}{s}"
+        return cls(value=s)
