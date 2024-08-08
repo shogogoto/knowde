@@ -1,5 +1,5 @@
-from knowde._feature.timeline.repo.fetch import fetch_time
-from knowde._feature.timeline.repo.query import find_times_from
+from knowde._feature.time.repo.fetch import fetch_time
+from knowde._feature.time.repo.query import find_times_from
 
 
 def test_find_from_day() -> None:

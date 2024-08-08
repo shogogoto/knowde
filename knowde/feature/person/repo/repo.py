@@ -6,11 +6,11 @@ from typing import TYPE_CHECKING, Iterator, Optional
 from more_itertools import collapse
 
 from knowde._feature._shared.repo.query import query_cypher
-from knowde._feature.timeline.domain.domain import Timeline, TimeValue
-from knowde._feature.timeline.repo.fetch import fetch_time
-from knowde._feature.timeline.repo.label import TimeUtil
-from knowde._feature.timeline.repo.query import build_time_graph
-from knowde._feature.timeline.repo.timeline import list_time
+from knowde._feature.time.domain.domain import Timeline, TimeValue
+from knowde._feature.time.repo.fetch import fetch_time
+from knowde._feature.time.repo.label import TimeUtil
+from knowde._feature.time.repo.query import build_time_graph
+from knowde._feature.time.repo.timeline import list_time
 from knowde.feature.person.domain import Person  # noqa: TCH001
 from knowde.feature.person.domain.lifedate import (
     SOCIETY_TIMELINE,

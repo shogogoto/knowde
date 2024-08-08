@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
-from knowde._feature.timeline.domain.timestr import TS_PT
+from knowde._feature.time.domain.timestr import TS_PT
 
 
 class TimelineParam(BaseModel, frozen=True):
@@ -14,7 +14,3 @@ class TimelineParam(BaseModel, frozen=True):
 
 class TimeStrParam(BaseModel, frozen=True):
     timestr: str = Field(pattern=TS_PT, description="yyyy[/MM[/dd]][@name]")
-
-
-class TimelineCLIParam(BaseModel, frozen=True):
-    pass

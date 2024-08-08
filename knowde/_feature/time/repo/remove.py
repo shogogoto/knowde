@@ -5,8 +5,9 @@ from typing import Optional
 
 from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature._shared.repo.rel import dict2query_literal
-from knowde._feature.timeline.repo.fetch import fetch_time
-from knowde._feature.timeline.repo.label import DayUtil
+
+from .fetch import fetch_time
+from .label import DayUtil
 
 
 def remove_day(name: str, year: int, month: int, day: int) -> None:

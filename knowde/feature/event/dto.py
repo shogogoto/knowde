@@ -14,8 +14,8 @@ class AddEventParam(BaseModel, frozen=True):
     time_uid: UUID | None = Field(default=None, description="時刻のUUID")
 
 
-# class AddEventCLIParam(BaseModel, frozen=True):
-#     pass
+class AddEventCLIParam(BaseModel, frozen=True):
+    """CLI用パラメータ."""
 
 
 class ChangeTextParam(BaseModel, frozen=True):

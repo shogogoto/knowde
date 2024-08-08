@@ -4,8 +4,8 @@ import re
 
 from pydantic import BaseModel, Field
 
-from knowde._feature.timeline.domain.const import SOCIETY_TIMELINE
-from knowde._feature.timeline.domain.domain import TimeValue
+from .const import SOCIETY_TIMELINE
+from .domain import TimeValue
 
 NULL_EXPRESSION = "99"
 

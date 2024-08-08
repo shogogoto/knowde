@@ -6,8 +6,8 @@ from typing import Optional, Self
 from pydantic import BaseModel, Field, model_validator
 
 from knowde._feature._shared.errors.errors import DomainError
-from knowde._feature.timeline.domain.const import SOCIETY_TIMELINE
-from knowde._feature.timeline.domain.domain import Time, TimeValue
+from knowde._feature.time.domain.const import SOCIETY_TIMELINE
+from knowde._feature.time.domain.domain import Time, TimeValue
 
 
 class LifeDateInvalidError(DomainError):

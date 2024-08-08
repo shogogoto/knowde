@@ -1,11 +1,11 @@
-from knowde._feature.timeline.domain.domain import TimeValue
-from knowde._feature.timeline.repo.fetch import fetch_time
-from knowde._feature.timeline.repo.remove import (
+from knowde._feature.time.domain.domain import TimeValue
+from knowde._feature.time.repo.fetch import fetch_time
+from knowde._feature.time.repo.remove import (
     remove_month,
     remove_timeline,
     remove_year,
 )
-from knowde._feature.timeline.repo.timeline import list_time
+from knowde._feature.time.repo.timeline import list_time
 
 
 def test_remove_month() -> None:

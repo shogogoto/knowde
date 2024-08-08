@@ -8,7 +8,8 @@ from knowde._feature._shared.domain import Entity
 from knowde._feature._shared.domain.domain import APIReturn
 from knowde._feature._shared.errors.domain import NotExistsAccessError
 from knowde._feature._shared.types import NXGraph  # noqa: TCH001
-from knowde._feature.timeline.domain.errors import InvalidTimeYMDError
+
+from .errors import InvalidTimeYMDError
 
 
 class TimelineRoot(Entity, frozen=True):

@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import pytest
 
-from knowde._feature.timeline.domain.const import SOCIETY_TIMELINE
-from knowde._feature.timeline.domain.domain import TimeValue
-from knowde._feature.timeline.domain.timestr import TimeStr
+from .const import SOCIETY_TIMELINE
+from .domain import TimeValue
+from .timestr import TimeStr
 
 
 @pytest.mark.parametrize(

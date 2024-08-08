@@ -7,7 +7,7 @@ import networkx as nx
 from knowde._feature._shared.errors.domain import MultiHitError
 from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature._shared.repo.rel import dict2query_literal
-from knowde._feature.timeline.domain.domain import (
+from knowde._feature.time.domain.domain import (
     Day,
     Month,
     Timeline,

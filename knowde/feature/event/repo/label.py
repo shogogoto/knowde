@@ -10,12 +10,12 @@ from knowde._feature._shared.repo.base import LBase
 from knowde._feature._shared.repo.rel import RelUtil
 from knowde._feature._shared.repo.util import LabelUtil
 from knowde._feature.location.repo.label import LLocation
-from knowde._feature.timeline.repo.label import LTime
+from knowde._feature.time.repo.label import LTime
 from knowde.feature.event.domain.event import Event
 
 if TYPE_CHECKING:
     from knowde._feature.location.domain import Location
-    from knowde._feature.timeline.domain.domain import Time
+    from knowde._feature.time.domain.domain import Time
 
 
 class LEvent(LBase):

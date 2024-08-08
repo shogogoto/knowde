@@ -41,7 +41,7 @@ change_client = cf.put(
 remove_client = cf.delete(UUIDPath, EventUtil.delete)
 
 
-@click.group
+@click.group("ev")
 def event_cli() -> None:
     """出来事."""
 

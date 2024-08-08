@@ -5,7 +5,7 @@ from knowde._feature._shared.domain.domain import Entity
 from knowde._feature._shared.repo.base import LBase
 from knowde._feature._shared.repo.rel import RelUtil
 from knowde._feature._shared.repo.util import LabelUtil
-from knowde._feature.timeline.repo.label import LTime
+from knowde._feature.time.repo.label import LTime
 from knowde.feature.person.domain.lifedate import LifeSpan
 from knowde.feature.person.domain.person import Person
 

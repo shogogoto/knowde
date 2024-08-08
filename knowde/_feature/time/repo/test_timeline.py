@@ -1,9 +1,9 @@
 """子をすべて削除."""
 from pytest_unordered import unordered
 
-from knowde._feature.timeline.domain.domain import TimeValue
-from knowde._feature.timeline.repo.fetch import fetch_time
-from knowde._feature.timeline.repo.timeline import list_time
+from knowde._feature.time.domain.domain import TimeValue
+from knowde._feature.time.repo.fetch import fetch_time
+from knowde._feature.time.repo.timeline import list_time
 
 
 def test_timeline_days() -> None:

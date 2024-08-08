@@ -6,13 +6,13 @@ from typing import TYPE_CHECKING
 from more_itertools import collapse
 
 from knowde._feature._shared.repo.query import query_cypher
-from knowde._feature.timeline.domain.domain import Timeline, TimelineRoot
-from knowde._feature.timeline.repo.query import build_time_graph
+from knowde._feature.time.domain.domain import Timeline, TimelineRoot
+from knowde._feature.time.repo.query import build_time_graph
 
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from knowde._feature.timeline.domain.domain import Time
+    from knowde._feature.time.domain.domain import Time
 
 
 def add_event_time(ev_uid: UUID, t_uid: UUID) -> Time:

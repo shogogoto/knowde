@@ -4,7 +4,8 @@ from pytest_unordered import unordered
 
 from knowde._feature._shared.errors.domain import CompleteNotFoundError
 from knowde._feature.location.repo.repo import add_location_root
-from knowde._feature.timeline.repo.fetch import fetch_time
+from knowde._feature.time.domain.const import SOCIETY_TIMELINE
+from knowde._feature.time.repo.fetch import fetch_time
 from knowde.feature.event.repo.event import (
     add_event,
     change_event,
@@ -12,7 +13,6 @@ from knowde.feature.event.repo.event import (
     find_event,
     list_event,
 )
-from knowde.feature.person.domain.lifedate import SOCIETY_TIMELINE
 
 
 def test_add_event() -> None:

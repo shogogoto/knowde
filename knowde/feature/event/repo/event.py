@@ -9,8 +9,8 @@ from knowde._feature._shared.errors.domain import CompleteNotFoundError, MultiHi
 from knowde._feature._shared.repo.query import excollapse, query_cypher
 from knowde._feature.location.domain import Location
 from knowde._feature.location.repo.label import LocUtil
-from knowde._feature.timeline.domain.domain import Timeline, TimelineRoot
-from knowde._feature.timeline.repo.query import build_time_graph
+from knowde._feature.time.domain.domain import Timeline, TimelineRoot
+from knowde._feature.time.repo.query import build_time_graph
 from knowde.feature.event.domain.event import Event  # noqa: TCH001
 from knowde.feature.event.repo.label import EventMapper, EventUtil, LEvent, RelWhere
 from knowde.feature.event.repo.time import add_event_time

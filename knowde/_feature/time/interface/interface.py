@@ -6,15 +6,15 @@ from knowde._feature._shared.api.endpoint import Endpoint
 from knowde._feature._shared.api.facade import ClientFactory
 from knowde._feature._shared.api.paramfunc import to_bodyfunc, to_queryfunc
 from knowde._feature._shared.cli.field.model2click import model2decorator
-from knowde._feature.timeline.domain.domain import TimeValue
-from knowde._feature.timeline.domain.timestr import TimeStr
-from knowde._feature.timeline.interface.dto import (
+from knowde._feature.time.domain.domain import TimeValue
+from knowde._feature.time.domain.timestr import TimeStr
+from knowde._feature.time.interface.dto import (
     TimelineParam,
     TimeStrParam,
 )
-from knowde._feature.timeline.repo.fetch import fetch_time
-from knowde._feature.timeline.repo.remove import remove_time
-from knowde._feature.timeline.repo.timeline import list_time
+from knowde._feature.time.repo.fetch import fetch_time
+from knowde._feature.time.repo.remove import remove_time
+from knowde._feature.time.repo.timeline import list_time
 
 tl_router = Endpoint.Timeline.create_router()
 cf = ClientFactory(router=tl_router, rettype=TimeValue)
@@ -30,7 +30,6 @@ list_client = cf.gets(
         list_time,
         [str, int | None, int | None],
         list[TimeValue],
-        lambda x: x.values,
     ),
     query=APIQuery(name="name").add("year").add("month"),
 )
@@ -65,7 +64,7 @@ def _ls(timestr: str) -> None:
     """一覧."""
     s = TimeStr(value=timestr)
     ls = list_client(**s.val.model_dump())
-    for t in ls:
+    for t in sorted(ls):
         click.echo(t)
 
 
