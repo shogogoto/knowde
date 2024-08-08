@@ -16,7 +16,9 @@ from knowde._feature.timeline.domain.timestr import TimeStr
         ("-2000", -2000, None, None, SOCIETY_TIMELINE),
         ("-20@XXX", -20, None, None, "XXX"),
         ("-20/12@XXX", -20, 12, None, "XXX"),
-        ("-20/12/31@XXX", -20, 12, 31, "XXX"),
+        ("-20/12/31@@XX", -20, 12, 31, "@XX"),
+        ("@XXX", None, None, None, "XXX"),
+        ("@", None, None, None, SOCIETY_TIMELINE),
     ],
 )
 def test_timestr(

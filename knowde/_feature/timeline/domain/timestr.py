@@ -17,7 +17,7 @@ def to_int(v: str | None) -> int | None:
     return int(v.replace("/", ""))
 
 
-TS_PT = r"(-?\d+)(\/\d+)?(\/\d+)?(@.+)?"
+TS_PT = r"(^-?\d+)?(\/\d+)?(\/\d+)?(@.+)?"
 TS_RE = re.compile(TS_PT)
 
 
@@ -31,6 +31,7 @@ class TimeStr(BaseModel, frozen=True):
         1999/01
         1999
         1999@AD
+        @AD
     """
 
     value: str = Field(pattern=TS_PT)
