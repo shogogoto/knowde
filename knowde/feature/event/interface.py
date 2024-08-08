@@ -66,10 +66,10 @@ def _ls() -> list[Event]:
 @model2decorator(PrefUidParam)
 @model2decorator(ChangeTextParam)
 @view_options
-def _ch(pref_uid: str, name: str) -> list[Event]:
+def _ch(pref_uid: str, text: str) -> list[Event]:
     """名前変更."""
     pre = complete_client(pref_uid=pref_uid)
-    post = change_client(uid=pre.valid_uid, name=name)
+    post = change_client(uid=pre.valid_uid, text=text)
     click.echo("0->1に変更しました")
     return [pre, post]
 
