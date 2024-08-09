@@ -6,20 +6,21 @@ import networkx as nx
 from more_itertools import collapse
 
 from knowde._feature._shared.repo.query import query_cypher
-from knowde._feature.timeline.domain.domain import (
+from knowde._feature.time.domain.domain import (
     Day,
     Month,
     Timeline,
     TimelineRoot,
     Year,
 )
-from knowde._feature.timeline.repo.label import LMonth, LTimeline, LYear
+
+from .label import LMonth, LTimeline, LYear
 
 if TYPE_CHECKING:
     from uuid import UUID
 
     from knowde._feature._shared.repo.base import RelBase
-    from knowde._feature.timeline.domain.domain import Time
+    from knowde._feature.time.domain.domain import Time
 
 
 def build_time_graph(rels: Iterator[RelBase]) -> nx.DiGraph:

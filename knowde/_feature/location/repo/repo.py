@@ -36,7 +36,6 @@ def remove_location(uid: UUID) -> None:
 
 
 def find_location_tree(uid: UUID) -> CompositeTree[Location]:
-    # def find_location_tree(uid: UUID) -> LocationTree:
     n = REL_L2L_NAME
     res = query_cypher(
         f"""

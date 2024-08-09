@@ -11,3 +11,11 @@ class DayRangeError(DomainError):
 
 class InvalidTimeYMDError(DomainError):
     """不正な組YMD."""
+
+
+class EndBeforeStartError(DomainError):
+    """開始の前に終わる."""
+
+
+class NotEqualTimelineError(DomainError):
+    """時系列名が異なる."""

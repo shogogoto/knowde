@@ -8,13 +8,14 @@ from knowde._feature._shared.domain import Entity
 from knowde._feature._shared.domain.domain import APIReturn
 from knowde._feature._shared.errors.domain import NotExistsAccessError
 from knowde._feature._shared.types import NXGraph  # noqa: TCH001
-from knowde._feature.timeline.domain.errors import InvalidTimeYMDError
+
+from .errors import InvalidTimeYMDError
 
 
 class TimelineRoot(Entity, frozen=True):
     """時系列ルート."""
 
-    name: str
+    name: str = Field(min_length=1)
 
 
 class YMD(Entity, frozen=True):
@@ -75,6 +76,10 @@ class TimeValue(APIReturn, frozen=True):
     def tuple(self) -> tuple[str, int | None, int | None, int | None]:
         return (self.name, self.year, self.month, self.day)
 
+    @property
+    def ymd_tuple(self) -> tuple[int | None, int | None, int | None]:
+        return self.tuple[1:]
+
     def __lt__(self, other: Self) -> bool:
         return self.tuple < other.tuple
 
@@ -123,7 +128,7 @@ class Time(BaseModel, frozen=True):
         return self.y
 
     @property
-    def ymd(self) -> YMD:
+    def leaf(self) -> YMD:
         """より細かい時刻を返す."""
         ts = [self.tl, self.y, self.m, self.d]
         ret = [t for t in ts if t is not None][-1]

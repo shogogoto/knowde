@@ -1,7 +1,7 @@
 import pytest
 
-from knowde._feature.timeline.domain.errors import DayRangeError, MonthRangeError
-from knowde._feature.timeline.repo.fetch import (
+from knowde._feature.time.domain.errors import DayRangeError, MonthRangeError
+from knowde._feature.time.repo.fetch import (
     fetch_day,
     fetch_month,
     fetch_time,

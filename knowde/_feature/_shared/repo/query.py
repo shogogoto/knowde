@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from textwrap import dedent
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Iterable, Optional, TypeVar
 
+from more_itertools import collapse
 from neomodel import db
 from pydantic import BaseModel
 
@@ -26,6 +27,9 @@ def query_cypher(
     return QueryResult(q=_q, results=results, meta=meta)
 
 
+T = TypeVar("T")
+
+
 class QueryResult(BaseModel, frozen=True):
     q: str
     results: list[list[Any]]
@@ -34,9 +38,9 @@ class QueryResult(BaseModel, frozen=True):
     def get(
         self,
         var: str,
-        convert: Callable[[Any], Any] = lambda x: x,
+        convert: Callable[[Any], T] = lambda x: x,
         row_convert: Callable[[Any], Any] = lambda x: x,
-    ) -> list[Any]:
+    ) -> list[T]:
         i = self.meta.index(var)
         return list(
             map(
@@ -59,3 +63,12 @@ class QueryResult(BaseModel, frozen=True):
 
     def zip(self, *vars_: str) -> zip:
         return zip(*self.tuple(*vars_), strict=True)
+
+    def collapse(self, var: str, convert: Callable[..., T]) -> list[T]:
+        vals = self.get(var)
+        return excollapse(vals, convert)
+
+
+def excollapse(it: Iterable[Any], convert: Callable[..., T]) -> list[T]:
+    """Noneを除外してリストを1次元化."""
+    return [convert(e) for e in collapse(it) if e is not None]
