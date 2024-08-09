@@ -76,6 +76,10 @@ class TimeValue(APIReturn, frozen=True):
     def tuple(self) -> tuple[str, int | None, int | None, int | None]:
         return (self.name, self.year, self.month, self.day)
 
+    @property
+    def ymd_tuple(self) -> tuple[int | None, int | None, int | None]:
+        return self.tuple[1:]
+
     def __lt__(self, other: Self) -> bool:
         return self.tuple < other.tuple
 
