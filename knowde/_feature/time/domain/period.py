@@ -4,9 +4,9 @@ from typing import TYPE_CHECKING, Self
 
 from pydantic import BaseModel, model_validator
 
+from knowde._feature.time.domain.const import SOCIETY_TIMELINE
 from knowde._feature.time.domain.domain import TimeValue  # noqa: TCH001
 from knowde._feature.time.domain.errors import (
-    EmptyPeriodError,
     EndBeforeStartError,
     NotEqualTimelineError,
 )
@@ -23,10 +23,10 @@ class Period(BaseModel, frozen=True):
     end: TimeValue | None = None
 
     @classmethod
-    def from_times(cls, start: Time | None, end: Time | None) -> Self:
+    def from_times(cls, start: Time, end: Time) -> Self:
         return cls(
-            start=start.value if start is not None else None,
-            end=end.value if end is not None else None,
+            start=None if start.only_tl() else start.value,
+            end=None if end.only_tl() else end.value,
         )
 
     @classmethod
@@ -42,8 +42,6 @@ class Period(BaseModel, frozen=True):
                 raise EndBeforeStartError
             if self.start.name != self.end.name:
                 raise NotEqualTimelineError
-        if self.start is None and self.end is None:
-            raise EmptyPeriodError
         return self
 
     @property
@@ -53,7 +51,7 @@ class Period(BaseModel, frozen=True):
             return self.start.name
         if self.end is not None:
             return self.end.name
-        raise EmptyPeriodError
+        return SOCIETY_TIMELINE
 
     @property
     def output(self) -> str:

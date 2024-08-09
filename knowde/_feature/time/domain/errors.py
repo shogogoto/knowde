@@ -19,7 +19,3 @@ class EndBeforeStartError(DomainError):
 
 class NotEqualTimelineError(DomainError):
     """時系列名が異なる."""
-
-
-class EmptyPeriodError(DomainError):
-    """空の期間."""
