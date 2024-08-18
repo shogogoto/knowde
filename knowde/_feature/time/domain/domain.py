@@ -4,10 +4,10 @@ from typing import Optional, Self
 
 from pydantic import BaseModel, Field, model_validator
 
-from knowde._feature._shared.domain import Entity
-from knowde._feature._shared.domain.domain import APIReturn
-from knowde._feature._shared.errors.domain import NotExistsAccessError
-from knowde._feature._shared.types import NXGraph  # noqa: TCH001
+from knowde.core.domain import Entity
+from knowde.core.domain.domain import APIReturn
+from knowde.core.errors.domain import NotExistsAccessError
+from knowde.core.types import NXGraph  # noqa: TCH001
 
 from .errors import InvalidTimeYMDError
 

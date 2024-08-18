@@ -11,9 +11,9 @@ from knowde._feature import (
     sec_router,
     tl_router,
 )
-from knowde._feature._shared import ErrorHandlingMiddleware
 from knowde._feature.proposition import p_router
 from knowde.complex import deduct_router, def_router, ev_router, person_router
+from knowde.core import ErrorHandlingMiddleware
 from knowde.reference import refdef_router
 
 api = FastAPI()

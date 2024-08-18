@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
-from knowde._feature._shared.domain.container import Composite  # noqa: TCH001
-from knowde._feature._shared.domain.domain import APIReturn
 from knowde._feature.location.domain import Location  # noqa: TCH001
+from knowde.core.domain.container import Composite  # noqa: TCH001
+from knowde.core.domain.domain import APIReturn
 
 
 class LocationAddParam(BaseModel, frozen=True):

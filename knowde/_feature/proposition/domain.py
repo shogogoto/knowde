@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pydantic import Field
 
-from knowde._feature._shared.domain import Entity
+from knowde.core.domain import Entity
 
 
 class Proposition(Entity, frozen=True):

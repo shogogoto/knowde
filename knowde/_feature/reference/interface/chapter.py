@@ -2,18 +2,6 @@ from __future__ import annotations
 
 import click
 
-from knowde._feature._shared.api.api_param import APIPath, APIQuery
-from knowde._feature._shared.api.endpoint import (
-    Endpoint,
-    router2delete,
-    router2get,
-    router2put,
-    router2tpost,
-)
-from knowde._feature._shared.cli.click_decorators import each_args
-from knowde._feature._shared.cli.click_decorators.view.options import view_options
-from knowde._feature._shared.cli.field.model2click import model2decorator
-from knowde._feature._shared.cli.field.types import PrefUidParam
 from knowde._feature.reference.domain import Chapter
 from knowde._feature.reference.dto import HeadlineParam
 from knowde._feature.reference.repo.chapter import (
@@ -22,6 +10,18 @@ from knowde._feature.reference.repo.chapter import (
     complete_chapter,
     remove_chapter,
 )
+from knowde.core.api.api_param import APIPath, APIQuery
+from knowde.core.api.endpoint import (
+    Endpoint,
+    router2delete,
+    router2get,
+    router2put,
+    router2tpost,
+)
+from knowde.core.cli.click_decorators import each_args
+from knowde.core.cli.click_decorators.view.options import view_options
+from knowde.core.cli.field.model2click import model2decorator
+from knowde.core.cli.field.types import PrefUidParam
 
 chap_router = Endpoint.Chapter.create_router()
 add_client = APIPath(name="book_uid", prefix="").to_client(

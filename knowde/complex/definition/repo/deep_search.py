@@ -3,7 +3,6 @@ from uuid import UUID
 
 import networkx as nx
 
-from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature.sentence.domain import Sentence
 from knowde._feature.term.domain import Term
 from knowde.complex.definition.domain.domain import (
@@ -12,6 +11,7 @@ from knowde.complex.definition.domain.domain import (
 )
 from knowde.complex.definition.repo.definition import RelDefUtil
 from knowde.complex.definition.repo.mark import RelMark, RelMarkUtil
+from knowde.core.repo.query import query_cypher
 
 
 def find_recursively(def_uid: UUID) -> DefinitionTree:

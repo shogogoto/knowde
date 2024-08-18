@@ -6,15 +6,6 @@ from uuid import UUID
 import click
 from treelib.tree import Tree
 
-from knowde._feature._shared.api.api_param import NullPath
-from knowde._feature._shared.api.const import CmplPath, CmplQ, UUIDPath
-from knowde._feature._shared.api.endpoint import Endpoint, router2get
-from knowde._feature._shared.api.facade import ClientFactory
-from knowde._feature._shared.api.paramfunc import to_bodyfunc, to_queryfunc
-from knowde._feature._shared.cli.click_decorators import each_args
-from knowde._feature._shared.cli.click_decorators.view.options import view_options
-from knowde._feature._shared.cli.field.model2click import model2decorator
-from knowde._feature._shared.cli.field.types import PrefUidParam
 from knowde._feature.location.domain import Location
 from knowde._feature.location.dto import LocationAddParam, LocationDetailView
 from knowde._feature.location.repo.label import LocUtil
@@ -26,9 +17,18 @@ from knowde._feature.location.repo.repo import (
     rename_location,
 )
 from knowde._feature.location.service import detail_location_service
+from knowde.core.api.api_param import NullPath
+from knowde.core.api.const import CmplPath, CmplQ, UUIDPath
+from knowde.core.api.endpoint import Endpoint, router2get
+from knowde.core.api.facade import ClientFactory
+from knowde.core.api.paramfunc import to_bodyfunc, to_queryfunc
+from knowde.core.cli.click_decorators import each_args
+from knowde.core.cli.click_decorators.view.options import view_options
+from knowde.core.cli.field.model2click import model2decorator
+from knowde.core.cli.field.types import PrefUidParam
 
 if TYPE_CHECKING:
-    from knowde._feature._shared.domain.container import Composite
+    from knowde.core.domain.container import Composite
 
 loc_router = Endpoint.Location.create_router()
 cf = ClientFactory(router=loc_router, rettype=Location)

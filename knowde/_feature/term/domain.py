@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from knowde._feature._shared.domain import Entity
+from knowde.core.domain import Entity
 
 MAX_CHARS = 32
 

@@ -6,11 +6,11 @@ from typing import Self
 
 from neomodel import BooleanProperty, IntegerProperty, StringProperty
 
-from knowde._feature._shared.domain import APIReturn, Entity
-from knowde._feature._shared.repo.base import LBase, RelBase
-from knowde._feature._shared.repo.rel import RelUtil
 from knowde._feature.proposition.domain import Proposition
 from knowde._feature.proposition.repo.label import LProposition
+from knowde.core.domain import APIReturn, Entity
+from knowde.core.repo.base import LBase, RelBase
+from knowde.core.repo.rel import RelUtil
 
 
 class LDeduction(LBase):

@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Iterator
 import networkx as nx
 from more_itertools import collapse
 
-from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature.time.domain.domain import (
     Day,
     Month,
@@ -13,14 +12,15 @@ from knowde._feature.time.domain.domain import (
     TimelineRoot,
     Year,
 )
+from knowde.core.repo.query import query_cypher
 
 from .label import LMonth, LTimeline, LYear
 
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from knowde._feature._shared.repo.base import RelBase
     from knowde._feature.time.domain.domain import Time
+    from knowde.core.repo.base import RelBase
 
 
 def build_time_graph(rels: Iterator[RelBase]) -> nx.DiGraph:

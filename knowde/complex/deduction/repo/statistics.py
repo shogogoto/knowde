@@ -3,12 +3,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final, Optional
 
-from knowde._feature._shared.repo.query import query_cypher
 from knowde.complex.deduction.domain import DeductionStatistics
 from knowde.complex.deduction.repo.label import (
     REL_CONCLUSION_LABEL,
     REL_PREMISE_LABEL,
 )
+from knowde.core.repo.query import query_cypher
 
 if TYPE_CHECKING:
     from uuid import UUID

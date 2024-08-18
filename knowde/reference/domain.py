@@ -3,10 +3,10 @@ from __future__ import annotations
 
 from textwrap import indent
 
-from knowde._feature._shared.domain import APIReturn
 from knowde._feature.reference.domain import Reference  # noqa: TCH001
 from knowde.complex.definition.domain.domain import Definition  # noqa: TCH001
 from knowde.complex.definition.domain.statistics import StatsDefinitions  # noqa: TCH001
+from knowde.core.domain import APIReturn
 
 
 class RefDefinition(APIReturn, frozen=True):

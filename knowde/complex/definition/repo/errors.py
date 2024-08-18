@@ -3,7 +3,7 @@
 
 from fastapi import status
 
-from knowde._feature._shared.errors.errors import DomainError
+from knowde.core.errors.errors import DomainError
 
 
 class UndefinedMarkedTermError(Exception):

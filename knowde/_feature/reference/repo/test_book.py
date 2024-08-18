@@ -1,10 +1,10 @@
 from datetime import date
 
-from knowde._feature._shared import to_date
 from knowde._feature.reference.dto import PartialBookParam
 from knowde._feature.reference.repo.book import change_book
 from knowde._feature.reference.repo.label import BookUtil
 from knowde._feature.reference.repo.reference import find_reftree
+from knowde.core import to_date
 
 
 def test_first_edited() -> None:

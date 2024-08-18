@@ -1,4 +1,4 @@
-from knowde._feature._shared.errors.errors import DomainError
+from knowde.core.errors.errors import DomainError
 
 
 class MonthRangeError(DomainError):

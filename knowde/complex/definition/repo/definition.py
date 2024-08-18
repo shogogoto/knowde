@@ -6,9 +6,6 @@ from uuid import UUID  # noqa: TCH003
 
 from neomodel import ZeroOrOne
 
-from knowde._feature._shared.repo.base import RelBase
-from knowde._feature._shared.repo.query import QueryResult, query_cypher
-from knowde._feature._shared.repo.rel import RelUtil
 from knowde._feature.sentence import LSentence
 from knowde._feature.sentence.domain import Sentence
 from knowde._feature.term import LTerm, TermUtil
@@ -30,6 +27,9 @@ from knowde.complex.definition.repo.mark import (
     remark_sentence,
 )
 from knowde.complex.definition.repo.statistics import statistics_query
+from knowde.core.repo.base import RelBase
+from knowde.core.repo.query import QueryResult, query_cypher
+from knowde.core.repo.rel import RelUtil
 
 RelDefUtil = RelUtil(
     t_source=LTerm,

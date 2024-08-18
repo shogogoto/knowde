@@ -3,8 +3,8 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
-from knowde._feature._shared.domain import APIReturn
 from knowde.complex.definition.domain.domain import Definition  # noqa: TCH001
+from knowde.core.domain import APIReturn
 
 
 class DepStatistics(BaseModel, frozen=True):

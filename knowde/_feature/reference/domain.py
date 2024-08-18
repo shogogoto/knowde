@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from pydantic_core import Url  # noqa: TCH002
 from typing_extensions import override
 
-from knowde._feature._shared.domain import APIReturn, Entity
+from knowde.core.domain import APIReturn, Entity
 
 
 class Reference(Entity, frozen=True):

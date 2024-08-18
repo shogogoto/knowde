@@ -5,10 +5,10 @@ from uuid import UUID  # noqa: TCH003
 import networkx as nx
 from more_itertools import collapse
 
-from knowde._feature._shared.domain.container import CompositeTree
-from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature.location.domain import Location
 from knowde._feature.location.repo.label import REL_L2L_NAME, LocUtil, RelL2L
+from knowde.core.domain.container import CompositeTree
+from knowde.core.repo.query import query_cypher
 
 
 def add_location_root(name: str) -> Location:

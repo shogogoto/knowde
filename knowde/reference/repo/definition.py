@@ -5,7 +5,6 @@ from uuid import UUID  # noqa: TCH003
 
 from neomodel import db
 
-from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature.reference.domain import Book
 from knowde._feature.reference.repo.label import (
     ReferenceUtil,
@@ -18,6 +17,7 @@ from knowde.complex.definition.repo.definition import (
     q_stats_def,
 )
 from knowde.complex.definition.repo.label import REL_DEF_LABEL
+from knowde.core.repo.query import query_cypher
 from knowde.reference.domain import RefDefinition, RefDefinitions
 from knowde.reference.dto import RefDefParam  # noqa: TCH001
 

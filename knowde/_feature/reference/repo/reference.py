@@ -5,12 +5,12 @@ from uuid import UUID  # noqa: TCH003
 
 import networkx as nx
 
-from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature.reference.domain import (
     ReferenceGraph,
     ReferenceTree,
 )
 from knowde._feature.reference.repo.label import to_refmodel
+from knowde.core.repo.query import query_cypher
 
 
 def find_reftree(ref_uid: UUID) -> ReferenceTree:

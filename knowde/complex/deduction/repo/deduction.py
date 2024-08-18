@@ -4,10 +4,6 @@ from __future__ import annotations
 import collections
 from uuid import UUID, uuid4
 
-from knowde._feature._shared import jst_now
-from knowde._feature._shared.errors.domain import NeomodelNotFoundError
-from knowde._feature._shared.repo.query import query_cypher
-from knowde._feature._shared.repo.util import LabelUtil
 from knowde._feature.proposition.domain import Proposition
 from knowde.complex.deduction.domain import (
     Deduction,
@@ -31,6 +27,10 @@ from knowde.complex.deduction.repo.statistics import (
     DEDUCTION_STATS_VARS,
     q_deduction_stats,
 )
+from knowde.core import jst_now
+from knowde.core.errors.domain import NeomodelNotFoundError
+from knowde.core.repo.query import query_cypher
+from knowde.core.repo.util import LabelUtil
 
 
 def check_premises_and_conclusion(premise_ids: list[UUID], conclusion_id: UUID) -> None:

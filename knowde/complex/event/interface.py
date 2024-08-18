@@ -5,15 +5,6 @@ from uuid import UUID
 
 import click
 
-from knowde._feature._shared.api.api_param import NullPath
-from knowde._feature._shared.api.const import CmplPath, CmplQ, UUIDPath
-from knowde._feature._shared.api.endpoint import Endpoint
-from knowde._feature._shared.api.facade import ClientFactory
-from knowde._feature._shared.api.paramfunc import to_bodyfunc
-from knowde._feature._shared.cli.click_decorators import each_args
-from knowde._feature._shared.cli.click_decorators.view.options import view_options
-from knowde._feature._shared.cli.field.model2click import model2decorator
-from knowde._feature._shared.cli.field.types import PrefUidParam
 from knowde.complex.event.domain.event import Event
 from knowde.complex.event.dto import AddEventParam, ChangeTextParam
 from knowde.complex.event.repo.event import (
@@ -23,6 +14,15 @@ from knowde.complex.event.repo.event import (
     list_event,
 )
 from knowde.complex.event.repo.label import EventUtil
+from knowde.core.api.api_param import NullPath
+from knowde.core.api.const import CmplPath, CmplQ, UUIDPath
+from knowde.core.api.endpoint import Endpoint
+from knowde.core.api.facade import ClientFactory
+from knowde.core.api.paramfunc import to_bodyfunc
+from knowde.core.cli.click_decorators import each_args
+from knowde.core.cli.click_decorators.view.options import view_options
+from knowde.core.cli.field.model2click import model2decorator
+from knowde.core.cli.field.types import PrefUidParam
 
 ev_router = Endpoint.Event.create_router()
 cf = ClientFactory(router=ev_router, rettype=Event)

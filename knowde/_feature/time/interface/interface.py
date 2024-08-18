@@ -1,11 +1,6 @@
 """timeline interface."""
 import click
 
-from knowde._feature._shared.api.api_param import APIPath, APIQuery, NullPath
-from knowde._feature._shared.api.endpoint import Endpoint
-from knowde._feature._shared.api.facade import ClientFactory
-from knowde._feature._shared.api.paramfunc import to_bodyfunc, to_queryfunc
-from knowde._feature._shared.cli.field.model2click import model2decorator
 from knowde._feature.time.domain.domain import TimeValue
 from knowde._feature.time.domain.timestr import TimeStr
 from knowde._feature.time.interface.dto import (
@@ -15,6 +10,11 @@ from knowde._feature.time.interface.dto import (
 from knowde._feature.time.repo.fetch import fetch_time
 from knowde._feature.time.repo.remove import remove_time
 from knowde._feature.time.repo.timeline import list_time
+from knowde.core.api.api_param import APIPath, APIQuery, NullPath
+from knowde.core.api.endpoint import Endpoint
+from knowde.core.api.facade import ClientFactory
+from knowde.core.api.paramfunc import to_bodyfunc, to_queryfunc
+from knowde.core.cli.field.model2click import model2decorator
 
 tl_router = Endpoint.Timeline.create_router()
 cf = ClientFactory(router=tl_router, rettype=TimeValue)

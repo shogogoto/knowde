@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from knowde._feature._shared.domain.domain import Entity
+from knowde.core.domain.domain import Entity
 
 
 class Location(Entity, frozen=True):

@@ -15,15 +15,15 @@ from uuid import UUID  # noqa: TCH003
 import networkx as nx
 from pydantic import BaseModel, Field, field_validator
 
-from knowde._feature._shared.domain import Composite, Entity
-from knowde._feature._shared.types import NXGraph  # noqa: TCH001
 from knowde._feature.sentence.domain import Sentence, SentenceParam
 from knowde._feature.term.domain import Term, TermParam
 from knowde.complex.definition.domain.description import PlaceHeldDescription
 from knowde.complex.definition.repo.mark import RelMark
+from knowde.core.domain import Composite, Entity
+from knowde.core.types import NXGraph  # noqa: TCH001
 
 if TYPE_CHECKING:
-    from knowde._feature._shared.repo.base import RelBase
+    from knowde.core.repo.base import RelBase
 
 
 class DefinitionParam(BaseModel, frozen=True):

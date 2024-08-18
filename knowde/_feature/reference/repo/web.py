@@ -1,9 +1,9 @@
 from uuid import UUID
 
-from knowde._feature._shared.errors.domain import AlreadyExistsError
 from knowde._feature.reference.domain import Web
 from knowde._feature.reference.dto import PartialWebParam, WebParam
 from knowde._feature.reference.repo.label import WebUtil
+from knowde.core.errors.domain import AlreadyExistsError
 
 
 def add_webref(p: WebParam) -> Web:

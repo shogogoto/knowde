@@ -1,7 +1,6 @@
 from operator import attrgetter
 from uuid import UUID
 
-from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature.reference.domain import Chapter
 from knowde._feature.reference.dto import HeadlineParam, SwapParam
 from knowde._feature.reference.repo.label import (
@@ -9,6 +8,7 @@ from knowde._feature.reference.repo.label import (
     ChapterUtil,
     RelChapterBookUtil,
 )
+from knowde.core.repo.query import query_cypher
 
 
 def add_book_chapter(book_uid: UUID, p: HeadlineParam) -> Chapter:

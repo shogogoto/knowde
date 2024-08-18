@@ -1,8 +1,8 @@
 from neomodel import StringProperty
 
-from knowde._feature._shared.repo.base import LBase
-from knowde._feature._shared.repo.util import LabelUtil
 from knowde._feature.term.domain import MAX_CHARS, Term
+from knowde.core.repo.base import LBase
+from knowde.core.repo.util import LabelUtil
 
 
 class LTerm(LBase):

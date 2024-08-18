@@ -1,8 +1,8 @@
 from neomodel import StringProperty
 
-from knowde._feature._shared.repo.base import LBase
-from knowde._feature._shared.repo.util import LabelUtil
 from knowde._feature.proposition.domain import Proposition
+from knowde.core.repo.base import LBase
+from knowde.core.repo.util import LabelUtil
 
 
 class LProposition(LBase):

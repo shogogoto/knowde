@@ -10,8 +10,6 @@ from typing import TYPE_CHECKING, Self
 from neomodel import IntegerProperty
 from pydantic import BaseModel, Field
 
-from knowde._feature._shared import RelBase, RelUtil
-from knowde._feature._shared.repo.label import Label  # noqa: TCH001
 from knowde._feature.sentence import LSentence, SentenceUtil
 from knowde._feature.sentence.domain import Sentence  # noqa: TCH001
 from knowde._feature.term import LTerm, TermUtil
@@ -20,6 +18,8 @@ from knowde.complex.definition.domain.mark import (
     inject2placeholder,
 )
 from knowde.complex.definition.repo.errors import UndefinedMarkedTermError
+from knowde.core import RelBase, RelUtil
+from knowde.core.repo.label import Label  # noqa: TCH001
 
 if TYPE_CHECKING:
     from uuid import UUID

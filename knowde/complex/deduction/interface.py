@@ -6,12 +6,6 @@ from uuid import UUID
 import click
 
 from knowde._feature import complete_proposition_client
-from knowde._feature._shared.api.api_param import APIPath, APIQuery, NullPath
-from knowde._feature._shared.api.endpoint import Endpoint, router2get
-from knowde._feature._shared.api.facade import ClientFactory
-from knowde._feature._shared.api.paramfunc import to_bodyfunc
-from knowde._feature._shared.cli.click_decorators import each_args
-from knowde._feature._shared.cli.field.model2click import model2decorator
 from knowde.complex.deduction.domain import Deduction, StatsDeductions
 from knowde.complex.deduction.dto import (
     DeductionAddCLIParam,
@@ -30,6 +24,12 @@ from knowde.complex.deduction.repo.deduction import (
     replace_premises,
 )
 from knowde.complex.deduction.repo.label import DeductionMapper
+from knowde.core.api.api_param import APIPath, APIQuery, NullPath
+from knowde.core.api.endpoint import Endpoint, router2get
+from knowde.core.api.facade import ClientFactory
+from knowde.core.api.paramfunc import to_bodyfunc
+from knowde.core.cli.click_decorators import each_args
+from knowde.core.cli.field.model2click import model2decorator
 
 deduct_router = Endpoint.Deduction.create_router()
 cf = ClientFactory(router=deduct_router, rettype=Deduction)

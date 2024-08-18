@@ -1,7 +1,7 @@
 """Rel Label."""
 from neomodel import DateProperty
 
-from knowde._feature._shared.repo.base import LBase
+from knowde.core.repo.base import LBase
 
 
 class RelWrite(LBase):

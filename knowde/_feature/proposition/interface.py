@@ -5,14 +5,6 @@ from uuid import UUID
 
 import click
 
-from knowde._feature._shared.api.api_param import APIPath, APIQuery, NullPath
-from knowde._feature._shared.api.endpoint import Endpoint
-from knowde._feature._shared.api.facade import ClientFactory
-from knowde._feature._shared.api.paramfunc import to_bodyfunc
-from knowde._feature._shared.cli.click_decorators import each_args
-from knowde._feature._shared.cli.click_decorators.view.options import view_options
-from knowde._feature._shared.cli.field.model2click import model2decorator
-from knowde._feature._shared.cli.field.types import PrefUidParam
 from knowde._feature.proposition.domain import Proposition
 from knowde._feature.proposition.dto import PropositionParam
 from knowde._feature.proposition.repo.repo import (
@@ -22,6 +14,14 @@ from knowde._feature.proposition.repo.repo import (
     delete_proposition,
     list_propositions,
 )
+from knowde.core.api.api_param import APIPath, APIQuery, NullPath
+from knowde.core.api.endpoint import Endpoint
+from knowde.core.api.facade import ClientFactory
+from knowde.core.api.paramfunc import to_bodyfunc
+from knowde.core.cli.click_decorators import each_args
+from knowde.core.cli.click_decorators.view.options import view_options
+from knowde.core.cli.field.model2click import model2decorator
+from knowde.core.cli.field.types import PrefUidParam
 
 p_router = Endpoint.Proposition.create_router()
 pf = ClientFactory(router=p_router, rettype=Proposition)

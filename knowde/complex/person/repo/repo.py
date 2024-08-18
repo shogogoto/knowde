@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Iterator, Optional
 
 from more_itertools import collapse
 
-from knowde._feature._shared.repo.query import query_cypher
 from knowde._feature.time.domain.const import SOCIETY_TIMELINE
 from knowde._feature.time.domain.domain import Timeline, TimeValue
 from knowde._feature.time.domain.period import Period
@@ -21,12 +20,13 @@ from knowde.complex.person.repo.label import (
     RelBirthUtil,
     RelDeathUtil,
 )
+from knowde.core.repo.query import query_cypher
 
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from knowde._feature._shared.repo.base import RelBase
     from knowde._feature.time.domain.domain import Time
+    from knowde.core.repo.base import RelBase
 
 
 def add_birth(pl: LPerson, v: TimeValue) -> Time:

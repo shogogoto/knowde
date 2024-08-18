@@ -1,9 +1,9 @@
 from neomodel import StringProperty
 
-from knowde._feature._shared.repo.base import LBase
-from knowde._feature._shared.repo.rel import RelUtil
-from knowde._feature._shared.repo.util import LabelUtil
 from knowde._feature.location.domain import Location
+from knowde.core.repo.base import LBase
+from knowde.core.repo.rel import RelUtil
+from knowde.core.repo.util import LabelUtil
 
 
 class LLocation(LBase):

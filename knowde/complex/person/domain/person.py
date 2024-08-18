@@ -1,8 +1,8 @@
 """人物."""
 from __future__ import annotations
 
-from knowde._feature._shared.domain.domain import Entity
 from knowde._feature.time.domain.period import Period  # noqa: TCH001
+from knowde.core.domain.domain import Entity
 
 
 class Person(Entity, frozen=True):

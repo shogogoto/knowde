@@ -2,7 +2,6 @@
 import pytest
 from pytest_unordered import unordered
 
-from knowde._feature._shared.errors.domain import CompleteNotFoundError
 from knowde._feature.location.repo.repo import add_location_root
 from knowde._feature.time.domain.const import SOCIETY_TIMELINE
 from knowde._feature.time.repo.fetch import fetch_time
@@ -13,6 +12,7 @@ from knowde.complex.event.repo.event import (
     find_event,
     list_event,
 )
+from knowde.core.errors.domain import CompleteNotFoundError
 
 
 def test_add_event() -> None:

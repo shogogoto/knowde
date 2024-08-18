@@ -5,13 +5,13 @@ from typing import TYPE_CHECKING
 
 from neomodel import StringProperty
 
-from knowde._feature._shared.domain.domain import Entity
-from knowde._feature._shared.repo.base import LBase
-from knowde._feature._shared.repo.rel import RelUtil
-from knowde._feature._shared.repo.util import LabelUtil
 from knowde._feature.location.repo.label import LLocation
 from knowde._feature.time.repo.label import LTime
 from knowde.complex.event.domain.event import Event
+from knowde.core.domain.domain import Entity
+from knowde.core.repo.base import LBase
+from knowde.core.repo.rel import RelUtil
+from knowde.core.repo.util import LabelUtil
 
 if TYPE_CHECKING:
     from knowde._feature.location.domain import Location

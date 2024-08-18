@@ -4,9 +4,6 @@ from typing import TYPE_CHECKING, Any
 
 import networkx as nx
 
-from knowde._feature._shared.errors.domain import MultiHitError
-from knowde._feature._shared.repo.query import query_cypher
-from knowde._feature._shared.repo.rel import dict2query_literal
 from knowde._feature.time.domain.domain import (
     Day,
     Month,
@@ -15,6 +12,9 @@ from knowde._feature.time.domain.domain import (
     TimeValue,
     Year,
 )
+from knowde.core.errors.domain import MultiHitError
+from knowde.core.repo.query import query_cypher
+from knowde.core.repo.rel import dict2query_literal
 
 if TYPE_CHECKING:
     from uuid import UUID

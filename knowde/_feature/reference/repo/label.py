@@ -2,10 +2,6 @@ from __future__ import annotations
 
 from neomodel import DateProperty, One, StringProperty
 
-from knowde._feature._shared import LBase
-from knowde._feature._shared.repo.rel import RelUtil
-from knowde._feature._shared.repo.rel_label import RelOrder
-from knowde._feature._shared.repo.util import LabelUtil
 from knowde._feature.reference.domain import (
     Book,
     Chapter,
@@ -14,6 +10,10 @@ from knowde._feature.reference.domain import (
     Section,
     Web,
 )
+from knowde.core import LBase
+from knowde.core.repo.rel import RelUtil
+from knowde.core.repo.rel_label import RelOrder
+from knowde.core.repo.util import LabelUtil
 
 
 # Referenceは議論や主張をsポートするための情報源というニュアンス

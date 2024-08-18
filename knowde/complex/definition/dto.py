@@ -6,8 +6,8 @@ from textwrap import indent
 import click
 from pydantic import BaseModel, Field
 
-from knowde._feature._shared.domain import APIReturn, Composite
 from knowde.complex.definition.domain.domain import Definition  # noqa: TCH001
+from knowde.core.domain import APIReturn, Composite
 
 
 def view_detail(composite: Composite[Definition]) -> str:

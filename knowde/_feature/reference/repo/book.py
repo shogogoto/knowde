@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from uuid import UUID  # noqa: TCH003
 
-from knowde._feature._shared.errors.domain import AlreadyExistsError
 from knowde._feature.reference.domain import Book, Reference  # noqa: TCH001
 from knowde._feature.reference.dto import BookParam, PartialBookParam  # noqa: TCH001
+from knowde.core.errors.domain import AlreadyExistsError
 
 from .label import BookUtil, ReferenceUtil
 

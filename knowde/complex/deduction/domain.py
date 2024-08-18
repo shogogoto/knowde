@@ -6,8 +6,8 @@ from typing import Self
 
 from pydantic import BaseModel, Field
 
-from knowde._feature._shared.domain import APIReturn, Entity
 from knowde._feature.proposition.domain import Proposition  # noqa: TCH001
+from knowde.core.domain import APIReturn, Entity
 
 
 class Deduction(Entity, frozen=True):
