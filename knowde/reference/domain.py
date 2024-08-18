@@ -5,8 +5,8 @@ from textwrap import indent
 
 from knowde._feature._shared.domain import APIReturn
 from knowde._feature.reference.domain import Reference  # noqa: TCH001
-from knowde.feature.definition.domain.domain import Definition  # noqa: TCH001
-from knowde.feature.definition.domain.statistics import StatsDefinitions  # noqa: TCH001
+from knowde.complex.definition.domain.domain import Definition  # noqa: TCH001
+from knowde.complex.definition.domain.statistics import StatsDefinitions  # noqa: TCH001
 
 
 class RefDefinition(APIReturn, frozen=True):

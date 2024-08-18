@@ -31,7 +31,7 @@ from knowde._feature._shared.api.endpoint import Endpoint, router2get, router2tp
 from knowde._feature._shared.cli.field.model2click import model2decorator
 from knowde._feature._shared.cli.field.types import PrefUidParam
 from knowde._feature.reference.interface.reference import complete_ref_client
-from knowde.feature.definition.domain.domain import DefinitionParam
+from knowde.complex.definition.domain.domain import DefinitionParam
 from knowde.reference.domain import RefDefinition, RefDefinitions
 from knowde.reference.dto import RefDefParam
 from knowde.reference.repo.definition import add_refdef, list_refdefs

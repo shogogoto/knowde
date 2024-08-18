@@ -11,13 +11,13 @@ from knowde._feature.reference.repo.label import (
     ReferenceUtil,
     to_refmodel,
 )
-from knowde.feature.definition.domain.domain import Definition
-from knowde.feature.definition.repo.definition import (
+from knowde.complex.definition.domain.domain import Definition
+from knowde.complex.definition.repo.definition import (
     add_definition,
     build_statsdefs,
     q_stats_def,
 )
-from knowde.feature.definition.repo.label import REL_DEF_LABEL
+from knowde.complex.definition.repo.label import REL_DEF_LABEL
 from knowde.reference.domain import RefDefinition, RefDefinitions
 from knowde.reference.dto import RefDefParam  # noqa: TCH001
 

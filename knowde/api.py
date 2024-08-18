@@ -13,7 +13,7 @@ from knowde._feature import (
 )
 from knowde._feature._shared import ErrorHandlingMiddleware
 from knowde._feature.proposition import p_router
-from knowde.feature import deduct_router, def_router, ev_router, person_router
+from knowde.complex import deduct_router, def_router, ev_router, person_router
 from knowde.reference import refdef_router
 
 api = FastAPI()

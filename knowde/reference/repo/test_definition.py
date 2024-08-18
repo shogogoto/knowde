@@ -7,7 +7,7 @@ from pytest_unordered import unordered
 
 from knowde._feature.reference.dto import BookParam
 from knowde._feature.reference.repo.book import add_book
-from knowde.feature.definition.repo.definition import add_definition, list_definitions
+from knowde.complex.definition.repo.definition import add_definition, list_definitions
 from knowde.reference.dto import RefDefParam
 from knowde.reference.repo.definition import (
     add_refdef,

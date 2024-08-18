@@ -5,7 +5,7 @@ from uuid import UUID  # noqa: TCH003
 
 from pydantic import BaseModel
 
-from knowde.feature.definition.domain.domain import DefinitionParam
+from knowde.complex.definition.domain.domain import DefinitionParam
 
 
 class BookParam(BaseModel, frozen=True):
