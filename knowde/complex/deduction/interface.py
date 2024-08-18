@@ -5,7 +5,6 @@ from uuid import UUID
 
 import click
 
-from knowde._feature import complete_proposition_client
 from knowde.complex.deduction.domain import Deduction, StatsDeductions
 from knowde.complex.deduction.dto import (
     DeductionAddCLIParam,
@@ -30,6 +29,7 @@ from knowde.core.api.facade import ClientFactory
 from knowde.core.api.paramfunc import to_bodyfunc
 from knowde.core.cli.click_decorators import each_args
 from knowde.core.cli.field.model2click import model2decorator
+from knowde.primitive import complete_proposition_client
 
 deduct_router = Endpoint.Deduction.create_router()
 cf = ClientFactory(router=deduct_router, rettype=Deduction)

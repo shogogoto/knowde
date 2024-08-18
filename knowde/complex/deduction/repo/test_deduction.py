@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 import pytest
 from pytest_unordered import unordered
 
-from knowde._feature.proposition.repo.repo import add_proposition
 from knowde.complex.deduction.repo.deduction import (
     deduct,
     find_deduction_by_uid,
@@ -19,6 +18,7 @@ from knowde.complex.deduction.repo.errors import (
     NoPremiseError,
     PremiseDuplicationError,
 )
+from knowde.primitive.proposition.repo.repo import add_proposition
 
 if TYPE_CHECKING:
     from uuid import UUID

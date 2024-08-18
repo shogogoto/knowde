@@ -5,15 +5,15 @@ from typing import TYPE_CHECKING, Any
 
 from more_itertools import collapse
 
-from knowde._feature.location.domain import Location
-from knowde._feature.location.repo.label import LocUtil
-from knowde._feature.time.domain.domain import Timeline, TimelineRoot
-from knowde._feature.time.repo.query import build_time_graph
 from knowde.complex.event.domain.event import Event  # noqa: TCH001
 from knowde.complex.event.repo.label import EventMapper, EventUtil, LEvent, RelWhere
 from knowde.complex.event.repo.time import add_event_time
 from knowde.core.errors.domain import CompleteNotFoundError, MultiHitError
 from knowde.core.repo.query import excollapse, query_cypher
+from knowde.primitive.location.domain import Location
+from knowde.primitive.location.repo.label import LocUtil
+from knowde.primitive.time.domain.domain import Timeline, TimelineRoot
+from knowde.primitive.time.repo.query import build_time_graph
 
 if TYPE_CHECKING:
     from uuid import UUID

@@ -3,10 +3,10 @@ from __future__ import annotations
 
 import click
 
-from knowde._feature import prop_cli, ref_cli, tl_cli
-from knowde._feature.location.interface import loc_cli
 from knowde.complex import deduct_cli, def_cli, event_cli
 from knowde.complex.person.interface import person_cli
+from knowde.primitive import prop_cli, ref_cli, tl_cli
+from knowde.primitive.location.interface import loc_cli
 from knowde.reference.interface import refdef_cli
 
 __version__ = "0.0.0"

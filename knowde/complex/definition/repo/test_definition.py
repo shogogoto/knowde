@@ -9,9 +9,9 @@
 import pytest
 from pytest_unordered import unordered
 
-from knowde._feature.sentence import SentenceUtil
-from knowde._feature.term import TermUtil
 from knowde.complex.definition.repo.mark import find_marked_terms
+from knowde.primitive.sentence import SentenceUtil
+from knowde.primitive.term import TermUtil
 
 from .definition import (
     add_definition,

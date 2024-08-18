@@ -4,8 +4,6 @@
 import pytest
 from pytest_unordered import unordered
 
-from knowde._feature.time.domain.errors import EndBeforeStartError
-from knowde._feature.time.domain.timestr import TimeStr
 from knowde.complex.person.repo.repo import (
     add_person,
     complete_person,
@@ -13,6 +11,8 @@ from knowde.complex.person.repo.repo import (
     list_society_tl,
     rename_person,
 )
+from knowde.primitive.time.domain.errors import EndBeforeStartError
+from knowde.primitive.time.domain.timestr import TimeStr
 
 
 def test_person_birth_death() -> None:

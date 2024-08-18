@@ -5,17 +5,17 @@ from typing import TYPE_CHECKING
 
 from neomodel import StringProperty
 
-from knowde._feature.location.repo.label import LLocation
-from knowde._feature.time.repo.label import LTime
 from knowde.complex.event.domain.event import Event
 from knowde.core.domain.domain import Entity
 from knowde.core.repo.base import LBase
 from knowde.core.repo.rel import RelUtil
 from knowde.core.repo.util import LabelUtil
+from knowde.primitive.location.repo.label import LLocation
+from knowde.primitive.time.repo.label import LTime
 
 if TYPE_CHECKING:
-    from knowde._feature.location.domain import Location
-    from knowde._feature.time.domain.domain import Time
+    from knowde.primitive.location.domain import Location
+    from knowde.primitive.time.domain.domain import Time
 
 
 class LEvent(LBase):

@@ -1,9 +1,9 @@
 """domain model."""
 from __future__ import annotations
 
-from knowde._feature.location.domain import Location  # noqa: TCH001
-from knowde._feature.time.domain.domain import Time  # noqa: TCH001
 from knowde.core.domain.domain import Entity
+from knowde.primitive.location.domain import Location  # noqa: TCH001
+from knowde.primitive.time.domain.domain import Time  # noqa: TCH001
 
 
 class Event(Entity, frozen=True):

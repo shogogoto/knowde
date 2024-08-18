@@ -5,11 +5,6 @@ from uuid import UUID  # noqa: TCH003
 
 from neomodel import db
 
-from knowde._feature.reference.domain import Book
-from knowde._feature.reference.repo.label import (
-    ReferenceUtil,
-    to_refmodel,
-)
 from knowde.complex.definition.domain.domain import Definition
 from knowde.complex.definition.repo.definition import (
     add_definition,
@@ -18,6 +13,11 @@ from knowde.complex.definition.repo.definition import (
 )
 from knowde.complex.definition.repo.label import REL_DEF_LABEL
 from knowde.core.repo.query import query_cypher
+from knowde.primitive.reference.domain import Book
+from knowde.primitive.reference.repo.label import (
+    ReferenceUtil,
+    to_refmodel,
+)
 from knowde.reference.domain import RefDefinition, RefDefinitions
 from knowde.reference.dto import RefDefParam  # noqa: TCH001
 

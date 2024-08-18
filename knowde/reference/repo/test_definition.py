@@ -5,9 +5,9 @@ from uuid import UUID
 
 from pytest_unordered import unordered
 
-from knowde._feature.reference.dto import BookParam
-from knowde._feature.reference.repo.book import add_book
 from knowde.complex.definition.repo.definition import add_definition, list_definitions
+from knowde.primitive.reference.dto import BookParam
+from knowde.primitive.reference.repo.book import add_book
 from knowde.reference.dto import RefDefParam
 from knowde.reference.repo.definition import (
     add_refdef,

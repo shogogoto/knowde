@@ -5,13 +5,6 @@ from typing import TYPE_CHECKING, Iterator, Optional
 
 from more_itertools import collapse
 
-from knowde._feature.time.domain.const import SOCIETY_TIMELINE
-from knowde._feature.time.domain.domain import Timeline, TimeValue
-from knowde._feature.time.domain.period import Period
-from knowde._feature.time.repo.fetch import fetch_time
-from knowde._feature.time.repo.label import TimeUtil
-from knowde._feature.time.repo.query import build_time_graph
-from knowde._feature.time.repo.timeline import list_time
 from knowde.complex.person.domain import Person  # noqa: TCH001
 from knowde.complex.person.repo.label import (
     LPerson,
@@ -21,12 +14,19 @@ from knowde.complex.person.repo.label import (
     RelDeathUtil,
 )
 from knowde.core.repo.query import query_cypher
+from knowde.primitive.time.domain.const import SOCIETY_TIMELINE
+from knowde.primitive.time.domain.domain import Timeline, TimeValue
+from knowde.primitive.time.domain.period import Period
+from knowde.primitive.time.repo.fetch import fetch_time
+from knowde.primitive.time.repo.label import TimeUtil
+from knowde.primitive.time.repo.query import build_time_graph
+from knowde.primitive.time.repo.timeline import list_time
 
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from knowde._feature.time.domain.domain import Time
     from knowde.core.repo.base import RelBase
+    from knowde.primitive.time.domain.domain import Time
 
 
 def add_birth(pl: LPerson, v: TimeValue) -> Time:

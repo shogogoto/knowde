@@ -26,12 +26,12 @@ from __future__ import annotations
 
 import click
 
-from knowde._feature.reference.interface.reference import complete_ref_client
 from knowde.complex.definition.domain.domain import DefinitionParam
 from knowde.core.api.api_param import APIPath, NullPath
 from knowde.core.api.endpoint import Endpoint, router2get, router2tpost
 from knowde.core.cli.field.model2click import model2decorator
 from knowde.core.cli.field.types import PrefUidParam
+from knowde.primitive.reference.interface.reference import complete_ref_client
 from knowde.reference.domain import RefDefinition, RefDefinitions
 from knowde.reference.dto import RefDefParam
 from knowde.reference.repo.definition import add_refdef, list_refdefs
