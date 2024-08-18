@@ -1,7 +1,7 @@
 """neomodel関係の基礎."""
 from neomodel import IntegerProperty
 
-from knowde.core.repo.base import RelBase
+from knowde.core.label_repo.base import RelBase
 
 
 class RelOrder(RelBase):

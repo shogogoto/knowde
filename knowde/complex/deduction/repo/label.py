@@ -7,8 +7,8 @@ from typing import Self
 from neomodel import BooleanProperty, IntegerProperty, StringProperty
 
 from knowde.core.domain import APIReturn, Entity
-from knowde.core.repo.base import LBase, RelBase
-from knowde.core.repo.rel import RelUtil
+from knowde.core.label_repo.base import LBase, RelBase
+from knowde.core.label_repo.rel import RelUtil
 from knowde.primitive.proposition.domain import Proposition
 from knowde.primitive.proposition.repo.label import LProposition
 

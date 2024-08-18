@@ -14,7 +14,7 @@ from knowde.core.errors.domain import (
     MultiHitError,
     NeomodelNotFoundError,
 )
-from knowde.core.repo.value_util import NodeUtil
+from knowde.core.label_repo.value_util import NodeUtil
 
 from .base import LBase
 from .label import Label, Labels

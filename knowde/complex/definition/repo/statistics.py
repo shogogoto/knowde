@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Optional
 from knowde.complex.definition.domain.statistics import DepStatistics
 from knowde.complex.definition.repo.label import REL_DEF_LABEL
 from knowde.complex.definition.repo.mark import RelMarkUtil
-from knowde.core.repo.query import query_cypher
+from knowde.core.label_repo.query import query_cypher
 
 if TYPE_CHECKING:
     from uuid import UUID

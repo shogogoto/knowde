@@ -23,7 +23,7 @@ from knowde.primitive.sentence.domain import Sentence, SentenceParam
 from knowde.primitive.term.domain import Term, TermParam
 
 if TYPE_CHECKING:
-    from knowde.core.repo.base import RelBase
+    from knowde.core.label_repo.base import RelBase
 
 
 class DefinitionParam(BaseModel, frozen=True):

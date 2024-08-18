@@ -7,7 +7,7 @@ import networkx as nx
 from more_itertools import collapse
 
 from knowde.core.domain.container import CompositeTree
-from knowde.core.repo.query import query_cypher
+from knowde.core.label_repo.query import query_cypher
 from knowde.primitive.location.domain import Location
 from knowde.primitive.location.repo.label import REL_L2L_NAME, LocUtil, RelL2L
 

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Iterator
 import networkx as nx
 from more_itertools import collapse
 
-from knowde.core.repo.query import query_cypher
+from knowde.core.label_repo.query import query_cypher
 from knowde.primitive.time.domain.domain import (
     Day,
     Month,
@@ -20,7 +20,7 @@ from .label import LMonth, LTimeline, LYear
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from knowde.core.repo.base import RelBase
+    from knowde.core.label_repo.base import RelBase
     from knowde.primitive.time.domain.domain import Time
 
 

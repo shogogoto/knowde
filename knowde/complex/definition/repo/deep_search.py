@@ -9,7 +9,7 @@ from knowde.complex.definition.domain.domain import (
 )
 from knowde.complex.definition.repo.definition import RelDefUtil
 from knowde.complex.definition.repo.mark import RelMark, RelMarkUtil
-from knowde.core.repo.query import query_cypher
+from knowde.core.label_repo.query import query_cypher
 from knowde.primitive.sentence.domain import Sentence
 from knowde.primitive.term.domain import Term
 

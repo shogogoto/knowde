@@ -6,8 +6,8 @@ from typing import Any
 import networkx as nx
 
 from knowde.core.errors.domain import MultiHitError
-from knowde.core.repo.query import query_cypher
-from knowde.core.repo.rel import dict2query_literal
+from knowde.core.label_repo.query import query_cypher
+from knowde.core.label_repo.rel import dict2query_literal
 from knowde.primitive.time.domain.domain import (
     Day,
     Month,

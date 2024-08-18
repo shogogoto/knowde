@@ -2,7 +2,7 @@
 from operator import attrgetter
 from uuid import UUID
 
-from knowde.core.repo.query import query_cypher
+from knowde.core.label_repo.query import query_cypher
 from knowde.primitive.reference.domain import Chapter
 from knowde.primitive.reference.dto import HeadlineParam, SwapParam
 from knowde.primitive.reference.repo.label import (
