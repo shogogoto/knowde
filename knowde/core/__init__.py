@@ -1,4 +1,4 @@
-"""independent features shared modules."""
+"""グローバルに使用される基本機能."""
 
 import os
 
