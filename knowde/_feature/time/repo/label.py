@@ -3,7 +3,7 @@ from neomodel import IntegerProperty, StringProperty
 from knowde._feature._shared.repo.base import LBase
 from knowde._feature._shared.repo.rel import RelUtil
 from knowde._feature._shared.repo.util import LabelUtil
-from knowde._feature.timeline.domain.domain import YMD, Day, Month, TimelineRoot, Year
+from knowde._feature.time.domain.domain import YMD, Day, Month, TimelineRoot, Year
 
 
 class LTimeline(LBase):

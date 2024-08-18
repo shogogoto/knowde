@@ -1,7 +1,7 @@
 import pytest
 
-from knowde._feature.timeline.domain.domain import validate_ymd
-from knowde._feature.timeline.domain.errors import InvalidTimeYMDError
+from .domain import validate_ymd
+from .errors import InvalidTimeYMDError
 
 
 def test_validate_ymd() -> None:

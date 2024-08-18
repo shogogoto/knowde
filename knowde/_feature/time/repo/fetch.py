@@ -4,17 +4,16 @@ from uuid import uuid4
 
 from knowde._feature._shared import jst_now
 from knowde._feature._shared.repo.query import query_cypher
-from knowde._feature.timeline.domain.domain import (
+from knowde._feature.time.domain.domain import (
     Day,
     Month,
     Time,
     TimelineRoot,
     Year,
 )
-from knowde._feature.timeline.domain.errors import DayRangeError, MonthRangeError
-from knowde._feature.timeline.repo.label import (
-    TLUtil,
-)
+from knowde._feature.time.domain.errors import DayRangeError, MonthRangeError
+
+from .label import TLUtil
 
 
 def fetch_timeline(name: str) -> Time:

@@ -5,8 +5,8 @@ from knowde._feature._shared.domain.domain import Entity
 from knowde._feature._shared.repo.base import LBase
 from knowde._feature._shared.repo.rel import RelUtil
 from knowde._feature._shared.repo.util import LabelUtil
-from knowde._feature.timeline.repo.label import LTime
-from knowde.feature.person.domain.lifedate import LifeSpan
+from knowde._feature.time.domain.period import Period
+from knowde._feature.time.repo.label import LTime
 from knowde.feature.person.domain.person import Person
 
 
@@ -23,14 +23,14 @@ class PersonMapper(Entity, frozen=True):
 
     name: str
 
-    def to_person(self, lifespan: LifeSpan) -> Person:
+    def to_person(self, period: Period) -> Person:
         """Convert."""
         return Person(
             uid=self.valid_uid,
             name=self.name,
             created=self.created,
             updated=self.updated,
-            lifespan=lifespan,
+            lifespan=period,
         )
 
 
