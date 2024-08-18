@@ -13,13 +13,13 @@ from knowde.complex.definition.repo.definition import (
 )
 from knowde.complex.definition.repo.label import REL_DEF_LABEL
 from knowde.core.repo.query import query_cypher
+from knowde.feature.reference.domain import RefDefinition, RefDefinitions
+from knowde.feature.reference.dto import RefDefParam  # noqa: TCH001
 from knowde.primitive.reference.domain import Book
 from knowde.primitive.reference.repo.label import (
     ReferenceUtil,
     to_refmodel,
 )
-from knowde.reference.domain import RefDefinition, RefDefinitions
-from knowde.reference.dto import RefDefParam  # noqa: TCH001
 
 # RelAuthorUtil = RelUtil(
 #     t_source=LAuthor,

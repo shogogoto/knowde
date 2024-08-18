@@ -31,10 +31,10 @@ from knowde.core.api.api_param import APIPath, NullPath
 from knowde.core.api.endpoint import Endpoint, router2get, router2tpost
 from knowde.core.cli.field.model2click import model2decorator
 from knowde.core.cli.field.types import PrefUidParam
+from knowde.feature.reference.domain import RefDefinition, RefDefinitions
+from knowde.feature.reference.dto import RefDefParam
+from knowde.feature.reference.repo.definition import add_refdef, list_refdefs
 from knowde.primitive.reference.interface.reference import complete_ref_client
-from knowde.reference.domain import RefDefinition, RefDefinitions
-from knowde.reference.dto import RefDefParam
-from knowde.reference.repo.definition import add_refdef, list_refdefs
 
 refdef_router = Endpoint.RefDef.create_router()
 add_client = NullPath().to_client(

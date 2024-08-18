@@ -6,15 +6,15 @@ from uuid import UUID
 from pytest_unordered import unordered
 
 from knowde.complex.definition.repo.definition import add_definition, list_definitions
-from knowde.primitive.reference.dto import BookParam
-from knowde.primitive.reference.repo.book import add_book
-from knowde.reference.dto import RefDefParam
-from knowde.reference.repo.definition import (
+from knowde.feature.reference.dto import RefDefParam
+from knowde.feature.reference.repo.definition import (
     add_refdef,
     connect_def2ref,
     disconnect_refdef,
     list_refdefs,
 )
+from knowde.primitive.reference.dto import BookParam
+from knowde.primitive.reference.repo.book import add_book
 
 
 def _p(uid: UUID, name: str, explain: str) -> RefDefParam:

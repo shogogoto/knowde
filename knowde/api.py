@@ -5,6 +5,7 @@ from fastapi import FastAPI
 
 from knowde.complex import deduct_router, def_router, ev_router, person_router
 from knowde.core import ErrorHandlingMiddleware
+from knowde.feature.reference import refdef_router
 from knowde.primitive import (
     book_router,
     chap_router,
@@ -14,7 +15,6 @@ from knowde.primitive import (
     tl_router,
 )
 from knowde.primitive.proposition import p_router
-from knowde.reference import refdef_router
 
 api = FastAPI()
 api.add_middleware(ErrorHandlingMiddleware)
