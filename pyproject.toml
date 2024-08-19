@@ -79,7 +79,8 @@ unsafe-fixes = true
 filterwarnings = [
   'ignore: pkg_resources is deprecated as an API:DeprecationWarning',
   "ignore: Relying on Driver's destructor to close the session is deprecated.",
-  "ignore: Using extra keyword arguments on `Field` is deprecated and will be removed."
+  "ignore: Using extra keyword arguments on `Field` is deprecated and will be removed.",
+  "ignore: datetime.datetime.utcfromtimestamp"
   ]
 
 [tool.poetry.scripts]
