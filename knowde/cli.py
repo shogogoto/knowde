@@ -5,6 +5,7 @@ import click
 
 from knowde.complex import deduct_cli, def_cli, event_cli
 from knowde.complex.person.interface import person_cli
+from knowde.feature import parse_cmd
 from knowde.feature.reference.interface import refdef_cli
 from knowde.primitive import prop_cli, ref_cli, tl_cli
 from knowde.primitive.location.interface import loc_cli
@@ -33,3 +34,5 @@ cli.add_command(tl_cli)
 cli.add_command(loc_cli)
 cli.add_command(person_cli)
 cli.add_command(event_cli)
+
+cli.add_command(parse_cmd)

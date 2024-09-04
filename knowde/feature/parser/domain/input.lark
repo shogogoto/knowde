@@ -1,0 +1,23 @@
+?start: _NL? (s1|s2|s3)*
+
+_W: /.+/
+_EOF: "$"
+
+H1: /(#[^#\n]+)/
+H2: /(##[^#\n]+)/
+H3: /(###[^#\n]+)/
+H4: /(####[^#\n]+)/
+H5: /(#####[^#\n]+)/
+H6: /(######[^#\n]+)/
+
+s1: H1 (s2)*
+s2: H2 (s3)*
+s3: H3 (s4)*
+s4: H4 (s5)*
+s5: H5 (s6)*
+s6: H6
+
+%import common.WS
+%import common.NEWLINE -> _NL
+%import common.ESCAPED_STRING
+%ignore WS
