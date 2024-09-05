@@ -3,7 +3,7 @@
 
 import pytest
 
-from .section import load_heading
+from .heading import load_heading
 
 
 def test_parse_heading() -> None:
