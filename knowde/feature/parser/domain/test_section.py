@@ -1,38 +1,33 @@
 """textから章節を抜き出す."""
 
 
-from .section import parse
+import pytest
+
+from .section import load_heading
 
 
 def test_parse_heading() -> None:
     """章の抽象木を抜き出す."""
     s = r"""
-        ## 1. 「アジャイル」入門
-        ### 1. ざっくりわかるアジャイル開発
-        ### 2. アジャイルチームのご紹介
-        ## 2. アジャイルな方向づけ
-        ### 3. みんなをバスに乗せる
-        ### 4. 全体像を捉える
-        ### 5. 具現化させる
-        ## 3. アジャイルな計画づくり
-        ### 6. ユーザーストーリーを集める
-        ### 7. 見積もり、当てずっぽうの奥義
-        ### 8. アジャイルな計画づくり、現実と向き合う
-        ## 4. アジャイルなプロジェクト運営
-        ### 9. イテレーションの運営:実現させる
-        ### 10. アジャイルな意思疎通の作戦
-        ### 11. 現場の状況を目に見えるようにする
-        ## 5. アジャイルなプログラミング
-        ### 12. ユニットテスト、動くことが分かる
-        ### 13. リファクタリング:技術的負債の返済
-        ### 14. テスト駆動開発
-        ### 15. 継続的インテグレーション:リリースに備える
-        ## 6. 付録
+        ## H2.1
+        ### H3.1
+        ### H3.2
+        ## H2.2
+        ### H3.3
+        ### H3.4
+        ### H3.5
+        ## H2.3
     """
-    _tree = parse(s)
-    # print(result)
-    # print(result.pretty())
 
+    tree = load_heading(s)
 
-# title アジャイルサムライ
-# author ジョナサン・ラスマセン
+    with pytest.raises(KeyError):  # 1つ以上ヒット
+        tree.get("H")
+
+    with pytest.raises(KeyError):  # ヒットしない
+        tree.get("H4")
+    assert tree.count == 8  # noqa: PLR2004
+    assert tree.info("H2.1") == (2, 2)
+    assert tree.info("H2.2") == (2, 3)
+    assert tree.info("H2.3") == (2, 0)
+    assert tree.info("H3.1") == (3, 0)
