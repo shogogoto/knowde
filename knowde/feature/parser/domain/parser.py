@@ -1,7 +1,7 @@
 """parser."""
 from __future__ import annotations
 
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from functools import cache
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -31,7 +31,7 @@ def transparse(text: str, t: Transformer | TransformerChain) -> Tree:
     return t.transform(_tree)
 
 
-class CommonVisitor(Visitor_Recursive):
+class CommonVisitor(Visitor_Recursive, ABC):
     """共通ルール."""
 
     @abstractmethod
