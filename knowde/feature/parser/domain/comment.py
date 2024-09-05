@@ -1,8 +1,6 @@
 """comment."""
 from __future__ import annotations
 
-from typing import override
-
 from lark import Token, Transformer, Tree
 from pydantic import BaseModel, Field, RootModel
 
@@ -54,7 +52,6 @@ class CommentVisitor(BaseModel, CommonVisitor, arbitrary_types_allowed=True):
 
     d: CommentDict = Field(default_factory=CommentDict)
 
-    @override
     def do(self, tree: Tree) -> None:
         """For Rule."""
         c = tree.children
