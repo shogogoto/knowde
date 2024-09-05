@@ -1,13 +1,14 @@
 """textから章節を抜き出す."""
 from __future__ import annotations
 
+from typing import override
+
 from lark import Token, Transformer, Tree
-from lark.visitors import Visitor_Recursive
 from networkx import DiGraph
 from pydantic import BaseModel, Field
 
 from knowde.core.types import NXGraph  # noqa: TCH001
-from knowde.feature.parser.domain.parser import common_parser
+from knowde.feature.parser.domain.parser import CommonVisitor, transparse
 
 
 class Heading(BaseModel, frozen=True):
@@ -85,7 +86,7 @@ class HeadingTree(BaseModel, frozen=True):
         return (h.level, len(children))
 
 
-class HeadingVisitor(BaseModel, Visitor_Recursive):
+class HeadingVisitor(BaseModel, CommonVisitor):
     """見出しのツリー."""
 
     g: NXGraph = Field(default_factory=DiGraph)
@@ -95,7 +96,8 @@ class HeadingVisitor(BaseModel, Visitor_Recursive):
         """To tree."""
         return HeadingTree(g=self.g)
 
-    def _set(self, tree: Tree) -> None:
+    @override
+    def do(self, tree: Tree) -> None:
         tgt = tree.children[0]
         self.g.add_node(tgt)
         subtrees = filter(lambda x: isinstance(x, Tree), tree.children)
@@ -103,35 +105,10 @@ class HeadingVisitor(BaseModel, Visitor_Recursive):
             for c in t.children:
                 self.g.add_edge(tgt, c)
 
-    def s1(self, tree: Tree) -> None:
-        """For Rule."""
-        self._set(tree)
-
-    def s2(self, tree: Tree) -> None:
-        """For Rule."""
-        self._set(tree)
-
-    def s3(self, tree: Tree) -> None:
-        """For Rule."""
-        self._set(tree)
-
-    def s4(self, tree: Tree) -> None:
-        """For Rule."""
-        self._set(tree)
-
-    def s5(self, tree: Tree) -> None:
-        """For Rule."""
-        self._set(tree)
-
-    def s6(self, tree: Tree) -> None:
-        """For Rule."""
-        self._set(tree)
-
 
 def load_heading(text: str) -> HeadingTree:
     """Lark parser."""
-    _t = common_parser(THeading()).parse(text)
-    _t.pretty()
+    _t = transparse(text, THeading())
     v = HeadingVisitor()
     v.visit(_t)
     return v.tree

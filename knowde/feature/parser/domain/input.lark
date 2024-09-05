@@ -1,5 +1,5 @@
 // 入力するテキストファイルの文法定義
-?start: _NL? s*
+?start: _NL? (s1|s2|s3|s4|s5|s6)*
 s: s1
   |s2
   |s3
@@ -17,12 +17,14 @@ H4: /(####[^#\n]+)/
 H5: /(#####[^#\n]+)/
 H6: /(######[^#\n]+)/
 
-s1: H1 (s2)*
-s2: H2 (s3)*
-s3: H3 (s4)*
-s4: H4 (s5)*
-s5: H5 (s6)*
-s6: H6
+COMMENT: /\![^\n]+/
+
+s1: H1 (COMMENT)* (s2)*
+s2: H2 (COMMENT)* (s3)*
+s3: H3 (COMMENT)* (s4)*
+s4: H4 (COMMENT)* (s5)*
+s5: H5 (COMMENT)* (s6)*
+s6: H6 (COMMENT)*
 
 %import common.WS
 %import common.NEWLINE -> _NL
