@@ -1,32 +1,36 @@
 // 入力するテキストファイルの文法定義
-?start: _NL? (s1|s2|s3|s4|s5|s6)*
-s: s1
-  |s2
-  |s3
-  |s4
-  |s5
-  |s6
+start: unit*  // root
 
-_W: /.+/
-_EOF: "$"
+?unit: h|stmt
 
-H1: /(#[^#\n]+)/
-H2: /(##[^#\n]+)/
-H3: /(###[^#\n]+)/
-H4: /(####[^#\n]+)/
-H5: /(#####[^#\n]+)/
-H6: /(######[^#\n]+)/
+?h: h1|h2|h3|h4|h5|h6
+h1: H1 stmt* (h2)*
+h2: H2 stmt* (h3)*
+h3: H3 stmt* (h4)*
+h4: H4 stmt* (h5)*
+h5: H5 stmt* (h6)*
+h6: H6 stmt*
 
-COMMENT: /\![^\n]+/
+?stmt: COMMENT|indent
+indent: line [_INDENT indent+ _DEDENT]
+?line: ONELINE | MULTILINE
 
-s1: H1 (COMMENT)* (s2)*
-s2: H2 (COMMENT)* (s3)*
-s3: H3 (COMMENT)* (s4)*
-s4: H4 (COMMENT)* (s5)*
-s5: H5 (COMMENT)* (s6)*
-s6: H6 (COMMENT)*
+// terminals
+W: /[^\n]+/
+ONELINE: WS? W _NL
+MULTILINE: WS? W ("\\\n" W)+ _NL
+COMMENT: WS? "!" ONELINE
+
+H1: WS? "#"      ONELINE
+H2: WS? "##"     ONELINE
+H3: WS? "###"    ONELINE
+H4: WS? "####"   ONELINE
+H5: WS? "#####"  ONELINE
+H6: WS? "######" ONELINE
 
 %import common.WS
+%import common.WS_INLINE
 %import common.NEWLINE -> _NL
-%import common.ESCAPED_STRING
-%ignore WS
+%declare _INDENT _DEDENT
+%ignore _NL
+%ignore WS_INLINE

@@ -7,21 +7,34 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from lark import Lark, Transformer, Tree
+from lark.indenter import Indenter
 from lark.visitors import Visitor_Recursive
 
 if TYPE_CHECKING:
     from lark.visitors import TransformerChain
 
 
+class TreeIndenter(Indenter):
+    """example."""
+
+    NL_type = "_NL"
+    OPEN_PAREN_types = []  # noqa: RUF012
+    CLOSE_PAREN_types = []  # noqa: RUF012
+    INDENT_type = "_INDENT"
+    DEDENT_type = "_DEDENT"
+    tab_len = 4
+
+
 @cache
-def common_parser() -> Lark:
+def common_parser(debug: bool = False) -> Lark:  # noqa: FBT001 FBT002
     """Lark Parser."""
     p = Path(__file__).parent / "input.lark"
     return Lark(
         p.read_text(),
         parser="lalr",
         # ambiguity="explicit",
-        # debug=True,
+        debug=debug,
+        postlex=TreeIndenter(),
     )
 
 
@@ -39,26 +52,26 @@ class CommonVisitor(Visitor_Recursive, ABC):
         """共通の処理."""
         raise NotImplementedError
 
-    def s1(self, tree: Tree) -> None:
+    def h1(self, tree: Tree) -> None:
         """For Rule."""
         self.do(tree)
 
-    def s2(self, tree: Tree) -> None:
+    def h2(self, tree: Tree) -> None:
         """For Rule."""
         self.do(tree)
 
-    def s3(self, tree: Tree) -> None:
+    def h3(self, tree: Tree) -> None:
         """For Rule."""
         self.do(tree)
 
-    def s4(self, tree: Tree) -> None:
+    def h4(self, tree: Tree) -> None:
         """For Rule."""
         self.do(tree)
 
-    def s5(self, tree: Tree) -> None:
+    def h5(self, tree: Tree) -> None:
         """For Rule."""
         self.do(tree)
 
-    def s6(self, tree: Tree) -> None:
+    def h6(self, tree: Tree) -> None:
         """For Rule."""
         self.do(tree)

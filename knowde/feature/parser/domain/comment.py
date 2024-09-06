@@ -4,8 +4,8 @@ from __future__ import annotations
 from lark import Token, Transformer, Tree
 from pydantic import BaseModel, Field, RootModel
 
-from knowde.feature.parser.domain.heading import Heading, THeading
-from knowde.feature.parser.domain.parser import CommonVisitor, transparse
+from knowde.feature.parser.domain.heading import Heading
+from knowde.feature.parser.domain.parser import CommonVisitor
 
 
 class Comment(BaseModel, frozen=True):
@@ -30,9 +30,18 @@ class Comments(RootModel[list[Comment]]):
 class TComment(Transformer):
     """comment transformer."""
 
-    def COMMENT(self, tok: Token) -> Comment:  # noqa: N802
-        """! hogehoge."""
+    def COMMENT(self, tok: Token) -> Comment:  # noqa: N802 D102
         return Comment(value=tok.replace("!", "").strip())
+
+    def ONELINE(self, tok: Token) -> str:  # noqa: N802 D102
+        # return tok.replace("\n", "")
+        v = tok.replace("\n", "")
+        return Token(type="ONELINE", value=v)
+
+    def MULTILINE(self, tok: Token) -> str:  # noqa: N802 D102
+        vs = tok.split("\\\n")
+        v = vs[0] + "".join([vv.strip() for vv in vs[1:]])
+        return Token(type="MULTILINE", value=v)
 
 
 class CommentDict(dict[Heading, Comments]):
@@ -58,12 +67,3 @@ class CommentVisitor(BaseModel, CommonVisitor, arbitrary_types_allowed=True):
         heading: Heading = c[0]
         cmts = Comments(root=[v for v in c[1:] if isinstance(v, Comment)])
         self.d[heading] = cmts
-
-
-def load_with_comment(text: str) -> CommentDict:
-    """With comment."""
-    _trans = TComment() * THeading()
-    _tree = transparse(text, _trans)
-    v = CommentVisitor()
-    v.visit(_tree)
-    return v.d

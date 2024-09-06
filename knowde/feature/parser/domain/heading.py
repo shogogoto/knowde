@@ -8,7 +8,7 @@ from networkx import DiGraph
 from pydantic import BaseModel, Field
 
 from knowde.core.types import NXGraph  # noqa: TCH001
-from knowde.feature.parser.domain.parser import CommonVisitor, transparse
+from knowde.feature.parser.domain.parser import CommonVisitor
 
 
 class Heading(BaseModel, frozen=True):
@@ -19,7 +19,7 @@ class Heading(BaseModel, frozen=True):
 
     def __str__(self) -> str:
         """For user string."""
-        return f"H{self.level}:{self.value}"
+        return f"h{self.level}={self.value}"
 
 
 class THeading(Transformer):
@@ -104,11 +104,3 @@ class HeadingVisitor(BaseModel, CommonVisitor):
         for t in subtrees:
             for c in t.children:
                 self.g.add_edge(tgt, c)
-
-
-def load_heading(text: str) -> HeadingTree:
-    """Lark parser."""
-    _t = transparse(text, THeading())
-    v = HeadingVisitor()
-    v.visit(_t)
-    return v.tree
