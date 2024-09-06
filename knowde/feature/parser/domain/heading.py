@@ -1,11 +1,10 @@
 """textから章節を抜き出す."""
 from __future__ import annotations
 
-from typing import override
-
 from lark import Token, Transformer, Tree
 from networkx import DiGraph
 from pydantic import BaseModel, Field
+from typing_extensions import override
 
 from knowde.core.types import NXGraph  # noqa: TCH001
 from knowde.feature.parser.domain.parser import CommonVisitor
