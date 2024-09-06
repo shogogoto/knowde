@@ -16,17 +16,18 @@ indent: line [_INDENT indent+ _DEDENT]
 ?line: ONELINE | MULTILINE
 
 // terminals
-W: /[^\n]+/
+W: /[^\n]+/  // Word
 ONELINE: WS? W _NL
 MULTILINE: WS? W ("\\\n" W)+ _NL
 COMMENT: WS? "!" ONELINE
 
-H1: WS? "#"      ONELINE
-H2: WS? "##"     ONELINE
-H3: WS? "###"    ONELINE
-H4: WS? "####"   ONELINE
-H5: WS? "#####"  ONELINE
-H6: WS? "######" ONELINE
+HW: /[^#\n]/
+H1: WS? "# "      ONELINE
+H2: WS? "## "     ONELINE
+H3: WS? "### "    ONELINE
+H4: WS? "#### "   ONELINE
+H5: WS? "##### "  ONELINE
+H6: WS? "###### " ONELINE
 
 %import common.WS
 %import common.WS_INLINE

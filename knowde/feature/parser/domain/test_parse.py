@@ -1,55 +1,48 @@
 """textから章節を抜き出す."""
-
-
-from textwrap import dedent
-
 from knowde.feature.parser.domain.comment import TComment
 from knowde.feature.parser.domain.heading import HeadingVisitor, THeading
 from knowde.feature.parser.domain.parser import common_parser, transparse
 
 
-def _align(s: str) -> str:
-    return dedent(s).strip()
-
-
 def test_parse_whitespace() -> None:
     """空をパースしてエラーにならない."""
     p = common_parser(debug=True).parse
-    p("")
-    p(
-        """
-""",
-    )
-    p(
-        """
-    """,
-    )
-    common_parser().parse(
-        """
+    x = """
+"""
+    x2 = """
+    """
+    x3 = """
 
-        """,
-    )
+    """
+    p("")
+    p(x)
+    p(x2)
+    p(x3)
 
 
 def test_parse_heading() -> None:
-    """章の抽象木を抜き出す."""
+    """見出しの階層."""
     s = r"""
-    ## H2.1
-    ### H3.1
-    ### H3.2
-    ## H2.2
-    ### H3.3
-    ### H3.4
-    ### H3.5
-    ## H2.3
+    # 1.1
+    ## 2.1
+    ### 3.1
+    #### 4.1
+    ##### 5.1
+    ###### 6.1
+    ### 3. down
+    ### 3. repeat
+
+    ### 3.repeat WS
+
+
+    # 1. 2th
+
+    ## 2. WS
     """
     _t = transparse(s, THeading())
     v = HeadingVisitor()
-    # print(_t)
-    # print(_t.pretty())
     v.visit(_t)
     # tree = v.tree
-
     # with pytest.raises(KeyError):  # 1つ以上ヒット
     #     tree.get("H")
     # with pytest.raises(KeyError):  # ヒットしない

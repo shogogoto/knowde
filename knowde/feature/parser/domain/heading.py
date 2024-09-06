@@ -25,7 +25,8 @@ class THeading(Transformer):
     """heading transformer."""
 
     def _common(self, tok: Token, level: int) -> Heading:
-        return Heading(value=tok.replace("#", "").strip(), level=level)
+        v = tok.replace("#", "").strip()
+        return Heading(value=v, level=level)
 
     def H1(self, tok: Token) -> Heading:  # noqa: N802
         """Markdown H1."""
