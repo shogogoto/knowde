@@ -11,27 +11,38 @@ h4: H4 stmt* (h5)*
 h5: H5 stmt* (h6)*
 h6: H6 stmt*
 
-?stmt: COMMENT|indent
-indent: line [_INDENT indent+ _DEDENT]
+?stmt: COMMENT|block|indent
 ?line: ONELINE | MULTILINE
+// define: W ":" line
+
+
+
+
+indent: _INDENT block+ _DEDENT
+block: line [_INDENT block+ _DEDENT]
 
 // terminals
-W: /[^\n]+/  // Word
-ONELINE: WS? W _NL
-MULTILINE: WS? W ("\\\n" W)+ _NL
-COMMENT: WS? "!" ONELINE
+W: /[^\n:]+/  // Word
+WL: /[^\n:]+/  // Word of Line
+ONELINE: WL _NL
+MULTILINE: (W "\\\n")+ W _NL
+COMMENT: WS? "!" /[^\n]+/ _NL
 
-HW: /[^#\n]/
-H1: WS? "# "      ONELINE
-H2: WS? "## "     ONELINE
-H3: WS? "### "    ONELINE
-H4: WS? "#### "   ONELINE
-H5: WS? "##### "  ONELINE
-H6: WS? "###### " ONELINE
+WH: /[^#\n]+/ _NL // Word of Heading
+H1: WS? "# "      WH
+H2: WS? "## "     WH
+H3: WS? "### "    WH
+H4: WS? "#### "   WH
+H5: WS? "##### "  WH
+H6: WS? "###### " WH
+
+CTX: CAUSE|THUS // Context 文脈
+CAUSE: "<-" // なぜなら
+THUS: "->"  // 故に
 
 %import common.WS
 %import common.WS_INLINE
 %import common.NEWLINE -> _NL
 %declare _INDENT _DEDENT
-%ignore _NL
 %ignore WS_INLINE
+%ignore _NL
