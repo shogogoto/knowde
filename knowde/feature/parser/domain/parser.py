@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from lark.visitors import TransformerChain
 
 
-class TreeIndenter(Indenter):
+class ExampleIndenter(Indenter):
     """example."""
 
     NL_type = "_NL"
@@ -23,6 +23,31 @@ class TreeIndenter(Indenter):
     INDENT_type = "_INDENT"
     DEDENT_type = "_DEDENT"
     tab_len = 4
+
+    # def handle_NL(self, token: Token) -> Iterator[Token]:
+    #     print("-" * 80)
+    #     print(f"tok='{token}'")
+    #     if self.paren_level > 0:
+    #         return
+
+    #     yield token
+
+    #     indent_str = token.rsplit("\n", 1)[1]  # Tabs and spaces
+    #     indent = indent_str.count(" ") + indent_str.count("\t") * self.tab_len
+    #     print(f"indent={indent}, str='{indent_str}'")
+    #     if indent > self.indent_level[-1]:
+    #         self.indent_level.append(indent)
+    #         yield Token.new_borrow_pos(self.INDENT_type, indent_str, token)
+    #     else:
+    #         while indent < self.indent_level[-1]:
+    #             self.indent_level.pop()
+    #             yield Token.new_borrow_pos(self.DEDENT_type, indent_str, token)
+
+    #         if indent != self.indent_level[-1]:
+    #             msg = f"Unexpected dedent to column {indent}. Expected dedent to {self.indent_level[-1]}"  # noqa: E501
+    #             raise DedentError(
+    #                 msg,
+    #             )
 
 
 @cache
@@ -34,13 +59,20 @@ def common_parser(debug: bool = False) -> Lark:  # noqa: FBT001 FBT002
         parser="lalr",
         # ambiguity="explicit",
         debug=debug,
-        postlex=TreeIndenter(),
+        # postlex=PythonIndenter(),
+        postlex=ExampleIndenter(),
     )
 
 
-def transparse(text: str, t: Transformer | TransformerChain) -> Tree:
+def transparse(
+    text: str,
+    t: Transformer | TransformerChain | None = None,
+    debug: bool = False,  # noqa: FBT001 FBT002
+) -> Tree:
     """Parse and transform."""
-    _tree = common_parser().parse(text)
+    _tree = common_parser(debug=debug).parse(text)
+    if t is None:
+        return _tree
     return t.transform(_tree)
 
 

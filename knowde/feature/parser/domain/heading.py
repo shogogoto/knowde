@@ -1,13 +1,18 @@
 """textから章節を抜き出す."""
 from __future__ import annotations
 
-from lark import Token, Transformer, Tree
+from typing import TYPE_CHECKING
+
+from lark import Discard, Token, Transformer, Tree
 from networkx import DiGraph
 from pydantic import BaseModel, Field
 from typing_extensions import override
 
 from knowde.core.types import NXGraph  # noqa: TCH001
 from knowde.feature.parser.domain.parser import CommonVisitor
+
+if TYPE_CHECKING:
+    from lark.visitors import _DiscardType
 
 
 class Heading(BaseModel, frozen=True):
@@ -51,6 +56,10 @@ class THeading(Transformer):
     def H6(self, tok: Token) -> Heading:  # noqa: N802
         """Markdown H6."""
         return self._common(tok, 6)
+
+    def NL(self, _tok: Token) -> _DiscardType:  # noqa: N802
+        """改行をIndenterの後に無視."""
+        return Discard
 
 
 class HeadingTree(BaseModel, frozen=True):

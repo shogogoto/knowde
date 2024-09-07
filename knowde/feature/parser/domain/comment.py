@@ -1,6 +1,8 @@
 """comment."""
 from __future__ import annotations
 
+from functools import reduce
+
 from lark import Token, Transformer, Tree
 from pydantic import BaseModel, Field, RootModel
 
@@ -31,16 +33,16 @@ class TComment(Transformer):
     """comment transformer."""
 
     def COMMENT(self, tok: Token) -> Comment:  # noqa: N802 D102
-        return Comment(value=tok.replace("!", "").strip())
+        v = tok.replace("!", "").strip()
+        return Comment(value=v)
 
     def ONELINE(self, tok: Token) -> str:  # noqa: N802 D102
-        # return tok.replace("\n", "")
         v = tok.replace("\n", "")
         return Token(type="ONELINE", value=v)
 
     def MULTILINE(self, tok: Token) -> str:  # noqa: N802 D102
         vs = tok.split("\\\n")
-        v = vs[0] + "".join([vv.strip() for vv in vs[1:]])
+        v = reduce(lambda x, y: x + y.lstrip(), vs).replace("\n", "")
         return Token(type="MULTILINE", value=v)
 
 
