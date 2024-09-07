@@ -2,8 +2,10 @@
 
 from lark import Tree
 
+from knowde.feature.parser.domain.comment import TComment
+from knowde.feature.parser.domain.heading import THeading
+from knowde.feature.parser.domain.indent import IndentRule
 from knowde.feature.parser.domain.parser import (
-    common_parser,
     transparse,
 )
 
@@ -32,7 +34,11 @@ def test_example_indenter() -> None:
             g
     """
     _p = transparse
-    _t = _p(_s)
+    _t = _p(_s, TComment())
+    _echo(_t)
+
+    r = IndentRule()
+    r.visit(_t)
 
 
 def _echo(t: Tree) -> None:
@@ -42,7 +48,7 @@ def _echo(t: Tree) -> None:
 
 def test_parse_whitespace() -> None:
     """空をパースしてエラーになる様子を確認."""
-    _p = common_parser(debug=True).parse
+    _p = transparse
     _x = """
 """
     _x2 = """
@@ -53,18 +59,11 @@ def test_parse_whitespace() -> None:
     _x4 = """
 
     """
-    # # print("#" * 80)
-    # _ = p("")
-    # # print("#" * 80)
-    # _ = p(x)
-    # # print("#" * 80)
-    # with pytest.raises(UnexpectedToken):  # $EOF
-    #     p(x2)
-    # # print("#" * 80)
-    # _ = p(x3)
-    # # print("#" * 80)
-    # with pytest.raises(UnexpectedToken):
-    #     p(_x4)
+    _ = _p("")
+    _ = _p(_x)
+    _ = _p(_x2)
+    _ = _p(_x3)
+    _ = _p(_x4)
 
 
 def test_parse_heading() -> None:
@@ -79,14 +78,12 @@ def test_parse_heading() -> None:
         ### 3. down
         ### 3. repeat
         ### 3. repeat WS
-
         # 1. 2th
+
         ## 2. WS
     """
-    # _t = transparse(_s)
-    # print(_t)
-    # print(_t.pretty())
-
+    _t = transparse(_s, THeading())
+    _echo(_t)
     # v = HeadingVisitor()
     # v.visit(_t)
     # tree = v.tree

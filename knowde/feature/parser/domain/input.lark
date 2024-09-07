@@ -1,7 +1,8 @@
 // 入力するテキストファイルの文法定義
-start:  _NL* tree*  // root
+start:  _NL* unit*  // root
 
-tree:  h|stmt _NL [_INDENT tree+ _DEDENT]
+?unit: h|tree
+tree:  stmt _NL [_INDENT tree+ _DEDENT]
 
 ?h: h1|h2|h3|h4|h5|h6
 h1: H1 stmt* (h2)*
@@ -15,10 +16,6 @@ h6: H6 stmt*
 ?line: ONELINE | MULTILINE
 // define: W ":" line
 
-
-block: line _NL [_INDENT block+ _DEDENT]
-
-
 // terminals
 W: /[^\n:]+/  // Word
 WL: /[^\n:]+/  // Word of Line
@@ -28,12 +25,12 @@ COMMENT: /![^\n]*/
 
 
 WH: /[^#\n]+/ // Word of Heading
-H1: _NL "# "      WH
-H2: _NL "## "     WH
-H3: _NL "### "    WH
-H4: _NL "#### "   WH
-H5: _NL "##### "  WH
-H6: _NL "###### " WH
+H1: /# /      WH _NL
+H2: /## /     WH _NL
+H3: /### /    WH _NL
+H4: /#### /   WH _NL
+H5: /##### /  WH _NL
+H6: /###### / WH _NL
 
 CTX: CAUSE|THUS // Context 文脈
 CAUSE: "<-" // なぜなら
