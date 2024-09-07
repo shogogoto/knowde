@@ -4,6 +4,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from functools import cache
 from pathlib import Path
+from textwrap import dedent
 from typing import TYPE_CHECKING
 
 from lark import Lark, Transformer, Tree
@@ -70,7 +71,8 @@ def transparse(
     debug: bool = False,  # noqa: FBT001 FBT002
 ) -> Tree:
     """Parse and transform."""
-    _tree = common_parser(debug=debug).parse(text)
+    txt = dedent(text)
+    _tree = common_parser(debug=debug).parse(txt)
     if t is None:
         return _tree
     return t.transform(_tree)

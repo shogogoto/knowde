@@ -1,24 +1,22 @@
 // 入力するテキストファイルの文法定義
-start:  unit*  // root
+start:  _NL* tree*  // root
 
-?unit:  h|stmt
+tree:  h|stmt _NL [_INDENT tree+ _DEDENT]
 
-?h:  h1|h2|h3|h4|h5|h6
-h1: (_INDENT|_DEDENT)* H1 stmt* (h2)*
-h2: (_INDENT|_DEDENT)* H2 stmt* (h3)*
-h3: (_INDENT|_DEDENT)* H3 stmt* (h4)*
-h4: (_INDENT|_DEDENT)* H4 stmt* (h5)*
-h5: (_INDENT|_DEDENT)* H5 stmt* (h6)*
-h6: (_INDENT|_DEDENT)* H6 stmt*
+?h: h1|h2|h3|h4|h5|h6
+h1: H1 stmt* (h2)*
+h2: H2 stmt* (h3)*
+h3: H3 stmt* (h4)*
+h4: H4 stmt* (h5)*
+h5: H5 stmt* (h6)*
+h6: H6 stmt*
 
-?stmt: (_INDENT|_DEDENT)* COMMENT|line|_NL+
+?stmt: COMMENT|line
 ?line: ONELINE | MULTILINE
 // define: W ":" line
 
 
-indent: _INDENT block+ _DEDENT
-block: line [_INDENT block+ _DEDENT]
-empty_line: _NL+
+block: line _NL [_INDENT block+ _DEDENT]
 
 
 // terminals
@@ -30,23 +28,23 @@ COMMENT: /![^\n]*/
 
 
 WH: /[^#\n]+/ // Word of Heading
-H1: "# "      WH
-H2: "## "     WH
-H3: "### "    WH
-H4: "#### "   WH
-H5: "##### "  WH
-H6: "###### " WH
+H1: _NL "# "      WH
+H2: _NL "## "     WH
+H3: _NL "### "    WH
+H4: _NL "#### "   WH
+H5: _NL "##### "  WH
+H6: _NL "###### " WH
 
 CTX: CAUSE|THUS // Context 文脈
 CAUSE: "<-" // なぜなら
 THUS: "->"  // 故に
 
-_NL: /(\r?\n)+[\t ]*/
+_NL: /(\r?\n[\t\s]*)+/
 BLANK: /(\r?\n[\t ]+)+/
 // https://github.com/lark-parser/lark/issues/863
-_NL_INDENT: _NL|COMMENT
-%import common.WS
-%import common.WS_INLINE
-// %import common.NEWLINE -> _NL
 %declare _INDENT _DEDENT
-%ignore BLANK
+
+%import common.WS_INLINE
+%import common.NEWLINE
+%ignore WS_INLINE
+// %ignore BLANK
