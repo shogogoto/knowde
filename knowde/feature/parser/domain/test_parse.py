@@ -75,15 +75,22 @@ def test_parse_heading() -> None:
         #### 4.1
         ##### 5.1
         ###### 6.1
-        ### 3. down
-        ### 3. repeat
-        ### 3. repeat WS
-        # 1. 2th
-
-        ## 2. WS
     """
+
+    # ### 3. down
+    # ### 3. indent heading
+    # ### 3. indent heading2
+    # # 1. 2th
+    # ## 2. WS
+    # !aaa
+    # ggg
+    #     hhh
+    #         iii
     _t = transparse(_s, THeading())
     _echo(_t)
+
+    _r = IndentRule()
+    _r.visit(_t)
     # v = HeadingVisitor()
     # v.visit(_t)
     # tree = v.tree
@@ -101,7 +108,6 @@ def test_parse_heading() -> None:
 def test_parse_comment() -> None:
     """コメント付き."""
     _s = r"""
-
     ! toplevel
     ## H2
     ! c1
@@ -110,13 +116,11 @@ def test_parse_comment() -> None:
     ! c3
     ! c4 with #
     ! c5
-        ! c6
+    ! c6
     ## H4
-
-"""
-    # _t = transparse(_s)
-    # print(_t)
-    # print(_t.pretty())
+    """
+    # _t = transparse(_s, debug=True)
+    # _echo(_t)
 
 
 #     # # v = CommentVisitor()
