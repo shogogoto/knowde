@@ -1,16 +1,10 @@
 // 入力するテキストファイルの文法定義
 start:  _NL* unit*  // root
 
-?unit: h|tree
-tree:  stmt _NL [_INDENT tree+ _DEDENT]
+?unit: indent
+indent: h|stmt _NL [_INDENT indent+ _DEDENT]
 
-?h: h1|h2|h3|h4|h5|h6
-h1: H1 stmt* (h2)*
-h2: H2 stmt* (h3)*
-h3: H3 stmt* (h4)*
-h4: H4 stmt* (h5)*
-h5: H5 stmt* (h6)*
-h6: H6 stmt*
+?h: H1|H2|H3|H4|H5|H6
 
 ?stmt: COMMENT|line
 ?line: ONELINE | MULTILINE
