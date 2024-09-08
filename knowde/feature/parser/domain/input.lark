@@ -7,9 +7,8 @@ tree: unit [_INDENT tree+ _DEDENT]
 h: h1|h2|h3|h4|h5|h6
 h1: H1 _NL [_INDENT source_info? block* _DEDENT] (h2)*
 source_info: AUTHOR? PUBLISHED?
-AUTHOR: "author:" W _NL       //著者
-PUBLISHED: "published:" W _NL // 第一出版日
-
+AUTHOR: "author " W _NL       //著者
+PUBLISHED: "published " W _NL // 第一出版日
 
 h2: H2 _NL [_INDENT block* _DEDENT] (h3)*
 h3: H3 _NL [_INDENT block* _DEDENT] (h4)*
@@ -19,17 +18,25 @@ h6: H6 _NL [_INDENT block* _DEDENT]
 
 block: stmt [_INDENT block+ _DEDENT]
 
-?stmt: (COMMENT|line) _NL
-?line: ONELINE | MULTILINE
-// define: W ":" line
+
+?stmt: (line|define) _NL
+?line: ONELINE | MULTILINE | COMMENT
+name: ONELINE ("=" ONELINE _NL?)* ":" _NL?
+define: name line
+
+// context: CTX name? line
+// ctx_item: line|define
+// ctx_block: stmt [_INDENT context+ _DEDENT]
 
 //------------------------------------------------ terminals
-W: /[^\n:]+/  // Word
+W: /[^\n:=]+/  // Word
 ONELINE: W
 MULTILINE: (W "\\\n")+ W
 COMMENT: "!" W
 
-WH: /[^#\n]/ W // Word of Heading
+
+
+WH: /[^\n]/ W // Word of Heading
 H1: /#/      WH
 H2: /##/     WH
 H3: /###/    WH
@@ -37,11 +44,11 @@ H4: /####/   WH
 H5: /#####/  WH
 H6: /######/ WH
 
-CTX: CAUSE|THUS // Context 文脈
+CTX: CAUSE|THUS  " "// Context 文脈
 CAUSE: "<-" // なぜなら
 THUS: "->"  // 故に
 
-_NL: /(\r?\n[\t\s]*)+/
+_NL: /(\r?\n[\t ]*)+/
 // https://github.com/lark-parser/lark/issues/863
 %declare _INDENT _DEDENT
 
