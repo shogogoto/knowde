@@ -70,22 +70,27 @@ def test_parse_heading() -> None:
     """見出しの階層."""
     _s = r"""
         # 1.1
+        aaa
+        bbb
+            ccc
+            ddd
         ## 2.1
         ### 3.1
         #### 4.1
         ##### 5.1
         ###### 6.1
+        ### 3. down
+        ### 3. indent heading
+        ### 3. indent heading2
+            eee
+                fff
+        # 1. 2th
+        ## 2. WS
+        ggg
+            hhh
+                iii
     """
 
-    # ### 3. down
-    # ### 3. indent heading
-    # ### 3. indent heading2
-    # # 1. 2th
-    # ## 2. WS
-    # !aaa
-    # ggg
-    #     hhh
-    #         iii
     _t = transparse(_s, THeading())
     _echo(_t)
 
