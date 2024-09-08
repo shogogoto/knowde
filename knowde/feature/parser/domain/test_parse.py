@@ -3,42 +3,10 @@
 from lark import Tree
 
 from knowde.feature.parser.domain.comment import TComment
-from knowde.feature.parser.domain.heading import THeading
 from knowde.feature.parser.domain.indent import IndentRule
 from knowde.feature.parser.domain.parser import (
     transparse,
 )
-
-
-def test_example_indenter() -> None:
-    """公式の例.
-
-    https://lark-parser.readthedocs.io/en/latest/examples/indented_tree.html#sphx-glr-examples-indented-tree-py.
-    """
-    _tree_grammar = r"""
-        ?start: _NL* tree
-        tree: NAME _NL [_INDENT tree+ _DEDENT]
-        %import common.CNAME -> NAME
-        %import common.WS_INLINE
-        %declare _INDENT _DEDENT
-        %ignore WS_INLINE
-        _NL: /(\r?\n[\t ]*)+/
-    """
-    _s = """
-    a
-        b
-        c
-            d
-            e
-        f
-            g
-    """
-    _p = transparse
-    _t = _p(_s, TComment())
-    _echo(_t)
-
-    r = IndentRule()
-    r.visit(_t)
 
 
 def _echo(t: Tree) -> None:
@@ -46,52 +14,39 @@ def _echo(t: Tree) -> None:
     print(t.pretty())  # noqa: T201
 
 
-def test_parse_whitespace() -> None:
-    """空をパースしてエラーになる様子を確認."""
-    _p = transparse
-    _x = """
-"""
-    _x2 = """
-    """
-    _x3 = """
-
-"""
-    _x4 = """
-
-    """
-    _ = _p("")
-    _ = _p(_x)
-    _ = _p(_x2)
-    _ = _p(_x3)
-    _ = _p(_x4)
-
-
 def test_parse_heading() -> None:
     """見出しの階層."""
     _s = r"""
         # 1.1
-        aaa
-        bbb
-            ccc
-            ddd
+            author: tanaka tarou
+            published: 2020-11-11
+
+            aaa_\
+            bbb
+                ccc
+                ddd
         ## 2.1
         ### 3.1
         #### 4.1
         ##### 5.1
         ###### 6.1
+            ppp
+            !aaaaa
+            ! csdcsdacsad
         ### 3. down
         ### 3. indent heading
+            qqq
+            rrr
         ### 3. indent heading2
-            eee
-                fff
         # 1. 2th
         ## 2. WS
         ggg
             hhh
                 iii
+        !C2
     """
 
-    _t = transparse(_s, THeading())
+    _t = transparse(_s, TComment())
     _echo(_t)
 
     _r = IndentRule()

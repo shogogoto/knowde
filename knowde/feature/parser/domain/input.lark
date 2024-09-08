@@ -5,7 +5,12 @@ tree: unit [_INDENT tree+ _DEDENT]
 ?unit: stmt|h
 
 h: h1|h2|h3|h4|h5|h6
-h1: H1 _NL [_INDENT block* _DEDENT] (h2)*
+h1: H1 _NL [_INDENT source_info? block* _DEDENT] (h2)*
+source_info: AUTHOR? PUBLISHED?
+AUTHOR: "author:" W _NL       //著者
+PUBLISHED: "published:" W _NL // 第一出版日
+
+
 h2: H2 _NL [_INDENT block* _DEDENT] (h3)*
 h3: H3 _NL [_INDENT block* _DEDENT] (h4)*
 h4: H4 _NL [_INDENT block* _DEDENT] (h5)*
@@ -18,12 +23,11 @@ block: stmt [_INDENT block+ _DEDENT]
 ?line: ONELINE | MULTILINE
 // define: W ":" line
 
-// terminals
+//------------------------------------------------ terminals
 W: /[^\n:]+/  // Word
 ONELINE: W
 MULTILINE: (W "\\\n")+ W
 COMMENT: "!" W
-
 
 WH: /[^#\n]/ W // Word of Heading
 H1: /#/      WH
