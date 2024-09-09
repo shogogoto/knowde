@@ -16,24 +16,28 @@ h4: H4 _NL [_INDENT block* _DEDENT] (h5)*
 h5: H5 _NL [_INDENT block* _DEDENT] (h6)*
 h6: H6 _NL [_INDENT block* _DEDENT]
 
-block: stmt [_INDENT block+ _DEDENT]
+// block: stmt [_INDENT (block|ctx_block)+ _DEDENT]
+?block: stmt (ctx _NL)* [_INDENT (block)+ _DEDENT]
 
 
-?stmt: (line|define) _NL
-?line: ONELINE | MULTILINE | COMMENT
+?stmt: (COMMENT|line|define) _NL
+?line: ONELINE | MULTILINE
 name: ONELINE ("=" ONELINE _NL?)* ":" _NL?
 define: name line
 
-// context: CTX name? line
-// ctx_item: line|define
-// ctx_block: stmt [_INDENT context+ _DEDENT]
+?ctx: (THUS|CAUSE|ANTONYM|EXAMPLE) line
 
 //------------------------------------------------ terminals
-W: /[^\n:=]+/  // Word
+W: /[^\n:\-<=(e\.)]/ /[^\n:=]+/  // Word
 ONELINE: W
 MULTILINE: (W "\\\n")+ W
 COMMENT: "!" W
+THUS:    "->"   // 故に
+CAUSE:   "<-"   // なぜなら
+ANTONYM: "<->"  // 対義関係
+EXAMPLE: "e.g." // 例化
 
+VAR: /\{.+\}/
 
 
 WH: /[^\n]/ W // Word of Heading
@@ -43,10 +47,6 @@ H3: /###/    WH
 H4: /####/   WH
 H5: /#####/  WH
 H6: /######/ WH
-
-CTX: CAUSE|THUS  " "// Context 文脈
-CAUSE: "<-" // なぜなら
-THUS: "->"  // 故に
 
 _NL: /(\r?\n[\t ]*)+/
 // https://github.com/lark-parser/lark/issues/863

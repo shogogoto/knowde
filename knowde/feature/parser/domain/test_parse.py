@@ -2,7 +2,6 @@
 
 from lark import Tree
 
-from knowde.feature.parser.domain.comment import TComment
 from knowde.feature.parser.domain.parser import (
     transparse,
 )
@@ -39,7 +38,17 @@ def test_parse_heading() -> None:
             ! define
             name1: def1
             name2=name3: def2
+            ! var
+            xxx
+                xxx{name1}xxx
         #### 4.1
+            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! context
+            aaa
+            -> bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb2
+            <- ccccccccccccccccccccccccccccccccccccccc
+            <-> ddddddddddddddddddddddddddddddddddddddd
+            -> bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1
+            e.g. xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
         ##### 5.1
         ###### 6.1
         ### 3. dedent
@@ -53,7 +62,7 @@ def test_parse_heading() -> None:
         !C2
     """
 
-    _t = transparse(_s, TComment())
+    _t = transparse(_s)
     _echo(_t)
 
     # _r = IndentRule()
