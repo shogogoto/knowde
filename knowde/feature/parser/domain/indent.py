@@ -9,7 +9,7 @@ from networkx import DiGraph
 from pydantic import BaseModel, Field
 
 from knowde.core.errors.errors import DomainError
-from knowde.core.types import NXGraph  # noqa: TCH001
+from knowde.core.types import NXGraph
 
 
 class IndentTreeNotFoundError(DomainError):
@@ -40,8 +40,26 @@ class IndentRule(BaseModel, Visitor_Recursive):
 
     def tree(self, t: Tree) -> None:  # noqa: D102
         c = t.children
+        # print("ahan!", t)
+        # print(t)
         if len(c) == 1:
             return
+
+    def h(self, t: Tree) -> None:  # noqa: D102
+        # print(t)
+        pass
+
+    def block(self, t: Tree) -> None:  # noqa: D102
+        # prtint(t)
+        pass
+
+    def ctx(self, t: Tree) -> None:  # noqa: D102
+        # pritnt(t)
+        pass
+
+    def h1(self, t: Tree) -> None:  # noqa: D102
+        # print(t)
+        pass
 
 
 class IndentTree(BaseModel, frozen=True):

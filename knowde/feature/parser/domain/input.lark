@@ -16,7 +16,6 @@ h4: H4 _NL [_INDENT block* _DEDENT] (h5)*
 h5: H5 _NL [_INDENT block* _DEDENT] (h6)*
 h6: H6 _NL [_INDENT block* _DEDENT]
 
-// block: stmt [_INDENT (block|ctx_block)+ _DEDENT]
 ?block: stmt (ctx _NL)* [_INDENT (block)+ _DEDENT]
 
 
@@ -28,11 +27,10 @@ define: name line
 ?ctx: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF) line
 
 //------------------------------------------------ terminals
-W: /[^\n:\-<=(e\.)]/ /[^\n:=]+/  // Word
+W: /[^\n:\-<=(e\.g\.)(g\.e\.)]/ /[^\n:=]+/  // Word
 ONELINE: W
 MULTILINE: (W "\\\n")+ W
 COMMENT: "!" W
-
 // 文脈
 THUS:    "->"   // 故に
 CAUSE:   "<-"   // なぜなら

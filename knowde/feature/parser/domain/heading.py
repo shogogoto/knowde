@@ -1,29 +1,44 @@
 """textから章節を抜き出す."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import functools
+from typing import Callable
 
-from lark import Discard, Token, Transformer, Tree
-from networkx import DiGraph
+from lark import Token, Transformer, Tree
 from pydantic import BaseModel, Field
-from typing_extensions import override
 
-from knowde.core.types import NXGraph  # noqa: TCH001
-from knowde.feature.parser.domain.parser import CommonVisitor
 
-if TYPE_CHECKING:
-    from lark.visitors import _DiscardType
+def _is_heading(t: Tree, level: int) -> bool:
+    c = t.children[0]
+    return isinstance(c, Heading) and c.level == level
+
+
+def is_heading(level: int) -> Callable[[Tree], bool]:
+    """判定."""
+    return functools.partial(_is_heading, level=level)
 
 
 class Heading(BaseModel, frozen=True):
     """見出しまたは章節."""
 
-    value: str
+    title: str
     level: int = Field(ge=1, le=6)
 
     def __str__(self) -> str:
         """For user string."""
-        return f"h{self.level}={self.value}"
+        return f"h{self.level}={self.title}"
+
+
+class TSource(Transformer):
+    """source transformer."""
+
+    def AUTHOR(self, tok: Token) -> str:  # noqa: N802
+        """情報源の著者."""
+        return tok.replace("author", "").strip()
+
+    def PUBLISHED(self, tok: Token) -> str:  # noqa: N802
+        """Markdown H1."""
+        return tok.replace("published", "").strip()
 
 
 class THeading(Transformer):
@@ -31,7 +46,7 @@ class THeading(Transformer):
 
     def _common(self, tok: Token, level: int) -> Heading:
         v = tok.replace("#", "").strip()
-        return Heading(value=v, level=level)
+        return Heading(title=v, level=level)
 
     def H1(self, tok: Token) -> Heading:  # noqa: N802
         """Markdown H1."""
@@ -56,60 +71,3 @@ class THeading(Transformer):
     def H6(self, tok: Token) -> Heading:  # noqa: N802
         """Markdown H6."""
         return self._common(tok, 6)
-
-    def NL(self, _tok: Token) -> _DiscardType:  # noqa: N802
-        """改行をIndenterの後に無視."""
-        return Discard
-
-
-class HeadingTree(BaseModel, frozen=True):
-    """見出しの階層."""
-
-    g: NXGraph
-
-    @property
-    def nodes(self) -> set[Heading]:
-        """Heading nodes."""
-        return set(self.g.nodes)
-
-    @property
-    def count(self) -> int:
-        """Total number of heading."""
-        return len(self.nodes)
-
-    def get(self, title: str) -> Heading:
-        """見出しを特定."""
-        _f = list(filter(lambda x: title in x.value, self.nodes))
-        if len(_f) == 0:
-            msg = f"{title}を含む見出しはありません"
-            raise KeyError(msg)
-        if len(_f) > 1:
-            msg = f"{title}を含む見出しが複数見つかりました"
-            raise KeyError(msg)
-        return _f[0]
-
-    def info(self, title: str) -> tuple[int, int]:
-        """Return level and Count children for test."""
-        h = self.get(title)
-        children = self.g[h]
-        return (h.level, len(children))
-
-
-class HeadingVisitor(BaseModel, CommonVisitor):
-    """見出しのツリー."""
-
-    g: NXGraph = Field(default_factory=DiGraph)
-
-    @property
-    def tree(self) -> HeadingTree:
-        """To tree."""
-        return HeadingTree(g=self.g)
-
-    @override
-    def do(self, tree: Tree) -> None:
-        tgt = tree.children[0]
-        self.g.add_node(tgt)
-        subtrees = filter(lambda x: isinstance(x, Tree), tree.children)
-        for t in subtrees:
-            for c in t.children:
-                self.g.add_edge(tgt, c)

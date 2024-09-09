@@ -1,10 +1,9 @@
 """textから章節を抜き出す."""
 
+import pytest
 from lark import Tree
 
-from knowde.feature.parser.domain.parser import (
-    transparse,
-)
+from knowde.feature.parser.domain.knowde import KnowdeTree
 
 
 def _echo(t: Tree) -> None:
@@ -12,15 +11,11 @@ def _echo(t: Tree) -> None:
     print(t.pretty())  # noqa: T201
 
 
-"""
-
-"""
-
-
-def test_parse_heading() -> None:
-    """見出しの階層."""
+@pytest.fixture()
+def kt() -> KnowdeTree:
+    """Fixture."""
     _s = r"""
-        # 1.1
+        # source1
 
             author tanaka tarou
             published 2020-11-11
@@ -42,33 +37,40 @@ def test_parse_heading() -> None:
             xxx
                 xxx{name1}xxx
         #### 4.1
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! context
+            ! context
             ctx1
-            -> bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb2
-            <- ccccccccccccccccccccccccccccccccccccccc
-            <-> ddddddddddddddddddddddddddddddddddddddd
-            -> bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1
-            e.g. xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-            ctx2
+            -> b1
+            -> b2
+            <- c
+            <-> d
+            e.g. example
+            g.e. general
             ref. ref
         ##### 5.1
         ###### 6.1
         ### 3. dedent
         ### 3. same level
         ### 3. same level
-        # 1 other tree
+
+
+        # source2
         ## 2. WS
+            aaa
+            bbb
         other tree line
             hhh
                 iii
         !C2
     """
+    return KnowdeTree.create(_s)
 
-    _t = transparse(_s)
-    _echo(_t)
 
-    # _r = IndentRule()
-    # _r.visit(_t)
+def test_parse_sources(kt: KnowdeTree) -> None:
+    """見出しの階層."""
+    # st = kt.get_source("source1")
+    # st.info
+    _echo(kt.tree)
+
     # v = HeadingVisitor()
     # v.visit(_t)
     # tree = v.tree
