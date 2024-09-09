@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from knowde.core.domain.domain import Entity
-from knowde.primitive.time.domain.period import Period  # noqa: TCH001
+from knowde.primitive.time.domain.period import Period
 
 
 class Person(Entity, frozen=True):

@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field, field_validator
 from knowde.complex.definition.domain.description import PlaceHeldDescription
 from knowde.complex.definition.repo.mark import RelMark
 from knowde.core.domain import Composite, Entity
-from knowde.core.types import NXGraph  # noqa: TCH001
+from knowde.core.types import NXGraph
 from knowde.primitive.sentence.domain import Sentence, SentenceParam
 from knowde.primitive.term.domain import Term, TermParam
 

@@ -4,8 +4,8 @@ from __future__ import annotations
 from uuid import UUID  # noqa: TCH003
 
 from knowde.core.errors.domain import AlreadyExistsError
-from knowde.primitive.reference.domain import Book, Reference  # noqa: TCH001
-from knowde.primitive.reference.dto import BookParam, PartialBookParam  # noqa: TCH001
+from knowde.primitive.reference.domain import Book, Reference
+from knowde.primitive.reference.dto import BookParam, PartialBookParam
 
 from .label import BookUtil, ReferenceUtil
 

@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Iterator, Optional
 
 from more_itertools import collapse
 
-from knowde.complex.person.domain import Person  # noqa: TCH001
+from knowde.complex.person.domain import Person
 from knowde.complex.person.repo.label import (
     LPerson,
     PersonMapper,

@@ -14,7 +14,7 @@ from knowde.complex.definition.repo.definition import (
 from knowde.complex.definition.repo.label import REL_DEF_LABEL
 from knowde.core.label_repo.query import query_cypher
 from knowde.feature.reference.domain import RefDefinition, RefDefinitions
-from knowde.feature.reference.dto import RefDefParam  # noqa: TCH001
+from knowde.feature.reference.dto import RefDefParam
 from knowde.primitive.reference.domain import Book
 from knowde.primitive.reference.repo.label import (
     ReferenceUtil,

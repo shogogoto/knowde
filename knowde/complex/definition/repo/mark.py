@@ -15,9 +15,9 @@ from knowde.complex.definition.domain.mark import (
 )
 from knowde.complex.definition.repo.errors import UndefinedMarkedTermError
 from knowde.core import RelBase, RelUtil
-from knowde.core.label_repo.label import Label  # noqa: TCH001
+from knowde.core.label_repo.label import Label
 from knowde.primitive.sentence import LSentence, SentenceUtil
-from knowde.primitive.sentence.domain import Sentence  # noqa: TCH001
+from knowde.primitive.sentence.domain import Sentence
 from knowde.primitive.term import LTerm, TermUtil
 from knowde.primitive.term.domain import Term
 

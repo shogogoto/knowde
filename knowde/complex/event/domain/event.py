@@ -2,8 +2,8 @@
 from __future__ import annotations
 
 from knowde.core.domain.domain import Entity
-from knowde.primitive.location.domain import Location  # noqa: TCH001
-from knowde.primitive.time.domain.domain import Time  # noqa: TCH001
+from knowde.primitive.location.domain import Location
+from knowde.primitive.time.domain.domain import Time
 
 
 class Event(Entity, frozen=True):
