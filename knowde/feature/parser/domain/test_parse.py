@@ -43,12 +43,14 @@ def test_parse_heading() -> None:
                 xxx{name1}xxx
         #### 4.1
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! context
-            aaa
+            ctx1
             -> bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb2
             <- ccccccccccccccccccccccccccccccccccccccc
             <-> ddddddddddddddddddddddddddddddddddddddd
             -> bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1
             e.g. xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+            ctx2
+            ref. ref
         ##### 5.1
         ###### 6.1
         ### 3. dedent
