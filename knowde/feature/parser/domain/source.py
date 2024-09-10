@@ -20,7 +20,7 @@ class TSource(Transformer):
     def PUBLISHED(self, tok: Token) -> date:  # noqa: N802
         """Markdown H1."""
         v = tok.replace("@published", "").strip()
-        return datetime.strptime(v, "%Y-%m-%d").astimezone(TZ)
+        return datetime.strptime(v, "%Y-%m-%d").astimezone(TZ).date()
 
 
 class THeading(Transformer):
