@@ -3,8 +3,7 @@ from __future__ import annotations
 
 from datetime import date, datetime
 
-from lark import Token, Transformer, Tree
-from lark.visitors import Interpreter
+from lark import Token, Transformer, Tree, Visitor
 from pydantic import BaseModel, Field
 
 from knowde.core.timeutil import TZ
@@ -60,7 +59,7 @@ class SourceNotFoundError(Exception):
     """ソースが見つからない."""
 
 
-class SourceVisitor(Interpreter, BaseModel):
+class SourceVisitor(BaseModel, Visitor):
     """構文木から情報源の情報を取り出す."""
 
     infos: list[SourceInfo] = Field(default_factory=list)
