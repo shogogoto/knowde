@@ -1,14 +1,12 @@
 // 入力するテキストファイルの文法定義
-start:  _NL* tree*  // root
+?start:  _NL* tree*  // root
 
-tree: unit [_INDENT tree+ _DEDENT]
+?tree: unit [_INDENT tree+ _DEDENT]
 ?unit: stmt|h
 
 h: h1|h2|h3|h4|h5|h6
 h1: H1 _NL [_INDENT source_info? block* _DEDENT] (h2)*
 source_info: AUTHOR? PUBLISHED?
-AUTHOR: "author " W _NL       //著者
-PUBLISHED: "published " W _NL // 第一出版日
 
 h2: H2 _NL [_INDENT block* _DEDENT] (h3)*
 h3: H3 _NL [_INDENT block* _DEDENT] (h4)*
@@ -21,16 +19,21 @@ h6: H6 _NL [_INDENT block* _DEDENT]
 
 ?stmt: (COMMENT|line|define) _NL
 ?line: ONELINE | MULTILINE
-name: ONELINE ("=" ONELINE _NL?)* ":" _NL?
+name:  ALIAS? ONELINE ("=" ONELINE _NL?)* ":" MULSEP?
 define: name line
 
 ?ctx: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF) line
 
 //------------------------------------------------ terminals
-W: /[^\n:\-<=(e\.g\.)(g\.e\.)]/ /[^\n:=]+/  // Word
+W: /[^\n:\-<=(e\.g\.)(g\.e\.)@\|]/ /[^\n:=]+/  // Word
 ONELINE: W
-MULTILINE: (W "\\\n")+ W
+MULSEP: /\\\n[\t ]*/
+MULTILINE: (W MULSEP)+ W
 COMMENT: "!" W
+ALIAS: CNAME " |"
+
+AUTHOR: "@author " W _NL       //著者
+PUBLISHED: "@published " W _NL // 第一出版日
 // 文脈
 THUS:    "->"   // 故に
 CAUSE:   "<-"   // なぜなら
@@ -50,5 +53,6 @@ H6: /######/ WH
 _NL: /(\r?\n[\t ]*)+/
 %declare _INDENT _DEDENT
 %import common.WS_INLINE
+%import common.CNAME
 // %import common.NEWLINE
 %ignore WS_INLINE

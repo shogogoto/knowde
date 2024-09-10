@@ -1,7 +1,6 @@
 """parser."""
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
 from functools import cache
 from pathlib import Path
 from textwrap import dedent
@@ -9,7 +8,6 @@ from typing import TYPE_CHECKING
 
 from lark import Lark, Transformer, Tree
 from lark.indenter import Indenter
-from lark.visitors import Visitor_Recursive
 
 if TYPE_CHECKING:
     from lark.visitors import TransformerChain
@@ -49,36 +47,3 @@ def transparse(
     if t is None:
         return _tree
     return t.transform(_tree)
-
-
-class CommonVisitor(Visitor_Recursive, ABC):
-    """共通ルール."""
-
-    @abstractmethod
-    def do(self, tree: Tree) -> None:
-        """共通の処理."""
-        raise NotImplementedError
-
-    def h1(self, tree: Tree) -> None:
-        """For Rule."""
-        self.do(tree)
-
-    def h2(self, tree: Tree) -> None:
-        """For Rule."""
-        self.do(tree)
-
-    def h3(self, tree: Tree) -> None:
-        """For Rule."""
-        self.do(tree)
-
-    def h4(self, tree: Tree) -> None:
-        """For Rule."""
-        self.do(tree)
-
-    def h5(self, tree: Tree) -> None:
-        """For Rule."""
-        self.do(tree)
-
-    def h6(self, tree: Tree) -> None:
-        """For Rule."""
-        self.do(tree)

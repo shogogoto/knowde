@@ -1,9 +1,14 @@
 """textから章節を抜き出す."""
 
+from datetime import date
+
 import pytest
 from lark import Tree
 
 from knowde.feature.parser.domain.knowde import KnowdeTree
+from knowde.feature.parser.domain.parser import transparse
+from knowde.feature.parser.domain.source import THeading, TSource
+from knowde.feature.parser.domain.statement import TStatemet
 
 
 def _echo(t: Tree) -> None:
@@ -17,8 +22,8 @@ def kt() -> KnowdeTree:
     _s = r"""
         # source1
 
-            author tanaka tarou
-            published 2020-11-11
+            @author tanaka tarou
+            @published 2020-11-11
             xxx
         ## 2.1
             ! multiline
@@ -33,6 +38,10 @@ def kt() -> KnowdeTree:
             ! define
             name1: def1
             name2=name3: def2
+            name4 = name5 = name6: def3
+            name7:\
+                deffffffffffffffffffffffffffffffffffffffffffffff
+            alias |namenamename: defdefdefdef
             ! var
             xxx
                 xxx{name1}xxx
@@ -62,24 +71,30 @@ def kt() -> KnowdeTree:
                 iii
         !C2
     """
-    return KnowdeTree.create(_s)
+
+    trans = THeading() * TSource() * TStatemet()
+    t = transparse(_s, trans)
+    return KnowdeTree(tree=t)
+
+
+"""
+知りたいこと
+sourceごと
+名前一覧
+名前衝突チェック
+言明一覧
+言明の依存関係情報
+
+
+文字列化
+
+"""
 
 
 def test_parse_sources(kt: KnowdeTree) -> None:
     """見出しの階層."""
-    # st = kt.get_source("source1")
-    # st.info
     _echo(kt.tree)
-
-    # v = HeadingVisitor()
-    # v.visit(_t)
-    # tree = v.tree
-    # with pytest.raises(KeyError):  # 1つ以上ヒット
-    #     tree.get("H")
-    # with pytest.raises(KeyError):  # ヒットしない
-    #     tree.get("H4")
-    # assert tree.count == 8
-    # assert tree.info("H2.1") == (2, 2)
-    # assert tree.info("H2.2") == (2, 3)
-    # assert tree.info("H2.3") == (2, 0)
-    # assert tree.info("H3.1") == (3, 0)
+    s1 = kt.get_source("source1")
+    assert s1.title == "source1"
+    assert s1.author == "tanaka tarou"
+    assert s1.published == date(2020, 11, 11)
