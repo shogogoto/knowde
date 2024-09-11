@@ -6,7 +6,7 @@
 
 h: h1|h2|h3|h4|h5|h6
 h1: H1 _NL [_INDENT source_info? block* _DEDENT] (h2)*
-source_info: AUTHOR? PUBLISHED?
+source_info: [AUTHOR _NL] [PUBLISHED _NL]
 
 h2: H2 _NL [_INDENT block* _DEDENT] (h3)*
 h3: H3 _NL [_INDENT block* _DEDENT] (h4)*
@@ -22,7 +22,7 @@ h6: H6 _NL [_INDENT block* _DEDENT]
 name:  ALIAS? ONELINE ("=" ONELINE _NL?)* ":" MULSEP?
 define: name line
 
-?ctx: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF) line
+?ctx: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM) name? line
 
 //------------------------------------------------ terminals
 W: /[^\n:\-<=(e\.g\.)(g\.e\.)@\|]/ /[^\n:=]+/  // Word
@@ -31,9 +31,11 @@ MULSEP: /\\\n[\t ]*/
 MULTILINE: (W MULSEP)+ W
 COMMENT: "!" W
 ALIAS: CNAME " |"
+EMBED: /{.+}/
 
-AUTHOR: "@author " W _NL       //著者
-PUBLISHED: "@published " W _NL // 第一出版日
+
+AUTHOR: "@author " W       //著者
+PUBLISHED: "@published " W // 第一出版日
 // 文脈
 THUS:    "->"   // 故に
 CAUSE:   "<-"   // なぜなら
@@ -41,6 +43,7 @@ ANTONYM: "<->"  // 対義関係
 EXAMPLE: "e.g." // 例化
 GENERAL: "g.e." // 汎化 例化の逆順
 REF: "ref."     // 引用
+NUM: /\d+\./    // 連番
 
 WH: /[^\n]/ W // Word of Heading
 H1: /#/      WH
