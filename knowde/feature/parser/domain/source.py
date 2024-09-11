@@ -1,85 +1,68 @@
 """情報源ツリー."""
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date  # noqa: TCH003
+from typing import Self
 
-from lark import Token, Transformer, Tree, Visitor
+from lark import Tree, Visitor
 from pydantic import BaseModel, Field
 
-from knowde.core.timeutil import TZ
-from knowde.feature.parser.domain.domain import Heading, SourceInfo
+from knowde.feature.parser.domain.domain import SourceInfo
 
 
-class TSource(Transformer):
-    """source transformer."""
-
-    def AUTHOR(self, tok: Token) -> str:  # noqa: N802
-        """情報源の著者."""
-        return tok.replace("@author", "").strip()
-
-    def PUBLISHED(self, tok: Token) -> date:  # noqa: N802
-        """Markdown H1."""
-        v = tok.replace("@published", "").strip()
-        return datetime.strptime(v, "%Y-%m-%d").astimezone(TZ).date()
-
-
-class THeading(Transformer):
-    """heading transformer."""
-
-    def _common(self, tok: Token, level: int) -> Heading:
-        v = tok.replace("#", "").strip()
-        return Heading(title=v, level=level)
-
-    def H1(self, tok: Token) -> Heading:  # noqa: N802
-        """Markdown H1."""
-        return self._common(tok, 1)
-
-    def H2(self, tok: Token) -> Heading:  # noqa: N802
-        """Markdown H2."""
-        return self._common(tok, 2)
-
-    def H3(self, tok: Token) -> Heading:  # noqa: N802
-        """Markdown H3."""
-        return self._common(tok, 3)
-
-    def H4(self, tok: Token) -> Heading:  # noqa: N802
-        """Markdown H4."""
-        return self._common(tok, 4)
-
-    def H5(self, tok: Token) -> Heading:  # noqa: N802
-        """Markdown H5."""
-        return self._common(tok, 5)
-
-    def H6(self, tok: Token) -> Heading:  # noqa: N802
-        """Markdown H6."""
-        return self._common(tok, 6)
-
-
-class SourceNotFoundError(Exception):
-    """ソースが見つからない."""
+class SourceMatchError(Exception):
+    """ソースが特定できない."""
 
 
 class SourceVisitor(BaseModel, Visitor):
-    """構文木から情報源の情報を取り出す."""
+    """構文木から情報源の情報を取り出す.
 
-    infos: list[SourceInfo] = Field(default_factory=list)
+    二回目の代入があったらエラー
+    """
+
+    title: str = ""
+    author: str | None = None
+    published: date | None = None
 
     def h1(self, t: Tree) -> None:  # noqa: D102
-        h: Heading = t.children[0]
-        info = list(t.find_data("source_info"))
-        if len(info) == 0:
-            s = SourceInfo(title=h.title)
-        else:
-            author, published = info[0].children
-            s = SourceInfo(
-                title=h.title,
-                author=author,
-                published=published,
-            )
-        self.infos.append(s)
+        if self.title != "":
+            raise SourceMatchError
+        self.title = t.children[0].title
 
-    def get(self, title: str) -> SourceInfo:  # noqa: D102
-        ls = [s for s in self.infos if s.contains(title)]
-        if len(ls) == 1:
-            return ls[0]
-        raise SourceNotFoundError
+    def source_info(self, t: Tree) -> None:  # noqa: D102
+        if self.author is not None or self.published is not None:
+            raise SourceMatchError
+        self.author, self.published = t.children
+
+    @property
+    def info(self) -> SourceInfo:  # noqa: D102
+        return SourceInfo(
+            title=self.title,
+            author=self.author,
+            published=self.published,
+        )
+
+
+class NameConflictError(Exception):
+    """名前衝突."""
+
+
+class SourceTree(BaseModel, frozen=True, arbitrary_types_allowed=True):
+    """１つの情報源."""
+
+    info: SourceInfo
+    tree: Tree = Field(description="h1をrootとする")
+
+    @classmethod
+    def create(cls, t: Tree) -> Self:  # noqa: D102
+        v = SourceVisitor()
+        v.visit(t)
+        return cls(tree=t, info=v.info)
+
+    # @property
+    # def names(self) -> None:
+    #     pass
+
+
+class NameCollectionVisitor(BaseModel, Visitor):
+    """名前を集める."""

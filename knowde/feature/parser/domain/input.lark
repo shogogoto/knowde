@@ -19,8 +19,9 @@ h6: H6 _NL [_INDENT block* _DEDENT]
 
 ?stmt: (COMMENT|line|define) _NL
 ?line: ONELINE | MULTILINE
-name:  ALIAS? ONELINE ("=" ONELINE _NL?)* ":" MULSEP?
+name:  ALIAS? ONELINE ("=" ONELINE _NL?)* ":"
 define: name line
+//define_nl: name _NL _INDENT line _NL
 
 ?ctx: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM) name? line
 
@@ -57,5 +58,5 @@ _NL: /(\r?\n[\t ]*)+/
 %declare _INDENT _DEDENT
 %import common.WS_INLINE
 %import common.CNAME
-// %import common.NEWLINE
-%ignore WS_INLINE
+%ignore /\\[\t \f]*\r?\n/   // LINE_CONT
+%ignore /[\t \f]+/          // WS

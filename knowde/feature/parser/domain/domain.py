@@ -32,6 +32,10 @@ class SourceInfo(BaseModel, frozen=True):
     author: str | None = Field(default=None, title="著者")
     published: date | None = Field(default=None, title="第一出版日")
 
+    @property
+    def tuple(self) -> tuple[str, str | None, date | None]:  # noqa: D102
+        return (self.title, self.author, self.published)
+
     def contains(self, title: str) -> bool:
         """タイトルに含まれた文字列か."""
         return title in self.title
