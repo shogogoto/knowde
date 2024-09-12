@@ -48,3 +48,23 @@ class Namespace(BaseModel):
     children: list[Heading] = Field(default_factory=list)
     names: dict = Field(default_factory=dict)
     statements: list[str] = Field(default_factory=list)
+
+
+class Comment(BaseModel, frozen=True):
+    """コメント."""
+
+    value: str
+
+    def __str__(self) -> str:
+        """For user string."""
+        return f"!{self.value}"
+
+
+class Statement(BaseModel, frozen=True):
+    """言明."""
+
+    value: str
+
+    def __str__(self) -> str:
+        """For user string."""
+        return self.value

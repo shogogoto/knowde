@@ -17,6 +17,7 @@ from lark import Tree
 from knowde.feature.parser.domain.knowde import RootTree
 from knowde.feature.parser.domain.parser import transparse
 from knowde.feature.parser.domain.source import SourceMatchError
+from knowde.feature.parser.domain.statement import scan_statements
 from knowde.feature.parser.domain.transformer import common_transformer
 
 
@@ -70,13 +71,21 @@ def test_parse_multiline() -> None:
             aaa_\
             bbb
                 ccc
-                ddd
-                mul1 \
-                    mul2 \
-                        mul3
+                cccc
+            ddd
+            mul1 \
+                mul2 \
+                    mul3
     """
     t = transparse(_s, common_transformer())
-    _rt = RootTree(tree=t)
+    _rt = RootTree(tree=t).get_source("src")
+    assert scan_statements(_rt.tree) == [
+        "aaa_bbb",
+        "ccc",
+        "cccc",
+        "ddd",
+        "mul1 mul2 mul3",
+    ]
 
 
 def test_parse_define_and_names() -> None:
@@ -84,12 +93,11 @@ def test_parse_define_and_names() -> None:
     _s = r"""
         # names
             ! define
-
             name1: def1
             name2=name3: def2
-            name22 = name3: def2
-            name4 = name5 = name6: def3
-            name7: deffffffffffffffffffffffffffffffffffffffffffffff
+            name22 = name3 = name4: def2
+            name5: defdef\
+                deffffffffffffffffffffffffffffffffffffffffffffff
             alias |namenamename: defdefdefdef
             ! var
             xxx

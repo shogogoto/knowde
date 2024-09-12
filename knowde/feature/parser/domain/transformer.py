@@ -6,23 +6,12 @@ from functools import reduce
 from typing import TYPE_CHECKING
 
 from lark import Token, Transformer
-from pydantic import BaseModel
 
 from knowde.core.timeutil import TZ
-from knowde.feature.parser.domain.domain import Heading
+from knowde.feature.parser.domain.domain import Comment, Heading
 
 if TYPE_CHECKING:
     from lark.visitors import TransformerChain
-
-
-class Comment(BaseModel, frozen=True):
-    """コメント."""
-
-    value: str
-
-    def __str__(self) -> str:
-        """For user string."""
-        return f"!{self.value}"
 
 
 def common_transformer() -> TransformerChain:
