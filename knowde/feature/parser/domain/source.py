@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import date  # noqa: TCH003
 from typing import Self
 
-from lark import Tree, Visitor
+from lark import Token, Tree, Visitor
 from pydantic import BaseModel, Field
 
 from knowde.feature.parser.domain.domain import SourceInfo
@@ -59,9 +59,25 @@ class SourceTree(BaseModel, frozen=True, arbitrary_types_allowed=True):
         v.visit(t)
         return cls(tree=t, info=v.info)
 
-    # @property
-    # def names(self) -> None:
-    #     pass
+    @property
+    def names(self) -> list[str]:
+        """名前一覧."""
+        ls = []
+        for n in self.tree.find_data("name"):
+            ls.extend(n.children)
+        return [str(e) for e in ls]
+
+    @property
+    def rep_names(self) -> list[str]:
+        """代表名一覧."""
+        ls = [d.children[0] for d in self.tree.find_data("name")]
+        return [str(e) for e in ls]
+
+    @property
+    def aliases(self) -> list[str]:
+        """代表名一覧."""
+        vs = self.tree.scan_values(lambda x: isinstance(x, Token) and x.type == "ALIAS")
+        return [str(e) for e in vs]
 
 
 class NameCollectionVisitor(BaseModel, Visitor):

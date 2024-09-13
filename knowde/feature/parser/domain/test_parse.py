@@ -13,6 +13,7 @@ from datetime import date
 
 import pytest
 from lark import Tree
+from pytest_unordered import unordered
 
 from knowde.feature.parser.domain.knowde import RootTree
 from knowde.feature.parser.domain.parser import transparse
@@ -89,23 +90,37 @@ def test_parse_multiline() -> None:
 
 
 def test_parse_define_and_names() -> None:
-    """定義を読み取る."""
+    """定義を読み取る.
+
+    用語一覧
+        紐づく言明も
+        逆に言明に引用された用語の表示
+    用語の衝突の検知
+        どことどこの名前が衝突したか
+            headingの特定
+    """
     _s = r"""
         # names
             ! define
             name1: def1
-            name2=name3: def2
-            name22 = name3 = name4: def2
-            name5: defdef\
-                deffffffffffffffffffffffffffffffffffffffffffffff
-            alias |namenamename: defdefdefdef
-            ! var
-            xxx
-                xxx{name1}xxx
+            name2=name21: def2
+            name3 = name31 = name32: def2
+            name4: defdef\
+                defufu
+                aaa
+                bbb
+                ccc
+            def_alias|aname: defdefdefdef
+            line_alias|xxx
     """
     t = transparse(_s, common_transformer())
-    _rt = RootTree(tree=t)
-    # t = transparse(_s, common_transformer())
+    _rt = RootTree(tree=t).get_source("names")
+    _echo(t)
+    assert _rt.names == unordered(
+        ["name1", "name2", "name21", "name3", "name31", "name32", "name4", "aname"],
+    )
+    assert _rt.rep_names == unordered(["name1", "name2", "name3", "name4", "aname"])
+    assert _rt.aliases == unordered(["def_alias", "line_alias"])
 
 
 def test_parse_context() -> None:
@@ -122,8 +137,8 @@ def test_parse_context() -> None:
             g.e. general
             ref. ref
     """
-    t = transparse(_s, common_transformer())
-    _rt = RootTree(tree=t)
+    # t = transparse(_s, common_transformer())
+    # _rt = RootTree(tree=t)
 
 
 def test_parse_real_text() -> None:
@@ -138,14 +153,15 @@ def test_parse_real_text() -> None:
         <-> 大量の実行計画、製品文章、作業報告書を納品してくれる
 
       開発チームが大事にしなければならないこと
-      1. 大きな問題は小さくする: 短い１週間で成果を出せる単位に分割
-        プロジェクト規模によっては２-３週単意
-        大抵はプロジェクト初期は２週単位
+        1. 大きな問題は小さくする
+          短い１週間で成果を出せる単位に分割
+          プロジェクト規模によっては２-３週単意
+          大抵はプロジェクト初期は２週単位
       2. 本当に大事なことに集中して、それ以外のことは忘れる
-        実施計画書などのドキュメントは必要だが、動くソフトウェアの補完でしかない
+    !   実施計画書などのドキュメントは必要だが、動くソフトウェアの補完でしかない
+    ! 3. ちゃんと動くソフトウェアを届ける
+    !   もっと早くこまめにたくさんテストする。テストを疎かにしない。
 
-    !  3. ちゃんと動くソフトウェアを届ける:
-    !    もっと早くこまめにたくさんテストする。テストを疎かにしない。
     !  4. フィードバックを求める:
     !    定期的な顧客に答えの確認なしに道に迷わないなんてできない
     !    顧客はこれなしにプロジェクトのハンドルなんて切れない
@@ -154,5 +170,9 @@ def test_parse_real_text() -> None:
     !    今週大事なことでも来週にはどうでもよくなるかも
     !    計画に従っているだけでは対処できない
     !    計画を変えよ、現実ではなく。
-
     """
+
+    # t = transparse(_s, common_transformer())
+    # _rt = RootTree(tree=t)
+    # _echo(t)
+    # print(scan_statements(_rt.tree))
