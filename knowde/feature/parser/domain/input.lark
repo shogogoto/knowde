@@ -21,7 +21,7 @@ line: ALIAS? ONELINE | MULTILINE
 name: ONELINE ("=" ONELINE)* ":"
 define: ALIAS? name line
 
-?ctx: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM) line|define
+?ctx: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM) (line|define)
 
 //------------------------------------------------ terminals
 W: /[^\n:=]*/           // Word
@@ -40,13 +40,13 @@ EMBED: "{" ONELINE "}"
 AUTHOR: "@author " ANY       //著者
 PUBLISHED: "@published " ANY // 第一出版日
 // 文脈
-THUS.1:    "-> "   // 故に
-CAUSE.1:   "<- "   // なぜなら
-ANTONYM.1: "<-> "  // 対義関係
-EXAMPLE.1: "e.g. " // 例化
-GENERAL.1: "g.e. " // 汎化 例化の逆順
-REF.1: "ref. "     // 引用
-NUM.1: /\d+\. /    // 連番
+THUS.1:    "->"   // 故に
+CAUSE.1:   "<-"   // なぜなら
+ANTONYM.1: "<->"  // 対義関係
+EXAMPLE.1: "e.g." // 例化
+GENERAL.1: "g.e." // 汎化 例化の逆順
+REF.1: "ref."     // 引用
+NUM.1: /\d+\./    // 連番
 
 WH: /[^\n]/ W // Word of Heading
 H1: /#/      WH
