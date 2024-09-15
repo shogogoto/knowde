@@ -33,7 +33,7 @@ COMMENT: "!" ANY
 
 ALIAS_SEP: "|"
 ALIAS.1: ONELINE ALIAS_SEP
-ANY: /[^\n]+/
+ANY: /[^\n]*/
 EMBED: "{" ONELINE "}"
 
 
