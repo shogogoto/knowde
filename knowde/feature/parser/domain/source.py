@@ -1,6 +1,7 @@
 """情報源ツリー."""
 from __future__ import annotations
 
+from collections import Counter
 from datetime import date  # noqa: TCH003
 from typing import Self
 
@@ -8,10 +9,7 @@ from lark import Token, Tree, Visitor
 from pydantic import BaseModel, Field
 
 from knowde.feature.parser.domain.domain import SourceInfo
-
-
-class SourceMatchError(Exception):
-    """ソースが特定できない."""
+from knowde.feature.parser.domain.errors import NameConflictError, SourceMatchError
 
 
 class SourceVisitor(BaseModel, Visitor):
@@ -43,8 +41,12 @@ class SourceVisitor(BaseModel, Visitor):
         )
 
 
-class NameConflictError(Exception):
-    """名前衝突."""
+def check_name_conflict(names: list[str]) -> None:
+    """名前の重複チェック."""
+    dups = [(name, c) for name, c in Counter(names).items() if c > 1]
+    if len(dups) > 0:
+        msg = f"次の名前が重複しています:{dups}"
+        raise NameConflictError(msg)
 
 
 class SourceTree(BaseModel, frozen=True, arbitrary_types_allowed=True):
@@ -57,7 +59,9 @@ class SourceTree(BaseModel, frozen=True, arbitrary_types_allowed=True):
     def create(cls, t: Tree) -> Self:  # noqa: D102
         v = SourceVisitor()
         v.visit(t)
-        return cls(tree=t, info=v.info)
+        self = cls(tree=t, info=v.info)
+        check_name_conflict(self.names)
+        return self
 
     @property
     def names(self) -> list[str]:
