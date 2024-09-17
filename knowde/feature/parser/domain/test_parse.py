@@ -110,7 +110,7 @@ def test_parse_define_and_names() -> None:
     """
     t = transparse(_s, common_transformer())
     _rt = RootTree(tree=t).get_source("names")
-    _echo(t)
+    # _echo(t)
     assert _rt.names == unordered(
         ["name1", "name2", "name21", "name3", "name31", "name32", "name4", "aname"],
     )
@@ -144,6 +144,8 @@ def test_parse_context() -> None:
         # context
             ctx1
                 -> b1
+                    -> bb1
+                    -> bb2
                 -> b2
                 <- c
                 <-> d
@@ -154,5 +156,13 @@ def test_parse_context() -> None:
                 2. two
     """
     _t = transparse(_s, common_transformer())
-    _rt = RootTree(tree=_t)
+    _rt = RootTree(tree=_t).get_source("context")
     _echo(_t)
+
+    st = _rt.statement("ctx1")
+    assert st.thus == unordered(["b1", "b2"])
+    assert st.cause == unordered(["c"])
+    assert st.example == unordered(["example"])
+    assert st.general == unordered(["general"])
+    assert st.ref == unordered(["ref"])
+    assert st.list == ["one", "two"]

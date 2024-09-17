@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 
 from knowde.feature.parser.domain.domain import SourceInfo
 from knowde.feature.parser.domain.errors import NameConflictError, SourceMatchError
+from knowde.feature.parser.domain.statement import Statement, StatementVisitor
 
 
 class SourceVisitor(BaseModel, Visitor):
@@ -83,6 +84,8 @@ class SourceTree(BaseModel, frozen=True, arbitrary_types_allowed=True):
         vs = self.tree.scan_values(lambda x: isinstance(x, Token) and x.type == "ALIAS")
         return [str(e) for e in vs]
 
-
-class NameCollectionVisitor(BaseModel, Visitor):
-    """名前を集める."""
+    def statement(self, s: str) -> Statement:
+        """context付きの言明を返す."""
+        v = StatementVisitor()
+        v.visit(self.tree)
+        return Statement.create(s, v.g)

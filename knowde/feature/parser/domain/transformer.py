@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from lark import Token, Transformer
 
 from knowde.core.timeutil import TZ
+from knowde.feature.parser.domain.context import TContext
 from knowde.feature.parser.domain.domain import Comment, Heading
 
 if TYPE_CHECKING:
@@ -16,7 +17,7 @@ if TYPE_CHECKING:
 
 def common_transformer() -> TransformerChain:
     """パースに使用するTransformer一式."""
-    return THeading() * TSource() * TStatemet()
+    return THeading() * TSource() * TStatemet() * TContext()
 
 
 def _replace_value(tok: Token, v: str) -> str:
