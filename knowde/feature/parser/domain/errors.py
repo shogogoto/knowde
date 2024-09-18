@@ -1,10 +1,6 @@
 """parse errors."""
 
 
-class SourceMatchError(Exception):
-    """ソースが特定できない."""
-
-
 class TermConflictError(Exception):
     """名前衝突."""
 

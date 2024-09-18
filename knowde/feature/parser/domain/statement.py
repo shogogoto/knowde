@@ -4,7 +4,7 @@ from __future__ import annotations
 from enum import Enum, auto
 from typing import TYPE_CHECKING, Hashable, Self
 
-from lark import Token, Tree, Visitor
+from lark import Token, Tree
 from networkx import DiGraph
 from pydantic import BaseModel, Field
 
@@ -12,8 +12,7 @@ from knowde.core.types import NXGraph
 from knowde.feature.parser.domain.errors import ContextMismatchError
 from knowde.feature.parser.domain.parser.const import LINE_TYPES
 from knowde.feature.parser.domain.parser.transfomer.context import ContextType
-from knowde.feature.parser.domain.parser.transfomer.heading import Heading
-from knowde.feature.parser.domain.parser.utils import get_line
+from knowde.feature.parser.domain.parser.utils import HeadingVisitor, get_line
 
 if TYPE_CHECKING:
     from lark.tree import Branch
@@ -76,10 +75,9 @@ def add_context(g: DiGraph, x1: Hashable, x2: Hashable, t: ContextType) -> None:
             raise ContextMismatchError
 
 
-class StatementVisitor(BaseModel, Visitor):
+class StatementVisitor(HeadingVisitor):
     """言明の処理."""
 
-    current_heading: Heading | None = None
     g: NXGraph = Field(default_factory=DiGraph, description="言明ネットワーク")
 
     def block(self, t: Tree) -> None:
@@ -115,27 +113,6 @@ class StatementVisitor(BaseModel, Visitor):
         # print(get_names(t))
         # print(get_line(t))
 
-    def h1(self, t: Tree) -> None:  # noqa: D102
-        self._set_heading(t)
-
-    def h2(self, t: Tree) -> None:  # noqa: D102
-        self._set_heading(t)
-
-    def h3(self, t: Tree) -> None:  # noqa: D102
-        self._set_heading(t)
-
-    def h4(self, t: Tree) -> None:  # noqa: D102
-        self._set_heading(t)
-
-    def h5(self, t: Tree) -> None:  # noqa: D102
-        self._set_heading(t)
-
-    def h6(self, t: Tree) -> None:  # noqa: D102
-        self._set_heading(t)
-
-    def _set_heading(self, t: Tree) -> None:
-        self.current_heading = t.children[0]
-
 
 class Statement(BaseModel, frozen=True):
     """言明."""
@@ -144,11 +121,13 @@ class Statement(BaseModel, frozen=True):
     g: NXGraph
 
     @classmethod
-    def create(cls, value: str, g: NXGraph) -> Self:  # noqa: D102
-        if value not in g:
+    def create(cls, value: str, t: Tree) -> Self:  # noqa: D102
+        v = StatementVisitor()
+        v.visit(t)
+        if value not in v.g:
             msg = "Not Found!"
             raise KeyError(msg)
-        return cls(value=value, g=g)
+        return cls(value=value, g=v.g)
 
     @property
     def thus(self) -> list[str]:  # noqa: D102

@@ -1,5 +1,10 @@
 """parser utils."""
-from lark import Token, Tree
+from __future__ import annotations
+
+from lark import Token, Tree, Visitor
+from pydantic import BaseModel
+
+from knowde.feature.parser.domain.parser.transfomer.heading import Heading
 
 from .const import LINE_TYPES
 from .errors import LineMismatchError
@@ -17,3 +22,30 @@ def get_line(t: Tree) -> str:
             return get_line(first.children[1])
         return get_line(first)
     raise LineMismatchError
+
+
+class HeadingVisitor(BaseModel, Visitor):
+    """どの見出しでのvisitか把握."""
+
+    current: Heading | None = None
+
+    def h1(self, t: Tree) -> None:  # noqa: D102
+        self._set_heading(t)
+
+    def h2(self, t: Tree) -> None:  # noqa: D102
+        self._set_heading(t)
+
+    def h3(self, t: Tree) -> None:  # noqa: D102
+        self._set_heading(t)
+
+    def h4(self, t: Tree) -> None:  # noqa: D102
+        self._set_heading(t)
+
+    def h5(self, t: Tree) -> None:  # noqa: D102
+        self._set_heading(t)
+
+    def h6(self, t: Tree) -> None:  # noqa: D102
+        self._set_heading(t)
+
+    def _set_heading(self, t: Tree) -> None:
+        self.current = t.children[0]

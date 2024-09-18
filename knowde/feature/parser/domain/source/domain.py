@@ -8,9 +8,12 @@ from typing import Self
 from lark import Token, Tree, Visitor
 from pydantic import BaseModel, Field
 
-from knowde.feature.parser.domain.domain import SourceAbout
-from knowde.feature.parser.domain.errors import SourceMatchError, TermConflictError
+from knowde.feature.parser.domain.errors import TermConflictError
 from knowde.feature.parser.domain.statement import Statement, StatementVisitor
+
+
+class SourceMatchError(Exception):
+    """ソースが特定できない."""
 
 
 def get_source(t: Tree, title: str) -> SourceTree:
@@ -20,6 +23,22 @@ def get_source(t: Tree, title: str) -> SourceTree:
     if len(ls) == 1:
         return SourceTree.create(ls[0])
     raise SourceMatchError
+
+
+class SourceAbout(BaseModel, frozen=True):
+    """情報源について."""
+
+    title: str = Field(title="情報源のタイトル")
+    author: str | None = Field(default=None, title="著者")
+    published: date | None = Field(default=None, title="第一出版日")
+
+    @property
+    def tuple(self) -> tuple[str, str | None, date | None]:  # noqa: D102
+        return (self.title, self.author, self.published)
+
+    def contains(self, title: str) -> bool:
+        """タイトルに含まれた文字列か."""
+        return title in self.title
 
 
 class SourceVisitor(BaseModel, Visitor):

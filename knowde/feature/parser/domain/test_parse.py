@@ -9,53 +9,11 @@ sourceごと
 文字列への復元
 """
 
-from datetime import date
 
-import pytest
-from lark import Tree
 from pytest_unordered import unordered
 
 from knowde.feature.parser.domain.parser.parser import transparse
-from knowde.feature.parser.domain.source import SourceMatchError, get_source
-
-
-def _echo(t: Tree) -> None:
-    print(t)  # noqa: T201
-    print(t.pretty())  # noqa: T201
-
-
-def test_parse_heading() -> None:
-    """情報源について."""
-    _s = r"""
-        # source1
-            @author tanaka tarou
-            @published 2020-11-11
-            xxx
-        ## 2.1
-            ! multiline
-        ### 3.1
-            ! define
-            xxx
-        #### 4.1
-        ##### 5.1
-        ###### 6.1
-        ### 3. dedent
-        ### 3. same level
-        ### 3. same level
-        # source2
-        other tree line
-            hhh
-        !C2
-    """
-    t = transparse(_s)
-    s1 = get_source(t, "source1")
-    assert s1.about.tuple == ("source1", "tanaka tarou", date(2020, 11, 11))
-    s2 = get_source(t, "source2")
-    assert s2.about.tuple == ("source2", None, None)
-    with pytest.raises(SourceMatchError):
-        get_source(t, "source")
-    with pytest.raises(SourceMatchError):
-        get_source(t, "xxx")
+from knowde.feature.parser.domain.statement import Statement
 
 
 def test_parse_context() -> None:
@@ -76,9 +34,10 @@ def test_parse_context() -> None:
                 2. two
     """
     _t = transparse(_s)
-    _rt = get_source(_t, "context")
+    # _rt = get_source(_t, "context")
     # _echo(_t)
-    st = _rt.statement("ctx1")
+    # st = _rt.statement("ctx1")
+    st = Statement.create("ctx1", _t)
     assert st.thus == unordered(["b1", "b2"])
     assert st.cause == unordered(["c"])
     assert st.example == unordered(["example"])
