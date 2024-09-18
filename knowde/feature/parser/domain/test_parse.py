@@ -19,7 +19,6 @@ from knowde.feature.parser.domain.errors import NameConflictError
 from knowde.feature.parser.domain.parser import transparse
 from knowde.feature.parser.domain.source import SourceMatchError, get_source
 from knowde.feature.parser.domain.statement import scan_statements
-from knowde.feature.parser.domain.transformer import common_transformer
 
 
 def _echo(t: Tree) -> None:
@@ -50,7 +49,7 @@ def test_parse_heading() -> None:
             hhh
         !C2
     """
-    t = transparse(_s, common_transformer())
+    t = transparse(_s)
     s1 = get_source(t, "source1")
     assert s1.about.tuple == ("source1", "tanaka tarou", date(2020, 11, 11))
     s2 = get_source(t, "source2")
@@ -77,7 +76,7 @@ def test_parse_multiline() -> None:
                 mul2 \
                     mul3
     """
-    t = transparse(_s, common_transformer())
+    t = transparse(_s)
     assert scan_statements(t) == [
         "aaa_bbb",
         "ccc",
@@ -105,7 +104,7 @@ def test_parse_define_and_names() -> None:
             line_alias|xxx
             c
     """
-    t = transparse(_s, common_transformer())
+    t = transparse(_s)
     _rt = get_source(t, "names")
     # _echo(t)
     assert _rt.names == unordered(
@@ -126,7 +125,7 @@ def test_conflict_name() -> None:
             name1: def1
             name1: def1
     """
-    t = transparse(_s, common_transformer())
+    t = transparse(_s)
     with pytest.raises(NameConflictError):
         _rt = get_source(t, "names")
 
@@ -152,7 +151,7 @@ def test_parse_context() -> None:
                 1. one
                 2. two
     """
-    _t = transparse(_s, common_transformer())
+    _t = transparse(_s)
     _rt = get_source(_t, "context")
     # _echo(_t)
     st = _rt.statement("ctx1")

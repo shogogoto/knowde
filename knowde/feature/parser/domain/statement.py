@@ -11,10 +11,8 @@ from pydantic import BaseModel, Field
 from knowde.core.types import NXGraph
 from knowde.feature.parser.domain.domain import get_line
 from knowde.feature.parser.domain.errors import ContextMismatchError
-from knowde.feature.parser.domain.transformer.context import (
-    ContextType,
-)
-from knowde.feature.parser.domain.transformer.heading import Heading
+from knowde.feature.parser.domain.transfomer.context import ContextType
+from knowde.feature.parser.domain.transfomer.heading import Heading
 
 if TYPE_CHECKING:
     from lark.tree import Branch

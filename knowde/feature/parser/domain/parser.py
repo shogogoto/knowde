@@ -9,6 +9,8 @@ from typing import TYPE_CHECKING
 from lark import Lark, Transformer, Tree
 from lark.indenter import Indenter
 
+from knowde.feature.parser.domain.transfomer import common_transformer
+
 if TYPE_CHECKING:
     from lark.visitors import TransformerChain
 
@@ -38,12 +40,13 @@ def common_parser(debug: bool = False) -> Lark:  # noqa: FBT001 FBT002
 
 def transparse(
     text: str,
-    t: Transformer | TransformerChain | None = None,
+    t: Transformer | TransformerChain = common_transformer(),
     debug: bool = False,  # noqa: FBT001 FBT002
+    no_trans: bool = False,  # noqa: FBT001 FBT002
 ) -> Tree:
     """Parse and transform."""
     txt = dedent(text)
     _tree = common_parser(debug=debug).parse(txt)
-    if t is None:
+    if no_trans:
         return _tree
     return t.transform(_tree)
