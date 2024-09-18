@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from lark import Lark, Transformer, Tree
 from lark.indenter import Indenter
 
-from knowde.feature.parser.domain.transfomer import common_transformer
+from .transfomer import common_transformer
 
 if TYPE_CHECKING:
     from lark.visitors import TransformerChain

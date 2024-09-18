@@ -15,8 +15,8 @@ import pytest
 from lark import Tree
 from pytest_unordered import unordered
 
+from knowde.core.parser.parser import transparse
 from knowde.feature.parser.domain.errors import NameConflictError
-from knowde.feature.parser.domain.parser import transparse
 from knowde.feature.parser.domain.source import SourceMatchError, get_source
 from knowde.feature.parser.domain.statement import scan_statements
 

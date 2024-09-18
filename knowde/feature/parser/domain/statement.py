@@ -8,11 +8,11 @@ from lark import Token, Tree, Visitor
 from networkx import DiGraph
 from pydantic import BaseModel, Field
 
+from knowde.core.parser.transfomer.context import ContextType
+from knowde.core.parser.transfomer.heading import Heading
 from knowde.core.types import NXGraph
 from knowde.feature.parser.domain.domain import get_line
 from knowde.feature.parser.domain.errors import ContextMismatchError
-from knowde.feature.parser.domain.transfomer.context import ContextType
-from knowde.feature.parser.domain.transfomer.heading import Heading
 
 if TYPE_CHECKING:
     from lark.tree import Branch
