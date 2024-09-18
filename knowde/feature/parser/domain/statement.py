@@ -8,11 +8,12 @@ from lark import Token, Tree, Visitor
 from networkx import DiGraph
 from pydantic import BaseModel, Field
 
-from knowde.core.parser.transfomer.context import ContextType
-from knowde.core.parser.transfomer.heading import Heading
 from knowde.core.types import NXGraph
-from knowde.feature.parser.domain.domain import get_line
 from knowde.feature.parser.domain.errors import ContextMismatchError
+from knowde.feature.parser.domain.parser.const import LINE_TYPES
+from knowde.feature.parser.domain.parser.transfomer.context import ContextType
+from knowde.feature.parser.domain.parser.transfomer.heading import Heading
+from knowde.feature.parser.domain.parser.utils import get_line
 
 if TYPE_CHECKING:
     from lark.tree import Branch
@@ -20,10 +21,9 @@ if TYPE_CHECKING:
 
 def scan_statements(t: Tree) -> list[str]:
     """言明の文字列を抜き出す."""
-    types = ["ONELINE", "MULTILINE"]
 
     def _pred(b: Branch) -> bool:
-        return isinstance(b, Token) and b.type in types
+        return isinstance(b, Token) and b.type in LINE_TYPES
 
     return [str(s) for s in t.scan_values(_pred)]
 

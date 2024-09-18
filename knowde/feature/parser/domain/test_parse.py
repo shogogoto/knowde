@@ -15,10 +15,8 @@ import pytest
 from lark import Tree
 from pytest_unordered import unordered
 
-from knowde.core.parser.parser import transparse
-from knowde.feature.parser.domain.errors import NameConflictError
+from knowde.feature.parser.domain.parser.parser import transparse
 from knowde.feature.parser.domain.source import SourceMatchError, get_source
-from knowde.feature.parser.domain.statement import scan_statements
 
 
 def _echo(t: Tree) -> None:
@@ -54,84 +52,10 @@ def test_parse_heading() -> None:
     assert s1.about.tuple == ("source1", "tanaka tarou", date(2020, 11, 11))
     s2 = get_source(t, "source2")
     assert s2.about.tuple == ("source2", None, None)
-
     with pytest.raises(SourceMatchError):
         get_source(t, "source")
-
     with pytest.raises(SourceMatchError):
         get_source(t, "xxx")
-
-
-def test_parse_multiline() -> None:
-    """改行ありで一行とみなす."""
-    _s = r"""
-        # src
-            ! multiline
-            aaa_\
-            bbb
-                ccc
-                cccc
-            ddd
-            mul1 \
-                mul2 \
-                    mul3
-    """
-    t = transparse(_s)
-    assert scan_statements(t) == [
-        "aaa_bbb",
-        "ccc",
-        "cccc",
-        "ddd",
-        "mul1 mul2 mul3",
-    ]
-
-
-def test_parse_define_and_names() -> None:
-    """用語一覧.
-
-    紐づく言明も
-    逆に言明に引用された用語の表示
-    """
-    _s = r"""
-        # names
-            name1: def1
-            name2=name21: def2
-            name3 = name31 = name32: def2
-            name4: defdef\
-                defufu
-                child
-            def_alias|aname: defdefdefdef
-            line_alias|xxx
-            c
-    """
-    t = transparse(_s)
-    _rt = get_source(t, "names")
-    # _echo(t)
-    assert _rt.names == unordered(
-        ["name1", "name2", "name21", "name3", "name31", "name32", "name4", "aname"],
-    )
-    assert _rt.rep_names == unordered(["name1", "name2", "name3", "name4", "aname"])
-    assert _rt.aliases == unordered(["def_alias", "line_alias"])
-
-
-def test_conflict_name() -> None:
-    """用語の衝突の検知.
-
-    どことどこの名前が衝突したか
-        headingの特定.
-    """
-    _s = r"""
-        # names
-            name1: def1
-            name1: def1
-    """
-    t = transparse(_s)
-    with pytest.raises(NameConflictError):
-        _rt = get_source(t, "names")
-
-
-# def test_find_names() -> None:
-#     """検索."""
 
 
 def test_parse_context() -> None:

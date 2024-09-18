@@ -5,12 +5,8 @@ class SourceMatchError(Exception):
     """ソースが特定できない."""
 
 
-class NameConflictError(Exception):
+class TermConflictError(Exception):
     """名前衝突."""
-
-
-class LineMismatchError(Exception):
-    """lineの値が見つからないはずがない."""
 
 
 class NameMismatchError(Exception):

@@ -9,7 +9,7 @@ from lark import Token, Tree, Visitor
 from pydantic import BaseModel, Field
 
 from knowde.feature.parser.domain.domain import SourceAbout
-from knowde.feature.parser.domain.errors import NameConflictError, SourceMatchError
+from knowde.feature.parser.domain.errors import SourceMatchError, TermConflictError
 from knowde.feature.parser.domain.statement import Statement, StatementVisitor
 
 
@@ -56,7 +56,7 @@ def check_name_conflict(names: list[str]) -> None:
     dups = [(name, c) for name, c in Counter(names).items() if c > 1]
     if len(dups) > 0:
         msg = f"次の名前が重複しています:{dups}"
-        raise NameConflictError(msg)
+        raise TermConflictError(msg)
 
 
 class SourceTree(BaseModel, frozen=True, arbitrary_types_allowed=True):

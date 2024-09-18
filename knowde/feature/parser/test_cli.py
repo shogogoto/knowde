@@ -5,7 +5,7 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
-from knowde.core.parser.parser import transparse
+from knowde.feature.parser.domain.parser.parser import transparse
 from knowde.feature.parser.interface import parse_cmd
 
 # source -> 論理行
