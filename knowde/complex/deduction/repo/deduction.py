@@ -28,8 +28,8 @@ from knowde.complex.deduction.repo.statistics import (
 )
 from knowde.core import jst_now
 from knowde.core.errors.domain import NeomodelNotFoundError
-from knowde.core.repo.query import query_cypher
-from knowde.core.repo.util import LabelUtil
+from knowde.core.label_repo.query import query_cypher
+from knowde.core.label_repo.util import LabelUtil
 from knowde.primitive.proposition.domain import Proposition
 
 

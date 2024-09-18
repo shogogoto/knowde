@@ -1,0 +1,63 @@
+// 入力するテキストファイルの文法定義
+?start:  _NL* unit*  // root
+
+?unit: block|h
+
+h: h1|h2|h3|h4|h5|h6
+h1: H1 _NL [_INDENT source_info? block* _DEDENT] (h2)*
+source_info: [AUTHOR _NL] [PUBLISHED _NL]
+
+h2: H2 _NL [_INDENT block* _DEDENT] (h3)*
+h3: H3 _NL [_INDENT block* _DEDENT] (h4)*
+h4: H4 _NL [_INDENT block* _DEDENT] (h5)*
+h5: H5 _NL [_INDENT block* _DEDENT] (h6)*
+h6: H6 _NL [_INDENT block* _DEDENT]
+
+?block: stmt [_INDENT (block)+ _DEDENT]
+
+
+?stmt: (COMMENT|line|define|ctx) _NL
+line: ALIAS? ONELINE | MULTILINE
+name: ONELINE ("=" ONELINE)* ":"
+define: ALIAS? name line
+
+?ctx: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM) (line|define)
+
+//------------------------------------------------ terminals
+W: /[^\n:=]*/           // Word
+S: /[^\!#@\n:=]/  // 最初の文字
+ONELINE: S W
+MULSEP: /\\\n[\t ]*/
+MULTILINE: (S W MULSEP)+ W
+COMMENT: "!" ANY
+
+ALIAS_SEP: "|"
+ALIAS.1: ONELINE ALIAS_SEP
+ANY: /[^\n]*/
+EMBED: "{" ONELINE "}"
+
+
+AUTHOR: "@author " ANY       //著者
+PUBLISHED: "@published " ANY // 第一出版日
+// 文脈
+THUS.1:    "->"   // 故に
+CAUSE.1:   "<-"   // なぜなら
+ANTONYM.1: "<->"  // 対義関係
+EXAMPLE.1: "e.g." // 例化
+GENERAL.1: "g.e." // 汎化 例化の逆順
+REF.1: "ref."     // 引用
+NUM.1: /\d+\./    // 連番
+
+WH: /[^\n]/ W // Word of Heading
+H1: /#/      ANY
+H2: /##/     ANY
+H3: /###/    ANY
+H4: /####/   ANY
+H5: /#####/  ANY
+H6: /######/ ANY
+
+_NL: /(\r?\n[\t ]*)+/
+%declare _INDENT _DEDENT
+%import common.WS_INLINE
+%import common.CNAME
+%ignore _NL COMMENT

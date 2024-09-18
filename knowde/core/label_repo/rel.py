@@ -19,7 +19,7 @@ from knowde.core.errors.domain import (
     CompleteNotFoundError,
     MultiHitError,
 )
-from knowde.core.repo.query import query_cypher
+from knowde.core.label_repo.query import query_cypher
 
 from .base import LBase, RelBase
 

@@ -3,9 +3,9 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
-from knowde.core.domain.container import Composite  # noqa: TCH001
+from knowde.core.domain.container import Composite
 from knowde.core.domain.domain import APIReturn
-from knowde.primitive.location.domain import Location  # noqa: TCH001
+from knowde.primitive.location.domain import Location
 
 
 class LocationAddParam(BaseModel, frozen=True):

@@ -4,7 +4,7 @@ from __future__ import annotations
 from uuid import uuid4
 
 from knowde.core import jst_now
-from knowde.core.repo.query import query_cypher
+from knowde.core.label_repo.query import query_cypher
 from knowde.primitive.time.domain.domain import (
     Day,
     Month,

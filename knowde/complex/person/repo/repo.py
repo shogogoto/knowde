@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Iterator, Optional
 
 from more_itertools import collapse
 
-from knowde.complex.person.domain import Person  # noqa: TCH001
+from knowde.complex.person.domain import Person
 from knowde.complex.person.repo.label import (
     LPerson,
     PersonMapper,
@@ -13,7 +13,7 @@ from knowde.complex.person.repo.label import (
     RelBirthUtil,
     RelDeathUtil,
 )
-from knowde.core.repo.query import query_cypher
+from knowde.core.label_repo.query import query_cypher
 from knowde.primitive.time.domain.const import SOCIETY_TIMELINE
 from knowde.primitive.time.domain.domain import Timeline, TimeValue
 from knowde.primitive.time.domain.period import Period
@@ -25,7 +25,7 @@ from knowde.primitive.time.repo.timeline import list_time
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from knowde.core.repo.base import RelBase
+    from knowde.core.label_repo.base import RelBase
     from knowde.primitive.time.domain.domain import Time
 
 

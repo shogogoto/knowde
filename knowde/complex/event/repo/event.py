@@ -5,11 +5,11 @@ from typing import TYPE_CHECKING, Any
 
 from more_itertools import collapse
 
-from knowde.complex.event.domain.event import Event  # noqa: TCH001
+from knowde.complex.event.domain.event import Event
 from knowde.complex.event.repo.label import EventMapper, EventUtil, LEvent, RelWhere
 from knowde.complex.event.repo.time import add_event_time
 from knowde.core.errors.domain import CompleteNotFoundError, MultiHitError
-from knowde.core.repo.query import excollapse, query_cypher
+from knowde.core.label_repo.query import excollapse, query_cypher
 from knowde.primitive.location.domain import Location
 from knowde.primitive.location.repo.label import LocUtil
 from knowde.primitive.time.domain.domain import Timeline, TimelineRoot

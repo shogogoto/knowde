@@ -13,8 +13,8 @@ from pydantic_partial.partial import create_partial_model
 
 from knowde.core.api.endpoint import router2get, router2put, router2tpost
 from knowde.core.domain import Entity
-from knowde.core.repo.base import LBase
-from knowde.core.repo.util import LabelUtil
+from knowde.core.label_repo.base import LBase
+from knowde.core.label_repo.util import LabelUtil
 from knowde.core.typeutil import inject_signature
 
 if TYPE_CHECKING:

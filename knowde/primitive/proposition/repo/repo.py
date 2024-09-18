@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from uuid import UUID  # noqa: TCH003
 
-from knowde.primitive.proposition.domain import Proposition  # noqa: TCH001
+from knowde.primitive.proposition.domain import Proposition
 
 from .label import PropositionUtil
 

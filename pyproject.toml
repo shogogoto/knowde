@@ -7,7 +7,7 @@ readme = "README.md"
 repository = "https://github/com/shogogoto/knowde"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.11,<4.0"
 fastapi = "^0.111.0"
 neomodel = "^5.3.2"
 uvicorn = "^0.24.0.post1"
@@ -24,6 +24,7 @@ compose = "^1.5.0"
 
 more-itertools = "^10.3.0"
 treelib = "^1.7.0"
+lark = "^1.2.2"
 [tool.poetry.group.dev.dependencies]
 taskipy = "^1.12.0"
 pytest = "^7.4.3"
@@ -67,6 +68,7 @@ ignore = [
   "B008", # default argに関数の返り値を使えない
   "A003", # Class attribute `help` is shadowing a Python builtin
   "PD011", # pandas-use-of-dot-values
+  "TCH001", # type-checking block
   ]
 unfixable = [
   "T201", # print
@@ -79,7 +81,8 @@ unsafe-fixes = true
 filterwarnings = [
   'ignore: pkg_resources is deprecated as an API:DeprecationWarning',
   "ignore: Relying on Driver's destructor to close the session is deprecated.",
-  "ignore: Using extra keyword arguments on `Field` is deprecated and will be removed."
+  "ignore: Using extra keyword arguments on `Field` is deprecated and will be removed.",
+  "ignore: datetime.datetime.utcfromtimestamp"
   ]
 
 [tool.poetry.scripts]

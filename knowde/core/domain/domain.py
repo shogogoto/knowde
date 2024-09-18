@@ -13,7 +13,7 @@ from knowde.core.timeutil import TZ
 if TYPE_CHECKING:
     from requests import Response
 
-    from knowde.core.repo import LBase
+    from knowde.core.label_repo import LBase
     from knowde.core.types import NeoModel
 
 

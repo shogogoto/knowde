@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from more_itertools import collapse
 
-from knowde.core.repo.query import query_cypher
+from knowde.core.label_repo.query import query_cypher
 from knowde.primitive.time.domain.domain import Timeline, TimelineRoot
 from knowde.primitive.time.repo.query import build_time_graph
 

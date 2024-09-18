@@ -6,7 +6,7 @@ from textwrap import indent
 import click
 from pydantic import BaseModel, Field
 
-from knowde.complex.definition.domain.domain import Definition  # noqa: TCH001
+from knowde.complex.definition.domain.domain import Definition
 from knowde.core.domain import APIReturn, Composite
 
 

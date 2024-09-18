@@ -7,9 +7,9 @@ from neomodel import StringProperty
 
 from knowde.complex.event.domain.event import Event
 from knowde.core.domain.domain import Entity
-from knowde.core.repo.base import LBase
-from knowde.core.repo.rel import RelUtil
-from knowde.core.repo.util import LabelUtil
+from knowde.core.label_repo.base import LBase
+from knowde.core.label_repo.rel import RelUtil
+from knowde.core.label_repo.util import LabelUtil
 from knowde.primitive.location.repo.label import LLocation
 from knowde.primitive.time.repo.label import LTime
 

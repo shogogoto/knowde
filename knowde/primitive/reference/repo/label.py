@@ -4,9 +4,9 @@ from __future__ import annotations
 from neomodel import DateProperty, One, StringProperty
 
 from knowde.core import LBase
-from knowde.core.repo.rel import RelUtil
-from knowde.core.repo.rel_label import RelOrder
-from knowde.core.repo.util import LabelUtil
+from knowde.core.label_repo.rel import RelUtil
+from knowde.core.label_repo.rel_label import RelOrder
+from knowde.core.label_repo.util import LabelUtil
 from knowde.primitive.reference.domain import (
     Book,
     Chapter,

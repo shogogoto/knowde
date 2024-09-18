@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Self
 from pydantic import BaseModel, model_validator
 
 from knowde.primitive.time.domain.const import SOCIETY_TIMELINE
-from knowde.primitive.time.domain.domain import TimeValue  # noqa: TCH001
+from knowde.primitive.time.domain.domain import TimeValue
 from knowde.primitive.time.domain.errors import (
     EndBeforeStartError,
     NotEqualTimelineError,

@@ -1,9 +1,9 @@
 """neomdel label."""
 from neomodel import IntegerProperty, StringProperty
 
-from knowde.core.repo.base import LBase
-from knowde.core.repo.rel import RelUtil
-from knowde.core.repo.util import LabelUtil
+from knowde.core.label_repo.base import LBase
+from knowde.core.label_repo.rel import RelUtil
+from knowde.core.label_repo.util import LabelUtil
 from knowde.primitive.time.domain.domain import YMD, Day, Month, TimelineRoot, Year
 
 

@@ -6,7 +6,7 @@ from uuid import UUID  # noqa: TCH003
 
 import networkx as nx
 
-from knowde.core.repo.query import query_cypher
+from knowde.core.label_repo.query import query_cypher
 from knowde.primitive.reference.domain import (
     ReferenceGraph,
     ReferenceTree,

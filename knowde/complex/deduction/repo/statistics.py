@@ -8,7 +8,7 @@ from knowde.complex.deduction.repo.label import (
     REL_CONCLUSION_LABEL,
     REL_PREMISE_LABEL,
 )
-from knowde.core.repo.query import query_cypher
+from knowde.core.label_repo.query import query_cypher
 
 if TYPE_CHECKING:
     from uuid import UUID

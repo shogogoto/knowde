@@ -5,7 +5,7 @@ from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel, Field, RootModel
 
-from knowde.core.types import NXGraph  # noqa: TCH001
+from knowde.core.types import NXGraph
 
 from .domain import APIReturn, Entity
 
