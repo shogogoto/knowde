@@ -52,9 +52,9 @@ def test_parse_heading() -> None:
     """
     t = transparse(_s, common_transformer())
     s1 = get_source(t, "source1")
-    assert s1.info.tuple == ("source1", "tanaka tarou", date(2020, 11, 11))
+    assert s1.about.tuple == ("source1", "tanaka tarou", date(2020, 11, 11))
     s2 = get_source(t, "source2")
-    assert s2.info.tuple == ("source2", None, None)
+    assert s2.about.tuple == ("source2", None, None)
 
     with pytest.raises(SourceMatchError):
         get_source(t, "source")

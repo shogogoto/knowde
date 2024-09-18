@@ -8,7 +8,7 @@ from typing import Self
 from lark import Token, Tree, Visitor
 from pydantic import BaseModel, Field
 
-from knowde.feature.parser.domain.domain import SourceInfo
+from knowde.feature.parser.domain.domain import SourceAbout
 from knowde.feature.parser.domain.errors import NameConflictError, SourceMatchError
 from knowde.feature.parser.domain.statement import Statement, StatementVisitor
 
@@ -37,14 +37,14 @@ class SourceVisitor(BaseModel, Visitor):
             raise SourceMatchError
         self.title = t.children[0].title
 
-    def source_info(self, t: Tree) -> None:  # noqa: D102
+    def source_about(self, t: Tree) -> None:  # noqa: D102
         if self.author is not None or self.published is not None:
             raise SourceMatchError
         self.author, self.published = t.children
 
     @property
-    def info(self) -> SourceInfo:  # noqa: D102
-        return SourceInfo(
+    def about(self) -> SourceAbout:  # noqa: D102
+        return SourceAbout(
             title=self.title,
             author=self.author,
             published=self.published,
@@ -62,14 +62,14 @@ def check_name_conflict(names: list[str]) -> None:
 class SourceTree(BaseModel, frozen=True, arbitrary_types_allowed=True):
     """１つの情報源."""
 
-    info: SourceInfo
+    about: SourceAbout
     tree: Tree = Field(description="h1をrootとする")
 
     @classmethod
     def create(cls, t: Tree) -> Self:  # noqa: D102
         v = SourceVisitor()
         v.visit(t)
-        self = cls(tree=t, info=v.info)
+        self = cls(tree=t, about=v.about)
         check_name_conflict(self.names)
         return self
 

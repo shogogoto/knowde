@@ -1,19 +1,20 @@
 """言明."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Self
+from enum import Enum, auto
+from typing import TYPE_CHECKING, Hashable, Self
 
 from lark import Token, Tree, Visitor
 from networkx import DiGraph
 from pydantic import BaseModel, Field
 
 from knowde.core.types import NXGraph
-from knowde.feature.parser.domain.context import (
-    EdgeType,
-    add_context,
-    ctxtree2tuple,
+from knowde.feature.parser.domain.domain import get_line
+from knowde.feature.parser.domain.errors import ContextMismatchError
+from knowde.feature.parser.domain.transformer.context import (
+    ContextType,
 )
-from knowde.feature.parser.domain.domain import Heading, get_line
+from knowde.feature.parser.domain.transformer.heading import Heading
 
 if TYPE_CHECKING:
     from lark.tree import Branch
@@ -27,6 +28,54 @@ def scan_statements(t: Tree) -> list[str]:
         return isinstance(b, Token) and b.type in types
 
     return [str(s) for s in t.scan_values(_pred)]
+
+
+class EdgeType(Enum):
+    """グラフ関係の種類."""
+
+    TO = auto()
+    ANTI = auto()
+    ABSTRACT = auto()
+    REF = auto()
+    LIST = auto()
+
+
+def ctxtree2tuple(t: Tree) -> tuple[ContextType, str]:
+    """Ctx tree to tuple."""
+    ctx_type: ContextType = t.children[0]
+    v = t.children[1]
+    return ctx_type, get_line(v)
+
+
+def add_context(g: DiGraph, x1: Hashable, x2: Hashable, t: ContextType) -> None:
+    """グラフに文脈関係を追加.
+
+    x1 -> x2
+    """
+    match t:
+        case ContextType.THUS:
+            g.add_edge(x1, x2, ctx=EdgeType.TO)
+        case ContextType.CAUSE:
+            g.add_edge(x2, x1, ctx=EdgeType.TO)
+        case ContextType.ANTONYM:
+            g.add_edge(x1, x2, ctx=EdgeType.ANTI)
+            g.add_edge(x2, x1, ctx=EdgeType.ANTI)
+        case ContextType.EXAMPLE:
+            g.add_edge(x2, x1, ctx=EdgeType.ABSTRACT)
+        case ContextType.GENERAL:
+            g.add_edge(x1, x2, ctx=EdgeType.ABSTRACT)
+        case ContextType.REF:
+            g.add_edge(x1, x2, ctx=EdgeType.REF)
+        case ContextType.NUM:
+            nums = [
+                (u, v, d)
+                for u, v, d in g.edges(data=True)
+                if d.get("ctx") == EdgeType.LIST
+            ]
+            i = len(nums)
+            g.add_edge(x1, x2, ctx=EdgeType.LIST, i=i)
+        case _:
+            raise ContextMismatchError
 
 
 class StatementVisitor(BaseModel, Visitor):
