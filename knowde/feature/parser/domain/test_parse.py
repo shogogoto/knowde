@@ -157,8 +157,7 @@ def test_parse_context() -> None:
     """
     _t = transparse(_s, common_transformer())
     _rt = RootTree(tree=_t).get_source("context")
-    _echo(_t)
-
+    # _echo(_t)
     st = _rt.statement("ctx1")
     assert st.thus == unordered(["b1", "b2"])
     assert st.cause == unordered(["c"])

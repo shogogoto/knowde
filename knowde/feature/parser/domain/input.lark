@@ -49,16 +49,15 @@ REF.1: "ref."     // 引用
 NUM.1: /\d+\./    // 連番
 
 WH: /[^\n]/ W // Word of Heading
-H1: /#/      WH
-H2: /##/     WH
-H3: /###/    WH
-H4: /####/   WH
-H5: /#####/  WH
-H6: /######/ WH
+H1: /#/      ANY
+H2: /##/     ANY
+H3: /###/    ANY
+H4: /####/   ANY
+H5: /#####/  ANY
+H6: /######/ ANY
 
 _NL: /(\r?\n[\t ]*)+/
 %declare _INDENT _DEDENT
 %import common.WS_INLINE
 %import common.CNAME
-//%ignore /\\[\t \f]*\r?\n/   // LINE_CONT
-//%ignore /[\t \f]+/          // WS
+%ignore _NL COMMENT
