@@ -13,6 +13,15 @@ from knowde.feature.parser.domain.errors import NameConflictError, SourceMatchEr
 from knowde.feature.parser.domain.statement import Statement, StatementVisitor
 
 
+def get_source(t: Tree, title: str) -> SourceTree:
+    """情報源とその知識ツリー."""
+    hs = t.find_data("h1")
+    ls = [h for h in hs if title in h.children[0].title]
+    if len(ls) == 1:
+        return SourceTree.create(ls[0])
+    raise SourceMatchError
+
+
 class SourceVisitor(BaseModel, Visitor):
     """構文木から情報源の情報を取り出す.
 

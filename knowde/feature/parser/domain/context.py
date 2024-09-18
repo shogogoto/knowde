@@ -4,12 +4,11 @@ from __future__ import annotations
 from enum import Enum, auto
 from typing import TYPE_CHECKING, Hashable
 
-from lark import Token, Transformer, Tree
-
 from knowde.feature.parser.domain.domain import get_line
 from knowde.feature.parser.domain.errors import ContextMismatchError
 
 if TYPE_CHECKING:
+    from lark import Tree
     from networkx import DiGraph
 
 
@@ -71,28 +70,3 @@ def add_context(g: DiGraph, x1: Hashable, x2: Hashable, t: ContextType) -> None:
             g.add_edge(x1, x2, ctx=EdgeType.LIST, i=i)
         case _:
             raise ContextMismatchError
-
-
-class TContext(Transformer):
-    """context transformer."""
-
-    def THUS(self, _tok: Token) -> ContextType:  # noqa: D102 N802
-        return ContextType.THUS
-
-    def CAUSE(self, _tok: Token) -> ContextType:  # noqa: D102 N802
-        return ContextType.CAUSE
-
-    def ANTONYM(self, _tok: Token) -> ContextType:  # noqa: D102 N802
-        return ContextType.ANTONYM
-
-    def EXAMPLE(self, _tok: Token) -> ContextType:  # noqa: D102 N802
-        return ContextType.EXAMPLE
-
-    def GENERAL(self, _tok: Token) -> ContextType:  # noqa: D102 N802
-        return ContextType.GENERAL
-
-    def REF(self, _tok: Token) -> ContextType:  # noqa: D102 N802
-        return ContextType.REF
-
-    def NUM(self, _tok: Token) -> ContextType:  # noqa: D102 N802
-        return ContextType.NUM

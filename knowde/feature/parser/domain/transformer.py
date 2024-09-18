@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from lark import Token, Transformer
 
 from knowde.core.timeutil import TZ
-from knowde.feature.parser.domain.context import TContext
+from knowde.feature.parser.domain.context import ContextType
 from knowde.feature.parser.domain.domain import Comment, Heading
 
 if TYPE_CHECKING:
@@ -88,3 +88,28 @@ class THeading(Transformer):
     def H6(self, tok: Token) -> Heading:  # noqa: N802
         """Markdown H6."""
         return self._common(tok, 6)
+
+
+class TContext(Transformer):
+    """context transformer."""
+
+    def THUS(self, _tok: Token) -> ContextType:  # noqa: D102 N802
+        return ContextType.THUS
+
+    def CAUSE(self, _tok: Token) -> ContextType:  # noqa: D102 N802
+        return ContextType.CAUSE
+
+    def ANTONYM(self, _tok: Token) -> ContextType:  # noqa: D102 N802
+        return ContextType.ANTONYM
+
+    def EXAMPLE(self, _tok: Token) -> ContextType:  # noqa: D102 N802
+        return ContextType.EXAMPLE
+
+    def GENERAL(self, _tok: Token) -> ContextType:  # noqa: D102 N802
+        return ContextType.GENERAL
+
+    def REF(self, _tok: Token) -> ContextType:  # noqa: D102 N802
+        return ContextType.REF
+
+    def NUM(self, _tok: Token) -> ContextType:  # noqa: D102 N802
+        return ContextType.NUM
