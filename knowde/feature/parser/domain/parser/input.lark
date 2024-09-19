@@ -17,24 +17,24 @@ h6: H6 _NL [_INDENT block* _DEDENT]
 
 
 ?stmt: (COMMENT|line|define|ctx) _NL
-line: ALIAS? ONELINE | MULTILINE
+line: ALIAS? (ONELINE | MULTILINE | name)
 name: ONELINE ("=" ONELINE)* ":"
 define: ALIAS? name line
 
 ?ctx: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM) (line|define)
 
 //------------------------------------------------ terminals
+ANY: /[^\n]*/
 W: /[^\n:=]*/           // Word
 S: /[^\!#@\n:=]/  // 最初の文字
+
 ONELINE: S W
 MULSEP: /\\\n[\t ]*/
 MULTILINE: (S W MULSEP)+ W
 COMMENT: "!" ANY
 
-ALIAS_SEP: "|"
-ALIAS.1: ONELINE ALIAS_SEP
-ANY: /[^\n]*/
-EMBED: "{" ONELINE "}"
+ALIAS.1: ONELINE "|"
+REFVAR: "{" ONELINE "}"
 
 
 AUTHOR: "@author " ANY       //著者

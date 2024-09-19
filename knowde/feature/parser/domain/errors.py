@@ -1,10 +1,6 @@
 """parse errors."""
 
 
-class TermConflictError(Exception):
-    """名前衝突."""
-
-
 class NameMismatchError(Exception):
     """nameの値が見つからないはずがない."""
 

@@ -3,9 +3,9 @@ from datetime import date
 
 import pytest
 
-from knowde.feature.parser.domain.errors import SourceMatchError
 from knowde.feature.parser.domain.parser.parser import transparse
 from knowde.feature.parser.domain.source import get_source
+from knowde.feature.parser.domain.source.domain import SourceMatchError
 
 
 def test_parse_heading() -> None:

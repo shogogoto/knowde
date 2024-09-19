@@ -1,14 +1,12 @@
 """情報源ツリー."""
 from __future__ import annotations
 
-from collections import Counter
 from datetime import date  # noqa: TCH003
 from typing import Self
 
-from lark import Token, Tree, Visitor
+from lark import Tree, Visitor
 from pydantic import BaseModel, Field
 
-from knowde.feature.parser.domain.errors import TermConflictError
 from knowde.feature.parser.domain.statement import Statement, StatementVisitor
 
 
@@ -70,14 +68,6 @@ class SourceVisitor(BaseModel, Visitor):
         )
 
 
-def check_name_conflict(names: list[str]) -> None:
-    """名前の重複チェック."""
-    dups = [(name, c) for name, c in Counter(names).items() if c > 1]
-    if len(dups) > 0:
-        msg = f"次の名前が重複しています:{dups}"
-        raise TermConflictError(msg)
-
-
 class SourceTree(BaseModel, frozen=True, arbitrary_types_allowed=True):
     """１つの情報源."""
 
@@ -88,29 +78,7 @@ class SourceTree(BaseModel, frozen=True, arbitrary_types_allowed=True):
     def create(cls, t: Tree) -> Self:  # noqa: D102
         v = SourceVisitor()
         v.visit(t)
-        self = cls(tree=t, about=v.about)
-        check_name_conflict(self.names)
-        return self
-
-    @property
-    def names(self) -> list[str]:
-        """名前一覧."""
-        ls = []
-        for n in self.tree.find_data("name"):
-            ls.extend(n.children)
-        return [str(e) for e in ls]
-
-    @property
-    def rep_names(self) -> list[str]:
-        """代表名一覧."""
-        ls = [d.children[0] for d in self.tree.find_data("name")]
-        return [str(e) for e in ls]
-
-    @property
-    def aliases(self) -> list[str]:
-        """代表名一覧."""
-        vs = self.tree.scan_values(lambda x: isinstance(x, Token) and x.type == "ALIAS")
-        return [str(e) for e in vs]
+        return cls(tree=t, about=v.about)
 
     def statement(self, s: str) -> Statement:
         """context付きの言明を返す."""

@@ -4,9 +4,14 @@
 import pytest
 from pytest_unordered import unordered
 
-from knowde.feature.parser.domain.errors import TermConflictError
 from knowde.feature.parser.domain.parser.parser import transparse
-from knowde.feature.parser.domain.source import get_source
+from knowde.feature.parser.domain.term.errors import TermConflictError
+from knowde.feature.parser.domain.term.visitor import (
+    check_name_conflict,
+    get_aliases,
+    get_names,
+    get_rep_names,
+)
 
 """
 用語グループ一覧
@@ -34,7 +39,7 @@ def test_conflict_name() -> None:
     """
     t = transparse(_s)
     with pytest.raises(TermConflictError):
-        _rt = get_source(t, "names")
+        check_name_conflict(get_names(t))
 
 
 def test_parse_define_and_names() -> None:
@@ -56,13 +61,12 @@ def test_parse_define_and_names() -> None:
             c
     """
     t = transparse(_s)
-    _rt = get_source(t, "names")
-    # _echo(t)
-    assert _rt.names == unordered(
+    # echo_tree(t)
+    assert get_names(t) == unordered(
         ["name1", "name2", "name21", "name3", "name31", "name32", "name4", "aname"],
     )
-    assert _rt.rep_names == unordered(["name1", "name2", "name3", "name4", "aname"])
-    assert _rt.aliases == unordered(["def_alias", "line_alias"])
+    assert get_rep_names(t) == unordered(["name1", "name2", "name3", "name4", "aname"])
+    assert get_aliases(t) == unordered(["def_alias", "line_alias"])
 
 
 # def test_find_names() -> None:
