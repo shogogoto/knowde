@@ -2,10 +2,13 @@
 from __future__ import annotations
 
 from datetime import date  # noqa: TCH003
+from functools import cached_property
 from typing import Self
 
 from lark import Tree  # noqa: TCH002
 from pydantic import BaseModel, Field, field_validator
+
+from knowde.feature.parser.domain.parser.transfomer.heading import Heading
 
 
 class SourceAbout(BaseModel, frozen=True):
@@ -58,9 +61,40 @@ class SourceTree(BaseModel, frozen=True, arbitrary_types_allowed=True):
         author, published = None, None
         if len(abouts) == 1:
             author, published = abouts[0].children
-        return SourceAbout(title=self.title, author=author, published=published)
+        return SourceAbout(
+            title=self.root.title,
+            author=author,
+            published=published,
+        )
 
     @property
-    def title(self) -> str:
-        """ソースタイトル."""
-        return self.tree.children[0].title
+    def root(self) -> Heading:  # noqa: D102
+        return self.tree.children[0]
+
+    def children(self, h: Heading) -> list[Heading]:
+        """最も近い階層の子見出しを取得."""
+        self._check_contains(h)
+        _children = [e for e in self.headings if e.level > h.level]
+        lvs = [c.level for c in _children]
+        lv = min(lvs) if len(lvs) != 0 else 999  # large enough dummy number
+        return [e for e in self.headings if e.level == lv]
+
+    def parent(self, h: Heading) -> Heading | None:
+        """最も近い親見出し."""
+        self._check_contains(h)
+        # parents = [e for e in self.headings if e.level < h.level]
+        # lv = min([c.level for c in parents])
+
+    @cached_property
+    def headings(self) -> list[Heading]:
+        """全ての見出し."""
+        types = [f"h{i}" for i in range(1, 7)]
+        return [t.children[0] for t in self.tree.find_pred(lambda x: x.data in types)]
+
+    def _check_contains(self, h: Heading) -> None:
+        if h not in self.headings:
+            msg = f"{h} is not contained"
+            raise KeyError(msg)
+
+    def _contains(self, h1: Heading, h2: Heading) -> None:
+        pass
