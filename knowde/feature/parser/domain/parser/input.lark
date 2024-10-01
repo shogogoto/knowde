@@ -1,9 +1,8 @@
 // 入力するテキストファイルの文法定義
 ?start:  _NL* unit*  // root
 
-?unit: block|h
+?unit: block|h1
 
-h: h1|h2|h3|h4|h5|h6
 h1: H1 _NL [_INDENT source_about? block* _DEDENT] (h2)*
 source_about: [AUTHOR _NL] [PUBLISHED _NL]
 
@@ -48,13 +47,13 @@ GENERAL.1: "g.e." // 汎化 例化の逆順
 REF.1: "ref."     // 引用
 NUM.1: /\d+\./    // 連番
 
-WH: /[^\n]/ W // Word of Heading
-H1: /#/      ANY
-H2: /##/     ANY
-H3: /###/    ANY
-H4: /####/   ANY
-H5: /#####/  ANY
-H6: /######/ ANY
+WH: /[^\n#]+/ // Word of Heading
+H1: /#/      WH
+H2: /##/     WH
+H3: /###/    WH
+H4: /####/   WH
+H5: /#####/  WH
+H6: /######/ WH
 
 _NL: /(\r?\n[\t ]*)+/
 %declare _INDENT _DEDENT

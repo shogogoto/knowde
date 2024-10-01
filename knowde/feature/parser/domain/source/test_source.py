@@ -2,10 +2,14 @@
 from datetime import date
 
 import pytest
+from lark import UnexpectedToken
 
 from knowde.feature.parser.domain.parser.parser import transparse
 from knowde.feature.parser.domain.parser.transfomer.heading import Heading
-from knowde.feature.parser.domain.source.domain import SourceMismatchError, SourceTree
+from knowde.feature.parser.domain.source.domain import (
+    SourceMismatchError,
+    SourceTree,
+)
 
 _s = r"""
     # source1
@@ -63,3 +67,36 @@ def test_heading_children() -> None:
     h6 = Heading(title="6.1", level=6)
     assert st.children(h5) == [h6]
     assert st.children(h6) == []
+
+
+# これはエラーにすべきか
+def test_no_step_heading() -> None:
+    """見出しが１段ずつ変わる."""
+    _s2 = r"""
+        # source1
+        ## h2
+        ### h3
+        #### h4
+        #### h4.2
+    """
+    t = transparse(_s2)
+    st = SourceTree.create(t, "source1")
+    h2 = Heading(title="h2", level=2)
+    h4 = Heading(title="h3", level=3)
+    h5 = Heading(title="h4", level=4)
+    h52 = Heading(title="h4.2", level=4)
+    assert st.children(st.root) == [h2]
+    assert st.children(h2) == [h4]
+    assert st.children(h4) == [h5, h52]
+
+
+def test_step_heading() -> None:
+    """見出しが１段以上変わる."""
+    _s2 = r"""
+        # src1
+        ### h3
+        ## h2
+        #### aaa
+    """
+    with pytest.raises(UnexpectedToken):
+        transparse(_s2)
