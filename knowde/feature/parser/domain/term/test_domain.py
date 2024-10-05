@@ -1,12 +1,11 @@
 """test term domain."""
-
+from __future__ import annotations
 
 import pytest
 
 from knowde.feature.parser.domain.term.domain import (
     Term,
     TermConflictError,
-    TermMergeError,
     TermSpace,
 )
 
@@ -34,9 +33,13 @@ def test_term_str() -> None:
     t1 = Term.create("X", "x1", "x2")
     t2 = Term.create("Y", "y1")
     t3 = Term.create("Z")
+    t4 = Term.create("U", alias="P1")
+    t5 = Term.create("V", "v1", alias="P1")
     assert str(t1) == "X(x1, x2)"
     assert str(t2) == "Y(y1)"
     assert str(t3) == "Z"
+    assert str(t4) == "U[P1]"
+    assert str(t5) == "V(v1)[P1]"
 
 
 def test_term_has_common() -> None:
@@ -53,21 +56,38 @@ def test_term_has_common() -> None:
     assert not t3.has(*t2.names)
 
 
-def test_term_allows_merge() -> None:
-    """用語の結合を許す場合."""
-    # 共通あり
-    t1 = Term.create("X", "x1")
-    t2 = Term.create("X", "x2")
-    assert t1.allows_merge(t2)
-
-    ## 共通あっても単一名はダメ
-    t3 = Term.create("X")
-    assert not t1.allows_merge(t3)
-    with pytest.raises(TermMergeError):
-        t1.merge(t3)
-    # 共通なし
-    t4 = Term.create("Y")
-    assert not t1.allows_merge(t4)
+@pytest.mark.parametrize(
+    ("names1", "names2", "alias1", "alias2", "expected"),
+    [
+        # aliasなし
+        (("X", "x1"), ("X", "x2"), None, None, True),  # 共通あり
+        (("X", "x1"), ("X"), None, None, True),  # 共通あり 片方単一名OK
+        (("X"), ("X"), None, None, False),  # 共通あり 両方単一名NG
+        (("X",), ("Y",), None, None, False),  # 共通なし
+        # alias 片方
+        (("X", "x1"), ("X", "x2"), "P1", None, True),  # 共通あり
+        (("X", "x1"), ("X"), "P1", None, True),  # 共通あり 片方単一名OK
+        (("X"), ("X"), "P1", None, False),  # 共通あり 両方単一名NG
+        (("X",), ("Y",), "P1", None, False),  # 共通なし
+        # alias 両方
+        (("X", "x1"), ("X", "x2"), "P1", "P2", False),  # 共通あり
+        (("X", "x1"), ("X"), "P1", "P2", False),  # 共通あり 片方単一名OK
+        (("X"), ("X"), "P1", "P2", False),  # 共通あり 両方単一名NG
+        (("X",), ("Y",), "P1", "P2", False),  # 共通なし
+    ],
+)
+def test_term_with_alias_allows_merge(
+    names1: tuple[str],
+    names2: tuple[str],
+    alias1: str,
+    alias2: str,
+    expected: bool,  # noqa: FBT001
+) -> None:
+    """別名ありの用語での結合の許可."""
+    t1 = Term.create(*names1, alias=alias1)
+    t2 = Term.create(*names2, alias=alias2)
+    assert t1.allows_merge(t2) == expected
+    assert t2.allows_merge(t1) == expected
 
 
 def test_termspace_add() -> None:
@@ -89,7 +109,3 @@ def test_termspace_add() -> None:
     t3 = Term.create("Y")
     s.add(t3)
     assert len(s) == 2  # noqa: PLR2004
-
-    # 共通あっても単一名はダメ
-    with pytest.raises(TermMergeError):
-        s.add(Term.create("X"))

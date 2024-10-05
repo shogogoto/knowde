@@ -11,6 +11,11 @@ class Term(BaseModel, frozen=True):
     """用語 名前のあつまり."""
 
     names: list[str] = Field(default_factory=list, min_length=1)
+    alias: str | None = Field(
+        default=None,
+        title="別名",
+        description="参照用の無意味な記号",
+    )
 
     @field_validator("names")
     @classmethod
@@ -28,20 +33,23 @@ class Term(BaseModel, frozen=True):
         return self.names[0]
 
     @property
-    def aliases(self) -> list[str]:
+    def subnames(self) -> list[str]:
         """別名リスト."""
         return self.names[1:]
 
     @classmethod
-    def create(cls, *vs: str) -> Self:  # noqa: D102
-        return cls(names=list(vs))
+    def create(cls, *vs: str, alias: str | None = None) -> Self:  # noqa: D102
+        return cls(names=list(vs), alias=alias)
 
     def __str__(self) -> str:
         """Display for user."""
-        al = ", ".join(self.aliases)
-        if len(al) > 0:
-            al = f"({al})"
-        return f"{self.rep}{al}"
+        subs = ", ".join(self.subnames)
+        if len(subs) > 0:
+            subs = f"({subs})"
+        al = ""
+        if self.alias is not None:
+            al = f"[{self.alias}]"
+        return f"{self.rep}{subs}{al}"
 
     def has(self, *names: str) -> bool:
         """同じ名前を持つ."""
@@ -50,23 +58,17 @@ class Term(BaseModel, frozen=True):
         common = s1.intersection(s2)
         return len(common) > 0
 
-    def has_only_name(self) -> bool:
-        """単名を持つ."""
-        return len(self.names) == 1
-
     def allows_merge(self, other: Term) -> bool:
         """合併を許すか否か."""
-        # 共通なし -> 合併しない
-        # 共通あり
-        #   完全一致 -> False
-        #     -> True
         if not self.has(*other.names):
             return False
-        # if self == other:
-        #     return False
-        # return True
-        has_only = self.has_only_name() or other.has_only_name()
-        return not has_only
+        if set(self.names) == set(other.names):
+            return False
+        if self.alias and other.alias:
+            return False
+        only_self = len(self.names) == 1 or len(other.names) > 1
+        only_other = len(self.names) > 1 or len(other.names) == 1
+        return only_self or only_other
 
     def merge(self, other: Term) -> Term:
         """名前を併せた用語へ."""
