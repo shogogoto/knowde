@@ -31,6 +31,8 @@ class Term(BaseModel, frozen=True):
     @property
     def rep(self) -> str:
         """代表名."""
+        if len(self.names) == 0:
+            return ""
         return self.names[0]
 
     @property
@@ -80,6 +82,10 @@ class Term(BaseModel, frozen=True):
         diff = s2.difference(s1)
         return Term(names=self.names + list(diff))
 
+    def has_only_alias(self) -> bool:
+        """別名しか持たない."""
+        return len(self.names) == 0 and self.alias is not None
+
     @property
     def d(self) -> dict[str, Self]:
         """HashMapによる検索に使えるかな."""
@@ -108,8 +114,9 @@ class TermSpace(BaseModel):
     def __getitem__(self, i: int) -> Term:  # noqa: D105
         return self.terms[i]
 
-    def __len__(self) -> int:  # noqa: D105
-        return len(self.terms)
+    def __len__(self) -> int:
+        """名前を持つ用語の数."""
+        return len([t for t in self.terms if not t.has_only_alias()])
 
     def add(self, t: Term) -> None:
         """名前."""

@@ -29,7 +29,6 @@ ANY: /[^\n]*/
 W: /[^\n:=\$]/     // Word
 S: /[^\!#@\n:=\$]/  // 最初の文字
 F: /\$[^\n\$]+\$/
-NAME: /[^\n:=\$]/     // Word
 
 //ONELINE: S W*
 ONELINE: (F|S) (F|W)*
@@ -37,7 +36,7 @@ MULSEP: /\\\n[\t ]*/
 MULTILINE.1: (ONELINE MULSEP)+ ONELINE
 COMMENT: "!" ANY
 
-ALIAS.1: ONELINE "|"
+ALIAS.2: ONELINE "|"
 REFVAR: "{" ONELINE "}"
 
 

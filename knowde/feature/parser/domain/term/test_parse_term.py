@@ -2,7 +2,6 @@
 
 
 import pytest
-from pytest_unordered import unordered
 
 from knowde.feature.parser.domain.parser.parser import transparse
 from knowde.feature.parser.domain.term.domain import TermConflictError
@@ -38,16 +37,8 @@ def test_conflict_name() -> None:
         get_termspace(t)
 
 
-# 用語空間の合併レベルを指定するか
-#  どういうレイアウトで用語一覧を見たいか
-#  バリエーションはあるべきか
-def test_parse_names() -> None:
-    """用語一覧.
-
-    nameのみ
-    line
-    define
-    """
+def test_parse_terms() -> None:
+    """用語一覧."""
     _s = r"""
         # h1
           n1=n11:
@@ -55,16 +46,29 @@ def test_parse_names() -> None:
           P2 |def=d1: def
         ## h2
           n2=n21:
-          P3 |line2=l2:
-
+          P3 |line2=l2=l21:
           P4 |def2=d2: def
           P5 |aaa
     """
     t = transparse(_s)
-    echo_tree(t)
     x = get_termspace(t)
-    assert x.aliases == unordered([f"P{i}" for i in range(1, 6)])
+    assert len(x) == 6  # noqa: PLR2004
+    assert len(x.aliases) == 5  # noqa: PLR2004
 
 
-# def test_find_names() -> None:
-#     """検索."""
+def test_formula() -> None:
+    """数式に含まれる=は無視して文字列として扱いたい."""
+    _s = r"""
+        # h1
+          量化子の順序によって意味が変わる
+            n1: $\forall{x}\exists{y}R(x, y=t)$
+            n2=n22: xx$R(x, y=t)$xx
+            P1 |xx$y=t$xx
+            P2 |xx$y=t$xx \
+                    xxxx
+    """
+    t = transparse(_s)
+    x = get_termspace(t)
+    echo_tree(t)
+    assert len(x) == 2  # noqa: PLR2004
+    assert len(x.aliases) == 2  # noqa: PLR2004

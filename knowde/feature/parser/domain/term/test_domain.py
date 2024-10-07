@@ -35,11 +35,13 @@ def test_term_str() -> None:
     t3 = Term.create("Z")
     t4 = Term.create("U", alias="P1")
     t5 = Term.create("V", "v1", alias="P1")
+    t6 = Term.create(alias="P1")
     assert str(t1) == "X(x1, x2)"
     assert str(t2) == "Y(y1)"
     assert str(t3) == "Z"
     assert str(t4) == "U[P1]"
     assert str(t5) == "V(v1)[P1]"
+    assert str(t6) == "[P1]"
 
 
 def test_term_has_common() -> None:
@@ -74,6 +76,9 @@ def test_term_has_common() -> None:
         (("X", "x1"), ("X"), "P1", "P2", False),  # 共通あり 片方単一名OK
         (("X"), ("X"), "P1", "P2", False),  # 共通あり 両方単一名NG
         (("X",), ("Y",), "P1", "P2", False),  # 共通なし
+        # aliasのみ
+        ((), (), "P1", None, False),
+        ((), (), "P1", "P2", False),
     ],
 )
 def test_term_with_alias_allows_merge(
@@ -101,11 +106,12 @@ def test_termspace_add() -> None:
     assert len(s) == 1
     assert s[0] == Term.create("X", "x1", "x2")
 
-    # 重複の追加はエラー
-    with pytest.raises(TermConflictError):
+    with pytest.raises(TermConflictError):  # 重複の追加はエラー
         s.add(t2)
 
     # 共通なしの追加
     t3 = Term.create("Y")
     s.add(t3)
     assert len(s) == 2  # noqa: PLR2004
+
+    # aliasのみ

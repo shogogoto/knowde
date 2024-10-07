@@ -18,14 +18,6 @@ class TermVisitor(HeadingVisitor):
     """用語を集める."""
 
     space: TermSpace = Field(default_factory=TermSpace)
-    # spaces: dict[Heading | None, TermSpace] = Field(default_factory=dict)
-
-    # @property
-    # def _space(self) -> TermSpace:
-    #     """Get current space."""
-    #     if self.current not in self.spaces:
-    #         self.spaces[self.current] = TermSpace()
-    #     return self.spaces[self.current]
 
     def alias_line(self, t: Tree) -> None:  # noqa: D102
         alias = t.children[0]
