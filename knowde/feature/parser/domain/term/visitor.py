@@ -1,40 +1,63 @@
 """用語Visitor."""
 from __future__ import annotations
 
-from collections import Counter
-from typing import TYPE_CHECKING
+from lark import Token, Tree
+from pydantic import Field
 
-from lark import Token
-
-from knowde.feature.parser.domain.term.errors import TermConflictError
-
-if TYPE_CHECKING:
-    from lark import Tree
-
-
-def check_name_conflict(names: list[str]) -> None:
-    """名前の重複チェック."""
-    dups = [(name, c) for name, c in Counter(names).items() if c > 1]
-    if len(dups) > 0:
-        msg = f"次の名前が重複しています:{dups}"
-        raise TermConflictError(msg)
+from knowde.feature.parser.domain.parser.const import ALIAS_TYPE
+from knowde.feature.parser.domain.parser.utils import HeadingVisitor
+from knowde.feature.parser.domain.term.domain import (
+    Term,
+    TermConflictError,
+    TermMergeError,
+    TermSpace,
+)
 
 
-def get_names(t: Tree) -> list[str]:
-    """名前一覧."""
-    ls = []
-    for n in t.find_data("name"):
-        ls.extend(n.children)
-    return [str(e) for e in ls]
+class TermVisitor(HeadingVisitor):
+    """用語を集める."""
+
+    space: TermSpace = Field(default_factory=TermSpace)
+    # spaces: dict[Heading | None, TermSpace] = Field(default_factory=dict)
+
+    # @property
+    # def _space(self) -> TermSpace:
+    #     """Get current space."""
+    #     if self.current not in self.spaces:
+    #         self.spaces[self.current] = TermSpace()
+    #     return self.spaces[self.current]
+
+    def alias_line(self, t: Tree) -> None:  # noqa: D102
+        alias = t.children[0]
+        term = Term(alias=alias)
+        self._add_term(term)
+
+    def name(self, t: Tree) -> None:  # noqa: D102
+        alias, names = self._get_alias_names(t)
+        term = Term(names=names, alias=alias)
+        self._add_term(term)
+
+    def _add_term(self, term: Term) -> None:
+        try:
+            self.space.add(term)
+        except TermMergeError as e:
+            msg = f"{self.current}で{e}"
+            raise TermMergeError(msg) from e
+        except TermConflictError as e:
+            msg = f"{self.current}で{e}"
+            raise TermConflictError(msg) from e
+
+    def _get_alias_names(self, t: Tree) -> tuple[str | None, list[str]]:
+        """aliasを取得."""
+        c = t.children
+        f = c[0]
+        if isinstance(f, Token) and f.type == ALIAS_TYPE:
+            return f, c[1:]
+        return None, c
 
 
-def get_rep_names(t: Tree) -> list[str]:
-    """代表名一覧."""
-    ls = [d.children[0] for d in t.find_data("name")]
-    return [str(e) for e in ls]
-
-
-def get_aliases(t: Tree) -> list[str]:
-    """代表名一覧."""
-    vs = t.scan_values(lambda x: isinstance(x, Token) and x.type == "ALIAS")
-    return [str(e) for e in vs]
+def get_termspace(t: Tree) -> TermSpace:
+    """用語空間を抜き出す."""
+    v = TermVisitor()
+    v.visit_topdown(t)
+    return v.space

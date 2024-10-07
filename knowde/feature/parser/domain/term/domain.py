@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from copy import deepcopy
 from typing import Self
 
 from pydantic import BaseModel, Field, field_validator
@@ -10,7 +11,7 @@ from pydantic import BaseModel, Field, field_validator
 class Term(BaseModel, frozen=True):
     """用語 名前のあつまり."""
 
-    names: list[str] = Field(default_factory=list, min_length=1)
+    names: list[str] = Field(default_factory=list)
     alias: str | None = Field(
         default=None,
         title="別名",
@@ -123,6 +124,12 @@ class TermSpace(BaseModel):
             self.terms.append(c.merge(t))
         self.origins.append(t)
 
+    def merge(self, other: Self) -> Self:  # noqa: D102
+        s = deepcopy(self)
+        for t in other.terms:
+            s.add(t)
+        return s
+
     def common(self, t: Term) -> Term | None:
         """共通する名を持つ用語があれば返す."""
         ls = [v for v in self.terms if t.has(*v.names)]
@@ -133,3 +140,8 @@ class TermSpace(BaseModel):
                 return ls[0]
             case _:
                 raise TermConflictError
+
+    @property
+    def aliases(self) -> list[str]:
+        """別名一覧."""
+        return [t.alias for t in self.terms if t.alias]

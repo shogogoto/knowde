@@ -5,13 +5,9 @@ import pytest
 from pytest_unordered import unordered
 
 from knowde.feature.parser.domain.parser.parser import transparse
-from knowde.feature.parser.domain.term.errors import TermConflictError
-from knowde.feature.parser.domain.term.visitor import (
-    check_name_conflict,
-    get_aliases,
-    get_names,
-    get_rep_names,
-)
+from knowde.feature.parser.domain.term.domain import TermConflictError
+from knowde.feature.parser.domain.term.visitor import get_termspace
+from knowde.feature.parser.domain.testing import echo_tree
 
 """
 用語グループ一覧
@@ -34,39 +30,40 @@ def test_conflict_name() -> None:
     """
     _s = r"""
         # names
-            name1: def1
-            name1: def1
+            name1:
+            name1:
     """
     t = transparse(_s)
     with pytest.raises(TermConflictError):
-        check_name_conflict(get_names(t))
+        get_termspace(t)
 
 
-def test_parse_define_and_names() -> None:
+# 用語空間の合併レベルを指定するか
+#  どういうレイアウトで用語一覧を見たいか
+#  バリエーションはあるべきか
+def test_parse_names() -> None:
     """用語一覧.
 
-    紐づく言明も
-    逆に言明に引用された用語の表示
+    nameのみ
+    line
+    define
     """
     _s = r"""
-        # names
-            name1: def1
-            name2=name21: def2
-            name3 = name31 = name32: def2
-            name4: defdef\
-                defufu
-                child
-            def_alias|aname: defdefdefdef
-            line_alias|xxx
-            c
+        # h1
+          n1=n11:
+          P1 |line=l1:
+          P2 |def=d1: def
+        ## h2
+          n2=n21:
+          P3 |line2=l2:
+
+          P4 |def2=d2: def
+          P5 |aaa
     """
     t = transparse(_s)
-    # echo_tree(t)
-    assert get_names(t) == unordered(
-        ["name1", "name2", "name21", "name3", "name31", "name32", "name4", "aname"],
-    )
-    assert get_rep_names(t) == unordered(["name1", "name2", "name3", "name4", "aname"])
-    assert get_aliases(t) == unordered(["def_alias", "line_alias"])
+    echo_tree(t)
+    x = get_termspace(t)
+    assert x.aliases == unordered([f"P{i}" for i in range(1, 6)])
 
 
 # def test_find_names() -> None:

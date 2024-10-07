@@ -15,21 +15,26 @@ h6: H6 _NL [_INDENT block* _DEDENT]
 ?block: stmt [_INDENT (block)+ _DEDENT]
 
 
-?stmt: (COMMENT|line|define|ctx) _NL
-line: ALIAS? (ONELINE | MULTILINE | name)
-name: ONELINE ("=" ONELINE)* ":"
-define: ALIAS? name line
+?stmt: (COMMENT|line|alias_line|define|name|ctx) _NL
+line: (ONELINE|MULTILINE)
+alias_line: ALIAS line
+name: ALIAS? ONELINE ("=" ONELINE)* ":"
+define: name line
 
-?ctx: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM) (line|define)
+
+?ctx: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM|SIMILAR) (line|define|name)
 
 //------------------------------------------------ terminals
 ANY: /[^\n]*/
-W: /[^\n:=]*/           // Word
-S: /[^\!#@\n:=]/  // 最初の文字
+W: /[^\n:=\$]/     // Word
+S: /[^\!#@\n:=\$]/  // 最初の文字
+F: /\$[^\n\$]+\$/
+NAME: /[^\n:=\$]/     // Word
 
-ONELINE: S W
+//ONELINE: S W*
+ONELINE: (F|S) (F|W)*
 MULSEP: /\\\n[\t ]*/
-MULTILINE: (S W MULSEP)+ W
+MULTILINE.1: (ONELINE MULSEP)+ ONELINE
 COMMENT: "!" ANY
 
 ALIAS.1: ONELINE "|"
@@ -46,6 +51,7 @@ EXAMPLE.1: "e.g." // 例化
 GENERAL.1: "g.e." // 汎化 例化の逆順
 REF.1: "ref."     // 引用
 NUM.1: /\d+\./    // 連番
+SIMILAR.1: "~="   // 類似
 
 WH: /[^\n#]+/ // Word of Heading
 H1: /#/      WH

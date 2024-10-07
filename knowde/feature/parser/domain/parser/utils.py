@@ -2,8 +2,9 @@
 from __future__ import annotations
 
 from lark import Token, Tree, Visitor
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
+from knowde.core.types import NXGraph
 from knowde.feature.parser.domain.parser.transfomer.heading import Heading
 
 from .const import LINE_TYPES
@@ -28,6 +29,7 @@ class HeadingVisitor(BaseModel, Visitor):
     """どの見出しでのvisitか把握."""
 
     current: Heading | None = None
+    G: NXGraph = Field(default_factory=NXGraph)
 
     def h1(self, t: Tree) -> None:  # noqa: D102
         self._set_heading(t)
@@ -48,4 +50,9 @@ class HeadingVisitor(BaseModel, Visitor):
         self._set_heading(t)
 
     def _set_heading(self, t: Tree) -> None:
+        prev = self.current
         self.current = t.children[0]
+        if prev is None:
+            self.G.add_node(self.current)
+        else:
+            self.G.add_edge(prev, self.current)
