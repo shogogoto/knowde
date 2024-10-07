@@ -22,7 +22,7 @@ name: ALIAS? ONELINE ("=" ONELINE)* ":"
 define: name line
 
 
-?ctx: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM|SIMILAR) (line|define|name)
+?ctx.1: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM|SIMILAR) (line|alias_line|define|name)
 
 //------------------------------------------------ terminals
 ANY: /[^\n]*/

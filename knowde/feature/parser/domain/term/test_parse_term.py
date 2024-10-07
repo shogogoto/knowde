@@ -63,9 +63,10 @@ def test_formula() -> None:
           量化子の順序によって意味が変わる
             n1: $\forall{x}\exists{y}R(x, y=t)$
             n2=n22: xx$R(x, y=t)$xx
-            P1 |xx$y=t$xx
-            P2 |xx$y=t$xx \
-                    xxxx
+        ## h2
+          P1 |xx$y=t$xx
+          P2 |xx$y=t$xx \
+                  xxxx
     """
     t = transparse(_s)
     x = get_termspace(t)

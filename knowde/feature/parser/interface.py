@@ -3,13 +3,16 @@ from typing import IO
 
 import click
 
+from knowde.feature.parser.domain.parser.parser import transparse
+from knowde.feature.parser.domain.term.visitor import get_termspace
+
 
 @click.command("parse")
-@click.argument(
-    "stdin",
-    type=click.File("r"),
-    default="-",
-)
+@click.argument("stdin", type=click.File("r"), default="-")
 def parse_cmd(stdin: IO) -> None:
     """Stdin."""
-    click.echo(stdin.read())
+    tree = transparse(stdin.read())
+    # print(tree.pretty())
+    s = get_termspace(tree)
+    for t in s.terms:
+        click.echo(str(t))
