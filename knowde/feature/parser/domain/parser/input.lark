@@ -15,15 +15,15 @@ h6: H6 _NL [_INDENT block* _DEDENT]
 ?block: stmt [_INDENT (block)+ _DEDENT]
 
 
-?stmt: (COMMENT|line|alias_line|define|name|ctx) _NL
+?stmt: (COMMENT|declare|ctx) _NL
 line: (ONELINE|MULTILINE)
-alias_line: ALIAS line
+alias_line.1: ALIAS line
 name: ALIAS? ONELINE ("=" ONELINE)* ":"
 define: name line
+?declare: line|alias_line|define|name
 
 
-?ctx.1: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM|SIMILAR) (line|alias_line|define|name)
-
+?ctx.2: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM|SIMILAR) declare
 //------------------------------------------------ terminals
 ANY: /[^\n]*/
 W: /[^\n:=\$]/     // Word
@@ -33,24 +33,27 @@ F: /\$[^\n\$]+\$/
 //ONELINE: S W*
 ONELINE: (F|S) (F|W)*
 MULSEP: /\\\n[\t ]*/
-MULTILINE.1: (ONELINE MULSEP)+ ONELINE
+MULTILINE: (ONELINE MULSEP)+ ONELINE
 COMMENT: "!" ANY
 
-ALIAS.2: ONELINE "|"
+ALIAS.1: ONELINE "|"
 REFVAR: "{" ONELINE "}"
 
 
 AUTHOR: "@author " ANY       //著者
 PUBLISHED: "@published " ANY // 第一出版日
 // 文脈
-THUS.1:    "->"   // 故に
-CAUSE.1:   "<-"   // なぜなら
-ANTONYM.1: "<->"  // 対義関係
-EXAMPLE.1: "e.g." // 例化
-GENERAL.1: "g.e." // 汎化 例化の逆順
-REF.1: "ref."     // 引用
-NUM.1: /\d+\./    // 連番
-SIMILAR.1: "~="   // 類似
+THUS.2:    "->"   // 故に
+CAUSE.2:   "<-"   // なぜなら
+ANTONYM.2: "<->"  // 対義関係
+EXAMPLE.2: "e.g." // 例化
+GENERAL.2: "g.e." // 汎化 例化の逆順
+REF.2: "ref."     // 引用
+NUM.2: /\d+\./    // 連番
+SIMILAR.2: "~="   // 類似
+BY.2: "by."       // アクターは誰
+WHEN.2: "when."   // いつ
+
 
 WH: /[^\n#]+/ // Word of Heading
 H1: /#/      WH

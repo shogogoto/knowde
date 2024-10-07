@@ -152,3 +152,7 @@ class TermSpace(BaseModel):
     def aliases(self) -> list[str]:
         """別名一覧."""
         return [t.alias for t in self.terms if t.alias]
+
+    def pretty(self) -> str:
+        """一覧文字列."""
+        return "\n".join([str(t) for t in self.terms])

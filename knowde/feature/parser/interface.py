@@ -12,7 +12,5 @@ from knowde.feature.parser.domain.term.visitor import get_termspace
 def parse_cmd(stdin: IO) -> None:
     """Stdin."""
     tree = transparse(stdin.read())
-    # print(tree.pretty())
     s = get_termspace(tree)
-    for t in s.terms:
-        click.echo(str(t))
+    click.echo(s.pretty())

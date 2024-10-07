@@ -2,11 +2,11 @@
 
 
 import pytest
+from pytest_unordered import unordered
 
 from knowde.feature.parser.domain.parser.parser import transparse
 from knowde.feature.parser.domain.term.domain import TermConflictError
 from knowde.feature.parser.domain.term.visitor import get_termspace
-from knowde.feature.parser.domain.testing import echo_tree
 
 """
 用語グループ一覧
@@ -67,9 +67,10 @@ def test_formula() -> None:
           P1 |xx$y=t$xx
           P2 |xx$y=t$xx \
                   xxxx
+            <-> J13 |サールの反証: {平叙文}から{評価文}を結論する論証
+            e.g. P41|「XXXならば明日ヒョウが降るよw」
     """
     t = transparse(_s)
     x = get_termspace(t)
-    echo_tree(t)
-    assert len(x) == 2  # noqa: PLR2004
-    assert len(x.aliases) == 2  # noqa: PLR2004
+    assert len(x) == 3  # noqa: PLR2004
+    assert x.aliases == unordered(["P1", "P2", "J13", "P41"])
