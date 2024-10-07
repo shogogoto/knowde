@@ -1,19 +1,18 @@
 """言明."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Self
+from enum import Enum, auto
+from typing import TYPE_CHECKING, Hashable, Self
 
-from lark import Token, Tree, Visitor
+from lark import Token, Tree
 from networkx import DiGraph
 from pydantic import BaseModel, Field
 
 from knowde.core.types import NXGraph
-from knowde.feature.parser.domain.context import (
-    EdgeType,
-    add_context,
-    ctxtree2tuple,
-)
-from knowde.feature.parser.domain.domain import Heading, get_line
+from knowde.feature.parser.domain.errors import ContextMismatchError
+from knowde.feature.parser.domain.parser.const import LINE_TYPES
+from knowde.feature.parser.domain.parser.transfomer.context import ContextType
+from knowde.feature.parser.domain.parser.utils import HeadingVisitor, get_line
 
 if TYPE_CHECKING:
     from lark.tree import Branch
@@ -21,18 +20,64 @@ if TYPE_CHECKING:
 
 def scan_statements(t: Tree) -> list[str]:
     """言明の文字列を抜き出す."""
-    types = ["ONELINE", "MULTILINE"]
 
     def _pred(b: Branch) -> bool:
-        return isinstance(b, Token) and b.type in types
+        return isinstance(b, Token) and b.type in LINE_TYPES
 
     return [str(s) for s in t.scan_values(_pred)]
 
 
-class StatementVisitor(BaseModel, Visitor):
+class EdgeType(Enum):
+    """グラフ関係の種類."""
+
+    TO = auto()
+    ANTI = auto()
+    ABSTRACT = auto()
+    REF = auto()
+    LIST = auto()
+
+
+def ctxtree2tuple(t: Tree) -> tuple[ContextType, str]:
+    """Ctx tree to tuple."""
+    ctx_type: ContextType = t.children[0]
+    v = t.children[1]
+    return ctx_type, get_line(v)
+
+
+def add_context(g: DiGraph, x1: Hashable, x2: Hashable, t: ContextType) -> None:
+    """グラフに文脈関係を追加.
+
+    x1 -> x2
+    """
+    match t:
+        case ContextType.THUS:
+            g.add_edge(x1, x2, ctx=EdgeType.TO)
+        case ContextType.CAUSE:
+            g.add_edge(x2, x1, ctx=EdgeType.TO)
+        case ContextType.ANTONYM:
+            g.add_edge(x1, x2, ctx=EdgeType.ANTI)
+            g.add_edge(x2, x1, ctx=EdgeType.ANTI)
+        case ContextType.EXAMPLE:
+            g.add_edge(x2, x1, ctx=EdgeType.ABSTRACT)
+        case ContextType.GENERAL:
+            g.add_edge(x1, x2, ctx=EdgeType.ABSTRACT)
+        case ContextType.REF:
+            g.add_edge(x1, x2, ctx=EdgeType.REF)
+        case ContextType.NUM:
+            nums = [
+                (u, v, d)
+                for u, v, d in g.edges(data=True)
+                if d.get("ctx") == EdgeType.LIST
+            ]
+            i = len(nums)
+            g.add_edge(x1, x2, ctx=EdgeType.LIST, i=i)
+        case _:
+            raise ContextMismatchError
+
+
+class StatementVisitor(HeadingVisitor):
     """言明の処理."""
 
-    current_heading: Heading | None = None
     g: NXGraph = Field(default_factory=DiGraph, description="言明ネットワーク")
 
     def block(self, t: Tree) -> None:
@@ -68,27 +113,6 @@ class StatementVisitor(BaseModel, Visitor):
         # print(get_names(t))
         # print(get_line(t))
 
-    def h1(self, t: Tree) -> None:  # noqa: D102
-        self._set_heading(t)
-
-    def h2(self, t: Tree) -> None:  # noqa: D102
-        self._set_heading(t)
-
-    def h3(self, t: Tree) -> None:  # noqa: D102
-        self._set_heading(t)
-
-    def h4(self, t: Tree) -> None:  # noqa: D102
-        self._set_heading(t)
-
-    def h5(self, t: Tree) -> None:  # noqa: D102
-        self._set_heading(t)
-
-    def h6(self, t: Tree) -> None:  # noqa: D102
-        self._set_heading(t)
-
-    def _set_heading(self, t: Tree) -> None:
-        self.current_heading = t.children[0]
-
 
 class Statement(BaseModel, frozen=True):
     """言明."""
@@ -97,11 +121,13 @@ class Statement(BaseModel, frozen=True):
     g: NXGraph
 
     @classmethod
-    def create(cls, value: str, g: NXGraph) -> Self:  # noqa: D102
-        if value not in g:
+    def create(cls, value: str, t: Tree) -> Self:  # noqa: D102
+        v = StatementVisitor()
+        v.visit(t)
+        if value not in v.g:
             msg = "Not Found!"
             raise KeyError(msg)
-        return cls(value=value, g=g)
+        return cls(value=value, g=v.g)
 
     @property
     def thus(self) -> list[str]:  # noqa: D102
