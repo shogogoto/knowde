@@ -9,10 +9,10 @@ from networkx import DiGraph
 from pydantic import BaseModel, Field
 
 from knowde.core.types import NXGraph
-from knowde.feature.parser.domain.errors import ContextMismatchError
 from knowde.feature.parser.domain.parser.const import LINE_TYPES
 from knowde.feature.parser.domain.parser.transfomer.context import ContextType
 from knowde.feature.parser.domain.parser.utils import HeadingVisitor, get_line
+from knowde.feature.parser.domain.statement.errors import ContextMismatchError
 
 if TYPE_CHECKING:
     from lark.tree import Branch
