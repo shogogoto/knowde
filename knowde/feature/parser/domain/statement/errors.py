@@ -1,9 +1,13 @@
-"""parse errors."""
+"""自作エラー."""
 
 
-class NameMismatchError(Exception):
-    """nameの値が見つからないはずがない."""
+class MarkContainsMarkError(Exception):
+    """マーク内にマークを含む."""
 
 
-class ContextMismatchError(Exception):
-    """未定義の文脈DA!."""
+class EmptyMarkError(Exception):
+    """mark内が空."""
+
+
+class PlaceHolderMappingError(Exception):
+    """プレースホルダーを置換するための対応づけに失敗."""
