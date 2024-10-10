@@ -27,8 +27,8 @@ define: name line
 //------------------------------------------------ terminals
 ANY: /[^\n]*/
 W: /[^\n:=\$]/     // Word
-S: /[^\!#@\n:=\$]/  // 最初の文字
-F: /\$[^\n\$]+\$/
+S: /[^\!#\n:=\$]/  // 最初の文字
+F.1: /\$[^\n\$]+\$/
 
 //ONELINE: S W*
 ONELINE: (F|S) (F|W)*
@@ -40,8 +40,8 @@ ALIAS.1: ONELINE "|"
 REFVAR: "{" ONELINE "}"
 
 
-AUTHOR: "@author " ANY       //著者
-PUBLISHED: "@published " ANY // 第一出版日
+AUTHOR.1: "@author " ANY       //著者
+PUBLISHED.1: "@published " ANY // 第一出版日
 // 文脈
 THUS.2:    "->"   // 故に
 CAUSE.2:   "<-"   // なぜなら
