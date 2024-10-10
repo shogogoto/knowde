@@ -19,6 +19,7 @@ class ContextType(Enum):
     SIMILAR = auto()
     WHEN = auto()
     BY = auto()
+    EQUIV = auto()
 
 
 class TContext(Transformer):
@@ -63,3 +64,7 @@ class TContext(Transformer):
     def BY(self, _tok: Token) -> ContextType:  # noqa: N802
         """アクター."""
         return ContextType.BY
+
+    def EQUIV(self, _tok: Token) -> ContextType:  # noqa: N802
+        """同値."""
+        return ContextType.EQUIV

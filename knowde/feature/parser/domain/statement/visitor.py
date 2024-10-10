@@ -9,7 +9,7 @@ from pydantic import Field
 from knowde.core.types import NXGraph
 from knowde.feature.parser.domain.parser.transfomer.context import ContextType
 from knowde.feature.parser.domain.parser.utils import HeadingVisitor, get_line
-from knowde.feature.parser.domain.statement.domain import EdgeType
+from knowde.feature.parser.domain.statement.domain import EdgeType, StatementGraph
 
 if TYPE_CHECKING:
     from networkx import DiGraph
@@ -80,10 +80,8 @@ class StatementVisitor(HeadingVisitor):
 
         Aliasは意味を持たない記号である点が用語とは異なる
         """
-        # print("S" * 80)
-        # print(t)
-        # print(get_alias(t))
-        # print(get_line(t))
+        s = t.children[0]
+        self.g.add_node(s)
 
     def define(self, t: Tree) -> None:
         """名前と言明の辞書を作る."""
@@ -92,3 +90,11 @@ class StatementVisitor(HeadingVisitor):
         # print(get_alias(t))
         # print(get_names(t))
         # print(get_line(t))
+
+
+def tree2statements(t: Tree) -> StatementGraph:
+    """解析木から言明ネットワークへ変換."""
+    """"""
+    v = StatementVisitor()
+    v.visit_topdown(t)
+    return StatementGraph(g=v.g)

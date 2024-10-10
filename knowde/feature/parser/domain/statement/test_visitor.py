@@ -1,9 +1,10 @@
 """test statement visitor."""
 
+
 from pytest_unordered import unordered
 
 from knowde.feature.parser.domain.parser.parser import transparse
-from knowde.feature.parser.domain.statement.statement import Statement
+from knowde.feature.parser.domain.statement.visitor import tree2statements
 
 """
 
@@ -14,6 +15,23 @@ ctx
 用語との組み合わせ complex?
 総数
 """
+
+
+def test_multiline() -> None:
+    """改行ありで一行とみなす."""
+    _s = r"""
+        # src
+            aaa_\
+            bbb
+                ccc
+            ddd
+            mul1 \
+                mul2 \
+                    mul3
+    """
+    t = transparse(_s)
+    s = tree2statements(t)
+    assert s.strings == ["aaa_bbb", "ccc", "ddd", "mul1 mul2 mul3"]
 
 
 def test_parse_context() -> None:
@@ -34,10 +52,7 @@ def test_parse_context() -> None:
                 2. two
     """
     _t = transparse(_s)
-    # _rt = get_source(_t, "context")
-    # _echo(_t)
-    # st = _rt.statement("ctx1")
-    st = Statement.create("ctx1", _t)
+    st = tree2statements(_t).contexted("ctx1")
     assert st.thus == unordered(["b1", "b2"])
     assert st.cause == unordered(["c"])
     assert st.example == unordered(["example"])
