@@ -67,11 +67,11 @@ def test_parse_terms() -> None:
 #         # h1
 #           量化子の順序によって意味が変わる
 #             n1: $\forall{x}\exists{y}R(x, y=t)$
-#             n2=n22: xx$R(x, y=t)$xx
+#             n2,n22: xx$R(x, y=t)$xx
 #         ## h2
 #           P1 |xx$y=t$xx
 #           P2 |xx$y=t$xx \
-#                   xxxx
+#                   yyyy
 #             <-> J13 |サールの反証: {平叙文}から{評価文}を結論する論証
 #             e.g. P41|「XXXならば明日ヒョウが降るよw」
 #     """

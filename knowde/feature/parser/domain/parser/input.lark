@@ -3,8 +3,8 @@
 
 ?unit: block|h1
 
-h1: H1 _NL [_INDENT source_about? block* _DEDENT] (h2)*
-source_about: [AUTHOR _NL] [PUBLISHED _NL]
+h1.3: H1 _NL [_INDENT source_about? block* _DEDENT] (h2)*
+source_about.2: [AUTHOR _NL] [PUBLISHED _NL]
 
 h2: H2 _NL [_INDENT block* _DEDENT] (h3)*
 h3: H3 _NL [_INDENT block* _DEDENT] (h4)*
@@ -16,28 +16,25 @@ h6: H6 _NL [_INDENT block* _DEDENT]
 
 
 ?stmt: (COMMENT|declare|ctx) _NL
+?ctx.2: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM|SIMILAR) declare
+?declare: line|alias_line|define|name
 line: (ONELINE|MULTILINE)
 alias_line.1: ALIAS line
-name: ALIAS? ONELINE ("," ONELINE)* ":"
 define: name line
-?declare: line|alias_line|define|name
+name: ALIAS? ONELINE ("," ONELINE)* ":"
 
-
-?ctx.2: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM|SIMILAR) declare
 //------------------------------------------------ terminals
 ANY: /[^\n]*/
-W: /[^\n:=\$,]/     // Word
-S: /[^\!#\n:=\$,]/  // 最初の文字
-F.1: /\$[^\n\$]+\$/
+W: /[^\n:,]/     // Word
+S: /[^#\n]/  // 最初の文字
 
-//ONELINE: S W*
-ONELINE: (F|S) (F|W)*
+ONELINE: S W*
 MULSEP: /\\\n[\t ]*/
 MULTILINE: (ONELINE MULSEP)+ ONELINE
-COMMENT: "!" ANY
+COMMENT.3: "!" ANY
 
-ALIAS.1: ONELINE "|"
-REFVAR: "{" ONELINE "}"
+NAME: /[^\n:,\|]+/     // Word
+ALIAS.1: NAME "|"
 
 
 AUTHOR.1: "@author " ANY       //著者
@@ -56,12 +53,12 @@ WHEN.2: "when."   // いつ
 
 
 WH: /[^\n#]+/ // Word of Heading
-H1: /#/      WH
-H2: /##/     WH
-H3: /###/    WH
-H4: /####/   WH
-H5: /#####/  WH
-H6: /######/ WH
+H1: "#"      WH
+H2: "##"    WH
+H3: "###"    WH
+H4: "####"   WH
+H5: "#####"  WH
+H6: "######" WH
 
 _NL: /(\r?\n[\t ]*)+/
 %declare _INDENT _DEDENT

@@ -155,5 +155,5 @@ class TermSpace(BaseModel):
         return "\n".join([str(t) for t in self.terms])
 
 
-class TermGraph(BaseModel, frozen=True):
-    pass
+# class TermGraph(BaseModel, frozen=True):
+#     pass
