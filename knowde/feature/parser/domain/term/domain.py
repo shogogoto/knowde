@@ -7,6 +7,8 @@ from typing import Self
 
 from pydantic import BaseModel, Field, field_validator
 
+from knowde.feature.parser.domain.term.errors import TermConflictError, TermMergeError
+
 
 class Term(BaseModel, frozen=True):
     """用語 名前のあつまり."""
@@ -92,20 +94,11 @@ class Term(BaseModel, frozen=True):
         return {k: self for k in self.names}
 
 
-class TermMergeError(Exception):
-    """用語の合併を許さないのに."""
-
-
-class TermConflictError(Exception):
-    """用語の衝突."""
-
-
 class TermSpace(BaseModel):
     """用語空間.
 
     名前一覧を表現
     名前 -> 用語
-
     """
 
     terms: list[Term] = Field(default_factory=list)
@@ -153,6 +146,14 @@ class TermSpace(BaseModel):
         """別名一覧."""
         return [t.alias for t in self.terms if t.alias]
 
+    # @property
+    # def names(self) -> list[str]:
+    #     """名一覧."""
+
     def pretty(self) -> str:
         """一覧文字列."""
         return "\n".join([str(t) for t in self.terms])
+
+
+class TermGraph(BaseModel, frozen=True):
+    pass

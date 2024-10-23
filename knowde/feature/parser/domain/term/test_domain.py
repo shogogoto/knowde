@@ -5,9 +5,9 @@ import pytest
 
 from knowde.feature.parser.domain.term.domain import (
     Term,
-    TermConflictError,
     TermSpace,
 )
+from knowde.feature.parser.domain.term.errors import TermConflictError
 
 """
 Termは名前の集合に与える識別子
@@ -113,5 +113,3 @@ def test_termspace_add() -> None:
     t3 = Term.create("Y")
     s.add(t3)
     assert len(s) == 2  # noqa: PLR2004
-
-    # aliasのみ

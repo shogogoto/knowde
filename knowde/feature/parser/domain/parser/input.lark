@@ -18,7 +18,7 @@ h6: H6 _NL [_INDENT block* _DEDENT]
 ?stmt: (COMMENT|declare|ctx) _NL
 line: (ONELINE|MULTILINE)
 alias_line.1: ALIAS line
-name: ALIAS? ONELINE ("=" ONELINE)* ":"
+name: ALIAS? ONELINE ("," ONELINE)* ":"
 define: name line
 ?declare: line|alias_line|define|name
 
@@ -26,8 +26,8 @@ define: name line
 ?ctx.2: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM|SIMILAR) declare
 //------------------------------------------------ terminals
 ANY: /[^\n]*/
-W: /[^\n:=\$]/     // Word
-S: /[^\!#\n:=\$]/  // 最初の文字
+W: /[^\n:=\$,]/     // Word
+S: /[^\!#\n:=\$,]/  // 最初の文字
 F.1: /\$[^\n\$]+\$/
 
 //ONELINE: S W*
