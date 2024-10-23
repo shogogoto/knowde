@@ -19,21 +19,20 @@ h6: H6 _NL [_INDENT block* _DEDENT]
 ?ctx.2: ctype declare
 ?declare: line|alias_line|define|name
 line: (ONELINE|MULTILINE)
-alias_line.1: ALIAS line
+alias_line.2: ALIAS line
 define: name line
 name.1: ALIAS? ONELINE ("," ONELINE)* ":"
 
 //------------------------------------------------ terminals
 ANY: /[^\n]*/
-W: /[^\n:,]/     // Word
-S: /[^#\n]/  // 最初の文字
+S: /[^#\n:,]/  // 最初の文字
 
-ONELINE: S W*
+ONELINE: S+
 MULSEP: /\\\n[\t ]*/
 MULTILINE: (ONELINE MULSEP)+ ONELINE
 COMMENT.3: "!" ANY
 
-NAME: S /[^\n:,\|]*/
+NAME.2: S /[^\n:,\|]*/
 ALIAS.1: NAME "|"
 
 // 文脈
