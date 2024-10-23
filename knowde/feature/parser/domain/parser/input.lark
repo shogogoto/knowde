@@ -16,12 +16,12 @@ h6: H6 _NL [_INDENT block* _DEDENT]
 
 
 ?stmt: (COMMENT|declare|ctx) _NL
-?ctx.2: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM|SIMILAR) declare
+?ctx.2: ctype declare
 ?declare: line|alias_line|define|name
 line: (ONELINE|MULTILINE)
 alias_line.1: ALIAS line
 define: name line
-name: ALIAS? ONELINE ("," ONELINE)* ":"
+name.1: ALIAS? ONELINE ("," ONELINE)* ":"
 
 //------------------------------------------------ terminals
 ANY: /[^\n]*/
@@ -33,13 +33,11 @@ MULSEP: /\\\n[\t ]*/
 MULTILINE: (ONELINE MULSEP)+ ONELINE
 COMMENT.3: "!" ANY
 
-NAME: /[^\n:,\|]+/     // Word
+NAME: S /[^\n:,\|]*/
 ALIAS.1: NAME "|"
 
-
-AUTHOR.1: "@author " ANY       //著者
-PUBLISHED.1: "@published " ANY // 第一出版日
 // 文脈
+?ctype: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM|SIMILAR)
 THUS.2:    "->"   // 故に
 CAUSE.2:   "<-"   // なぜなら
 ANTONYM.2: "<->"  // 対義関係
@@ -59,6 +57,9 @@ H3: "###"    WH
 H4: "####"   WH
 H5: "#####"  WH
 H6: "######" WH
+// 情報源
+AUTHOR.1: "@author " ANY       //著者
+PUBLISHED.1: "@published " ANY // 第一出版日
 
 _NL: /(\r?\n[\t ]*)+/
 %declare _INDENT _DEDENT

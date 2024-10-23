@@ -54,7 +54,7 @@ def add_context(g: DiGraph, x1: Hashable, x2: Hashable, t: ContextType) -> None:
             i = len(nums)
             g.add_edge(x1, x2, ctx=EdgeType.LIST, i=i)
         case _:
-            raise ContextMismatchError
+            raise ContextMismatchError(x1, x2, t)
 
 
 class StatementVisitor(HeadingVisitor):
