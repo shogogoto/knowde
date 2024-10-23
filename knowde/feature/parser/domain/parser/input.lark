@@ -1,9 +1,8 @@
 // 入力するテキストファイルの文法定義
 ?start:  _NL* unit*  // root
-
 ?unit: block|h1
 
-h1.3: H1 _NL [_INDENT source_about? block* _DEDENT] (h2)*
+h1: H1 _NL [_INDENT source_about? block* _DEDENT] (h2)*
 source_about.2: [AUTHOR _NL] [PUBLISHED _NL]
 
 h2: H2 _NL [_INDENT block* _DEDENT] (h3)*
@@ -17,23 +16,25 @@ h6: H6 _NL [_INDENT block* _DEDENT]
 
 ?stmt: (COMMENT|declare|ctx) _NL
 ?ctx.2: ctype declare
-?declare: line|alias_line|define|name
+?declare: (line|alias_line|define|name)
 line: (ONELINE|MULTILINE)
-alias_line.2: ALIAS line
+alias_line: ALIAS line
 define: name line
-name.1: ALIAS? ONELINE ("," ONELINE)* ":"
+name: ALIAS? ONELINE ("," ONELINE)* ":"
 
 //------------------------------------------------ terminals
 ANY: /[^\n]*/
-S: /[^#\n:,]/  // 最初の文字
-
-ONELINE: S+
-MULSEP: /\\\n[\t ]*/
-MULTILINE: (ONELINE MULSEP)+ ONELINE
 COMMENT.3: "!" ANY
 
-NAME.2: S /[^\n:,\|]*/
-ALIAS.1: NAME "|"
+S: /[^!#\n]/  // 最初の文字
+W: /[^\n:\|,]/  // 最初の文字
+ONELINE: S W*
+MULSEP: /\\\n[\t ]*/
+MULTILINE: (ONELINE MULSEP)+ ONELINE
+
+N: /[^\n:\|,]/  // 最初の文字
+NAME: S N*
+ALIAS: NAME "|"
 
 // 文脈
 ?ctype: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM|SIMILAR)
