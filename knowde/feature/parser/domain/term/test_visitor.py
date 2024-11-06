@@ -39,7 +39,8 @@ def test_parse_terms() -> None:
         # h1
           n1,n11:
           P1 |line,l1:
-          P2 |def,d1: def
+          P2 |def,d1: de\
+                f
         ## h2
           n2,n21:
           P3 |line2,l2,l21:

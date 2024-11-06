@@ -38,7 +38,3 @@ class TStatemet(Transformer):
     def ALIAS(self, tok: Token) -> str:  # noqa: D102 N802
         v = tok.replace("|", "").strip()
         return _replace_value(tok, v)
-
-    def NAME(self, tok: Token) -> str:  # noqa: D102 N802
-        v = tok.replace("|", "").strip()
-        return _replace_value(tok, v)
