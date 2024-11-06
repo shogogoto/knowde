@@ -1,10 +1,9 @@
 // 入力するテキストファイルの文法定義
 ?start:  _NL* unit*  // root
-
 ?unit: block|h1
 
 h1: H1 _NL [_INDENT source_about? block* _DEDENT] (h2)*
-source_about: [AUTHOR _NL] [PUBLISHED _NL]
+source_about.2: [AUTHOR _NL] [PUBLISHED _NL]
 
 h2: H2 _NL [_INDENT block* _DEDENT] (h3)*
 h3: H3 _NL [_INDENT block* _DEDENT] (h4)*
@@ -16,33 +15,29 @@ h6: H6 _NL [_INDENT block* _DEDENT]
 
 
 ?stmt: (COMMENT|declare|ctx) _NL
+?ctx.2: ctype declare
+?declare: (line|alias_line|define|name)
 line: (ONELINE|MULTILINE)
-alias_line.1: ALIAS line
-name: ALIAS? ONELINE ("=" ONELINE)* ":"
+alias_line: ALIAS line
 define: name line
-?declare: line|alias_line|define|name
+name: ALIAS? ONELINE ("," ONELINE)* ":"
 
-
-?ctx.2: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM|SIMILAR) declare
 //------------------------------------------------ terminals
 ANY: /[^\n]*/
-W: /[^\n:=\$]/     // Word
-S: /[^\!#@\n:=\$]/  // 最初の文字
-F: /\$[^\n\$]+\$/
+COMMENT.3: "!" ANY
 
-//ONELINE: S W*
-ONELINE: (F|S) (F|W)*
+S: /[^!#\n]/  // 最初の文字
+W: /[^\n:\|,]/  // 最初の文字
+ONELINE: S W*
 MULSEP: /\\\n[\t ]*/
 MULTILINE: (ONELINE MULSEP)+ ONELINE
-COMMENT: "!" ANY
 
-ALIAS.1: ONELINE "|"
-REFVAR: "{" ONELINE "}"
+N: /[^\n:\|,]/  // 最初の文字
+NAME: S N*
+ALIAS: NAME "|"
 
-
-AUTHOR: "@author " ANY       //著者
-PUBLISHED: "@published " ANY // 第一出版日
 // 文脈
+?ctype: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM|SIMILAR)
 THUS.2:    "->"   // 故に
 CAUSE.2:   "<-"   // なぜなら
 ANTONYM.2: "<->"  // 対義関係
@@ -56,12 +51,15 @@ WHEN.2: "when."   // いつ
 
 
 WH: /[^\n#]+/ // Word of Heading
-H1: /#/      WH
-H2: /##/     WH
-H3: /###/    WH
-H4: /####/   WH
-H5: /#####/  WH
-H6: /######/ WH
+H1: "#"      WH
+H2: "##"    WH
+H3: "###"    WH
+H4: "####"   WH
+H5: "#####"  WH
+H6: "######" WH
+// 情報源
+AUTHOR.1: "@author " ANY       //著者
+PUBLISHED.1: "@published " ANY // 第一出版日
 
 _NL: /(\r?\n[\t ]*)+/
 %declare _INDENT _DEDENT
