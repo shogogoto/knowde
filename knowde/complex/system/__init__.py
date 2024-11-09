@@ -16,6 +16,21 @@ diff: 系同士の比較
     第一文の総数
     文同士の繋がりの総数
 
+データをどう変換していくか
+    テキスト
+    chunkのリスト
+    再帰的に分解
+        section 名前解決の対象ではない
+        term
+            原子名の集まり
+        sentence
+        term-sentence
+    名前解決: 原子名を辿ってnamechain作成
+
+
+データ変換の結果、何を見たいのか
+    検索キーワードと関連のあるデータ
+
 
 chunk: 見出しやindentに対応するまとまり
     入れ子となる
@@ -26,8 +41,6 @@ chunk: 見出しやindentに対応するまとまり
             機能:
             marked/unmarked
             has_mark
-
-
 
     変換機能:
         用語一覧
@@ -87,7 +100,7 @@ stage: 永続化とメモリの中間一時ファイル
         version管理も
     このローカル運用もできるはず
 
-save: 永続化
+save: DBへ永続化
 
 
 posting: テキスト出力
