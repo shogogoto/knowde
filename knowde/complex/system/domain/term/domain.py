@@ -32,9 +32,7 @@ class Term(BaseModel, frozen=True):
     @property
     def rep(self) -> str:
         """代表名."""
-        if len(self.names) == 0:
-            return ""
-        return self.names[0]
+        return "" if len(self.names) == 0 else self.names[0]
 
     @classmethod
     def create(cls, *vs: str, alias: str | None = None) -> Self:  # noqa: D102

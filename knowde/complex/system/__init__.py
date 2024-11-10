@@ -27,9 +27,28 @@ diff: 系同士の比較
         term-sentence
     名前解決: 原子名を辿ってnamechain作成
 
+text
+    term
+    sentence
+    definition
+    -> terms
+        -> merged terms
+            atomic terms = namesをキーとする辞書、
+            -> term resolver
+    -> 入れ子のchunk
+    -> sentence network
+
+メモリ表現
+    名前解決器
+    chunk表現
+    sentence network
+
 
 データ変換の結果、何を見たいのか
     検索キーワードと関連のあるデータ
+    統計値
+    統合度
+        文字数も欲しいかも
 
 
 chunk: 見出しやindentに対応するまとまり
@@ -105,6 +124,11 @@ save: DBへ永続化
 
 posting: テキスト出力
     ブログの自動生成
+
+
+
+
+
 
 
 """
