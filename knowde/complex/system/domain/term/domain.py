@@ -95,7 +95,7 @@ class MergedTerms(BaseModel):
         return len([t for t in self.terms if not t.has_only_alias()])
 
     def add(self, t: Term) -> None:
-        """名前."""
+        """用語を追加する."""
         if t in self.origins:
             msg = "用語定義が重複しています"
             raise TermConflictError(msg, t)

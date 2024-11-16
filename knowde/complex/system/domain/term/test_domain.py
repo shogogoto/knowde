@@ -3,11 +3,11 @@ from __future__ import annotations
 
 import pytest
 
-from knowde.feature.parser.domain.term.domain import (
+from .domain import (
+    MergedTerms,
     Term,
-    TermSpace,
 )
-from knowde.feature.parser.domain.term.errors import TermConflictError
+from .errors import TermConflictError
 
 """
 Termは名前の集合に与える識別子
@@ -95,9 +95,9 @@ def test_term_with_alias_allows_merge(
     assert t2.allows_merge(t1) == expected
 
 
-def test_termspace_add() -> None:
-    """用語空間に用語を追加."""
-    s = TermSpace()
+def test_merge_term() -> None:
+    """用語をマージ."""
+    s = MergedTerms()
     # 共通ありで合併
     t1 = Term.create("X", "x1")
     t2 = Term.create("X", "x2")
