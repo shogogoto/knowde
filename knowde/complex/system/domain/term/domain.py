@@ -3,14 +3,24 @@ from __future__ import annotations
 
 from collections import Counter
 from functools import cached_property
-from typing import Self
+from typing import AbstractSet, Self
 
-from networkx import DiGraph
+import networkx as nx
 from pydantic import BaseModel, Field, field_validator
 
-from knowde.complex.system.domain.term.mark import contains_mark_symbol
+from knowde.complex.system.domain.term.mark import (
+    contains_mark_symbol,
+    pick_marks,
+    replace_markers,
+)
+from knowde.core.types import NXGraph
 
-from .errors import AliasContainsMarkError, TermConflictError, TermMergeError
+from .errors import (
+    AliasContainsMarkError,
+    TermConflictError,
+    TermMergeError,
+    TermResolveError,
+)
 
 
 class Term(BaseModel, frozen=True):
@@ -51,16 +61,19 @@ class Term(BaseModel, frozen=True):
             case _:
                 return cls(names=frozenset(vs), alias=alias, rep=vs[0])
 
+    def __repr__(self) -> str:
+        """Class representation."""
+        return f"Term({self})"
+
     def __str__(self) -> str:
         """Display for user."""
-        subs = ", ".join(self.names - set(self.rep))
+        subs = ", ".join(self.names - {self.rep})
         if len(subs) > 0:
             subs = f"({subs})"
         al = ""
         if self.alias is not None:
             al = f"[{self.alias}]"
-        rep = "" if len(self.names) == 0 else self.rep
-        return f"{rep}{subs}{al}"
+        return f"{self.rep}{subs}{al}"
 
     def has(self, *names: str) -> bool:
         """同じ名前を持つ."""
@@ -134,7 +147,7 @@ class MergedTerms(BaseModel, frozen=True):
                 raise TermConflictError
 
     @cached_property
-    def atomic_terms(self) -> dict[str, Term]:
+    def atoms(self) -> dict[str, Term]:
         """参照なしの原子用語."""
         d = {}
         for t in self.terms:
@@ -145,22 +158,58 @@ class MergedTerms(BaseModel, frozen=True):
                     d[n] = t
         return d
 
+    @cached_property
+    def frozen(self) -> frozenset[Term]:
+        """Frozen merged terms."""
+        return frozenset(self.terms)
 
-def molecular_terms(_mt: MergedTerms) -> DiGraph[str]:
-    """参照有りの分子用語."""
-    # d = {}
-    # atoms = mt.atomic_terms.values()
-    # print(set(atoms))
-    # for t in set(mt.terms) - atoms:
-    #     print(t)
-    #     for n in t.names:
-    #         if not contains_mark_symbol(n):
-    #             d[n] = t
-    #     if t.alias:
-    #         d[t.alias] = t
+    def to_termnet(self) -> TermNetwork:
+        """用語ネットワーク作成."""
+        g = nx.DiGraph()
+        lookup = self.atoms
+        g.add_nodes_from(lookup.keys())
+        while True:
+            _next, diff = next_lookup(lookup, self.frozen)
+            for t in _next.values():
+                for n in t.names:
+                    marks = pick_marks(n)
+                    atom = replace_markers(n, *marks)
+                    for m in marks:
+                        g.add_edge(atom, m)
+            d = {**lookup, **_next}
+            if lookup == d:
+                n_diff = len(diff)
+                break
+            lookup = d
+        if n_diff > 0:
+            msg = f"{set(diff)}が用語解決できませんでした"
+            raise TermResolveError(msg)
+        return TermNetwork(g=g, d=lookup)
 
-    return DiGraph()
+
+def next_lookup(
+    lookup: dict[str, Term],
+    terms: AbstractSet[Term],
+) -> tuple[dict[str, Term], AbstractSet[Term]]:
+    """直参照の用語lookupを取得."""
+    diff = terms - set(lookup.values())
+    d = {}
+    for t in diff:
+        for n in t.names:
+            marks = pick_marks(n)
+            if all(m in lookup for m in marks):
+                atom = replace_markers(n, *marks)
+                d[atom] = t
+        if t.alias:
+            d[t.alias] = t
+    return d, diff
 
 
-# class TermNetwork(BaseModel, frozen=True):
-#     """用語ネットワーク."""
+class TermNetwork(BaseModel, frozen=True):
+    """用語ネットワーク."""
+
+    g: NXGraph
+    d: dict[str, Term]
+
+    def resolve(self, s: str) -> None:
+        """用語解決."""

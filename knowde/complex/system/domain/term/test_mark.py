@@ -14,8 +14,8 @@ from .errors import (
 from .mark import (
     count_placeholder,
     inject2placeholder,
-    mark2placeholder,
     pick_marks,
+    replace_placeholder,
 )
 
 
@@ -59,8 +59,8 @@ def test_replace_marks() -> None:
     s1 = "xx{def}xx"
     s2 = "xx{def}xx{def2}"
 
-    assert mark2placeholder(s1) == "xx$@xx"
-    assert mark2placeholder(s2) == "xx$@xx$@"
+    assert replace_placeholder(s1) == "xx$@xx"
+    assert replace_placeholder(s2) == "xx$@xx$@"
 
 
 def test_count_place_holder() -> None:

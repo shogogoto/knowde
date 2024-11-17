@@ -6,9 +6,9 @@ import pytest
 from .domain import (
     MergedTerms,
     Term,
-    molecular_terms,
+    next_lookup,
 )
-from .errors import AliasContainsMarkError, TermConflictError
+from .errors import AliasContainsMarkError, TermConflictError, TermResolveError
 
 """
 Termは名前の集合に与える識別子
@@ -43,12 +43,14 @@ def test_term_str() -> None:
     t4 = Term.create("U", alias="P1")
     t5 = Term.create("V", "v1", alias="P1")
     t6 = Term.create(alias="P1")
+    t7 = Term.create("B{A}")
     assert str(t1) in ["X(x1, x2)", "X(x2, x1)"]
     assert str(t2) == "Y(y1)"
     assert str(t3) == "Z"
     assert str(t4) == "U[P1]"
     assert str(t5) == "V(v1)[P1]"
     assert str(t6) == "[P1]"
+    assert str(t7) == "B{A}"
 
 
 def test_term_has_common() -> None:
@@ -122,20 +124,44 @@ def test_merge_term() -> None:
     assert len(s) == 2  # noqa: PLR2004
 
 
-def test_atomic_terms() -> None:
+def test_lookup() -> None:
     """参照."""
-    # 単一原子名/複数原子名
-    # 単一分子名/複数分子名 molecular
-    # 参照がない場合エラー
     mt = MergedTerms()
     t1 = Term.create("A", alias="a")
     t2 = Term.create("A1", "A2")
     t3 = Term.create("B{A}")
     t4 = Term.create("C{BA}")
     mt.add(t1, t2, t3, t4)
-    assert mt.atomic_terms == {"A": t1, "a": t1, "A1": t2, "A2": t2}
-    molecular_terms(mt)
+    # 0th
+    assert mt.atoms == {"A": t1, "a": t1, "A1": t2, "A2": t2}
+    # 1th
+    l1, _ = next_lookup(mt.atoms, mt.frozen)
+    assert l1 == {"BA": t3}
+    # 2th
+    d = {**mt.atoms, **l1}
+    l2, _ = next_lookup(d, mt.frozen)
+    assert l2 == {"CBA": t4}
+
+    # 3th
+    d = {**d, **l2}
+    l3, _ = next_lookup(d, mt.frozen)
+    assert l3 == {}
 
 
-def test_termchain() -> None:
-    """用語鎖."""
+def test_lookup_error() -> None:
+    """参照失敗."""
+    mt = MergedTerms()
+    mt.add(
+        Term.create("A", alias="a"),
+        Term.create("A1", "A2"),
+        Term.create("B{A}"),
+        Term.create("C{A1}"),
+        Term.create("D{BA}"),
+        Term.create("xx{X}xx"),
+    )
+    with pytest.raises(TermResolveError):
+        mt.to_termnet()
+
+
+# def test_termchain() -> None:
+#     """用語鎖."""

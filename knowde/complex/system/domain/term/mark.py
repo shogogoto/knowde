@@ -37,9 +37,17 @@ def contains_mark_symbol(s: str) -> bool:
 PLACE_HOLDER = "$@"
 
 
-def mark2placeholder(s: str) -> str:
+def replace_placeholder(s: str) -> str:
     """markをplaceholderに置き換える."""
     return MARK_PATTERN.sub(PLACE_HOLDER, s)
+
+
+def replace_markers(s: str, *repls: str) -> str:
+    """markを置き換える."""
+    ret = s
+    for repl in repls:
+        ret = MARK_PATTERN.sub(repl, ret, count=1)
+    return ret
 
 
 def inject2placeholder(
