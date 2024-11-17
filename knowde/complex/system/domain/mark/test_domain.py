@@ -1,21 +1,17 @@
-"""説明を定義と紐付ける.
-
-説明を表す文字列に定義を埋め込んで表現できるようにしたい
-"""
-
+"""mark test."""
 
 import pytest
 
-from .errors import (
-    EmptyMarkError,
-    MarkContainsMarkError,
-    PlaceHolderMappingError,
-)
-from .mark import (
+from .domain import (
     count_placeholder,
     inject2placeholder,
     pick_marks,
     replace_placeholder,
+)
+from .errors import (
+    EmptyMarkError,
+    MarkContainsMarkError,
+    PlaceHolderMappingError,
 )
 
 

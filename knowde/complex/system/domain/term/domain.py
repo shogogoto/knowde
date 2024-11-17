@@ -9,7 +9,7 @@ from typing import AbstractSet, Hashable, Self
 import networkx as nx
 from pydantic import BaseModel, Field, field_validator
 
-from knowde.complex.system.domain.term.mark import (
+from knowde.complex.system.domain.mark import (
     contains_mark_symbol,
     pick_marks,
     replace_markers,
