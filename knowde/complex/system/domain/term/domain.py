@@ -3,7 +3,8 @@ from __future__ import annotations
 
 from collections import Counter
 from functools import cached_property
-from typing import AbstractSet, Self
+from pprint import pp
+from typing import AbstractSet, Hashable, Self
 
 import networkx as nx
 from pydantic import BaseModel, Field, field_validator
@@ -121,7 +122,7 @@ class MergedTerms(BaseModel, frozen=True):
         """名前を持つ用語の数."""
         return len(self.terms)
 
-    def add(self, *ts: Term) -> None:
+    def add(self, *ts: Term) -> Self:
         """用語を追加する."""
         for t in ts:
             if t in self.origins:
@@ -134,6 +135,7 @@ class MergedTerms(BaseModel, frozen=True):
                 self.terms.remove(c)
                 self.terms.append(c.merge(t))
             self.origins.append(t)
+        return self
 
     def _common(self, t: Term) -> Term | None:
         """共通する名を持つ用語があれば返す."""
@@ -163,7 +165,7 @@ class MergedTerms(BaseModel, frozen=True):
         """Frozen merged terms."""
         return frozenset(self.terms)
 
-    def to_termnet(self) -> TermNetwork:
+    def to_network(self) -> TermNetwork:
         """用語ネットワーク作成."""
         g = nx.DiGraph()
         lookup = self.atoms
@@ -184,7 +186,7 @@ class MergedTerms(BaseModel, frozen=True):
         if n_diff > 0:
             msg = f"{set(diff)}が用語解決できませんでした"
             raise TermResolveError(msg)
-        return TermNetwork(g=g, d=lookup)
+        return TermNetwork(g=g, lookup=lookup)
 
 
 def next_lookup(
@@ -205,11 +207,26 @@ def next_lookup(
     return d, diff
 
 
+def succ_nested(g: nx.DiGraph, n: Hashable) -> dict:
+    """子孫の入れ子の辞書を取得する関数."""
+
+    def _f(node: Hashable) -> dict:
+        children = list(g.successors(node))
+        if not children:
+            return {}
+        return {child: _f(child) for child in children}
+
+    return _f(n)
+
+
 class TermNetwork(BaseModel, frozen=True):
     """用語ネットワーク."""
 
     g: NXGraph
-    d: dict[str, Term]
+    lookup: dict[str, Term]
 
-    def resolve(self, s: str) -> None:
+    def resolve(self, s: str) -> dict:
         """用語解決."""
+        pp(nx.to_dict_of_dicts(self.g))
+        marks = pick_marks(s)
+        return {m: succ_nested(self.g, m) for m in marks}
