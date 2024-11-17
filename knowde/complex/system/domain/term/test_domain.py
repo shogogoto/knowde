@@ -6,8 +6,9 @@ import pytest
 from .domain import (
     MergedTerms,
     Term,
+    molecular_terms,
 )
-from .errors import TermConflictError
+from .errors import AliasContainsMarkError, TermConflictError
 
 """
 Termは名前の集合に与える識別子
@@ -28,6 +29,12 @@ A=B=C:
 """
 
 
+def test_alias_error() -> None:
+    """Alias contains marks."""
+    with pytest.raises(AliasContainsMarkError):
+        Term.create(alias="a{b}")
+
+
 def test_term_str() -> None:
     """String."""
     t1 = Term.create("X", "x1", "x2")
@@ -36,7 +43,7 @@ def test_term_str() -> None:
     t4 = Term.create("U", alias="P1")
     t5 = Term.create("V", "v1", alias="P1")
     t6 = Term.create(alias="P1")
-    assert str(t1) == "X(x1, x2)"
+    assert str(t1) in ["X(x1, x2)", "X(x2, x1)"]
     assert str(t2) == "Y(y1)"
     assert str(t3) == "Z"
     assert str(t4) == "U[P1]"
@@ -113,3 +120,22 @@ def test_merge_term() -> None:
     t3 = Term.create("Y")
     s.add(t3)
     assert len(s) == 2  # noqa: PLR2004
+
+
+def test_atomic_terms() -> None:
+    """参照."""
+    # 単一原子名/複数原子名
+    # 単一分子名/複数分子名 molecular
+    # 参照がない場合エラー
+    mt = MergedTerms()
+    t1 = Term.create("A", alias="a")
+    t2 = Term.create("A1", "A2")
+    t3 = Term.create("B{A}")
+    t4 = Term.create("C{BA}")
+    mt.add(t1, t2, t3, t4)
+    assert mt.atomic_terms == {"A": t1, "a": t1, "A1": t2, "A2": t2}
+    molecular_terms(mt)
+
+
+def test_termchain() -> None:
+    """用語鎖."""

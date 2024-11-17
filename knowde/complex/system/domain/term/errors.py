@@ -9,6 +9,10 @@ class TermConflictError(Exception):
     """用語の衝突."""
 
 
+class AliasContainsMarkError(Exception):
+    """別名にマークを含んだらダメ."""
+
+
 class MarkContainsMarkError(Exception):
     """マーク内にマークを含む."""
 
