@@ -5,7 +5,6 @@ from fastapi import FastAPI
 
 from knowde.complex import deduct_router, def_router, ev_router, person_router
 from knowde.core import ErrorHandlingMiddleware
-from knowde.feature.reference import refdef_router
 from knowde.primitive import (
     book_router,
     chap_router,
@@ -24,7 +23,6 @@ api.include_router(ref_router)
 api.include_router(book_router)
 api.include_router(chap_router)
 api.include_router(sec_router)
-api.include_router(refdef_router)
 
 api.include_router(p_router)
 api.include_router(deduct_router)
