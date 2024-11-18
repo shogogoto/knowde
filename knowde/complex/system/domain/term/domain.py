@@ -4,7 +4,7 @@ from __future__ import annotations
 from collections import Counter
 from functools import cached_property
 from pprint import pp
-from typing import AbstractSet, Hashable, Self
+from typing import AbstractSet, Self
 
 import networkx as nx
 from pydantic import BaseModel, Field, field_validator
@@ -14,6 +14,7 @@ from knowde.complex.system.domain.mark import (
     pick_marks,
     replace_markers,
 )
+from knowde.complex.system.domain.nxutil import succ_nested
 from knowde.core.types import NXGraph
 
 from .errors import (
@@ -205,18 +206,6 @@ def next_lookup(
         if t.alias:
             d[t.alias] = t
     return d, diff
-
-
-def succ_nested(g: nx.DiGraph, n: Hashable) -> dict:
-    """子孫の入れ子の辞書を取得する関数."""
-
-    def _f(node: Hashable) -> dict:
-        children = list(g.successors(node))
-        if not children:
-            return {}
-        return {child: _f(child) for child in children}
-
-    return _f(n)
 
 
 class TermNetwork(BaseModel, frozen=True):
