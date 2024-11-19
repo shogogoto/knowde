@@ -1,4 +1,6 @@
 """networkx関連."""
+from __future__ import annotations
+
 from pprint import pp
 from typing import Any, Callable, Hashable, Iterable, TypeAlias
 
@@ -23,18 +25,21 @@ def to_nested(
     return _f(start)
 
 
-# def to_nodes(
-#     g: nx.DiGraph,
-#     start: Hashable,
-#     f: FChildren,
-# ) -> Iterable[Hashable]:
-#     """有向グラフを辿ってノードを取得."""
+def to_nodes(
+    g: nx.DiGraph,
+    start: Hashable,
+    f: FChildren,
+) -> set[Hashable]:
+    """有向グラフを辿ってノードを取得."""
+    s = set()
 
-#     def _f(n: Hashable) -> dict:
-#         children = list(f(g, n))
-#         if not children:
-#             return {}
-#         return {child: _f(child) for child in children}
+    def _f(n: Hashable) -> None:
+        children = list(f(g, n))
+        s.add(n)
+        s.union([_f(child) for child in children])
+
+    _f(start)
+    return s
 
 
 def succ_attr(attr_name: str, value: Any) -> FChildren:  # noqa: ANN401
@@ -49,7 +54,8 @@ def succ_attr(attr_name: str, value: Any) -> FChildren:  # noqa: ANN401
     return _f
 
 
-def nxcheck(g: nx.DiGraph) -> None:
+def nxprint(g: nx.DiGraph) -> None:
     """確認用."""
+    print("")  # noqa: T201
     nx.write_network_text(g)
     pp(nx.to_dict_of_dicts(g))
