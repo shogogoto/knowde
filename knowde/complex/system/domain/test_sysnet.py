@@ -5,10 +5,7 @@ from knowde.complex.system.domain.sysnet import (
     Def,
     EdgeType,
     SystemNetwork,
-    get_headings,
     get_resolved,
-    heading_path,
-    setup_resolver,
 )
 from knowde.complex.system.domain.term import Term
 
@@ -61,25 +58,7 @@ def test_get_headings() -> None:
     """見出し一覧."""
     sn = SystemNetwork(root="sys")
     sn.add(EdgeType.HEAD, *[f"h{i}" for i in range(1, 4)])
-    assert get_headings(sn) == {"sys", *{f"h{i}" for i in range(1, 4)}}
-
-
-def test_heading_path() -> None:
-    """任意のnodeから直近の見出しpathを取得."""
-    sn = SystemNetwork(root="sys")
-    sn.add(EdgeType.HEAD, *[f"h{i}" for i in range(1, 4)])
-    sn.add(EdgeType.SIBLING, "h1", "aaa")
-    sn.add(EdgeType.BELOW, "aaa", "Aaa", "AAa")
-    sn.add(EdgeType.SIBLING, "h2", "bbb", "ccc")
-    sn.add(EdgeType.SIBLING, "x")
-    # 隣接
-    assert heading_path(sn, "x") == ["sys"]  # root直下
-    assert heading_path(sn, "aaa") == ["sys", "h1"]  # 見出しの兄弟
-    # 非隣接
-    assert heading_path(sn, "Aaa") == ["sys", "h1"]  #   文の下
-    assert heading_path(sn, "AAa") == ["sys", "h1"]  #   文の下の下
-    assert heading_path(sn, "bbb") == ["sys", "h1", "h2"]
-    assert heading_path(sn, "ccc") == ["sys", "h1", "h2"]
+    assert sn.headings == {"sys", *{f"h{i}" for i in range(1, 4)}}
 
 
 def test_setup_term() -> None:
@@ -102,7 +81,7 @@ def test_setup_term() -> None:
         Def.create("qqq", ["Q"]),
         Term.create("X"),
     )
-    setup_resolver(sn)
+    sn.setup_resolver()
     assert get_resolved(sn, "df") == {}
     assert get_resolved(sn, "b{A}b") == {"df": {}}
     assert get_resolved(sn, "ccc") == {"b{A}b": {"df": {}}}

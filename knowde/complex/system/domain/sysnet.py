@@ -8,9 +8,11 @@ from typing import Any, Hashable
 
 import networkx as nx
 from networkx import DiGraph
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PrivateAttr
 
-from knowde.complex.system.domain.errors import HeadingNotFoundError
+from knowde.complex.system.domain.errors import (
+    UnResolvedTermError,
+)
 from knowde.complex.system.domain.nxutil import (
     Accessor,
     pred_attr,
@@ -61,14 +63,10 @@ class SystemNetwork(BaseModel):
 
     root: str
     g: NXGraph = Field(default_factory=DiGraph, init=False)
+    _is_resolved: bool = PrivateAttr(default=False)
 
     def model_post_init(self, __context: Any) -> None:  # noqa: ANN401 D102
         self.g.add_node(self.root)
-
-    # 見出しだけstr限定だからtype hint用にメソッドを用意した
-    def head(self, pre: str, succ: str) -> None:
-        """見出し追加."""
-        EdgeType.HEAD.add_edge(self.g, pre, succ)
 
     def add(self, t: EdgeType, *path: SysNodeType) -> tuple[SysNodeType, ...]:
         """既存nodeから開始していない場合はrootからedgeを伸ばすように登録."""
@@ -97,6 +95,19 @@ class SystemNetwork(BaseModel):
                 raise TypeError
 
     @property
+    def headings(self) -> set[str]:
+        """見出しセット."""
+        ns = to_nodes(self.g, self.root, succ_attr("type", EdgeType.HEAD))
+        return {str(n) for n in ns}
+
+    @property
+    def sentences(self) -> list[str]:
+        """文."""
+        s = [n for n in self.g.nodes if isinstance(n, str)]
+        [s.remove(h) for h in self.headings]
+        return s
+
+    @property
     def resolver(self) -> TermResolver:
         """用語解決器."""
         return (
@@ -105,52 +116,37 @@ class SystemNetwork(BaseModel):
             .to_resolver()
         )
 
+    def setup_resolver(self) -> None:
+        """事前の全用語解決.
+
+        統計情報を得るためには、全て用語解決しとかないといけない
+        DBやstageからは解決済みのnetworkを復元
+        """
+        r = self.resolver
+        for s in self.sentences:
+            d = r(s)
+            td = r.mark2term(d)
+            _add_resolve_edge(self, s, td)
+        self._is_resolved = True
+
     @property
-    def sentences(self) -> list[str]:
-        """文."""
-        s = [n for n in self.g.nodes if isinstance(n, str)]
-        [s.remove(str(h)) for h in get_headings(self)]
-        return s
+    def is_resolved(self) -> bool:  # noqa: D102
+        return self._is_resolved
 
 
-def get_headings(sn: SystemNetwork) -> set[Hashable]:
-    """見出し一覧."""
-    return to_nodes(sn.g, sn.root, succ_attr("type", EdgeType.HEAD))
-
-
-def heading_path(sn: SystemNetwork, n: Hashable) -> list[Hashable]:
-    """直近の見出しパス."""
-    paths = list(nx.shortest_simple_paths(sn.g, sn.root, n))
-    if len(paths) == 0:
-        raise HeadingNotFoundError
-    p = paths[0]
-    return [e for e in p if e in get_headings(sn)]
-
-
-def setup_resolver(sn: SystemNetwork) -> None:
-    """事前の全用語解決.
-
-    統計情報を得るためには、全て用語解決しとかないといけない
-    DBやstageからは解決済みのnetworkを復元
-    """
-    r = sn.resolver
-    for s in sn.sentences:
-        d = r(s)
-        td = r.mark2term(d)
-        add_resolve_edge(sn, s, td)
-
-
-def add_resolve_edge(sn: SystemNetwork, start: str, termd: dict) -> None:
+def _add_resolve_edge(sn: SystemNetwork, start: str, termd: dict) -> None:
     """(start)-[RESOLVE]->(marked sentence)."""
     for k, v in termd.items():
         s = next(EdgeType.DEF.succ(sn.g, k))  # 文
         EdgeType.RESOLVE.add_edge(sn.g, start, s)  # 文 -> 文
         if any(v):  # 空でない
-            add_resolve_edge(sn, str(s), v)
+            _add_resolve_edge(sn, str(s), v)
 
 
 def get_resolved(sn: SystemNetwork, s: str) -> dict:
     """解決済み入れ子文を取得."""
+    if not sn.is_resolved:
+        raise UnResolvedTermError
     return to_nested(sn.g, s, EdgeType.RESOLVE.succ)
 
 
