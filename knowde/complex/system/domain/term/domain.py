@@ -112,7 +112,7 @@ class Term(BaseModel, frozen=True):
 class MergedTerms(BaseModel, frozen=True):
     """用語一覧."""
 
-    terms: list[Term] = Field(default_factory=list)
+    terms: list[Term] = Field(default_factory=list, init=False)
     origins: list[Term] = Field(default_factory=list, init=False)
 
     def __getitem__(self, i: int) -> Term:  # noqa: D105
@@ -214,6 +214,29 @@ class TermResolver(BaseModel, frozen=True):
     lookup: dict[str, Term]
 
     def __call__(self, s: str) -> dict:
-        """任意の文字列を用語解決."""
+        """任意の文字列を用語解決.
+
+        Return:
+        ------
+            {mark: {mark:{...:{}}}}
+
+        """
         marks = pick_marks(s)
         return {m: to_nested(self.g, m, lambda g, n: g.successors(n)) for m in marks}
+
+    def mark2term(self, md: dict) -> dict:
+        """markに対応する用語に変換する.
+
+        Return:
+        ------
+            {term: {term:{...:{}}}}
+
+        """
+        d = {}
+        for k, v in md.items():
+            t = self.lookup[k]
+            if any(v):  # 空でない
+                d[t] = self.mark2term(v)
+            else:
+                d[t] = v
+        return d

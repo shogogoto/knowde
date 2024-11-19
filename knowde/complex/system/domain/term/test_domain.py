@@ -165,19 +165,19 @@ def test_lookup_error() -> None:
 
 def test_resolve_term() -> None:
     """用語解決."""
-    resolver = (
-        MergedTerms()
-        .add(
-            Term.create("A", alias="a"),
-            Term.create("A1", "A2"),
-            Term.create("B{A}"),
-            Term.create("C{A1}"),
-            Term.create("D{BA}"),
-            Term.create("E{DBA}"),
-        )
-        .to_resolver()
-    )
-    assert resolver("aaa{EDBA}a{CA1}aaa") == {
+    t1 = Term.create("A", alias="a")
+    t2 = Term.create("A1", "A2")
+    t3 = Term.create("B{A}")
+    t4 = Term.create("C{A1}")
+    t5 = Term.create("D{BA}")
+    t6 = Term.create("E{DBA}")
+    resolver = MergedTerms().add(t1, t2, t3, t4, t5, t6).to_resolver()
+    d = resolver("aaa{EDBA}a{CA1}aaa")
+    assert d == {
         "EDBA": {"DBA": {"BA": {"A": {}}}},
         "CA1": {"A1": {}},
+    }
+    assert resolver.mark2term(d) == {
+        t6: {t5: {t3: {t1: {}}}},
+        t4: {t2: {}},
     }
