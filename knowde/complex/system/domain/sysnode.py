@@ -6,7 +6,7 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
-from knowde.complex.system.domain.term.domain import Term
+from knowde.complex.system.domain.term import Term
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -23,6 +23,9 @@ class Def(BaseModel, frozen=True):
         """便利コンストラクタ."""
         t = Term.create(*names, alias=alias)
         return cls(term=t, sentence=sentence)
+
+    def __repr__(self) -> str:  # noqa: D105
+        return str(self)
 
     def __str__(self) -> str:  # noqa: D105
         return f"{self.term}: {self.sentence}"

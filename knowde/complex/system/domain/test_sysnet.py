@@ -1,14 +1,16 @@
 """系ネットワーク."""
 
 
-from knowde.complex.system.domain.nxutil import nxprint
 from knowde.complex.system.domain.sysnet import (
     Def,
     EdgeType,
     SystemNetwork,
     get_headings,
+    get_resolved,
     heading_path,
+    setup_resolver,
 )
+from knowde.complex.system.domain.term import Term
 
 """
 何ができるようになりたいのか
@@ -31,6 +33,8 @@ from knowde.complex.system.domain.sysnet import (
         edge数
     diff
         nx.differenceで見れそう
+
+
 テキスト
 見出し-行-文脈木
     行の分解 -> 定義、用語、文
@@ -46,19 +50,11 @@ sysnet[unresolved]
 sysnet[resolved]
     DBやstageからも作成可能
 
-一覧
-用語一覧
-文一覧
-
-axioms
+axioms 依存するものがない大元のノード
+    term axioms
+    sentence axioms
 
 """
-
-
-# pattern
-# 直近
-# 兄弟
-# 文の
 
 
 def test_get_headings() -> None:
@@ -76,7 +72,6 @@ def test_heading_path() -> None:
     sn.add(EdgeType.BELOW, "aaa", "Aaa", "AAa")
     sn.add(EdgeType.SIBLING, "h2", "bbb", "ccc")
     sn.add(EdgeType.SIBLING, "x")
-    nxprint(sn.g)
     # 隣接
     assert heading_path(sn, "x") == ["sys"]  # root直下
     assert heading_path(sn, "aaa") == ["sys", "h1"]  # 見出しの兄弟
@@ -87,21 +82,36 @@ def test_heading_path() -> None:
     assert heading_path(sn, "ccc") == ["sys", "h1", "h2"]
 
 
-def test_add_node() -> None:
-    """いろいろ."""
+def test_setup_term() -> None:
+    """用語解決."""
     sn = SystemNetwork(root="sys")
-    sn.head("sys", "h1")
-    sn.add(EdgeType.BELOW, "h1", "aaa")
-    sn.add(EdgeType.SIBLING, "aaa", Def.create("df", ["A", "A1"], alias="P1"))
-    sn.add(EdgeType.SIBLING, "aaa", "bbb")
-    # nxprint(sn.g)
-    # networkx.all_simple_paths()
-    # print(sn.nested())
-    # print(list(sn.g.successors(sn.root)))
-    # print(sn.g.edges)
-    # nx.lowest_common_ancestor()
-    # print(nx.degree_histogram(sn.g))
-    # print(nx.density(sn.g))
-    # print(list(nx.non_edges(sn.g)))
-    # print(nx.number_of_nodes(sn.g))
-    # print(nx.number_of_edges(sn.g))
+    sn.add(EdgeType.HEAD, "h1")
+    sn.add(EdgeType.HEAD, "h2")
+    sn.add(
+        EdgeType.SIBLING,
+        "h1",
+        Def.create("df", ["A"]),
+        Def.create("b{A}b", ["B"]),
+        Def.create("ccc", ["C{B}"]),
+        Def.create("d{CB}d", ["D"]),
+    )
+    sn.add(
+        EdgeType.SIBLING,
+        "h2",
+        Def.create("ppp", ["P{D}"]),
+        Def.create("qqq", ["Q"]),
+        Term.create("X"),
+    )
+    setup_resolver(sn)
+    assert get_resolved(sn, "df") == {}
+    assert get_resolved(sn, "b{A}b") == {"df": {}}
+    assert get_resolved(sn, "ccc") == {"b{A}b": {"df": {}}}
+    assert get_resolved(sn, "d{CB}d") == {"ccc": {"b{A}b": {"df": {}}}}
+    assert get_resolved(sn, "ppp") == {}
+    assert get_resolved(sn, "qqq") == {}
+
+
+# nx.lowest_common_ancestor()
+# print(nx.number_of_nodes(sn.g))
+# print(nx.number_of_edges(sn.g))
+# print(nx.density(sn.g))

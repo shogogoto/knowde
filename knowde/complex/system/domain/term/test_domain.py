@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from .domain import (
+from . import (
     MergedTerms,
     Term,
     next_lookup,
