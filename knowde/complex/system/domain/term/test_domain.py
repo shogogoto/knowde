@@ -160,21 +160,24 @@ def test_lookup_error() -> None:
         Term.create("xx{X}xx"),
     )
     with pytest.raises(TermResolveError):
-        mt.to_network()
+        mt.to_resolver()
 
 
-# def test_resolve_term() -> None:
-#     """用語解決."""
-#     n = (
-#         MergedTerms()
-#         .add(
-#             Term.create("A", alias="a"),
-#             Term.create("A1", "A2"),
-#             Term.create("B{A}"),
-#             Term.create("C{A1}"),
-#             Term.create("D{BA}"),
-#             Term.create("E{DBA}"),
-#         )
-#         .to_network()
-#     )
-#     d = n.resolve("aaa{EDBA}a{CA1}aaa")
+def test_resolve_term() -> None:
+    """用語解決."""
+    resolver = (
+        MergedTerms()
+        .add(
+            Term.create("A", alias="a"),
+            Term.create("A1", "A2"),
+            Term.create("B{A}"),
+            Term.create("C{A1}"),
+            Term.create("D{BA}"),
+            Term.create("E{DBA}"),
+        )
+        .to_resolver()
+    )
+    assert resolver("aaa{EDBA}a{CA1}aaa") == {
+        "EDBA": {"DBA": {"BA": {"A": {}}}},
+        "CA1": {"A1": {}},
+    }

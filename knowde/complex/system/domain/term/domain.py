@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from collections import Counter
 from functools import cached_property
-from pprint import pp
 from typing import AbstractSet, Self
 
 import networkx as nx
@@ -14,7 +13,7 @@ from knowde.complex.system.domain.mark import (
     pick_marks,
     replace_markers,
 )
-from knowde.complex.system.domain.nxutil import succ_nested
+from knowde.complex.system.domain.nxutil import to_nested
 from knowde.core.types import NXGraph
 
 from .errors import (
@@ -56,12 +55,12 @@ class Term(BaseModel, frozen=True):
         return v
 
     @classmethod
-    def create(cls, *vs: str, alias: str | None = None) -> Self:  # noqa: D102
-        match len(vs):
+    def create(cls, *names: str, alias: str | None = None) -> Self:  # noqa: D102
+        match len(names):
             case 0:
-                return cls(names=frozenset(vs), alias=alias)
+                return cls(names=frozenset(names), alias=alias)
             case _:
-                return cls(names=frozenset(vs), alias=alias, rep=vs[0])
+                return cls(names=frozenset(names), alias=alias, rep=names[0])
 
     def __repr__(self) -> str:
         """Class representation."""
@@ -166,7 +165,7 @@ class MergedTerms(BaseModel, frozen=True):
         """Frozen merged terms."""
         return frozenset(self.terms)
 
-    def to_network(self) -> TermNetwork:
+    def to_resolver(self) -> TermResolver:
         """用語ネットワーク作成."""
         g = nx.DiGraph()
         lookup = self.atoms
@@ -187,7 +186,7 @@ class MergedTerms(BaseModel, frozen=True):
         if n_diff > 0:
             msg = f"{set(diff)}が用語解決できませんでした"
             raise TermResolveError(msg)
-        return TermNetwork(g=g, lookup=lookup)
+        return TermResolver(g=g, lookup=lookup)
 
 
 def next_lookup(
@@ -208,14 +207,13 @@ def next_lookup(
     return d, diff
 
 
-class TermNetwork(BaseModel, frozen=True):
-    """用語ネットワーク."""
+class TermResolver(BaseModel, frozen=True):
+    """用語解決器."""
 
     g: NXGraph
     lookup: dict[str, Term]
 
-    def resolve(self, s: str) -> dict:
-        """用語解決."""
-        pp(nx.to_dict_of_dicts(self.g))
+    def __call__(self, s: str) -> dict:
+        """任意の文字列を用語解決."""
         marks = pick_marks(s)
-        return {m: succ_nested(self.g, m) for m in marks}
+        return {m: to_nested(self.g, m, lambda g, n: g.successors(n)) for m in marks}
