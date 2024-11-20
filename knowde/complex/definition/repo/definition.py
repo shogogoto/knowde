@@ -24,12 +24,12 @@ from knowde.complex.definition.repo.mark import (
     remark_sentence,
 )
 from knowde.complex.definition.repo.statistics import statistics_query
+from knowde.complex.definition.sentence import LSentence
+from knowde.complex.definition.sentence.domain import Sentence
+from knowde.complex.definition.term import LTerm, TermUtil
 from knowde.core.label_repo.base import RelBase
 from knowde.core.label_repo.query import QueryResult, query_cypher
 from knowde.core.label_repo.rel import RelUtil
-from knowde.primitive.sentence import LSentence
-from knowde.primitive.sentence.domain import Sentence
-from knowde.primitive.term import LTerm, TermUtil
 
 RelDefUtil = RelUtil(
     t_source=LTerm,

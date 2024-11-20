@@ -10,6 +10,7 @@ from knowde.complex.deduction.domain import (
     StatsDeduction,
     StatsDeductions,
 )
+from knowde.complex.deduction.proposition.domain import Proposition
 from knowde.complex.deduction.repo.errors import (
     CyclicDependencyError,
     NoPremiseError,
@@ -30,7 +31,6 @@ from knowde.core import jst_now
 from knowde.core.errors.domain import NeomodelNotFoundError
 from knowde.core.label_repo.query import query_cypher
 from knowde.core.label_repo.util import LabelUtil
-from knowde.primitive.proposition.domain import Proposition
 
 
 def check_premises_and_conclusion(premise_ids: list[UUID], conclusion_id: UUID) -> None:

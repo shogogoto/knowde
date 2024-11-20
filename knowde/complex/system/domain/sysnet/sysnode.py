@@ -6,7 +6,7 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
-from knowde.complex.system.domain.term import Term
+from knowde.primitive.term import Term
 
 if TYPE_CHECKING:
     from uuid import UUID

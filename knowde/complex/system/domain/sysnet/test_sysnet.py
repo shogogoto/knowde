@@ -1,7 +1,7 @@
 """系ネットワーク."""
 
 
-from knowde.complex.system.domain.term import Term
+from knowde.primitive.term import Term
 
 from . import (
     EdgeType,

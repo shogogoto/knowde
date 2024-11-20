@@ -9,9 +9,9 @@ from knowde.complex.definition.domain.domain import (
 )
 from knowde.complex.definition.repo.definition import RelDefUtil
 from knowde.complex.definition.repo.mark import RelMark, RelMarkUtil
+from knowde.complex.definition.sentence.domain import Sentence
+from knowde.complex.definition.term.domain import Term
 from knowde.core.label_repo.query import query_cypher
-from knowde.primitive.sentence.domain import Sentence
-from knowde.primitive.term.domain import Term
 
 
 def find_recursively(def_uid: UUID) -> DefinitionTree:
