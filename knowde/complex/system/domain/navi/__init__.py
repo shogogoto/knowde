@@ -18,5 +18,5 @@ def heading_path(sn: SystemNetwork, n: SysNodeType) -> list[SysNodeType]:
     return [e for e in p if e in sn.headings]
 
 
-def axiom_paths(sy: SystemNetwork, n: SysNodeType) -> None:
-    pass
+# def axiom_paths(sn: SystemNetwork, n: SysNodeType) -> None:
+#     pass
