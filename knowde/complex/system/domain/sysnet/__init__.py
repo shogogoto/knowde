@@ -17,8 +17,8 @@ from knowde.complex.system.domain.nxutil import (
     to_nested,
     to_nodes,
 )
-from knowde.complex.system.domain.term import MergedTerms, Term, TermResolver
 from knowde.core.types import NXGraph
+from knowde.primitive.term import MergedTerms, Term, TermResolver
 
 from .errors import UnResolvedTermError
 from .sysnode import Def, SysNodeType
