@@ -7,3 +7,11 @@ class TermMergeError(Exception):
 
 class TermConflictError(Exception):
     """用語の衝突."""
+
+
+class AliasContainsMarkError(Exception):
+    """別名にマークを含んだらダメ."""
+
+
+class TermResolveError(Exception):
+    """用語解決に失敗."""

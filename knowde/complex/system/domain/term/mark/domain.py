@@ -1,8 +1,8 @@
-"""マークから定義名を抽出する関数群."""
+"""mark domain."""
+
 from __future__ import annotations
 
 import re
-from typing import Final
 
 from .errors import (
     EmptyMarkError,
@@ -10,11 +10,10 @@ from .errors import (
     PlaceHolderMappingError,
 )
 
-BRACE_OPEN: Final = "{"
-BRACE_CLOSE: Final = "}"
-# 非貪欲=最小マッチ
-MARK_PATTERN: Final = re.compile(rf"\{BRACE_OPEN}(.+?)\{BRACE_CLOSE}")
-HOLDER: Final = "%@"
+MARK_OPEN = "{"
+MARK_CLOSE = "}"
+
+MARK_PATTERN = re.compile(rf"\{MARK_OPEN}(.+?)\{MARK_CLOSE}")  # 非貪欲=最小マッチ
 
 
 def pick_marks(s: str) -> list[str]:
@@ -23,7 +22,7 @@ def pick_marks(s: str) -> list[str]:
         return []
     marks = MARK_PATTERN.findall(s)
     if any(map(contains_mark_symbol, marks)):
-        msg = f"マーク内に'{BRACE_OPEN}'または'{BRACE_CLOSE}'が含まれています: {s}"
+        msg = f"マーク内に'{MARK_OPEN}'または'{MARK_CLOSE}'が含まれています: {s}"
         raise MarkContainsMarkError(msg)
     if len(marks) == 0:
         msg = "マーク内に文字列を入力してください"
@@ -33,15 +32,26 @@ def pick_marks(s: str) -> list[str]:
 
 def contains_mark_symbol(s: str) -> bool:
     """マーク文字を含むか."""
-    return BRACE_OPEN in s or BRACE_CLOSE in s
+    return MARK_OPEN in s or MARK_CLOSE in s
 
 
-def mark2holder(s: str) -> str:
+PLACE_HOLDER = "$@"
+
+
+def replace_placeholder(s: str) -> str:
     """markをplaceholderに置き換える."""
-    return MARK_PATTERN.sub(HOLDER, s)
+    return MARK_PATTERN.sub(PLACE_HOLDER, s)
 
 
-def inject2holder(
+def replace_markers(s: str, *repls: str) -> str:
+    """markを置き換える."""
+    ret = s
+    for repl in repls:
+        ret = MARK_PATTERN.sub(repl, ret, count=1)
+    return ret
+
+
+def inject2placeholder(
     s: str,
     values: list[str],
     prefix: str = "",
@@ -49,17 +59,17 @@ def inject2holder(
 ) -> str:
     """プレースホルダーに順次文字列を埋め込む."""
     ret = s
-    n_ph = ret.count(HOLDER)
+    n_ph = ret.count(PLACE_HOLDER)
     n_v = len(values)
     if n_ph != n_v:
         msg = f"プレースホルダー数{ret} != 置換する値の数{values}"
         raise PlaceHolderMappingError(msg)
-    c = re.compile(rf"{HOLDER}")
+    c = re.compile(r"\$\@")
     for v in values:
         ret = c.sub(prefix + v + suffix, ret, count=1)
     return ret
 
 
-def count_holder(s: str) -> int:
+def count_placeholder(s: str) -> int:
     """文字列に含まれるプレースホルダーを数える."""
-    return s.count(HOLDER)
+    return s.count(PLACE_HOLDER)

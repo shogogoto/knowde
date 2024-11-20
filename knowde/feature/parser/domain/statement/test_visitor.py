@@ -1,20 +1,8 @@
 """test statement visitor."""
-
-
 from pytest_unordered import unordered
 
 from knowde.feature.parser.domain.parser.parser import transparse
 from knowde.feature.parser.domain.statement.visitor import tree2statements
-
-"""
-
-ctx
-改行
-統計情報
-検索
-用語との組み合わせ complex?
-総数
-"""
 
 
 def test_multiline() -> None:

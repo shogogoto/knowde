@@ -3,11 +3,12 @@ from __future__ import annotations
 
 import pytest
 
-from knowde.feature.parser.domain.term.domain import (
+from . import (
+    MergedTerms,
     Term,
-    TermSpace,
+    next_lookup,
 )
-from knowde.feature.parser.domain.term.errors import TermConflictError
+from .errors import AliasContainsMarkError, TermConflictError, TermResolveError
 
 """
 Termは名前の集合に与える識別子
@@ -28,6 +29,12 @@ A=B=C:
 """
 
 
+def test_alias_error() -> None:
+    """Alias contains marks."""
+    with pytest.raises(AliasContainsMarkError):
+        Term.create(alias="a{b}")
+
+
 def test_term_str() -> None:
     """String."""
     t1 = Term.create("X", "x1", "x2")
@@ -36,12 +43,14 @@ def test_term_str() -> None:
     t4 = Term.create("U", alias="P1")
     t5 = Term.create("V", "v1", alias="P1")
     t6 = Term.create(alias="P1")
-    assert str(t1) == "X(x1, x2)"
+    t7 = Term.create("B{A}")
+    assert str(t1) in ["X(x1, x2)", "X(x2, x1)"]
     assert str(t2) == "Y(y1)"
     assert str(t3) == "Z"
     assert str(t4) == "U[P1]"
     assert str(t5) == "V(v1)[P1]"
     assert str(t6) == "[P1]"
+    assert str(t7) == "B{A}"
 
 
 def test_term_has_common() -> None:
@@ -95,9 +104,9 @@ def test_term_with_alias_allows_merge(
     assert t2.allows_merge(t1) == expected
 
 
-def test_termspace_add() -> None:
-    """用語空間に用語を追加."""
-    s = TermSpace()
+def test_merge_term() -> None:
+    """用語をマージ."""
+    s = MergedTerms()
     # 共通ありで合併
     t1 = Term.create("X", "x1")
     t2 = Term.create("X", "x2")
@@ -113,3 +122,62 @@ def test_termspace_add() -> None:
     t3 = Term.create("Y")
     s.add(t3)
     assert len(s) == 2  # noqa: PLR2004
+
+
+def test_lookup() -> None:
+    """参照."""
+    mt = MergedTerms()
+    t1 = Term.create("A", alias="a")
+    t2 = Term.create("A1", "A2")
+    t3 = Term.create("B{A}")
+    t4 = Term.create("C{BA}")
+    mt.add(t1, t2, t3, t4)
+    # 0th
+    assert mt.atoms == {"A": t1, "a": t1, "A1": t2, "A2": t2}
+    # 1th
+    l1, _ = next_lookup(mt.atoms, mt.frozen)
+    assert l1 == {"BA": t3}
+    # 2th
+    d = {**mt.atoms, **l1}
+    l2, _ = next_lookup(d, mt.frozen)
+    assert l2 == {"CBA": t4}
+
+    # 3th
+    d = {**d, **l2}
+    l3, _ = next_lookup(d, mt.frozen)
+    assert l3 == {}
+
+
+def test_lookup_error() -> None:
+    """参照失敗."""
+    mt = MergedTerms()
+    mt.add(
+        Term.create("A", alias="a"),
+        Term.create("A1", "A2"),
+        Term.create("B{A}"),
+        Term.create("C{A1}"),
+        Term.create("D{BA}"),
+        Term.create("xx{X}xx"),
+    )
+    with pytest.raises(TermResolveError):
+        mt.to_resolver()
+
+
+def test_resolve_term() -> None:
+    """用語解決."""
+    t1 = Term.create("A", alias="a")
+    t2 = Term.create("A1", "A2")
+    t3 = Term.create("B{A}")
+    t4 = Term.create("C{A1}")
+    t5 = Term.create("D{BA}")
+    t6 = Term.create("E{DBA}")
+    resolver = MergedTerms().add(t1, t2, t3, t4, t5, t6).to_resolver()
+    d = resolver("aaa{EDBA}a{CA1}aaa")
+    assert d == {
+        "EDBA": {"DBA": {"BA": {"A": {}}}},
+        "CA1": {"A1": {}},
+    }
+    assert resolver.mark2term(d) == {
+        t6: {t5: {t3: {t1: {}}}},
+        t4: {t2: {}},
+    }
