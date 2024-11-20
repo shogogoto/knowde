@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
-from knowde.complex import deduct_router, def_router, person_router
+from knowde.complex import deduct_router, def_router
 from knowde.core import ErrorHandlingMiddleware
 from knowde.primitive import (
     book_router,
@@ -26,4 +26,3 @@ api.include_router(sec_router)
 api.include_router(p_router)
 api.include_router(deduct_router)
 api.include_router(tl_router)
-api.include_router(person_router)
