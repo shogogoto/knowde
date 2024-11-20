@@ -5,6 +5,15 @@ from uuid import UUID
 
 import click
 
+from knowde.complex.deduction.proposition.domain import Proposition
+from knowde.complex.deduction.proposition.dto import PropositionParam
+from knowde.complex.deduction.proposition.repo.repo import (
+    add_proposition,
+    change_proposition,
+    complete_proposition,
+    delete_proposition,
+    list_propositions,
+)
 from knowde.core.api.api_param import APIPath, APIQuery, NullPath
 from knowde.core.api.endpoint import Endpoint
 from knowde.core.api.facade import ClientFactory
@@ -13,15 +22,6 @@ from knowde.core.cli.click_decorators import each_args
 from knowde.core.cli.click_decorators.view.options import view_options
 from knowde.core.cli.field.model2click import model2decorator
 from knowde.core.cli.field.types import PrefUidParam
-from knowde.primitive.proposition.domain import Proposition
-from knowde.primitive.proposition.dto import PropositionParam
-from knowde.primitive.proposition.repo.repo import (
-    add_proposition,
-    change_proposition,
-    complete_proposition,
-    delete_proposition,
-    list_propositions,
-)
 
 p_router = Endpoint.Proposition.create_router()
 pf = ClientFactory(router=p_router, rettype=Proposition)

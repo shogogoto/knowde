@@ -1,5 +1,5 @@
 """test."""
-from knowde.primitive.proposition.repo.repo import (
+from knowde.complex.deduction.proposition.repo.repo import (
     add_proposition,
     change_proposition,
     delete_proposition,
