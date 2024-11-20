@@ -8,11 +8,6 @@ from typing import AbstractSet, Self
 import networkx as nx
 from pydantic import BaseModel, Field, field_validator
 
-from knowde.complex.system.domain.mark import (
-    contains_mark_symbol,
-    pick_marks,
-    replace_markers,
-)
 from knowde.complex.system.domain.nxutil import to_nested
 from knowde.core.types import NXGraph
 
@@ -21,6 +16,11 @@ from .errors import (
     TermConflictError,
     TermMergeError,
     TermResolveError,
+)
+from .mark import (
+    contains_mark_symbol,
+    pick_marks,
+    replace_markers,
 )
 
 
