@@ -3,7 +3,7 @@
 
 import networkx as nx
 
-from knowde.complex.system.domain.nxutil import succ_attr, to_nested
+from . import succ_attr, to_nested
 
 
 def test_to_nested() -> None:  # noqa: D103

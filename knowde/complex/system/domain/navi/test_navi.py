@@ -25,3 +25,27 @@ def test_heading_path() -> None:
     assert heading_path(sn, "AAa") == ["sys", "h1"]  #   文の下の下
     assert heading_path(sn, "bbb") == ["sys", "h1", "h2"]
     assert heading_path(sn, "ccc") == ["sys", "h1", "h2"]
+
+
+def test_axiom_path() -> None:
+    """出発点となる文pathを取得.
+
+    文同士のエッジを辿るのが基本
+
+    EdgeType毎に出発点は考えられるが、ここでは意味的なもの
+        BELOW
+            どのスコープなのか
+        TO関係
+            公理は何か
+        RESOLVE
+            最も素朴な概念は何か
+
+    paths
+
+    int
+        依存元の数
+        依存先の数
+        axiom dist
+        leaf dist
+
+    """
