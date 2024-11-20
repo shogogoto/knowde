@@ -1,13 +1,13 @@
 """系ネットワーク."""
 
 
-from knowde.complex.system.domain.sysnet import (
-    Def,
+from knowde.complex.system.domain.term import Term
+
+from . import (
     EdgeType,
     SystemNetwork,
-    get_resolved,
 )
-from knowde.complex.system.domain.term import Term
+from .sysnode import Def
 
 """
 何ができるようになりたいのか
@@ -82,12 +82,12 @@ def test_setup_term() -> None:
         Term.create("X"),
     )
     sn.setup_resolver()
-    assert get_resolved(sn, "df") == {}
-    assert get_resolved(sn, "b{A}b") == {"df": {}}
-    assert get_resolved(sn, "ccc") == {"b{A}b": {"df": {}}}
-    assert get_resolved(sn, "d{CB}d") == {"ccc": {"b{A}b": {"df": {}}}}
-    assert get_resolved(sn, "ppp") == {}
-    assert get_resolved(sn, "qqq") == {}
+    assert sn.get_resolved("df") == {}
+    assert sn.get_resolved("b{A}b") == {"df": {}}
+    assert sn.get_resolved("ccc") == {"b{A}b": {"df": {}}}
+    assert sn.get_resolved("d{CB}d") == {"ccc": {"b{A}b": {"df": {}}}}
+    assert sn.get_resolved("ppp") == {}
+    assert sn.get_resolved("qqq") == {}
 
 
 # nx.lowest_common_ancestor()

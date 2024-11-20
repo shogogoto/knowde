@@ -10,9 +10,6 @@ import networkx as nx
 from networkx import DiGraph
 from pydantic import BaseModel, Field, PrivateAttr
 
-from knowde.complex.system.domain.errors import (
-    UnResolvedTermError,
-)
 from knowde.complex.system.domain.nxutil import (
     Accessor,
     pred_attr,
@@ -20,10 +17,11 @@ from knowde.complex.system.domain.nxutil import (
     to_nested,
     to_nodes,
 )
-from knowde.complex.system.domain.sysnode import Def, SysNodeType
+from knowde.complex.system.domain.term import MergedTerms, Term, TermResolver
 from knowde.core.types import NXGraph
 
-from .term import MergedTerms, Term, TermResolver
+from .errors import UnResolvedTermError
+from .sysnode import Def, SysNodeType
 
 
 class EdgeType(Enum):
@@ -112,7 +110,9 @@ class SystemNetwork(BaseModel):
         """用語解決器."""
         return (
             MergedTerms()
-            .add(*[n for n in self.g.nodes if isinstance(n, Term)])
+            .add(
+                *[n for n in self.g.nodes if isinstance(n, Term)],
+            )
             .to_resolver()
         )
 
@@ -129,9 +129,11 @@ class SystemNetwork(BaseModel):
             _add_resolve_edge(self, s, td)
         self._is_resolved = True
 
-    @property
-    def is_resolved(self) -> bool:  # noqa: D102
-        return self._is_resolved
+    def get_resolved(self, s: str) -> dict:
+        """解決済み入れ子文を取得."""
+        if not self._is_resolved:
+            raise UnResolvedTermError
+        return to_nested(self.g, s, EdgeType.RESOLVE.succ)
 
 
 def _add_resolve_edge(sn: SystemNetwork, start: str, termd: dict) -> None:
@@ -141,13 +143,6 @@ def _add_resolve_edge(sn: SystemNetwork, start: str, termd: dict) -> None:
         EdgeType.RESOLVE.add_edge(sn.g, start, s)  # 文 -> 文
         if any(v):  # 空でない
             _add_resolve_edge(sn, str(s), v)
-
-
-def get_resolved(sn: SystemNetwork, s: str) -> dict:
-    """解決済み入れ子文を取得."""
-    if not sn.is_resolved:
-        raise UnResolvedTermError
-    return to_nested(sn.g, s, EdgeType.RESOLVE.succ)
 
 
 def isolate_node(_sn: SystemNetwork) -> None:
