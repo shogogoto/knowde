@@ -6,7 +6,7 @@ import pytest
 
 from knowde.complex.definition.domain.description import Description
 from knowde.complex.definition.repo.errors import UndefinedMarkedTermError
-from knowde.primitive.term import TermUtil
+from knowde.complex.definition.term import TermUtil
 
 from .mark import add_description, find_marked_terms, remark_sentence, remove_marks
 

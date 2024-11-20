@@ -14,7 +14,6 @@ api = FastAPI()
 api.add_middleware(ErrorHandlingMiddleware)
 
 api.include_router(def_router)
-
 api.include_router(p_router)
 api.include_router(deduct_router)
 api.include_router(tl_router)

@@ -14,12 +14,12 @@ from knowde.complex.definition.domain.mark import (
     inject2placeholder,
 )
 from knowde.complex.definition.repo.errors import UndefinedMarkedTermError
+from knowde.complex.definition.sentence import LSentence, SentenceUtil
+from knowde.complex.definition.sentence.domain import Sentence
+from knowde.complex.definition.term import LTerm, TermUtil
+from knowde.complex.definition.term.domain import Term
 from knowde.core import RelBase, RelUtil
 from knowde.core.label_repo.label import Label
-from knowde.primitive.sentence import LSentence, SentenceUtil
-from knowde.primitive.sentence.domain import Sentence
-from knowde.primitive.term import LTerm, TermUtil
-from knowde.primitive.term.domain import Term
 
 if TYPE_CHECKING:
     from uuid import UUID

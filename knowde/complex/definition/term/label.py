@@ -1,9 +1,9 @@
 """neomodel label."""
 from neomodel import StringProperty
 
+from knowde.complex.definition.term.domain import MAX_CHARS, Term
 from knowde.core.label_repo.base import LBase
 from knowde.core.label_repo.util import LabelUtil
-from knowde.primitive.term.domain import MAX_CHARS, Term
 
 
 class LTerm(LBase):

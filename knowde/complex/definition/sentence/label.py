@@ -1,9 +1,9 @@
 """neomodel label."""
 from neomodel import StringProperty
 
+from knowde.complex.definition.sentence.domain import MAX_CHARS, Sentence
 from knowde.core.label_repo.base import LBase
 from knowde.core.label_repo.util import LabelUtil
-from knowde.primitive.sentence.domain import MAX_CHARS, Sentence
 
 
 class LSentence(LBase):  # noqa: D101
