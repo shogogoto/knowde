@@ -20,27 +20,28 @@ from .sysnode import Def
     名前解決情報
 
 情報の得方
-    NW1つ -> 統計stats
-    NW2つ -> 差分diff
-    NW1つ, node1つ -> navi
-    NW1つ, node2つ -> 統計stats
-
-
-
-
-全文そのまま見るのならテキストで足りてる
-    検索
-        ヒットした要素の何を返すか
-    統計値
-        字数
-        node数
-            文
-            用語
-            コメント //　無視可能
-        edge数
-    diff
-        nx.differenceで見れそう
-
+    NW1つ, node1つ
+        navi
+        search
+            sysnodeを返す, 数値ではない
+    NW1つ, node2つ
+    NW1つ
+        統計stats
+            字数
+            node数
+                文
+                用語
+                コメント //　無視可能
+            edge数
+            axioms
+            leaves
+            なんかグラフ理論の指標
+    NW2つ
+        差分diff
+            nx.differenceで見れそう
+            自己との差分
+        結合
+            名寄: 別NWの用語同士を同一視する
 
 テキスト
 見出し-行-文脈木

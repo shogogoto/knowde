@@ -39,6 +39,9 @@ def test_axiom_path() -> None:
             公理は何か
         RESOLVE
             最も素朴な概念は何か
+    statsでもaxiomは出せる
+        あるnodeから遡るのではない
+        isolate_node
 
     paths
 
