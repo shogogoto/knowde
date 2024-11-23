@@ -1,3 +1,4 @@
+"""nxutil types."""
 from typing import Callable, Hashable, Iterator, TypeAlias
 
 import networkx as nx
