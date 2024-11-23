@@ -1,8 +1,6 @@
 """ナビ 任意sysnodeの位置を把握する羅針盤."""
 from __future__ import annotations
 
-from typing import Any, Hashable
-
 import networkx as nx
 
 from knowde.complex.system.domain.sysnet import SystemNetwork
