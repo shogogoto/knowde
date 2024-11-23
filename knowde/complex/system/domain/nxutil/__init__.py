@@ -74,7 +74,7 @@ def pred_attr(attr_name: str, value: Any) -> Accessor:  # noqa: ANN401
     return _f
 
 
-def filter_edge_attr(g: nx.DiGraph, name: str, value: Any) -> nx.DiGraph:
+def filter_edge_attr(g: nx.DiGraph, name: str, value: Any) -> nx.DiGraph:  # noqa: ANN401
     """ある属性のエッジのみを抽出する関数を返す."""
 
     def _f(u: Hashable, v: Hashable) -> bool:
@@ -106,8 +106,7 @@ def leaf_paths(g: nx.DiGraph, tgt: Hashable, t: Any) -> list[list[Hashable]]:  #
 def axiom_paths(g: nx.DiGraph, tgt: Hashable, t: Any) -> list[list[Hashable]]:  # noqa: ANN401
     """入力ノードから特定の関係を遡って依存元がないノードまでのパスを返す."""
     sub = filter_edge_attr(g, "type", t)
-    edges = [
+    pairs = [
         (n, tgt) for n in sub.nodes if sub.in_degree(n) == 0 and sub.degree(n) != 0
     ]
-    print(edges)
-    return _to_paths(sub, edges)
+    return _to_paths(sub, pairs)
