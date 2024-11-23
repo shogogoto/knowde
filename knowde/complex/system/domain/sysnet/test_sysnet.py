@@ -101,7 +101,19 @@ def test_setup_term() -> None:
     assert sn.get_resolved("qqq") == {}
 
 
-# nx.lowest_common_ancestor()
-# print(nx.number_of_nodes(sn.g))
-# print(nx.number_of_edges(sn.g))
-# print(nx.density(sn.g))
+def test_heading_path() -> None:
+    """任意のnodeから直近の見出しpathを取得."""
+    sn = SystemNetwork(root="sys")
+    sn.add(EdgeType.HEAD, *[f"h{i}" for i in range(1, 4)])
+    sn.add(EdgeType.SIBLING, "h1", "aaa")
+    sn.add(EdgeType.BELOW, "aaa", "Aaa", "AAa")
+    sn.add(EdgeType.SIBLING, "h2", "bbb", "ccc")
+    sn.add(EdgeType.SIBLING, "x")
+    # 隣接
+    assert sn.heading_path("x") == ["sys"]  # root直下
+    assert sn.heading_path("aaa") == ["sys", "h1"]  # 見出しの兄弟
+    # 非隣接
+    assert sn.heading_path("Aaa") == ["sys", "h1"]  #   文の下
+    assert sn.heading_path("AAa") == ["sys", "h1"]  #   文の下の下
+    assert sn.heading_path("bbb") == ["sys", "h1", "h2"]
+    assert sn.heading_path("ccc") == ["sys", "h1", "h2"]

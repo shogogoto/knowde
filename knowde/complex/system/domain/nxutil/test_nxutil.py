@@ -62,9 +62,6 @@ def test_axiom_paths() -> None:
     g = nx.balanced_tree(3, 2, nx.DiGraph())
     nx.set_edge_attributes(g, "x", "type")
     g.add_edge(9, "dummy", type="dummy")
-    # nxprint(g, True)
     assert axiom_paths(g, 7, "x") == [[0, 2, 7]]
     assert axiom_paths(g, 2, "x") == [[0, 2]]
-    # assert axiom_paths(g, 2, "x") == [[2, 7], [2, 8], [2, 9]]
-    # assert axiom_paths(g, 0, "x") == [[7]]
-    # assert axiom_paths(g, 2, "y") == []
+    assert axiom_paths(g, "dummy", "x") == []

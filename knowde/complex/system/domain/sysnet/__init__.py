@@ -19,7 +19,7 @@ from knowde.complex.system.domain.nxutil import (
 from knowde.core.types import NXGraph
 from knowde.primitive.term import MergedTerms, Term, TermResolver
 
-from .errors import UnResolvedTermError
+from .errors import HeadingNotFoundError, UnResolvedTermError
 from .sysnode import Def, SysNodeType
 
 
@@ -87,12 +87,6 @@ class SystemNetwork(BaseModel):
                 raise TypeError
 
     @property
-    def headings(self) -> set[str]:
-        """見出しセット."""
-        ns = to_nodes(self.g, self.root, succ_attr("type", EdgeType.HEAD))
-        return {str(n) for n in ns}
-
-    @property
     def sentences(self) -> list[str]:
         """文."""
         s = [n for n in self.g.nodes if isinstance(n, str)]
@@ -128,6 +122,20 @@ class SystemNetwork(BaseModel):
         if not self._is_resolved:
             raise UnResolvedTermError
         return to_nested(self.g, s, EdgeType.RESOLVE.succ)
+
+    @property
+    def headings(self) -> set[str]:
+        """見出しセット."""
+        ns = to_nodes(self.g, self.root, succ_attr("type", EdgeType.HEAD))
+        return {str(n) for n in ns}
+
+    def heading_path(self, n: SysNodeType) -> list[SysNodeType]:
+        """直近の見出しパス."""
+        paths = list(nx.shortest_simple_paths(self.g, self.root, n))
+        if len(paths) == 0:
+            raise HeadingNotFoundError
+        p = paths[0]
+        return [e for e in p if e in self.headings]
 
 
 def _add_resolve_edge(sn: SystemNetwork, start: str, termd: dict) -> None:
