@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from enum import Enum, auto
 from functools import cached_property
-from itertools import chain, pairwise
 from typing import Any, Hashable
 
 import networkx as nx
@@ -68,19 +67,14 @@ class SystemNetwork(BaseModel):
 
     def add(self, t: EdgeType, *path: SysNodeType) -> tuple[SysNodeType, ...]:
         """既存nodeから開始していない場合はrootからedgeを伸ばすように登録."""
-        niter = iter(path)
-        try:
-            first = next(niter)
-        except StopIteration:
-            return path
-        first = (self.root, first) if first not in self.g else (first,)
-        for pre, suc in pairwise(chain(first, niter)):
-            p = self._add(pre)
-            s = self._add(suc)
-            t.add_edge(self.g, p, s)
+        if len(path) > 0:
+            first = path[0]
+            _p = path if first in self.g else [self.root, *path]
+            _p = [self._pre_add_edge(n) for n in _p]
+            nx.add_path(self.g, _p, type=t)
         return path
 
-    def _add(self, n: SysNodeType) -> str | Term:
+    def _pre_add_edge(self, n: SysNodeType) -> str | Term:
         """定義の追加."""
         match n:
             case Term() | str():
