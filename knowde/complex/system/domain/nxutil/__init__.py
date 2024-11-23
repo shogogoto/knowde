@@ -2,11 +2,19 @@
 from __future__ import annotations
 
 from pprint import pp
-from typing import Any, Callable, Hashable, Iterator, TypeAlias
+from typing import Any, Hashable, Iterator
 
 import networkx as nx
 
-Accessor: TypeAlias = Callable[[nx.DiGraph, Hashable], Iterator[Hashable]]
+from knowde.complex.system.domain.nxutil.types import Accessor, Pairs
+
+
+def nxprint(g: nx.DiGraph, detail: bool = False) -> None:  # noqa: FBT001 FBT002
+    """確認用."""
+    print("")  # noqa: T201
+    nx.write_network_text(g)
+    if detail:
+        pp(nx.to_dict_of_dicts(g))
 
 
 def to_nested(
@@ -66,8 +74,40 @@ def pred_attr(attr_name: str, value: Any) -> Accessor:  # noqa: ANN401
     return _f
 
 
-def nxprint(g: nx.DiGraph) -> None:
-    """確認用."""
-    print("")  # noqa: T201
-    nx.write_network_text(g)
-    pp(nx.to_dict_of_dicts(g))
+def filter_edge_attr(g: nx.DiGraph, name: str, value: Any) -> nx.DiGraph:
+    """ある属性のエッジのみを抽出する関数を返す."""
+
+    def _f(u: Hashable, v: Hashable) -> bool:
+        return g[u][v][name] == value
+
+    return nx.subgraph_view(g, filter_edge=_f)
+
+
+def _to_paths(g: nx.DiGraph, pairs: Pairs) -> list[list[Hashable]]:
+    paths = []
+    for u, v in pairs:
+        try:
+            p = list(nx.shortest_path(g, u, v))
+            paths.append(p)
+        except nx.NetworkXNoPath:  # noqa: PERF203
+            continue
+    return paths
+
+
+def leaf_paths(g: nx.DiGraph, tgt: Hashable, t: Any) -> list[list[Hashable]]:  # noqa: ANN401
+    """入力ノードから特定の関係を遡って依存先がないノードまでのパスを返す."""
+    sub = filter_edge_attr(g, "type", t)
+    edges = [
+        (tgt, n) for n in sub.nodes if sub.out_degree(n) == 0 and sub.degree(n) != 0
+    ]
+    return _to_paths(sub, edges)
+
+
+def axiom_paths(g: nx.DiGraph, tgt: Hashable, t: Any) -> list[list[Hashable]]:  # noqa: ANN401
+    """入力ノードから特定の関係を遡って依存元がないノードまでのパスを返す."""
+    sub = filter_edge_attr(g, "type", t)
+    edges = [
+        (n, tgt) for n in sub.nodes if sub.in_degree(n) == 0 and sub.degree(n) != 0
+    ]
+    print(edges)
+    return _to_paths(sub, edges)
