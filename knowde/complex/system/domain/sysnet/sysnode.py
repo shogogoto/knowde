@@ -31,7 +31,8 @@ class Def(BaseModel, frozen=True):
         return f"{self.term}: {self.sentence}"
 
 
-SysNodeType: TypeAlias = Term | Def | str
+SysNode: TypeAlias = Term | str
+SysArg: TypeAlias = SysNode | Def
 
 
 class Duplicable(BaseModel, frozen=True):

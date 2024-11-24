@@ -20,7 +20,7 @@ from knowde.core.types import NXGraph
 from knowde.primitive.term import MergedTerms, Term, TermResolver
 
 from .errors import HeadingNotFoundError, UnResolvedTermError
-from .sysnode import Def, SysNodeType
+from .sysnode import Def, SysArg, SysNode
 
 
 class EdgeType(Enum):
@@ -65,7 +65,7 @@ class SystemNetwork(BaseModel):
     def model_post_init(self, __context: Any) -> None:  # noqa: ANN401 D102
         self.g.add_node(self.root)
 
-    def add(self, t: EdgeType, *path: SysNodeType) -> tuple[SysNodeType, ...]:
+    def add(self, t: EdgeType, *path: SysArg) -> tuple[SysArg, ...]:
         """既存nodeから開始していない場合はrootからedgeを伸ばすように登録."""
         if len(path) > 0:
             first = path[0]
@@ -74,7 +74,7 @@ class SystemNetwork(BaseModel):
             nx.add_path(self.g, _p, type=t)
         return path
 
-    def _pre_add_edge(self, n: SysNodeType) -> str | Term:
+    def _pre_add_edge(self, n: SysArg) -> str | Term:
         """定義の追加."""
         match n:
             case Term() | str():
@@ -129,7 +129,7 @@ class SystemNetwork(BaseModel):
         ns = to_nodes(self.g, self.root, succ_attr("type", EdgeType.HEAD))
         return {str(n) for n in ns}
 
-    def heading_path(self, n: SysNodeType) -> list[SysNodeType]:
+    def heading_path(self, n: SysNode) -> list[SysNode]:
         """直近の見出しパス."""
         paths = list(nx.shortest_simple_paths(self.g, self.root, n))
         if len(paths) == 0:
@@ -145,7 +145,3 @@ def _add_resolve_edge(sn: SystemNetwork, start: str, termd: dict) -> None:
         EdgeType.RESOLVE.add_edge(sn.g, start, s)  # 文 -> 文
         if any(v):  # 空でない
             _add_resolve_edge(sn, str(s), v)
-
-
-def isolate_node(_sn: SystemNetwork) -> None:
-    """孤立したノード."""

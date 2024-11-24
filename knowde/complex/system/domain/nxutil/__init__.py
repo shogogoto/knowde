@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from pprint import pp
-from typing import Any, Hashable, Iterator
+from typing import Any, Callable, Hashable, Iterator
 
 import networkx as nx
 
@@ -110,3 +110,11 @@ def axiom_paths(g: nx.DiGraph, tgt: Hashable, t: Any) -> list[list[Hashable]]:  
         (n, tgt) for n in sub.nodes if sub.in_degree(n) == 0 and sub.degree(n) != 0
     ]
     return _to_paths(sub, pairs)
+
+
+def nxconvert(g: nx.DiGraph, convert: Callable[[Hashable], Hashable]) -> nx.DiGraph:
+    """ネットワークのノード型を変換."""
+    new = nx.DiGraph()
+    new.add_nodes_from([convert(n) for n in g.nodes])
+    new.add_edges_from([(convert(u), convert(v), d) for u, v, d in g.edges(data=True)])
+    return new

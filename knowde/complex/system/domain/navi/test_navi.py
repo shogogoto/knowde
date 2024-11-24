@@ -1,5 +1,8 @@
 """test."""
 
+import networkx as nx
+
+from knowde.complex.system.domain.nxutil import nxconvert, nxprint
 
 """
 文同士のエッジを辿るのが基本
@@ -28,3 +31,10 @@ int
 # print(nx.number_of_nodes(sn.g))
 # print(nx.number_of_edges(sn.g))
 # print(nx.density(sn.g))
+
+
+def test_navi() -> None:
+    """ナビ."""
+    g = nx.balanced_tree(2, 3, nx.DiGraph())
+    g = nxconvert(g, str)
+    nxprint(g)
