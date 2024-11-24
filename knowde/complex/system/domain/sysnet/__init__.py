@@ -19,7 +19,7 @@ from knowde.complex.system.domain.nxutil import (
 from knowde.core.types import NXGraph
 from knowde.primitive.term import MergedTerms, Term, TermResolver
 
-from .errors import HeadingNotFoundError, UnResolvedTermError
+from .errors import HeadingNotFoundError, SysNetNotFoundError, UnResolvedTermError
 from .sysnode import Def, SysArg, SysNode
 
 
@@ -54,8 +54,22 @@ class EdgeType(Enum):
         """エッジを遡って前を取得."""
         return pred_attr("type", self)
 
+    def get_succ(self, g: nx.DiGraph, n: SysNode) -> None | SysNode:
+        """1つの先を返す."""
+        succs = list(self.succ(g, n))
+        if len(succs) == 0:
+            return None
+        return succs[0]
 
-class SystemNetwork(BaseModel):
+    def get_pred(self, g: nx.DiGraph, n: SysNode) -> None | SysNode:
+        """1つの前を返す."""
+        preds = list(self.pred(g, n))
+        if len(preds) == 0:
+            return None
+        return preds[0]
+
+
+class SysNet(BaseModel):
     """系ネットワーク."""
 
     root: str
@@ -137,8 +151,27 @@ class SystemNetwork(BaseModel):
         p = paths[0]
         return [e for e in p if e in self.headings]
 
+    def get(self, n: SysNode) -> SysArg:
+        """文に紐づく用語があれば定義を返す."""
+        if n not in self.g:
+            raise SysNetNotFoundError
 
-def _add_resolve_edge(sn: SystemNetwork, start: str, termd: dict) -> None:
+        match n:
+            case str():
+                term = EdgeType.DEF.get_pred(self.g, n)
+                if term is None:
+                    return n
+                return Def(term=term, sentence=n)
+            case Term():
+                s = EdgeType.DEF.get_succ(self.g, n)
+                if s is None:
+                    return n
+                return Def(term=n, sentence=s)
+            case _:
+                raise TypeError
+
+
+def _add_resolve_edge(sn: SysNet, start: str, termd: dict) -> None:
     """(start)-[RESOLVE]->(marked sentence)."""
     for k, v in termd.items():
         s = next(EdgeType.DEF.succ(sn.g, k))  # 文

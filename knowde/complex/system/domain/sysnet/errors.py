@@ -7,3 +7,7 @@ class UnResolvedTermError(Exception):
 
 class HeadingNotFoundError(Exception):
     """見出しが見つからない."""
+
+
+class SysNetNotFoundError(Exception):
+    """ネットワークに含まれないノード."""

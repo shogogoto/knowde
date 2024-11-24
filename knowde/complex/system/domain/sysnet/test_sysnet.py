@@ -1,11 +1,14 @@
 """系ネットワーク."""
 
 
+import pytest
+
+from knowde.complex.system.domain.sysnet.errors import SysNetNotFoundError
 from knowde.primitive.term import Term
 
 from . import (
     EdgeType,
-    SystemNetwork,
+    SysNet,
 )
 from .sysnode import Def
 
@@ -67,14 +70,14 @@ axioms 依存するものがない大元のノード
 
 def test_get_headings() -> None:
     """見出し一覧."""
-    sn = SystemNetwork(root="sys")
+    sn = SysNet(root="sys")
     sn.add(EdgeType.HEAD, *[f"h{i}" for i in range(1, 4)])
     assert sn.headings == {"sys", *{f"h{i}" for i in range(1, 4)}}
 
 
 def test_setup_term() -> None:
     """用語解決."""
-    sn = SystemNetwork(root="sys")
+    sn = SysNet(root="sys")
     sn.add(EdgeType.HEAD, "h1")
     sn.add(EdgeType.HEAD, "h2")
     sn.add(
@@ -103,7 +106,7 @@ def test_setup_term() -> None:
 
 def test_heading_path() -> None:
     """任意のnodeから直近の見出しpathを取得."""
-    sn = SystemNetwork(root="sys")
+    sn = SysNet(root="sys")
     sn.add(EdgeType.HEAD, *[f"h{i}" for i in range(1, 4)])
     sn.add(EdgeType.SIBLING, "h1", "aaa")
     sn.add(EdgeType.BELOW, "aaa", "Aaa", "AAa")
@@ -117,3 +120,22 @@ def test_heading_path() -> None:
     assert sn.heading_path("AAa") == ["sys", "h1"]  #   文の下の下
     assert sn.heading_path("bbb") == ["sys", "h1", "h2"]
     assert sn.heading_path("ccc") == ["sys", "h1", "h2"]
+
+
+def test_get() -> None:
+    """文に紐づく用語があれば定義を返す."""
+    sn = SysNet(root="sys")
+    df = Def.create("aaa", ["A"])
+    t = Term.create("B")
+    sn.add(EdgeType.BELOW, df)
+    sn.add(EdgeType.BELOW, "bbb")
+    sn.add(EdgeType.BELOW, t)
+
+    assert sn.get("aaa") == df
+    assert sn.get(Term.create("A")) == df
+    assert sn.get("bbb") == "bbb"
+    assert sn.get(t) == t
+    with pytest.raises(SysNetNotFoundError):
+        sn.get("dummy")
+    with pytest.raises(SysNetNotFoundError):
+        sn.get(Term.create("dummy"))
