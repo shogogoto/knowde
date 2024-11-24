@@ -6,7 +6,7 @@ from typing import Any, Callable, Hashable, Iterator
 
 import networkx as nx
 
-from knowde.complex.system.domain.nxutil.types import Accessor, Pairs
+from knowde.complex.system.domain.nxutil.types import Accessor, Edges
 
 
 def nxprint(g: nx.DiGraph, detail: bool = False) -> None:  # noqa: FBT001 FBT002
@@ -83,7 +83,7 @@ def filter_edge_attr(g: nx.DiGraph, name: str, value: Any) -> nx.DiGraph:  # noq
     return nx.subgraph_view(g, filter_edge=_f)
 
 
-def _to_paths(g: nx.DiGraph, pairs: Pairs) -> list[list[Hashable]]:
+def _to_paths(g: nx.DiGraph, pairs: Edges) -> list[list[Hashable]]:
     paths = []
     for u, v in pairs:
         try:
