@@ -41,8 +41,8 @@ class EdgeType(Enum):
     def add_edge(self, g: nx.DiGraph, pre: Hashable, suc: Hashable) -> None:
         """エッジ追加."""
         g.add_edge(pre, suc, type=self)
-        # if self == EdgeType.ANTI:
-        #     g.add_edge(suc, pre, type=self)
+        if self == EdgeType.ANTI:
+            g.add_edge(suc, pre, type=self)
 
     @cached_property
     def succ(self) -> Accessor:
@@ -54,19 +54,20 @@ class EdgeType(Enum):
         """エッジを遡って前を取得."""
         return pred_attr("type", self)
 
-    def get_succ(self, g: nx.DiGraph, n: SysNode) -> None | SysNode:
+    def get_succ(self, g: nx.DiGraph, n: Hashable) -> None | Hashable:
         """1つの先を返す."""
-        succs = list(self.succ(g, n))
-        if len(succs) == 0:
-            return None
-        return succs[0]
+        return get_one(list(self.succ(g, n)))
 
-    def get_pred(self, g: nx.DiGraph, n: SysNode) -> None | SysNode:
+    def get_pred(self, g: nx.DiGraph, n: Hashable) -> None | Hashable:
         """1つの前を返す."""
-        preds = list(self.pred(g, n))
-        if len(preds) == 0:
-            return None
-        return preds[0]
+        return get_one(list(self.pred(g, n)))
+
+
+def get_one(ls: list[Hashable]) -> None | Hashable:
+    """1つまたはなしを取得."""
+    if len(ls) == 0:
+        return None
+    return ls[0]
 
 
 class SysNet(BaseModel):
