@@ -50,6 +50,11 @@ class Navi(BaseModel, frozen=True):
         """depth前のnodesを取得."""
         return verticallist2d(self.axiom_paths, depth)
 
+    @classmethod
+    def batch_create(cls, g: DiGraph, n: SysNode) -> dict[EdgeType, Navi]:
+        """全てのタイプで作成."""
+        return {t: cls.create(g, n, t) for t in EdgeType}
+
 
 def verticallist2d(ls2d: list[list[Hashable]], depth: int) -> list[Hashable]:
     """2次元リストから列を取得."""
@@ -64,7 +69,8 @@ def verticallist2d(ls2d: list[list[Hashable]], depth: int) -> list[Hashable]:
 class Explorer(BaseModel):
     """ネットワーク上を移動."""
 
-    current: Navi
+    current: SysNode
+    navis: dict[EdgeType, Navi]
     sn: SysNet
 
     def succ(self, _t: EdgeType, i: int) -> None:
@@ -74,3 +80,7 @@ class Explorer(BaseModel):
     def pred(self, _t: EdgeType, i: int) -> None:
         """前へ移動."""
         self.current.preds[i]
+
+    def pretty(self) -> str:
+        """見やすく表示."""
+        return ""

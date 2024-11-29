@@ -1,7 +1,7 @@
 """エッジタイプ."""
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum, unique
 from functools import cached_property
 from typing import TYPE_CHECKING, Hashable
 
@@ -12,7 +12,8 @@ if TYPE_CHECKING:
     import networkx as nx
 
 
-class EdgeType(Enum):
+@unique
+class EdgeType(StrEnum):
     """グラフ関係の種類."""
 
     HEAD = "head"  # 見出しを配下にする

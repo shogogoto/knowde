@@ -1,5 +1,6 @@
 """test."""
 
+
 import networkx as nx
 
 from knowde.complex.system.domain.sysnet import EdgeType
@@ -57,5 +58,8 @@ def test_navi() -> None:
     assert navi.succs(999) == []
 
 
-def test_explorer() -> None:
-    """探索."""
+# def test_explorer() -> None:
+#     """探索."""
+#     navis = {}
+#     for et in EdgeType:
+#         print(type(et), str(et), et.name, et.value)
