@@ -1,73 +1,23 @@
 """系ネットワーク."""
 from __future__ import annotations
 
-from enum import Enum, auto
-from functools import cached_property
-from typing import Any, Hashable
+from typing import Any
 
 import networkx as nx
 from networkx import DiGraph
 from pydantic import BaseModel, Field, PrivateAttr
 
 from knowde.complex.system.domain.nxutil import (
-    Accessor,
-    pred_attr,
     succ_attr,
     to_nested,
     to_nodes,
 )
+from knowde.complex.system.domain.sysnet.edge_type import EdgeType
 from knowde.core.types import NXGraph
 from knowde.primitive.term import MergedTerms, Term, TermResolver
 
 from .errors import HeadingNotFoundError, SysNetNotFoundError, UnResolvedTermError
 from .sysnode import Def, SysArg, SysNode
-
-
-class EdgeType(Enum):
-    """グラフ関係の種類."""
-
-    HEAD = auto()  # 見出しを配下にする
-    SIBLING = auto()  # 兄弟 同階層 並列
-    BELOW = auto()  # 配下 階層が下がる 直列
-    DEF = auto()  # term -> 文
-    RESOLVE = auto()  # 用語解決関係 文 -> 文
-
-    TO = auto()  # 依存
-    CONCRETE = auto()  # 具体
-    WHEN = auto()
-    # 両方向
-    ANTI = auto()  # 反対
-
-    def add_edge(self, g: nx.DiGraph, pre: Hashable, suc: Hashable) -> None:
-        """エッジ追加."""
-        g.add_edge(pre, suc, type=self)
-        if self == EdgeType.ANTI:
-            g.add_edge(suc, pre, type=self)
-
-    @cached_property
-    def succ(self) -> Accessor:
-        """エッジを辿って次を取得."""
-        return succ_attr("type", self)
-
-    @cached_property
-    def pred(self) -> Accessor:
-        """エッジを遡って前を取得."""
-        return pred_attr("type", self)
-
-    def get_succ(self, g: nx.DiGraph, n: Hashable) -> None | Hashable:
-        """1つの先を返す."""
-        return get_one(list(self.succ(g, n)))
-
-    def get_pred(self, g: nx.DiGraph, n: Hashable) -> None | Hashable:
-        """1つの前を返す."""
-        return get_one(list(self.pred(g, n)))
-
-
-def get_one(ls: list[Hashable]) -> None | Hashable:
-    """1つまたはなしを取得."""
-    if len(ls) == 0:
-        return None
-    return ls[0]
 
 
 class SysNet(BaseModel):
@@ -136,7 +86,7 @@ class SysNet(BaseModel):
         """解決済み入れ子文を取得."""
         if not self._is_resolved:
             raise UnResolvedTermError
-        return to_nested(self.g, s, EdgeType.RESOLVE.succ)
+        return to_nested(self.g, s, EdgeType.RESOLVED.succ)
 
     @property
     def headings(self) -> set[str]:
@@ -176,6 +126,6 @@ def _add_resolve_edge(sn: SysNet, start: str, termd: dict) -> None:
     """(start)-[RESOLVE]->(marked sentence)."""
     for k, v in termd.items():
         s = next(EdgeType.DEF.succ(sn.g, k))  # 文
-        EdgeType.RESOLVE.add_edge(sn.g, start, s)  # 文 -> 文
+        EdgeType.RESOLVED.add_edge(sn.g, start, s)  # 文 -> 文
         if any(v):  # 空でない
             _add_resolve_edge(sn, str(s), v)

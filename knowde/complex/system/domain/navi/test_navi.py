@@ -2,7 +2,9 @@
 
 import networkx as nx
 
-from knowde.complex.system.domain.nxutil import nxconvert, nxprint
+from knowde.complex.system.domain.sysnet import EdgeType
+
+from . import Navi
 
 """
 文同士のエッジを辿るのが基本
@@ -35,6 +37,25 @@ int
 
 def test_navi() -> None:
     """ナビ."""
-    g = nx.balanced_tree(2, 3, nx.DiGraph())
-    g = nxconvert(g, str)
-    nxprint(g)
+    # ╙── 0
+    #     ├─╼ 1
+    #     │   ├─╼ 3 - 99
+    #     │   └─╼ 4
+    #     └─╼ 2
+    #         ├─╼ 5
+    #         └─╼ 6 - 999
+    g = nx.balanced_tree(2, 2, nx.DiGraph())
+    g.add_edge(4, 99)
+    g.add_edge(6, 999)
+    nx.set_edge_attributes(g, EdgeType.TO, "type")
+    navi = Navi.create(g, 0, EdgeType.TO)
+    assert navi.succs(0) == [0]
+    assert navi.succs(1) == [1, 2]
+    assert navi.succs(2) == [3, 5, 4, 6]
+    assert navi.succs(3) == [99, 999]
+    assert navi.succs(-1) == [99, 999]
+    assert navi.succs(999) == []
+
+
+def test_explorer() -> None:
+    pass
