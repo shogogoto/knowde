@@ -42,11 +42,11 @@ class Navi(BaseModel, frozen=True):
         """最大次距離."""
         return max([len(p) for p in self.leaf_paths])
 
-    def succs(self, depth: int) -> list(Hashable):
+    def succs(self, depth: int) -> list[Hashable]:
         """depth先のnodesを取得."""
         return verticallist2d(self.leaf_paths, depth)
 
-    def preds(self, depth: int) -> list(Hashable):
+    def preds(self, depth: int) -> list[Hashable]:
         """depth前のnodesを取得."""
         return verticallist2d(self.axiom_paths, depth)
 
@@ -67,10 +67,10 @@ class Explorer(BaseModel):
     current: Navi
     sn: SysNet
 
-    def succ(self, t: EdgeType, i: int) -> None:
+    def succ(self, _t: EdgeType, i: int) -> None:
         """先へ移動."""
         self.current.succs[i]
 
-    def pred(self, t: EdgeType, i: int) -> None:
+    def pred(self, _t: EdgeType, i: int) -> None:
         """前へ移動."""
         self.current.preds[i]

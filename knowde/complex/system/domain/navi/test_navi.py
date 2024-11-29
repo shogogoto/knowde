@@ -58,4 +58,4 @@ def test_navi() -> None:
 
 
 def test_explorer() -> None:
-    pass
+    """探索."""
