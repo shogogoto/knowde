@@ -20,7 +20,7 @@ class HeadingMismatchError(KnSyntaxError):
 class MissingTopHeadingError(KnSyntaxError):
     """見出しH1が存在しない."""
 
-    label = "Missing Top Heading"
+    label = "Missing Top Heading(H1)"
 
 
 class MissingIndentError(KnSyntaxError):
