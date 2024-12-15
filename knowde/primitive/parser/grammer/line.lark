@@ -1,55 +1,8 @@
-// 入力するテキストファイルの文法定義
-?start: stmt  // root
+?start: stmt
+?stmt: [UNIT "|"] (term|define|SENT)
 
-?stmt: (COMMENT|declare|ctx) _NL
-?ctx.2: ctype declare
-?declare: (line|alias_line|define|name)
-line: (ONELINE|MULTILINE)
-alias_line: ALIAS line
-define: name line
-name: ALIAS? ONELINE ("," ONELINE)* ":"
-
-//------------------------------------------------ terminals
-ANY: /[^\n]+/
-COMMENT.3: "!" ANY
-
-S: /[^!#\n]/  // 最初の文字
-W: /[^\n:\|,]/  // 最初の文字
-ONELINE: S W*
-MULSEP: /\\\n[\t ]*/
-MULTILINE: (ONELINE MULSEP)+ ONELINE
-
-N: /[^\n:\|,]/  // 最初の文字
-NAME: S N*
-ALIAS: NAME "|"
-
-// 文脈
-?ctype: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM|SIMILAR)
-THUS.2:    "->"   // 故に
-CAUSE.2:   "<-"   // なぜなら
-ANTONYM.2: "<->"  // 対義関係
-EXAMPLE.2: "e.g." // 例化
-GENERAL.2: "g.e." // 汎化 例化の逆順
-REF.2: "ref."     // 引用
-NUM.2: /\d+\./    // 連番
-SIMILAR.2: "~="   // 類似
-BY.2: "by."       // アクターは誰
-WHEN.2: "when."   // いつ
-
-
-WH: /[^\n#]+/ // Word of Heading
-H1: "#"      WH
-H2: "##"    WH
-H3: "###"    WH
-H4: "####"   WH
-H5: "#####"  WH
-H6: "######" WH
-// 情報源
-AUTHOR.1: "@author " ANY       //著者
-PUBLISHED.1: "@published " ANY // 第一出版日
-
-_NL: /(\r?\n[\t ]*)+/
-%declare _INDENT _DEDENT
-%import common.WS_INLINE
-%import common.CNAME
-%ignore _NL COMMENT
+term: UNIT ("," UNIT)* ":"
+define: term SENT
+UNIT.1: /[^\n:\|,]+/
+NAME.1: /[^\n:\|,]+/
+SENT: /[^\n]+/

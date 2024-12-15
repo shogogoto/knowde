@@ -108,3 +108,23 @@ def test_parse_missing_indent(txt: str) -> None:
     """インデントなしエラー."""
     with pytest.raises(MissingIndentError):
         parse2tree(txt)
+
+
+def test_parse_context() -> None:
+    """文脈をパースできることだけ確認."""
+    _s = r"""
+        # 1
+            ctx1
+                -> b1
+                    -> bb1
+                    -> bb2
+                -> b2
+                <- c
+                <-> d
+                e.g. example
+                g.e. general
+                ref. ref
+                1. one
+                2. two
+    """
+    _t = parse2tree(_s)

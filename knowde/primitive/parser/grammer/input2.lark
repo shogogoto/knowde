@@ -1,5 +1,4 @@
-// 入力するテキストファイルの文法定義
-?start:  _NL* unit*  // root
+?start:  _NL* unit*
 ?unit: h1
 
 h1: H1 _NL [_INDENT [source_about _NL]* block* _DEDENT] (h2)*
@@ -21,15 +20,28 @@ H4: "####" HEAD
 H5: "#####" HEAD
 H6: "######" HEAD
 
-
 ?block: line [_INDENT (block)+ _DEDENT]
-?line: (ONELINE|MULTILINE|COMMENT) _NL
+?line: ctype? (ONELINE|MULTILINE|COMMENT) _NL
 ANY: /[^\n]+/
 COMMENT: "!" ANY
 
-ONELINE: /[^!#\n]/ ANY?
+ONELINE: ANY
 MULSEP: /\\\n[\t ]*/
 MULTILINE: (ONELINE MULSEP)+ ONELINE
+
+// 文脈
+?ctype.1: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM|SIMILAR|WHEN|WHERE)
+THUS.1:    "->"   // 故に
+CAUSE.1:   "<-"   // なぜなら
+ANTONYM.1: "<->"  // 対義関係
+EXAMPLE.1: "e.g." // 例化
+GENERAL.1: "g.e." // 汎化 例化の逆順
+REF.1:     "ref."     // 引用
+NUM.1:     /\d+\./    // 連番
+SIMILAR.1: "~="   // 類似
+BY.1:      "by."       // アクターは誰
+WHEN.1:    "when."   // いつ
+WHERE.1:   "where."
 
 _NL: /(\r?\n[\t ]*)+/
 %declare _INDENT _DEDENT
