@@ -34,16 +34,6 @@ def common_parser(debug: bool = False) -> Lark:  # noqa: FBT001 FBT002
     )
 
 
-# def handle_error(e: UnexpectedToken) -> bool:
-#     if e.token.type == "H3":
-#         print("@" * 80)
-#         print(e.token_history)
-#     print("#" * 80)
-#     print(e.token.type, e.token, f"line {e.line} col {e.column}")
-#     print("#" * 80, "end")
-#     return True
-
-
 def parse2tree(
     text: str,
     debug: bool = False,  # noqa: FBT001 FBT002
@@ -60,7 +50,7 @@ def parse2tree(
         exc_class = e.match_examples(
             parser.parse,
             HEAD_ERR_EXS,
-            use_accepts=True,
+            token_type_match_fallback=True,
         )
         if not exc_class:
             raise

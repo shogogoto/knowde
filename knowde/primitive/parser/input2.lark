@@ -2,18 +2,17 @@
 ?start:  _NL* unit*  // root
 ?unit: h1
 
-h1: H1 _NL [_INDENT source_about? block* _DEDENT] (h2)*
-source_about.2: [AUTHOR _NL] [PUBLISHED _NL]
-// 情報源
-AUTHOR.1: "@author " ANY       //著者
-PUBLISHED.1: "@published " ANY // 第一出版日
+h1: H1 _NL [_INDENT [source_about _NL]* block* _DEDENT] (h2)*
+?source_about: AUTHOR | PUBLISHED | URL
+AUTHOR: "@author " ANY       //著者
+PUBLISHED: "@published " ANY // 第一出版日
+URL: "@url " ANY
 
 h2: H2 _NL [_INDENT block* _DEDENT] (h3)*
 h3: H3 _NL [_INDENT block* _DEDENT] (h4)*
 h4: H4 _NL [_INDENT block* _DEDENT] (h5)*
 h5: H5 _NL [_INDENT block* _DEDENT] (h6)*
 h6: H6 _NL [_INDENT block* _DEDENT]
-
 HEAD: /[^#\n]+/
 H1: "#" HEAD
 H2: "##" HEAD
@@ -25,14 +24,11 @@ H6: "######" HEAD
 
 ?block: line [_INDENT (block)+ _DEDENT]
 line: (ONELINE|MULTILINE) _NL
-
-//------------------------------------------------ terminals
 ANY: /[^\n]+/
 COMMENT.3: "!" ANY
 
 S: /[^!#\n]/  // 最初の文字
-W: /[^\n:\|,]/  // 最初の文字
-ONELINE: /[^#]/ ANY?
+ONELINE: S ANY?
 MULSEP: /\\\n[\t ]*/
 MULTILINE: (ONELINE MULSEP)+ ONELINE
 

@@ -5,7 +5,11 @@ from textwrap import dedent
 import pytest
 
 from knowde.primitive.parser import parse2tree
-from knowde.primitive.parser.errors import HeadingMismatchError
+from knowde.primitive.parser.errors import (
+    HeadingMismatchError,
+    MissingIndentError,
+    MissingTopHeadingError,
+)
 
 
 @pytest.mark.parametrize(
@@ -42,6 +46,25 @@ def test_parse_heading_level_error(txt: str) -> None:
     """見出しの階層ずれ."""
     with pytest.raises(HeadingMismatchError):
         parse2tree(txt)
+
+
+def test_parse_missing_top_heading() -> None:
+    """H1なし."""
+    _s = """
+        aaaa
+    """
+    with pytest.raises(MissingTopHeadingError):
+        parse2tree(_s)
+
+
+def test_parse_missing_indent() -> None:
+    """H1なし."""
+    _s = """
+        # h1
+        aaaa
+    """
+    with pytest.raises(MissingIndentError):
+        parse2tree(_s)
 
 
 # def test_json_parser() -> None:
