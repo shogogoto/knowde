@@ -23,12 +23,11 @@ H6: "######" HEAD
 
 
 ?block: line [_INDENT (block)+ _DEDENT]
-line: (ONELINE|MULTILINE) _NL
+?line: (ONELINE|MULTILINE|COMMENT) _NL
 ANY: /[^\n]+/
-COMMENT.3: "!" ANY
+COMMENT: "!" ANY
 
-S: /[^!#\n]/  // 最初の文字
-ONELINE: S ANY?
+ONELINE: /[^!#\n]/ ANY?
 MULSEP: /\\\n[\t ]*/
 MULTILINE: (ONELINE MULSEP)+ ONELINE
 
@@ -36,4 +35,3 @@ _NL: /(\r?\n[\t ]*)+/
 %declare _INDENT _DEDENT
 %import common.WS_INLINE
 %import common.CNAME
-%ignore _NL COMMENT

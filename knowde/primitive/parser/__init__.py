@@ -1,7 +1,6 @@
 """テキストから構文木作成."""
 from __future__ import annotations
 
-from functools import cache
 from pathlib import Path
 from textwrap import dedent
 
@@ -22,29 +21,26 @@ class SampleIndenter(Indenter):
     tab_len = 4
 
 
-@cache
-def common_parser(debug: bool = False) -> Lark:  # noqa: FBT001 FBT002
-    """Lark Parser."""
-    p = Path(__file__).parent / "input2.lark"
-    return Lark(
-        p.read_text(),
-        parser="lalr",
-        debug=debug,
-        postlex=SampleIndenter(),
-    )
+structure_parser = Lark(
+    (Path(__file__).parent / "grammer/input2.lark").read_text(),
+    parser="lalr",
+    postlex=SampleIndenter(),
+)
+
+line_parser = Lark(
+    (Path(__file__).parent / "grammer/line.lark").read_text(),
+    parser="lalr",
+    postlex=SampleIndenter(),
+)
 
 
-def parse2tree(
-    text: str,
-    debug: bool = False,  # noqa: FBT001 FBT002
-) -> Tree:
+def parse2tree(text: str) -> Tree:
     """Parse and transform."""
     txt = dedent(text)
-    parser = common_parser(debug=debug)
+    parser = structure_parser
     try:
         return parser.parse(
-            txt,
-            # on_error=handle_error,
+            txt,  # , on_error=handle_error,
         )
     except UnexpectedInput as e:
         exc_class = e.match_examples(
