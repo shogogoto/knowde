@@ -3,7 +3,7 @@
 
 import pytest
 
-from knowde.complex.system.domain.sysnet.errors import SysNetNotFoundError
+from knowde.complex.system.sysnet.errors import SysNetNotFoundError
 from knowde.primitive.term import Term
 
 from . import (

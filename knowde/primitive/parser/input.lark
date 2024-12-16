@@ -1,0 +1,48 @@
+?start:  _NL* unit*
+?unit: h1
+
+h1: H1 _NL [_INDENT [source_about _NL]* block* _DEDENT] (h2)*
+?source_about: AUTHOR | PUBLISHED | URL
+AUTHOR.1: "@author " ANY       //著者
+PUBLISHED.1: "@published " ANY // 第一出版日
+URL.1: "@url " ANY
+
+h2: H2 _NL [_INDENT block* _DEDENT] (h3)*
+h3: H3 _NL [_INDENT block* _DEDENT] (h4)*
+h4: H4 _NL [_INDENT block* _DEDENT] (h5)*
+h5: H5 _NL [_INDENT block* _DEDENT] (h6)*
+h6: H6 _NL [_INDENT block* _DEDENT]
+HEAD: /[^#\n]+/
+H1: "#" HEAD
+H2: "##" HEAD
+H3: "###" HEAD
+H4: "####" HEAD
+H5: "#####" HEAD
+H6: "######" HEAD
+
+?block: ctype? line [_INDENT (block)+ _DEDENT]
+?line: (ONELINE|COMMENT) _NL
+ANY: /[^\n]+/
+COMMENT: "!" ANY
+
+ONELINE: ANY
+MULSEP: /\\\n[\t ]*/
+
+// 文脈
+?ctype.2: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM|SIMILAR|WHEN|WHERE)
+THUS.2:    "->"   // 故に
+CAUSE.2:   "<-"   // なぜなら
+ANTONYM.2: "<->"  // 対義関係
+EXAMPLE.2: "e.g." // 例化
+GENERAL.2: "g.e." // 汎化 例化の逆順
+REF.2:     "ref."     // 引用
+NUM.2:     /\d+\./    // 連番
+SIMILAR.2: "~="   // 類似
+BY.2:      "by."       // アクターは誰
+WHEN.2:    "when."   // いつ
+WHERE.2:   "where."
+
+_NL: /(\r?\n[\t ]*)+/
+%declare _INDENT _DEDENT
+%import common.WS_INLINE
+%import common.CNAME

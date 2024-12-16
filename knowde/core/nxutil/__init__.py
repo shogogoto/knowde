@@ -6,7 +6,7 @@ from typing import Any, Callable, Hashable, Iterator
 
 import networkx as nx
 
-from knowde.complex.system.domain.nxutil.types import Accessor, Edges
+from .types import Accessor, Edges
 
 
 def nxprint(g: nx.DiGraph, detail: bool = False) -> None:  # noqa: FBT001 FBT002
