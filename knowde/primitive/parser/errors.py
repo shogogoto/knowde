@@ -149,10 +149,12 @@ HEAD_ERR_EXS = {
 
 # def handle_error(e: UnexpectedToken) -> bool:
 #     """エラー処理."""
-#     # if e.token.type == "H3":
-#     #     print("@" * 80)
-#     #     print(e.token_history)
-#     # print("#" * 80)
+#     # if e.token.type == "$END":
+#     #     return True
+#     print("#" * 80)
 #     # print(e.expected, e.token.type)
-#     # print(e.token.type, e.token, f"line {e.line} col {e.column}", e.token_history)
+#     # print(type(e))
+#     print(e.considered_rules)
+#     print(e.token.type, e.token, e.token_history)
+#     print("#" * 80)
 #     return False

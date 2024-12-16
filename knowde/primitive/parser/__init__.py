@@ -3,11 +3,21 @@ from __future__ import annotations
 
 from pathlib import Path
 from textwrap import dedent
+from typing import TYPE_CHECKING
 
-from lark import Lark, Tree, UnexpectedInput
+from lark import Lark, Transformer, Tree, UnexpectedInput
 from lark.indenter import Indenter
 
 from knowde.primitive.parser.errors import HEAD_ERR_EXS
+from knowde.primitive.parser.transfomer import common_transformer
+
+if TYPE_CHECKING:
+    from lark.visitors import TransformerChain
+
+# line_parser = Lark(
+#     (Path(__file__).parent / "grammer/line.lark").read_text(),
+#     parser="lalr",
+# )
 
 
 class SampleIndenter(Indenter):
@@ -21,45 +31,22 @@ class SampleIndenter(Indenter):
     tab_len = 4
 
 
-structure_parser = Lark(
-    (Path(__file__).parent / "grammer/input2.lark").read_text(),
-    parser="lalr",
-    postlex=SampleIndenter(),
-)
-
-# line_parser = Lark(
-#     (Path(__file__).parent / "grammer/line.lark").read_text(),
-#     parser="lalr",
-# )
-
-ALIAS_SEP = "|"
-DEF_SEP = ":"
-NAME_SEP = ","
+def structure_parser(transformer: TransformerChain | Transformer | None = None) -> Lark:
+    """lineパース以外."""
+    return Lark(
+        (Path(__file__).parent / "input.lark").read_text(),
+        parser="lalr",
+        postlex=SampleIndenter(),
+        transformer=transformer,
+    )
 
 
-# larkでのparseが思ったようにいかなかったからあきらめた
-#   aliasやname, sentenceで許容する文字列を思ったように設定できなかった
-def parse_line(line: str) -> tuple[str | None, list[str], str | None]:
-    """行を解析."""
-    txt = dedent(line).strip()
-    alias = None
-    names = []
-    define = txt
-    sentence = txt
-    if ALIAS_SEP in txt:
-        alias, define = txt.split(ALIAS_SEP)
-        alias = alias.strip()
-        sentence = define
-    if DEF_SEP in define:
-        names, sentence = define.split(DEF_SEP)
-        names = [n.strip() for n in names.split(NAME_SEP)]
-    return alias, names, sentence.strip() if sentence else None
-
-
-def parse2tree(text: str) -> Tree:
+def parse2tree(text: str, do_transfrom: bool = False) -> Tree:  # noqa: FBT001 FBT002
     """Parse and transform."""
     txt = dedent(text)
-    parser = structure_parser
+    parser = structure_parser(
+        transformer=common_transformer() if do_transfrom else None,
+    )
     try:
         return parser.parse(txt)  # , on_error=handle_error,
     except UnexpectedInput as e:

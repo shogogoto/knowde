@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from knowde.primitive.parser import parse_line
+from knowde.primitive.parser.lineparse import parse_line
 
 
 @pytest.mark.parametrize(

@@ -1,8 +1,0 @@
-?start: stmt
-?stmt: [UNIT "|"] (term|define|SENT)
-
-term: UNIT ("," UNIT)* ":"
-define: term SENT
-UNIT.1: /[^\n:\|,]+/
-NAME.1: /[^\n:\|,]+/
-SENT: /[^\n]+/
