@@ -145,6 +145,16 @@ class EdgeType(StrEnum):
         if self == EdgeType.ANTI:
             g.add_edge(suc, pre, type=self)
 
+    def add_path(
+        self,
+        g: nx.DiGraph,
+        *ns: Hashable,
+        cvt: Callable[[Hashable], Hashable] = lambda x: x,
+    ) -> tuple[Hashable, ...]:
+        """連続追加."""
+        nx.add_path(g, [cvt(n) for n in ns], type=self)
+        return ns
+
     @cached_property
     def succ(self) -> Accessor:
         """エッジを辿って次を取得."""

@@ -1,21 +1,19 @@
 """系ネットワーク."""
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Hashable
 
-import networkx as nx
 from networkx import DiGraph
 from pydantic import BaseModel, Field, PrivateAttr
 
 from knowde.core.nxutil import (
     EdgeType,
-    succ_attr,
-    to_nodes,
 )
 from knowde.core.types import NXGraph
+from knowde.primitive.heading import get_headings
 from knowde.primitive.term import MergedTerms, Term, resolve_sentence
 
-from .errors import HeadingNotFoundError, SysNetNotFoundError, UnResolvedTermError
+from .errors import SysNetNotFoundError, UnResolvedTermError
 from .sysnode import Def, SysArg, SysNode
 
 
@@ -34,11 +32,10 @@ class SysNet(BaseModel):
         if len(path) > 0:
             first = path[0]
             _p = path if first in self.g else [self.root, *path]
-            _p = [self._pre_add_edge(n) for n in _p]
-            nx.add_path(self.g, _p, type=t)
+            t.add_path(self.g, *_p, cvt=self._pre_add_edge)
         return path
 
-    def _pre_add_edge(self, n: SysArg) -> str | Term:
+    def _pre_add_edge(self, n: Hashable) -> Hashable:
         """定義の追加."""
         match n:
             case Term() | str():
@@ -54,7 +51,7 @@ class SysNet(BaseModel):
     def sentences(self) -> list[str]:
         """文."""
         s = [n for n in self.g.nodes if isinstance(n, str)]
-        [s.remove(h) for h in self.headings]
+        [s.remove(h) for h in get_headings(self.g, self.root)]
         return s
 
     def add_resolved_edges(self) -> None:
@@ -73,20 +70,6 @@ class SysNet(BaseModel):
         if not self._is_resolved:
             raise UnResolvedTermError
         return resolve_sentence(self.g, s)
-
-    @property
-    def headings(self) -> set[str]:
-        """見出しセット."""
-        ns = to_nodes(self.g, self.root, succ_attr("type", EdgeType.HEAD))
-        return {str(n) for n in ns}
-
-    def heading_path(self, n: SysNode) -> list[SysNode]:
-        """直近の見出しパス."""
-        paths = list(nx.shortest_simple_paths(self.g, self.root, n))
-        if len(paths) == 0:
-            raise HeadingNotFoundError
-        p = paths[0]
-        return [e for e in p if e in self.headings]
 
     def get(self, n: SysNode) -> SysArg:
         """文に紐づく用語があれば定義を返す."""
