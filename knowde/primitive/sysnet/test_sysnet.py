@@ -95,7 +95,7 @@ def test_setup_term() -> None:
         Def.create("qqq", ["Q"]),
         Term.create("X"),
     )
-    sn.setup_resolver()
+    sn.add_resolved_edges()
     assert sn.get_resolved("df") == {}
     assert sn.get_resolved("b{A}b") == {"df": {}}
     assert sn.get_resolved("ccc") == {"b{A}b": {"df": {}}}

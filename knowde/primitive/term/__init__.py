@@ -3,12 +3,12 @@ from __future__ import annotations
 
 from collections import Counter
 from functools import cached_property
-from typing import AbstractSet, Self
+from typing import AbstractSet, Iterable, Self
 
 import networkx as nx
 from pydantic import BaseModel, Field, field_validator
 
-from knowde.core.nxutil import to_nested
+from knowde.core.nxutil import EdgeType, to_nested
 from knowde.core.types import NXGraph
 
 from .errors import (
@@ -240,3 +240,24 @@ class TermResolver(BaseModel, frozen=True):
             else:
                 d[t] = v
         return d
+
+    def add_edges(self, g: nx.DiGraph, sentences: Iterable[str]) -> None:
+        """文とそこに埋めこられた用語を関係付ける."""
+        for s in sentences:
+            d = self(s)
+            td = self.mark2term(d)
+            _add_resolve_edge(g, s, td)
+
+
+def _add_resolve_edge(g: nx.DiGraph, start: str, termd: dict) -> None:
+    """(start)-[RESOLVE]->(marked sentence)."""
+    for k, v in termd.items():
+        s = next(EdgeType.DEF.succ(g, k))  # 文
+        EdgeType.RESOLVED.add_edge(g, start, s)  # 文 -> 文
+        if any(v):  # 空でない
+            _add_resolve_edge(g, str(s), v)
+
+
+def resolve_sentence(g: nx.DiGraph, s: str) -> dict:
+    """解決済み入れ子文を取得."""
+    return to_nested(g, s, EdgeType.RESOLVED.succ)

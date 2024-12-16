@@ -10,11 +10,10 @@ from pydantic import BaseModel, Field, PrivateAttr
 from knowde.core.nxutil import (
     EdgeType,
     succ_attr,
-    to_nested,
     to_nodes,
 )
 from knowde.core.types import NXGraph
-from knowde.primitive.term import MergedTerms, Term, TermResolver
+from knowde.primitive.term import MergedTerms, Term, resolve_sentence
 
 from .errors import HeadingNotFoundError, SysNetNotFoundError, UnResolvedTermError
 from .sysnode import Def, SysArg, SysNode
@@ -58,35 +57,22 @@ class SysNet(BaseModel):
         [s.remove(h) for h in self.headings]
         return s
 
-    @property
-    def resolver(self) -> TermResolver:
-        """用語解決器."""
-        return (
-            MergedTerms()
-            .add(
-                *[n for n in self.g.nodes if isinstance(n, Term)],
-            )
-            .to_resolver()
-        )
-
-    def setup_resolver(self) -> None:
+    def add_resolved_edges(self) -> None:
         """事前の全用語解決.
 
         統計情報を得るためには、全て用語解決しとかないといけない
         DBやstageからは解決済みのnetworkを復元
         """
-        r = self.resolver
-        for s in self.sentences:
-            d = r(s)
-            td = r.mark2term(d)
-            _add_resolve_edge(self, s, td)
+        terms = [n for n in self.g.nodes if isinstance(n, Term)]
+        r = MergedTerms().add(*terms).to_resolver()
+        r.add_edges(self.g, self.sentences)
         self._is_resolved = True
 
     def get_resolved(self, s: str) -> dict:
         """解決済み入れ子文を取得."""
         if not self._is_resolved:
             raise UnResolvedTermError
-        return to_nested(self.g, s, EdgeType.RESOLVED.succ)
+        return resolve_sentence(self.g, s)
 
     @property
     def headings(self) -> set[str]:
@@ -106,7 +92,6 @@ class SysNet(BaseModel):
         """文に紐づく用語があれば定義を返す."""
         if n not in self.g:
             raise SysNetNotFoundError
-
         match n:
             case str():
                 term = EdgeType.DEF.get_pred(self.g, n)
@@ -120,12 +105,3 @@ class SysNet(BaseModel):
                 return Def(term=n, sentence=s)
             case _:
                 raise TypeError
-
-
-def _add_resolve_edge(sn: SysNet, start: str, termd: dict) -> None:
-    """(start)-[RESOLVE]->(marked sentence)."""
-    for k, v in termd.items():
-        s = next(EdgeType.DEF.succ(sn.g, k))  # 文
-        EdgeType.RESOLVED.add_edge(sn.g, start, s)  # 文 -> 文
-        if any(v):  # 空でない
-            _add_resolve_edge(sn, str(s), v)
