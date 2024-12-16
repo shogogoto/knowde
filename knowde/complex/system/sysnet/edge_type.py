@@ -5,8 +5,8 @@ from enum import StrEnum, unique
 from functools import cached_property
 from typing import TYPE_CHECKING, Hashable
 
-from knowde.complex.system.domain.nxutil import pred_attr, succ_attr
-from knowde.complex.system.domain.nxutil.types import Accessor
+from knowde.core.nxutil import pred_attr, succ_attr
+from knowde.core.nxutil.types import Accessor
 
 if TYPE_CHECKING:
     import networkx as nx

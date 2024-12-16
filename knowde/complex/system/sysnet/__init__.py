@@ -7,12 +7,12 @@ import networkx as nx
 from networkx import DiGraph
 from pydantic import BaseModel, Field, PrivateAttr
 
-from knowde.complex.system.domain.nxutil import (
+from knowde.complex.system.sysnet.edge_type import EdgeType
+from knowde.core.nxutil import (
     succ_attr,
     to_nested,
     to_nodes,
 )
-from knowde.complex.system.domain.sysnet.edge_type import EdgeType
 from knowde.core.types import NXGraph
 from knowde.primitive.term import MergedTerms, Term, TermResolver
 

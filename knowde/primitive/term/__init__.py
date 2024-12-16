@@ -8,7 +8,7 @@ from typing import AbstractSet, Self
 import networkx as nx
 from pydantic import BaseModel, Field, field_validator
 
-from knowde.complex.system.domain.nxutil import to_nested
+from knowde.core.nxutil import to_nested
 from knowde.core.types import NXGraph
 
 from .errors import (
