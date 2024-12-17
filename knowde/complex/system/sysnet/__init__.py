@@ -27,12 +27,12 @@ class SysNet(BaseModel):
     def model_post_init(self, __context: Any) -> None:  # noqa: ANN401 D102
         self.g.add_node(self.root)
 
-    def add(self, t: EdgeType, *path: SysArg) -> tuple[SysArg, ...]:
+    def add(self, t: EdgeType, *path: SysArg) -> list[SysArg]:
         """既存nodeから開始していない場合はrootからedgeを伸ばすように登録."""
         if len(path) > 0:
             _p = path if path[0] in self.g else [self.root, *path]
-            t.add_path(self.g, *_p, cvt=self._pre_add_edge)
-        return path
+            return t.add_path(self.g, *_p, cvt=self._pre_add_edge)
+        return list(path)
 
     def _pre_add_edge(self, n: Hashable) -> Hashable:
         """定義の追加."""

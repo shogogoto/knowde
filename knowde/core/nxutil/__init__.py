@@ -1,7 +1,7 @@
 """networkx関連."""
 from __future__ import annotations
 
-from enum import StrEnum, unique
+from enum import Enum, auto
 from functools import cached_property
 from pprint import pp
 from typing import Any, Callable, Hashable, Iterator
@@ -122,38 +122,63 @@ def nxconvert(g: nx.DiGraph, convert: Callable[[Hashable], Hashable]) -> nx.DiGr
     return new
 
 
-@unique
-class EdgeType(StrEnum):
+class Direction(Enum):
+    """方向."""
+
+    FORWARD = auto()
+    BACKWARD = auto()
+    BOTH = auto()
+
+
+class EdgeType(Enum):
     """グラフ関係の種類."""
 
-    HEAD = "head"  # 見出しを配下にする
-    SIBLING = "sibling"  # 兄弟 同階層 並列
-    BELOW = "below"  # 配下 階層が下がる 直列
-    DEF = "def"  # term -> 文
-    RESOLVED = "resolved"  # 用語解決関係 文 -> 文
+    HEAD = auto()  # 見出しを配下にする
+    SIBLING = auto()  # 兄弟 同階層 並列
+    BELOW = auto()  # 配下 階層が下がる 直列
+    DEF = auto()  # term -> 文
+    RESOLVED = auto()  # 用語解決関係 文 -> 文
 
-    TO = "to"  # 依存
-    CONCRETE = "concrete"  # 具体
-    WHEN = "when"
+    TO = auto()  # 依存
+    EXAMPLE = auto()  # 具体
+    WHEN = auto()
+    WHERE = auto()
+    NUM = auto()
+    BY = auto()
 
-    # bidicrectional
-    ANTI = "anti"  # 反対
+    # both
+    ANTI = auto()  # 反対
+    SIMILAR = auto()  # 類似
+
+    @property
+    def forward(self) -> tuple[EdgeType, Direction]:
+        """正順."""
+        return self, Direction.FORWARD
+
+    @property
+    def backward(self) -> tuple[EdgeType, Direction]:
+        """逆順."""
+        return self, Direction.BACKWARD
+
+    @property
+    def both(self) -> tuple[EdgeType, Direction]:
+        """両順."""
+        return self, Direction.BOTH
 
     def add_edge(self, g: nx.DiGraph, pre: Hashable, suc: Hashable) -> None:
         """エッジ追加."""
         g.add_edge(pre, suc, type=self)
-        if self == EdgeType.ANTI:
-            g.add_edge(suc, pre, type=self)
 
     def add_path(
         self,
         g: nx.DiGraph,
         *ns: Hashable,
         cvt: Callable[[Hashable], Hashable] = lambda x: x,
-    ) -> tuple[Hashable, ...]:
+    ) -> list[Hashable]:
         """連続追加."""
-        nx.add_path(g, [cvt(n) for n in ns], type=self)
-        return ns
+        ls = [cvt(n) for n in ns]
+        nx.add_path(g, ls, type=self)
+        return ls
 
     @cached_property
     def succ(self) -> Accessor:
