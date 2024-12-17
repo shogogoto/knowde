@@ -2,8 +2,8 @@
 
 import pytest
 
-from knowde.primitive.sysnet.errors import SysNetNotFoundError
-from knowde.primitive.sysnet.sysnode import Def
+from knowde.complex.system.sysnet.errors import SysNetNotFoundError
+from knowde.complex.system.sysnet.sysnode import Def
 from knowde.primitive.term import Term
 
 from . import EdgeType, SysNet

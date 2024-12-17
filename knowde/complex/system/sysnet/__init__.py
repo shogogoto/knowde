@@ -6,12 +6,12 @@ from typing import Any, Hashable
 from networkx import DiGraph
 from pydantic import BaseModel, Field, PrivateAttr
 
+from knowde.complex.system.sysnet.errors import SysNetNotFoundError, UnResolvedTermError
 from knowde.core.nxutil import (
     EdgeType,
 )
 from knowde.core.types import NXGraph
 from knowde.primitive.heading import get_headings
-from knowde.primitive.sysnet.errors import SysNetNotFoundError, UnResolvedTermError
 from knowde.primitive.term import MergedTerms, Term, resolve_sentence
 
 from .sysnode import Def, SysArg, SysNode
