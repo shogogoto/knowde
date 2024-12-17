@@ -1,26 +1,6 @@
 """用語関連."""
 
 
-# import pytest
-# from pytest_unordered import unordered
-
-# from knowde.feature.parser.domain.parser.parser import transparse
-# from knowde.feature.parser.domain.term.domain import Term, TermConflictError
-# from knowde.feature.parser.domain.term.visitor import get_termspace
-
-# """
-# 用語グループ一覧
-# 用語グループ数
-# 見出しごとの用語数
-
-# 用語の関連を調べる
-#     用語の説明に含まれる用語
-#     用語を利用した言明の検索
-
-# 用語の参照
-# """
-
-
 # def test_conflict_name() -> None:
 #     """用語の衝突の検知."""
 #     _s = r"""
@@ -80,3 +60,30 @@
 # #     x = get_termspace(t)
 # #     assert len(x) == 3
 # #     assert x.aliases == unordered(["P1", "P2", "J13", "P41"])
+
+
+# def test_parse_context() -> None:
+#     """名前一覧."""
+#     _s = r"""
+#         # context
+#             ctx1
+#                 -> b1
+#                     -> bb1
+#                     -> bb2
+#                 -> b2
+#                 <- c
+#                 <-> d
+#                 e.g. example
+#                 g.e. general
+#                 ref. ref
+#                 1. one
+#                 2. two
+#     """
+#     _t = transparse(_s)
+#     st = tree2statements(_t).contexted("ctx1")
+#     assert st.thus == unordered(["b1", "b2"])
+#     assert st.cause == unordered(["c"])
+#     assert st.example == unordered(["example"])
+#     assert st.general == unordered(["general"])
+#     assert st.ref == unordered(["ref"])
+#     assert st.list == ["one", "two"]
