@@ -1,16 +1,12 @@
 """系ネットワーク."""
 
-
 import pytest
 
 from knowde.primitive.sysnet.errors import SysNetNotFoundError
+from knowde.primitive.sysnet.sysnode import Def
 from knowde.primitive.term import Term
 
-from . import (
-    EdgeType,
-    SysNet,
-)
-from .sysnode import Def
+from . import EdgeType, SysNet
 
 """
 何ができるようになりたいのか
