@@ -20,8 +20,11 @@ H4: "####" HEAD
 H5: "#####" HEAD
 H6: "######" HEAD
 
-?block: ctype? line [_INDENT (block)+ _DEDENT]
+?block: stmt [_INDENT (block)+ _DEDENT]
+?stmt: line | ctxline
 ?line: (ONELINE|COMMENT) _NL
+ctxline: ctype line
+
 ANY: /[^\n]+/
 COMMENT: "!" ANY
 

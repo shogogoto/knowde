@@ -34,6 +34,10 @@ class SysNet(BaseModel):
             return t.add_path(self.g, *_p, cvt=self._pre_add_edge)
         return list(path)
 
+    def add_nodes(self, *ns: SysArg) -> None:
+        """Node 追加."""
+        self.g.add_node(*[self._pre_add_edge(n) for n in ns])
+
     def _pre_add_edge(self, n: Hashable) -> Hashable:
         """定義の追加."""
         match n:
