@@ -28,7 +28,7 @@ class TSysArg(Transformer):
     SIMILAR = lambda _, _tok: EdgeType.SIMILAR.both  # noqa: E731
 
     def ONELINE(self, tok: Token) -> SysArg:  # noqa: N802 D102
-        v = "".join(tok.split())
+        v = "".join(tok.split("   "))  # 適当な\nに対応する空白
         alias, names, sentence = parse_line(v)
         if sentence is None:
             return Term.create(*names, alias=alias)

@@ -24,8 +24,6 @@ def parse2net(txt: str) -> SysNet:
     return si.sn
 
 
-H_DATA = [f"h{i}" for i in range(2, 7)]
-
 TReturn: TypeAlias = tuple[SysNode, EdgeType, Direction]
 
 

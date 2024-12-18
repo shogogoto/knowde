@@ -33,6 +33,8 @@ def test_add_ctx() -> None:
     _s = """
         # h1
             aaa
+                <-> anti aaa\
+                        bbb
             B: bbb
             C{B}: ccc
                 -> D: d{CB}d
@@ -49,3 +51,6 @@ def test_add_ctx() -> None:
     assert list(EdgeType.TO.pred(sn.g, "d{CB}d")) == ["ccc"]
     assert to_nested(sn.g, "d{CB}d", EdgeType.SIBLING.succ) == {"vvv": {"www": {}}}
     assert list(EdgeType.TO.succ(sn.g, "d{CB}d")) == ["xxx"]
+
+    assert list(EdgeType.ANTI.succ(sn.g, "aaa")) == ["anti aaabbb"]
+    assert list(EdgeType.ANTI.pred(sn.g, "anti aaabbb")) == ["aaa"]
