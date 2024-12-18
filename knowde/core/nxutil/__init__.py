@@ -145,7 +145,7 @@ class EdgeType(Enum):
     WHERE = auto()
     NUM = auto()
     BY = auto()
-
+    REF = auto()
     # both
     ANTI = auto()  # 反対
     SIMILAR = auto()  # 類似

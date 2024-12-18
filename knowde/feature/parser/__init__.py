@@ -1,3 +1,4 @@
+# ruff: noqa
 """load-file."""
 
-from .interface import parse_cmd  # noqa: F401
+from .interface import parse_cmd
