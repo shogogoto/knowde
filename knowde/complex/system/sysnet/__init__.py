@@ -47,7 +47,8 @@ class SysNet(BaseModel):
                 EdgeType.DEF.add_edge(self.g, n.term, n.sentence)
                 return n.sentence
             case _:
-                raise TypeError
+                msg = f"{type(n)}: {n} is not allowed."
+                raise TypeError(msg)
 
     def get(self, n: SysNode) -> SysArg:
         """文に紐づく用語があれば定義を返す."""

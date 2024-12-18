@@ -1,6 +1,7 @@
 """test."""
 
 
+from knowde.core.nxutil import EdgeType, to_nested
 from knowde.feature.parser.tree2net import parse2net
 from knowde.primitive.heading import get_heading_path
 
@@ -13,7 +14,6 @@ def test_add_heading() -> None:
             bbb
                 ccc
                     -> ddd
-                    <- eee
         ## h2
             fff
             ggg
@@ -22,10 +22,13 @@ def test_add_heading() -> None:
                 iii
     """
     sn = parse2net(_s)
+    assert get_heading_path(sn.g, sn.root, "ccc") == ["# h1"]
+    assert get_heading_path(sn.g, sn.root, "ddd") == ["# h1"]
+    assert get_heading_path(sn.g, sn.root, "ggg") == ["# h1", "## h2"]
     assert get_heading_path(sn.g, sn.root, "iii") == ["# h1", "## h2", "### h3"]
 
 
-def test_setup_term() -> None:
+def test_add_ctx() -> None:
     """用語解決."""
     _s = """
         # h1
@@ -35,19 +38,14 @@ def test_setup_term() -> None:
                 -> D: d{CB}d
                     vvv
                     www
-            ppp
-                qqq
-                <- rrr
-            P:
-                xxx
-                ! comment
-                yyy
-                zzz
-        ## h2
-            lll
-                1. 1
-                2. 2
-                3. 3
+                    -> xxx
     """
 
-    # parse2net(_s)
+    sn = parse2net(_s)
+    assert list(EdgeType.SIBLING.succ(sn.g, "bbb")) == ["ccc"]
+    assert list(EdgeType.TO.succ(sn.g, "ccc")) == ["d{CB}d"]
+    assert list(EdgeType.SIBLING.succ(sn.g, "ccc")) == []
+
+    assert list(EdgeType.TO.pred(sn.g, "d{CB}d")) == ["ccc"]
+    assert to_nested(sn.g, "d{CB}d", EdgeType.SIBLING.succ) == {"vvv": {"www": {}}}
+    assert list(EdgeType.TO.succ(sn.g, "d{CB}d")) == ["xxx"]

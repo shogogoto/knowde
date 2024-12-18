@@ -19,7 +19,9 @@ def parse2net(txt: str) -> SysNet:
     """文からsysnetへ."""
     _t = parse2tree(txt, TSysArg())
     treeprint(_t)
-    return SysNetInterpreter().visit(_t)
+    si = SysNetInterpreter()
+    si.visit(_t)
+    return si.sn
 
 
 H_DATA = [f"h{i}" for i in range(2, 7)]
@@ -33,11 +35,9 @@ class SysNetInterpreter(Interpreter[SysNode, TReturn], BaseModel):
 
     sn: SysNet = Field(default_factory=lambda: SysNet(root="dummy"))
 
-    def _common(self, tree: Tree) -> list[SysNode]:
-        parent = tree.children[0]
-        self.sn.add_nodes(parent)
-        ls = [parent]
-        for c in tree.children[1:]:
+    def _common(self, tree: Tree, parent: SysNode) -> list[SysNode]:
+        ls = []
+        for c in tree.children:
             if isinstance(c, Tree):
                 n, t, d = self.visit(c)
                 self.sn.add_nodes(n)
@@ -45,6 +45,7 @@ class SysNetInterpreter(Interpreter[SysNode, TReturn], BaseModel):
                 if t == EdgeType.BELOW:
                     ls.append(n)
             else:
+                self.sn.add_nodes(c)
                 ls.append(c)
         self.sn.add(EdgeType.SIBLING, *ls)
         return ls
@@ -52,27 +53,34 @@ class SysNetInterpreter(Interpreter[SysNode, TReturn], BaseModel):
     def h1(self, tree: Tree) -> SysNet:  # noqa: D102
         first = tree.children[0]
         self.sn = SysNet(root=first)
-        self._common(tree)
+        self._common(tree, first)
         self.sn.add_resolved_edges()
         return self.sn
 
     def block(self, tree: Tree) -> TReturn:  # noqa: D102
-        return self._common(tree)[0], EdgeType.BELOW, Direction.FORWARD
+        p = tree.children[0]
+        if isinstance(p, Tree):
+            sub = Tree("block", tree.children[1:])
+            c, t, d = self.visit(p)
+            f2 = self._common(sub, c)
+            self.sn.add(EdgeType.SIBLING, c, *f2)
+            return c, t, d
+        f = self._common(tree, p)[0]
+        return f, EdgeType.BELOW, Direction.FORWARD
 
     def ctxline(self, tree: Tree) -> TReturn:  # noqa: D102
-        c1 = tree.children[0]
-        c2 = tree.children[1]
-        t, d = c1
-        if isinstance(c2, Tree):
-            self.sn.g.add_node(c2)
-            n, t, d = self.visit(c1)
-            self.sn.g.add_node(n)
-            add_dipath(d, t, self.sn, c2, n)
-        return c2, t, d
+        t, d = tree.children[0]
+        c = tree.children[1]
+        if isinstance(c, Tree):
+            p = c.children[0]
+            sub = c.children[1]
+            return self._common(sub, p)[0], t, d
+        return c, t, d
 
     def __default__(self, tree: Tree) -> TReturn:
         """heading要素."""
-        return self._common(tree)[0], EdgeType.HEAD, Direction.FORWARD
+        h = tree.children[0]
+        return self._common(tree, h)[0], EdgeType.HEAD, Direction.FORWARD
 
 
 def add_dipath(
