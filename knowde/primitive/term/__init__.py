@@ -13,6 +13,7 @@ from knowde.core.types import NXGraph
 
 from .errors import (
     AliasContainsMarkError,
+    MarkUncontainedError,
     TermConflictError,
     TermMergeError,
     TermResolveError,
@@ -222,6 +223,10 @@ class TermResolver(BaseModel, frozen=True):
 
         """
         marks = pick_marks(s)
+        for m in marks:
+            if m not in self.g:
+                msg = f"'{m}'は用語として存在しません at {s}"
+                raise MarkUncontainedError(msg)
         return {m: to_nested(self.g, m, lambda g, n: g.successors(n)) for m in marks}
 
     def mark2term(self, md: dict) -> dict:
@@ -252,7 +257,10 @@ class TermResolver(BaseModel, frozen=True):
 def _add_resolve_edge(g: nx.DiGraph, start: str, termd: dict) -> None:
     """(start)-[RESOLVE]->(marked sentence)."""
     for k, v in termd.items():
-        s = next(EdgeType.DEF.succ(g, k))  # 文
+        ls = list(EdgeType.DEF.succ(g, k))
+        if len(ls) == 0:
+            continue
+        s = ls[0]  # 文
         EdgeType.RESOLVED.add_edge(g, start, s)  # 文 -> 文
         if any(v):  # 空でない
             _add_resolve_edge(g, str(s), v)
