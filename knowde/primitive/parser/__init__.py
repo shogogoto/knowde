@@ -9,15 +9,9 @@ from lark import Lark, Transformer, Tree, UnexpectedInput
 from lark.indenter import Indenter
 
 from knowde.primitive.parser.errors import HEAD_ERR_EXS
-from knowde.primitive.parser.transfomer import common_transformer
 
 if TYPE_CHECKING:
     from lark.visitors import TransformerChain
-
-# line_parser = Lark(
-#     (Path(__file__).parent / "grammer/line.lark").read_text(),
-#     parser="lalr",
-# )
 
 
 class SampleIndenter(Indenter):
@@ -31,21 +25,17 @@ class SampleIndenter(Indenter):
     tab_len = 4
 
 
-def structure_parser(transformer: TransformerChain | Transformer | None = None) -> Lark:
-    """lineパース以外."""
-    return Lark(
+def parse2tree(
+    text: str,
+    transformer: TransformerChain | Transformer | None = None,
+) -> Tree:
+    """Parse and transform."""
+    txt = dedent(text)
+    parser = Lark(
         (Path(__file__).parent / "input.lark").read_text(),
         parser="lalr",
         postlex=SampleIndenter(),
         transformer=transformer,
-    )
-
-
-def parse2tree(text: str, do_transfrom: bool = False) -> Tree:  # noqa: FBT001 FBT002
-    """Parse and transform."""
-    txt = dedent(text)
-    parser = structure_parser(
-        transformer=common_transformer() if do_transfrom else None,
     )
     try:
         return parser.parse(txt)  # , on_error=handle_error,

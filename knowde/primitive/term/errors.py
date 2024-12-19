@@ -15,3 +15,7 @@ class AliasContainsMarkError(Exception):
 
 class TermResolveError(Exception):
     """用語解決に失敗."""
+
+
+class MarkUncontainedError(Exception):
+    """マークが用語解決器に含まれない."""

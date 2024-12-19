@@ -8,7 +8,12 @@ from . import (
     Term,
     next_lookup,
 )
-from .errors import AliasContainsMarkError, TermConflictError, TermResolveError
+from .errors import (
+    AliasContainsMarkError,
+    MarkUncontainedError,
+    TermConflictError,
+    TermResolveError,
+)
 
 """
 Termは名前の集合に与える識別子
@@ -181,3 +186,6 @@ def test_resolve_term() -> None:
         t6: {t5: {t3: {t1: {}}}},
         t4: {t2: {}},
     }
+
+    with pytest.raises(MarkUncontainedError):
+        resolver("x{uncontained}x")

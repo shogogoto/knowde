@@ -1,6 +1,8 @@
 """networkx関連."""
 from __future__ import annotations
 
+from enum import Enum, auto
+from functools import cached_property
 from pprint import pp
 from typing import Any, Callable, Hashable, Iterator
 
@@ -118,3 +120,87 @@ def nxconvert(g: nx.DiGraph, convert: Callable[[Hashable], Hashable]) -> nx.DiGr
     new.add_nodes_from([convert(n) for n in g.nodes])
     new.add_edges_from([(convert(u), convert(v), d) for u, v, d in g.edges(data=True)])
     return new
+
+
+class Direction(Enum):
+    """方向."""
+
+    FORWARD = auto()
+    BACKWARD = auto()
+    BOTH = auto()
+
+
+class EdgeType(Enum):
+    """グラフ関係の種類."""
+
+    HEAD = auto()  # 見出しを配下にする
+    SIBLING = auto()  # 兄弟 同階層 並列
+    BELOW = auto()  # 配下 階層が下がる 直列
+    DEF = auto()  # term -> 文
+    RESOLVED = auto()  # 用語解決関係 文 -> 文
+
+    TO = auto()  # 依存
+    EXAMPLE = auto()  # 具体
+    WHEN = auto()
+    WHERE = auto()
+    NUM = auto()
+    BY = auto()
+    REF = auto()
+    # both
+    ANTI = auto()  # 反対
+    SIMILAR = auto()  # 類似
+
+    @property
+    def forward(self) -> tuple[EdgeType, Direction]:
+        """正順."""
+        return self, Direction.FORWARD
+
+    @property
+    def backward(self) -> tuple[EdgeType, Direction]:
+        """逆順."""
+        return self, Direction.BACKWARD
+
+    @property
+    def both(self) -> tuple[EdgeType, Direction]:
+        """両順."""
+        return self, Direction.BOTH
+
+    def add_edge(self, g: nx.DiGraph, pre: Hashable, suc: Hashable) -> None:
+        """エッジ追加."""
+        g.add_edge(pre, suc, type=self)
+
+    def add_path(
+        self,
+        g: nx.DiGraph,
+        *ns: Hashable,
+        cvt: Callable[[Hashable], Hashable] = lambda x: x,
+    ) -> list[Hashable]:
+        """連続追加."""
+        ls = [cvt(n) for n in ns]
+        nx.add_path(g, ls, type=self)
+        return ls
+
+    @cached_property
+    def succ(self) -> Accessor:
+        """エッジを辿って次を取得."""
+        return succ_attr("type", self)
+
+    @cached_property
+    def pred(self) -> Accessor:
+        """エッジを遡って前を取得."""
+        return pred_attr("type", self)
+
+    def get_succ(self, g: nx.DiGraph, n: Hashable) -> None | Hashable:
+        """1つの先を返す."""
+        return _get_one(list(self.succ(g, n)))
+
+    def get_pred(self, g: nx.DiGraph, n: Hashable) -> None | Hashable:
+        """1つの前を返す."""
+        return _get_one(list(self.pred(g, n)))
+
+
+def _get_one(ls: list[Hashable]) -> None | Hashable:
+    """1つまたはなしを取得."""
+    if len(ls) == 0:
+        return None
+    return ls[0]
