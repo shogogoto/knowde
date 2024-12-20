@@ -56,15 +56,26 @@ def test_add_ctx() -> None:
     assert list(EdgeType.ANTI.pred(sn.graph, "anti aaabbb")) == ["aaa"]
 
 
-def test_quoterm() -> None:
+def test_replace_quoterm() -> None:
     """引用用語."""
     _s = """
         # h1
             A: aaa
             B: bbb
+        ## h2
             `A`
-                aaa
-                bbb
+                ccc
+                ddd
     """
 
-    parse2net(_s)
+    sn = parse2net(_s)
+    assert sn.quoterms == ["`A`"]
+    sn.replace_quoterms()
+    assert to_nested(sn.graph, "aaa", EdgeType.SIBLING.succ) == {
+        "bbb": {},
+        "ccc": {"ddd": {}},
+    }
+
+
+def test_multiline_def() -> None:
+    """改行付き定義."""

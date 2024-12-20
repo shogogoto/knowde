@@ -52,12 +52,10 @@ class SysNetInterpreter(Interpreter[SysNode, TReturn], BaseModel):
             if isinstance(c, Tree):
                 # print(parent, c)
                 n, t, d = self.visit(c)
-                self.sn.add_new(n)
                 add_dipath(d, t, self.sn, parent, n)
                 if t == EdgeType.BELOW:
                     ls.append(n)
             else:
-                self.sn.add_new(c)
                 ls.append(c)
         self.sn.add(EdgeType.SIBLING, *ls)
         return ls

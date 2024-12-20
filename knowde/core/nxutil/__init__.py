@@ -204,3 +204,14 @@ def _get_one(ls: list[Hashable]) -> None | Hashable:
     if len(ls) == 0:
         return None
     return ls[0]
+
+
+def replace_node(g: nx.DiGraph, old: Hashable, new: Hashable) -> None:
+    """エッジを保ってノードを置換."""
+    g.add_node(new)
+    for pred in g.predecessors(old):
+        g.add_edge(pred, new, **g.get_edge_data(pred, old))
+
+    for succ in g.successors(old):
+        g.add_edge(new, succ, **g.get_edge_data(old, succ))
+    g.remove_node(old)
