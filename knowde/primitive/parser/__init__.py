@@ -1,23 +1,19 @@
 """テキストから構文木作成."""
 from __future__ import annotations
 
+from functools import cache
 from pathlib import Path
 from textwrap import dedent
 from typing import TYPE_CHECKING
 
 from lark import Lark, Transformer, Tree, UnexpectedInput
-from lark.indenter import Indenter
+from lark.indenter import DedentError, Indenter
 
-from knowde.primitive.parser.errors import HEAD_ERR_EXS
-from knowde.primitive.parser.transfomer import common_transformer
+from knowde.primitive.parser.errors import HEAD_ERR_EXS, UndedentError
+from knowde.primitive.parser.undent import detect_undent, front_pivot
 
 if TYPE_CHECKING:
     from lark.visitors import TransformerChain
-
-# line_parser = Lark(
-#     (Path(__file__).parent / "grammer/line.lark").read_text(),
-#     parser="lalr",
-# )
 
 
 class SampleIndenter(Indenter):
@@ -31,8 +27,9 @@ class SampleIndenter(Indenter):
     tab_len = 4
 
 
-def structure_parser(transformer: TransformerChain | Transformer | None = None) -> Lark:
-    """lineパース以外."""
+@cache
+def create_parser(transformer: TransformerChain | Transformer | None = None) -> Lark:
+    """パーサ."""
     return Lark(
         (Path(__file__).parent / "input.lark").read_text(),
         parser="lalr",
@@ -41,17 +38,18 @@ def structure_parser(transformer: TransformerChain | Transformer | None = None) 
     )
 
 
-def parse2tree(text: str, do_transfrom: bool = False) -> Tree:  # noqa: FBT001 FBT002
+def parse2tree(
+    text: str,
+    transformer: TransformerChain | Transformer | None = None,
+) -> Tree:
     """Parse and transform."""
     txt = dedent(text)
-    parser = structure_parser(
-        transformer=common_transformer() if do_transfrom else None,
-    )
+    p = create_parser(transformer)
     try:
-        return parser.parse(txt)  # , on_error=handle_error,
+        return p.parse(txt)  # , on_error=handle_error)
     except UnexpectedInput as e:
         exc_class = e.match_examples(
-            parser.parse,
+            p.parse,
             HEAD_ERR_EXS,
             token_type_match_fallback=True,
         )
@@ -59,3 +57,9 @@ def parse2tree(text: str, do_transfrom: bool = False) -> Tree:  # noqa: FBT001 F
             raise
         s = e.get_context(txt)
         raise exc_class(s, e.line, e.column) from e
+    except DedentError as e:
+        lines = txt.splitlines()
+        pivot, w = front_pivot(len(lines), len(lines))
+        i = detect_undent(create_parser().parse, lines, pivot, w)
+        msg = f"Undedent was detected at line {i}. Fix indent. \n" + lines[i]
+        raise UndedentError(msg) from e
