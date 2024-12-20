@@ -13,22 +13,26 @@ from knowde.core.nxutil import Direction, EdgeType
 from knowde.feature.parser.tree2net.transformer import TSysArg
 from knowde.primitive.parser import parse2tree
 from knowde.primitive.parser.testing import treeprint
+from knowde.primitive.term.errors import MarkUncontainedError
 
 
-def parse2net(txt: str) -> SysNet:
+def parse2net(txt: str, do_print: bool = False) -> SysNet:  # noqa: FBT001 FBT002
     """文からsysnetへ."""
     _t = parse2tree(txt, TSysArg())
-    treeprint(_t)
+    if do_print:
+        treeprint(_t)
     si = SysNetInterpreter()
-    si.visit(_t)
+    try:
+        si.visit(_t)
+    except MarkUncontainedError as e:
+        print(e)  # noqa: T201
     return si.sn
 
 
 TReturn: TypeAlias = tuple[SysNode, EdgeType, Direction]
 
 
-# 子ブロックの先頭がCTXのとき
-class SysNetInterpreter(Interpreter[SysNode, TReturn], BaseModel):
+class SysNetInterpreter[SysNode, TReturn](Interpreter, BaseModel):
     """SysNet構築."""
 
     sn: SysNet = Field(default_factory=lambda: SysNet(root="dummy"))
