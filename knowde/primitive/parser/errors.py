@@ -2,11 +2,19 @@
 from textwrap import dedent
 
 
-class UnexpectedPivotError(Exception):
+class ParserError(Exception):
+    """独自定義."""
+
+
+class UndedentError(ParserError):
+    """不正インデント検出."""
+
+
+class UnexpectedPivotError(ParserError):
     """不正インデント検出のあり得ないpivot値."""
 
 
-class KnSyntaxError(SyntaxError):
+class KnSyntaxError(ParserError):
     """自作構文エラー."""
 
     def __str__(self) -> str:
