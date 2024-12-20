@@ -32,7 +32,7 @@ def parse2net(txt: str, do_print: bool = False) -> SysNet:  # noqa: FBT001 FBT00
 TReturn: TypeAlias = tuple[SysNode, EdgeType, Direction]
 
 
-class SysNetInterpreter[SysNode, TReturn](Interpreter, BaseModel):
+class SysNetInterpreter(Interpreter[SysNode, TReturn], BaseModel):
     """SysNet構築."""
 
     sn: SysNet = Field(default_factory=lambda: SysNet(root="dummy"))
