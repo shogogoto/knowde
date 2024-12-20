@@ -28,7 +28,6 @@ def test_add_heading() -> None:
     assert get_heading_path(sn.graph, sn.root, "iii") == ["# h1", "## h2", "### h3"]
 
 
-# @pytest.mark.skip()
 def test_add_ctx() -> None:
     """用語解決."""
     _s = """
@@ -57,7 +56,6 @@ def test_add_ctx() -> None:
     assert list(EdgeType.ANTI.pred(sn.graph, "anti aaabbb")) == ["aaa"]
 
 
-# @pytest.mark.skip()
 def test_quoterm() -> None:
     """引用用語."""
     _s = """

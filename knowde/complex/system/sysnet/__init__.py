@@ -1,12 +1,14 @@
 """系ネットワーク."""
 from __future__ import annotations
 
+from itertools import pairwise
 from typing import Any, Hashable
 
 from networkx import DiGraph
 from pydantic import BaseModel, PrivateAttr
 
 from knowde.complex.system.sysnet.errors import (
+    AlreadyAddedError,
     SysNetNotFoundError,
     UnResolvedTermError,
 )
@@ -17,7 +19,7 @@ from knowde.core.types import NXGraph
 from knowde.primitive.heading import get_headings
 from knowde.primitive.term import MergedTerms, Term, resolve_sentence
 
-from .sysnode import Def, SysArg, SysNode, arg2node
+from .sysnode import Def, SysArg, SysNode
 
 
 class SysNet(BaseModel):
@@ -34,48 +36,47 @@ class SysNet(BaseModel):
     def model_post_init(self, __context: Any) -> None:  # noqa: ANN401 D102
         self._g.add_node(self.root)
 
-    def add(self, t: EdgeType, *path: SysArg) -> list[SysArg]:
+    def add(self, t: EdgeType, *path: SysArg) -> None:
         """既存nodeから開始していない場合はrootからedgeを伸ばすように登録."""
         match len(path):
             case l if l == 1:
-                n = self.add_new(path[0])
-                return [n]
+                self.add_arg(path[0])
+                return None
             case l if l >= 2:  # noqa: PLR2004
-                f = self._check_added(path[0])
-                ps = [f, *[self.add_new(p) for p in path[1:]]]
-                return t.add_path(self._g, *ps)
+                for u, v in pairwise(path):
+                    self.add_new_edge(t, u, v)
+                return None
             case _:
                 return list(path)
 
-    def _check_added(self, n: SysArg) -> SysNode:
+    def add_new_edge(
+        self,
+        t: EdgeType,
+        u: SysArg,
+        v: SysArg,
+    ) -> tuple[SysNode, SysNode]:
         """追加済みのはず."""
-        match n:
-            case self.root:
-                return n
-            case Term() | str() | Def():
-                return arg2node(n)
-                # if n not in self._g.nodes:
-                #     msg = f"'{n}'は追加されていません."
-                #     raise UnaddedYetError(msg)
-            case _:
-                msg = f"{type(n)}: {n} is not allowed."
-                raise TypeError(msg)
+        un = self.add_arg(u)
+        vn = self.add_arg(v)
+        if (un, vn, {"type": t}) in self._g.edges.data():
+            msg = f"{u}-[{t}]->{v}は重複追加です"
+            raise AlreadyAddedError(msg)
+        t.add_edge(self._g, un, vn)
+        return un, vn
 
-    def add_new(self, n: Hashable) -> SysNode:
+    def _should_unadded(self, arg: SysArg) -> None:
+        n = arg.sentence if isinstance(arg, Def) else arg
+        if n in self._g.nodes:
+            msg = f"'{arg}'は重複追加です."
+            raise AlreadyAddedError(msg)
+
+    def add_arg(self, n: Hashable) -> SysNode:
         """新規追加."""
         match n:
-            case self.root:
-                return n
             case Term() | str():
-                # if n in self._g.nodes:
-                #     msg = f"{n}は予期せずに追加済みです"
-                #     raise AlreadyAddedError(msg)
                 self._g.add_node(n)
                 return n
             case Def():
-                # if (n.term, n.sentence) in self._g.edges:
-                #     msg = f"定義{n}は予期せずに追加済みです"
-                #     raise AlreadyAddedError(msg)
                 EdgeType.DEF.add_edge(self._g, n.term, n.sentence)
                 return n.sentence
             case _:
