@@ -20,7 +20,7 @@ def parse2net(txt: str, do_print: bool = False) -> SysNet:  # noqa: FBT001 FBT00
     """文からsysnetへ."""
     _t = parse2tree(txt, TSysArg())
     if do_print:
-        treeprint(_t)
+        treeprint(_t, True)  # noqa: FBT003
     si = SysNetInterpreter()
     try:
         si.visit(_t)
@@ -37,27 +37,30 @@ class SysNetInterpreter(Interpreter[SysNode, TReturn], BaseModel):
 
     sn: SysNet = Field(default_factory=lambda: SysNet(root="dummy"))
 
+    def h1(self, tree: Tree) -> SysNet:  # noqa: D102
+        first = tree.children[0]
+        self.sn = SysNet(root=first)
+        # print("#" * 80, "h1")
+        self._common(tree, first)
+        self.sn.add_resolved_edges()
+        return self.sn
+
     def _common(self, tree: Tree, parent: SysNode) -> list[SysNode]:
         ls = []
+        # print("#" * 80, "common", parent)
         for c in tree.children:
             if isinstance(c, Tree):
+                # print(parent, c)
                 n, t, d = self.visit(c)
-                self.sn.add_nodes(n)
+                self.sn.add_new(n)
                 add_dipath(d, t, self.sn, parent, n)
                 if t == EdgeType.BELOW:
                     ls.append(n)
             else:
-                self.sn.add_nodes(c)
+                self.sn.add_new(c)
                 ls.append(c)
         self.sn.add(EdgeType.SIBLING, *ls)
         return ls
-
-    def h1(self, tree: Tree) -> SysNet:  # noqa: D102
-        first = tree.children[0]
-        self.sn = SysNet(root=first)
-        self._common(tree, first)
-        self.sn.add_resolved_edges()
-        return self.sn
 
     def block(self, tree: Tree) -> TReturn:  # noqa: D102
         p = tree.children[0]

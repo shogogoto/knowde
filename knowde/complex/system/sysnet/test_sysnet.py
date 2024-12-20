@@ -67,8 +67,7 @@ axioms 依存するものがない大元のノード
 def test_setup_term() -> None:
     """用語解決."""
     sn = SysNet(root="sys")
-    sn.add(EdgeType.HEAD, "h1")
-    sn.add(EdgeType.HEAD, "h2")
+    sn.add(EdgeType.HEAD, sn.root, "h1", "h2")
     sn.add(
         EdgeType.SIBLING,
         "h1",
@@ -98,9 +97,9 @@ def test_get() -> None:
     sn = SysNet(root="sys")
     df = Def.create("aaa", ["A"])
     t = Term.create("B")
-    sn.add(EdgeType.BELOW, df)
-    sn.add(EdgeType.BELOW, "bbb")
-    sn.add(EdgeType.BELOW, t)
+    sn.add(EdgeType.BELOW, sn.root, df)
+    sn.add(EdgeType.BELOW, sn.root, "bbb")
+    sn.add(EdgeType.BELOW, sn.root, t)
 
     assert sn.get("aaa") == df
     assert sn.get(Term.create("A")) == df
