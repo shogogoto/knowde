@@ -2,6 +2,10 @@
 from textwrap import dedent
 
 
+class UnexpectedPivotError(Exception):
+    """不正インデント検出のあり得ないpivot値."""
+
+
 class KnSyntaxError(SyntaxError):
     """自作構文エラー."""
 
