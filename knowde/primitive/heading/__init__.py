@@ -20,7 +20,7 @@ def get_headings(g: nx.DiGraph, root: Hashable) -> set[str]:
 
 def get_heading_path(g: nx.DiGraph, root: Hashable, n: Hashable) -> list[Hashable]:
     """直近の見出しパス."""
-    paths = list(nx.shortest_simple_paths(g, root, n))
+    paths = list(nx.shortest_simple_paths(g.to_undirected(), root, n))
     if len(paths) == 0:
         raise HeadingNotFoundError
     p = paths[0]

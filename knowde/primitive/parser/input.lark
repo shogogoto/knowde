@@ -23,7 +23,7 @@ H6: "######" HEAD
 ?block: stmt [_INDENT (block)+ _DEDENT]
 ?stmt: line | ctxline
 ?line: (ONELINE|COMMENT|QUOTERM) _NL
-ctxline: ctype line
+ctxline: ctype block
 
 ANY: /[^\n]+/
 COMMENT: "!" ANY
