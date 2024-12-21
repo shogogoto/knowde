@@ -41,49 +41,49 @@ class SysNetInterpreter(Interpreter[SysNode, TReturn], BaseModel):
         first = tree.children[0]
         self.sn = SysNet(root=first)
         # print("#" * 80, "h1")
-        self._common(tree, first)
-        self.sn.add_resolved_edges()
+        self._add_siblings(tree, first)
+        # print("#" * 80, "h1 end")
+        # self.sn.add_resolved_edges()
         return self.sn
 
-    def _common(self, tree: Tree, parent: SysNode) -> list[SysNode]:
-        ls = []
-        # print("#" * 80, "common", parent)
-        for c in tree.children:
+    def _add_siblings(self, tree: Tree, parent: SysNode) -> list[SysNode]:
+        """兄弟を設定."""
+        siblings = []
+        # print("#" * 80, "sib", parent)
+        for c in tree.children[1:]:
             if isinstance(c, Tree):
-                # print(parent, c)
                 n, t, d = self.visit(c)
                 add_dipath(d, t, self.sn, parent, n)
                 if t == EdgeType.BELOW:
-                    ls.append(n)
+                    siblings.append(n)
             else:
-                ls.append(c)
-        self.sn.add(EdgeType.SIBLING, *ls)
-        return ls
+                siblings.append(c)
+        # print("#" * 80, "sib end", parent, siblings)
+        self.sn.add(EdgeType.SIBLING, parent, *siblings)
+        return siblings
 
     def block(self, tree: Tree) -> TReturn:  # noqa: D102
-        p = tree.children[0]
-        if isinstance(p, Tree):
-            sub = Tree("block", tree.children[1:])
-            c, t, d = self.visit(p)
-            f2 = self._common(sub, c)
-            self.sn.add(EdgeType.SIBLING, c, *f2)
-            return c, t, d
-        f = self._common(tree, p)[0]
-        return f, EdgeType.BELOW, Direction.FORWARD
+        parent = tree.children[0]
+        # print("block::", parent, len(tree.children[1:]))
+        children = self._add_siblings(tree, parent)
+        if len(children) > 0:
+            add_dipath(Direction.FORWARD, EdgeType.BELOW, self.sn, parent, children[0])
+        # print("block::end", children)
+        return parent, EdgeType.BELOW, Direction.FORWARD
 
     def ctxline(self, tree: Tree) -> TReturn:  # noqa: D102
+        # print("ctxline::", tree)
         t, d = tree.children[0]
-        c = tree.children[1]
-        if isinstance(c, Tree):
-            p = c.children[0]
-            sub = c.children[1]
-            return self._common(sub, p)[0], t, d
-        return c, t, d
+        parent = tree.children[1]
+        if isinstance(parent, Tree):
+            return self.visit(parent)
+        return parent, t, d
 
     def __default__(self, tree: Tree) -> TReturn:
         """heading要素."""
         h = tree.children[0]
-        return self._common(tree, h)[0], EdgeType.HEAD, Direction.FORWARD
+        self._add_siblings(tree, h)
+        return h, EdgeType.HEAD, Direction.FORWARD
 
 
 def add_dipath(
@@ -93,6 +93,7 @@ def add_dipath(
     *ns: SysArg,
 ) -> list[SysArg]:
     """方向を追加."""
+    # print("*****add_dipath::", t, ns)
     match d:
         case Direction.FORWARD:
             return sn.add(t, *ns)

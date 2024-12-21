@@ -56,9 +56,9 @@ class SysNet(BaseModel):
         """追加済みのはず."""
         un = self.add_arg(u)
         vn = self.add_arg(v)
-        # if (un, vn, {"type": t}) in self._g.edges.data():
-        #     msg = f"{u}-[{t}]->{v}は重複追加です"
-        #     raise AlreadyAddedError(msg)
+        if (un, vn, {"type": t}) in self._g.edges.data():
+            msg = f"{u}-[{t}]->{v}は重複追加です"
+            raise AlreadyAddedError(msg)
         t.add_edge(self._g, un, vn)
 
     def _should_unadded(self, arg: SysArg) -> None:
