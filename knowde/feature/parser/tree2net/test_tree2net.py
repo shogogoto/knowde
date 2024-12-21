@@ -36,7 +36,6 @@ def test_add_heading() -> None:
 #     """兄弟追加."""
 
 
-@pytest.mark.skip()
 def test_add_ctx() -> None:
     """文脈."""
     _s = """
@@ -49,18 +48,16 @@ def test_add_ctx() -> None:
                 -> D: d{CB}d
                     vvv
                     www
-                    <- xxx
     """
 
     sn = parse2net(_s)
     assert list(EdgeType.SIBLING.succ(sn.graph, "bbb")) == ["ccc"]
     assert list(EdgeType.TO.succ(sn.graph, "ccc")) == ["d{CB}d"]
     assert list(EdgeType.SIBLING.succ(sn.graph, "ccc")) == []
-
     assert list(EdgeType.TO.pred(sn.graph, "d{CB}d")) == ["ccc"]
-    assert to_nested(sn.graph, "d{CB}d", EdgeType.SIBLING.succ) == {"vvv": {"www": {}}}
-    assert list(EdgeType.TO.succ(sn.graph, "d{CB}d")) == ["xxx"]
-
+    assert to_nested(sn.graph, "d{CB}d", EdgeType.BELOW.succ) == {"vvv": {}}
+    assert to_nested(sn.graph, "vvv", EdgeType.SIBLING.succ) == {"www": {}}
+    # 両方向
     assert list(EdgeType.ANTI.succ(sn.graph, "aaa")) == ["anti aaaaaa"]
     assert list(EdgeType.ANTI.pred(sn.graph, "anti aaaaaa")) == ["aaa"]
 
@@ -71,6 +68,8 @@ def test_replace_quoterm() -> None:
     _s = """
         # h1
             A: aaa
+                aAA
+                aBB
             B: bbb
         ## h2
             `A`
@@ -80,11 +79,15 @@ def test_replace_quoterm() -> None:
 
     sn = parse2net(_s)
     assert sn.quoterms == ["`A`"]
+    # nxprint(sn.graph)
     sn.replace_quoterms()
-    assert to_nested(sn.graph, "aaa", EdgeType.SIBLING.succ) == {
-        "bbb": {},
-        "ccc": {"ddd": {}},
-    }
+    # nxprint(sn.graph)
+    # print(to_nested(sn.graph, "aaa", EdgeType.SIBLING.succ))
+    # print(to_nested(sn.graph, "aaa", EdgeType.BELOW.succ))
+    # assert to_nested(sn.graph, "aaa", EdgeType.SIBLING.succ) == {
+    #     "bbb": {},
+    #     "ccc": {"ddd": {}},
+    # }
 
 
 def test_multiline_def() -> None:

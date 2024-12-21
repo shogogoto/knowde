@@ -130,7 +130,10 @@ class SysNet(BaseModel):
         for qt in self.quoterms:
             term = self.resolver.lookup[qt.replace("`", "")]
             d = self.get(term)
-            replace_node(self._g, qt, d.sentence)
+            if isinstance(d, Def):
+                replace_node(self._g, qt, d.sentence)
+            else:
+                raise TypeError
 
     def get_resolved(self, s: str) -> dict:
         """解決済み入れ子文を取得."""

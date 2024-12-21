@@ -40,16 +40,13 @@ class SysNetInterpreter(Interpreter[SysNode, TReturn], BaseModel):
     def h1(self, tree: Tree) -> SysNet:  # noqa: D102
         first = tree.children[0]
         self.sn = SysNet(root=first)
-        # print("#" * 80, "h1")
         self._add_siblings(tree, first)
-        # print("#" * 80, "h1 end")
-        # self.sn.add_resolved_edges()
+        self.sn.add_resolved_edges()
         return self.sn
 
     def _add_siblings(self, tree: Tree, parent: SysNode) -> list[SysNode]:
         """兄弟を設定."""
         siblings = []
-        # print("#" * 80, "sib", parent)
         for c in tree.children[1:]:
             if isinstance(c, Tree):
                 n, t, d = self.visit(c)
@@ -58,25 +55,21 @@ class SysNetInterpreter(Interpreter[SysNode, TReturn], BaseModel):
                     siblings.append(n)
             else:
                 siblings.append(c)
-        # print("#" * 80, "sib end", parent, siblings)
         self.sn.add(EdgeType.SIBLING, parent, *siblings)
         return siblings
 
     def block(self, tree: Tree) -> TReturn:  # noqa: D102
         parent = tree.children[0]
-        # print("block::", parent, len(tree.children[1:]))
         children = self._add_siblings(tree, parent)
         if len(children) > 0:
             add_dipath(Direction.FORWARD, EdgeType.BELOW, self.sn, parent, children[0])
-        # print("block::end", children)
         return parent, EdgeType.BELOW, Direction.FORWARD
 
     def ctxline(self, tree: Tree) -> TReturn:  # noqa: D102
-        # print("ctxline::", tree)
         t, d = tree.children[0]
         parent = tree.children[1]
         if isinstance(parent, Tree):
-            return self.visit(parent)
+            parent, _, _ = self.visit(parent)
         return parent, t, d
 
     def __default__(self, tree: Tree) -> TReturn:
@@ -91,17 +84,18 @@ def add_dipath(
     t: EdgeType,
     sn: SysNet,
     *ns: SysArg,
-) -> list[SysArg]:
+) -> None:
     """方向を追加."""
-    # print("*****add_dipath::", t, ns)
     match d:
         case Direction.FORWARD:
-            return sn.add(t, *ns)
+            sn.add(t, *ns)
         case Direction.BACKWARD:
-            return sn.add(t, *reversed(ns))
+            sn.add(t, *reversed(ns))
         case Direction.BOTH:
             sn.add(t, *reversed(ns))
-            return sn.add(t, *ns)
+            sn.add(t, *ns)
+        case _:
+            raise TypeError
 
 
 # return datetime.strptime(v, "%Y-%m-%d").astimezone(TZ).date()
