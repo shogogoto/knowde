@@ -5,7 +5,7 @@ from typing import TypeAlias
 
 from lark import Tree
 from lark.visitors import Interpreter
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from knowde.complex.system.sysnet import SysNet
 from knowde.complex.system.sysnet.sysnode import SysArg, SysNode
@@ -32,7 +32,7 @@ def parse2net(txt: str, do_print: bool = False) -> SysNet:  # noqa: FBT001 FBT00
 TReturn: TypeAlias = tuple[SysNode, EdgeType, Direction]
 
 
-class SysNetInterpreter(Interpreter[SysNode, TReturn], BaseModel):
+class SysNetInterpreter(Interpreter[SysNode, TReturn]):
     """SysNet構築."""
 
     sn: SysNet = Field(default_factory=lambda: SysNet(root="dummy"))
