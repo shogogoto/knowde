@@ -6,10 +6,11 @@ from typing import IO
 
 import click
 from lark import LarkError
-from lark.indenter import DedentError
 import networkx as nx
 
+from knowde.core.errors.domain import MultiHitError
 from knowde.core.nxutil import nxprint
+from knowde.core.nxutil.errors import MultiEdgesError
 from knowde.feature.parser.tree2net import parse2net
 from knowde.primitive.parser.errors import ParserError
 
@@ -29,4 +30,6 @@ def parse_cmd(stdin: IO) -> None:
     except ParserError as e:
         print(e)  # noqa: T201
     except LarkError as e:
+        print(e)  # noqa: T201
+    except MultiEdgesError as e:
         print(e)  # noqa: T201

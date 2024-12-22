@@ -28,7 +28,7 @@ def sentence_dup_checker() -> DuplicationChecker:
     """For dup checker."""
 
     def _err(s: str) -> NoReturn:
-        msg = f"'{s}は重複しています'"
+        msg = f"'{s}'は重複しています"
         raise SentenceConflictError(msg)
 
     return DuplicationChecker(err_fn=_err)

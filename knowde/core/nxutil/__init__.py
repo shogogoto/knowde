@@ -8,6 +8,8 @@ from typing import Any, Callable, Hashable, Iterator
 
 import networkx as nx
 
+from knowde.core.nxutil.errors import MultiEdgesError
+
 from .types import Accessor, Edges
 
 
@@ -192,14 +194,14 @@ class EdgeType(Enum):
 
     def get_succ_or_none(self, g: nx.DiGraph, n: Hashable) -> None | Hashable:
         """1つの先を返す."""
-        return _get_one_or_none(list(self.succ(g, n)))
+        return _get_one_or_none(list(self.succ(g, n)), self, n)
 
     def get_pred_or_none(self, g: nx.DiGraph, n: Hashable) -> None | Hashable:
         """1つの前を返す."""
-        return _get_one_or_none(list(self.pred(g, n)))
+        return _get_one_or_none(list(self.pred(g, n)), self, n)
 
 
-def _get_one_or_none(ls: list[Hashable]) -> None | Hashable:
+def _get_one_or_none(ls: list[Hashable], t: EdgeType, src: Hashable) -> None | Hashable:
     """1つまたはなしを取得."""
     match len(ls):
         case 0:
@@ -207,7 +209,13 @@ def _get_one_or_none(ls: list[Hashable]) -> None | Hashable:
         case 1:
             return ls[0]
         case _:
-            raise
+            msg = (
+                f"'{src}'から複数の関係がヒットしました. 1つだけに修正してね: {t} \n\t"
+                + "\n\t".join(
+                    ls,
+                )
+            )
+            raise MultiEdgesError(msg)
 
 
 def replace_node(g: nx.DiGraph, old: Hashable, new: Hashable) -> None:

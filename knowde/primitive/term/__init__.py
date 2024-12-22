@@ -115,7 +115,7 @@ def term_dup_checker() -> DuplicationChecker:
     """用語重複チェッカー."""
 
     def _err(t: Term) -> NoReturn:
-        msg = f"用語{t}が重複しています"
+        msg = f"用語'{t}'が重複しています"
         raise TermConflictError(msg)
 
     return DuplicationChecker(err_fn=_err)
