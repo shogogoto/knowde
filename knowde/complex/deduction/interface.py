@@ -23,12 +23,12 @@ from knowde.complex.deduction.repo.deduction import (
     replace_premises,
 )
 from knowde.complex.deduction.repo.label import DeductionMapper
-from knowde.core.api.api_param import APIPath, APIQuery, NullPath
-from knowde.core.api.endpoint import Endpoint, router2get
-from knowde.core.api.facade import ClientFactory
-from knowde.core.api.paramfunc import to_bodyfunc
-from knowde.core.cli.click_decorators import each_args
-from knowde.core.cli.field.model2click import model2decorator
+from knowde.primitive.__core__.api.api_param import APIPath, APIQuery, NullPath
+from knowde.primitive.__core__.api.endpoint import Endpoint, router2get
+from knowde.primitive.__core__.api.facade import ClientFactory
+from knowde.primitive.__core__.api.paramfunc import to_bodyfunc
+from knowde.primitive.__core__.cli.click_decorators import each_args
+from knowde.primitive.__core__.cli.field.model2click import model2decorator
 
 from .proposition.interface import complete_proposition_client
 

@@ -3,8 +3,8 @@ from __future__ import annotations
 
 from typing import Optional
 
-from knowde.core.label_repo.query import query_cypher
-from knowde.core.label_repo.rel import dict2query_literal
+from knowde.primitive.__core__.label_repo.query import query_cypher
+from knowde.primitive.__core__.label_repo.rel import dict2query_literal
 
 from .fetch import fetch_time
 from .label import DayUtil

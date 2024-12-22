@@ -9,8 +9,8 @@ from pydantic import Field
 
 from knowde.complex.system.sysnet import SysNet
 from knowde.complex.system.sysnet.sysnode import SysArg, SysNode
-from knowde.core.nxutil import Direction, EdgeType
 from knowde.feature.parser.tree2net.transformer import TSysArg
+from knowde.primitive.__core__.nxutil import Direction, EdgeType
 from knowde.primitive.parser import parse2tree
 from knowde.primitive.parser.testing import treeprint
 from knowde.primitive.term.errors import MarkUncontainedError

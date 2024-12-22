@@ -1,7 +1,7 @@
 """系エラー."""
 from typing import NoReturn
 
-from knowde.core.dupchk import DuplicationChecker
+from knowde.primitive.__core__.dupchk import DuplicationChecker
 
 
 class UnResolvedTermError(Exception):

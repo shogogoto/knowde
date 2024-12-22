@@ -8,9 +8,9 @@ from neomodel import BooleanProperty, IntegerProperty, StringProperty
 
 from knowde.complex.deduction.proposition.domain import Proposition
 from knowde.complex.deduction.proposition.repo.label import LProposition
-from knowde.core.domain import APIReturn, Entity
-from knowde.core.label_repo.base import LBase, RelBase
-from knowde.core.label_repo.rel import RelUtil
+from knowde.primitive.__core__.domain import APIReturn, Entity
+from knowde.primitive.__core__.label_repo.base import LBase, RelBase
+from knowde.primitive.__core__.label_repo.rel import RelUtil
 
 
 class LDeduction(LBase):

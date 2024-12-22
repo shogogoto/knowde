@@ -5,8 +5,8 @@ from typing import IO
 
 import click
 from lark import LarkError
-from knowde.core.nxutil import nxprint
-from knowde.core.nxutil.errors import MultiEdgesError
+from knowde.primitive.__core__.nxutil import nxprint
+from knowde.primitive.__core__.nxutil.errors import MultiEdgesError
 from knowde.feature.parser.tree2net import parse2net
 from knowde.primitive.parser.errors import ParserError
 

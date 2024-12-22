@@ -18,8 +18,8 @@ from knowde.complex.definition.sentence import LSentence, SentenceUtil
 from knowde.complex.definition.sentence.domain import Sentence
 from knowde.complex.definition.term import LTerm, TermUtil
 from knowde.complex.definition.term.domain import Term
-from knowde.core import RelBase, RelUtil
-from knowde.core.label_repo.label import Label
+from knowde.primitive.__core__ import RelBase, RelUtil
+from knowde.primitive.__core__.label_repo.label import Label
 
 if TYPE_CHECKING:
     from uuid import UUID

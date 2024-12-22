@@ -1,7 +1,7 @@
 """error."""
 from fastapi import status
 
-from knowde.core.errors.errors import DomainError
+from knowde.primitive.__core__.errors.errors import DomainError
 
 
 class CyclicDependencyError(DomainError):

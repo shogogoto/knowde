@@ -7,7 +7,7 @@ import click
 from pydantic import BaseModel, Field
 
 from knowde.complex.definition.domain.domain import Definition
-from knowde.core.domain import APIReturn, Composite
+from knowde.primitive.__core__.domain import APIReturn, Composite
 
 
 def view_detail(composite: Composite[Definition]) -> str:

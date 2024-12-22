@@ -4,7 +4,7 @@
 from lark import Token, Transformer
 
 from knowde.complex.system.sysnet.sysnode import Def, SysArg
-from knowde.core.nxutil import EdgeType
+from knowde.primitive.__core__.nxutil import EdgeType
 from knowde.primitive.parser.lineparse import parse_line
 from knowde.primitive.term import Term
 

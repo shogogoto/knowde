@@ -15,12 +15,12 @@ from knowde.complex.system.sysnet.errors import (
     UnResolvedTermError,
     sentence_dup_checker,
 )
-from knowde.core.dupchk import DuplicationChecker
-from knowde.core.nxutil import (
+from knowde.primitive.__core__.dupchk import DuplicationChecker
+from knowde.primitive.__core__.nxutil import (
     EdgeType,
     replace_node,
 )
-from knowde.core.types import NXGraph
+from knowde.primitive.__core__.types import NXGraph
 from knowde.primitive.heading import get_headings
 from knowde.primitive.term import (
     MergedTerms,

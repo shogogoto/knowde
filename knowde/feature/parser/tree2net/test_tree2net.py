@@ -1,8 +1,8 @@
 """test."""
 
 
-from knowde.core.nxutil import EdgeType, to_nested
 from knowde.feature.parser.tree2net import parse2net
+from knowde.primitive.__core__.nxutil import EdgeType, to_nested
 from knowde.primitive.heading import get_heading_path
 
 

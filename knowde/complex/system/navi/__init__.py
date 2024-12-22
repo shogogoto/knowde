@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 from knowde.complex.system.sysnet import EdgeType, SysNet
 from knowde.complex.system.sysnet.sysnode import SysNode
-from knowde.core.nxutil import axiom_paths, leaf_paths
+from knowde.primitive.__core__.nxutil import axiom_paths, leaf_paths
 
 if TYPE_CHECKING:
     from networkx import DiGraph

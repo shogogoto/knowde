@@ -1,7 +1,7 @@
 """domain."""
 from pydantic import BaseModel, Field
 
-from knowde.core.domain import Entity
+from knowde.primitive.__core__.domain import Entity
 
 MAX_CHARS = 128
 
