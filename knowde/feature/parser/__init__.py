@@ -1,7 +1,6 @@
 # ruff: noqa
 """load-file."""
 
-
 from pprint import pp
 from typing import IO
 
