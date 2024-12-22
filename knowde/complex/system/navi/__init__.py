@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING, Hashable, OrderedDict, Self
 
 from pydantic import BaseModel
 
-from knowde.complex.system.sysnet import EdgeType, SysNet
-from knowde.complex.system.sysnet.sysnode import SysNode
+from knowde.complex.__core__.sysnet import EdgeType, SysNet
+from knowde.complex.__core__.sysnet.sysnode import SysNode
 from knowde.primitive.__core__.nxutil import axiom_paths, leaf_paths
 
 if TYPE_CHECKING:

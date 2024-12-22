@@ -9,12 +9,6 @@ from lark import Token
 from networkx import DiGraph
 from pydantic import BaseModel, PrivateAttr
 
-from knowde.complex.system.sysnet.errors import (
-    AlreadyAddedError,
-    SysNetNotFoundError,
-    UnResolvedTermError,
-    sentence_dup_checker,
-)
 from knowde.primitive.__core__.dupchk import DuplicationChecker
 from knowde.primitive.__core__.nxutil import (
     EdgeType,
@@ -30,6 +24,12 @@ from knowde.primitive.term import (
     term_dup_checker,
 )
 
+from .errors import (
+    AlreadyAddedError,
+    SysNetNotFoundError,
+    UnResolvedTermError,
+    sentence_dup_checker,
+)
 from .sysnode import Def, SysArg, SysNode
 
 

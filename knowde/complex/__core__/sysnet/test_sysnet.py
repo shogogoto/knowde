@@ -2,11 +2,11 @@
 
 import pytest
 
-from knowde.complex.system.sysnet.errors import SysNetNotFoundError
-from knowde.complex.system.sysnet.sysnode import Def
 from knowde.primitive.term import Term
 
 from . import EdgeType, SysNet
+from .errors import SysNetNotFoundError
+from .sysnode import Def
 
 
 def test_setup_term() -> None:

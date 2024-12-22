@@ -7,8 +7,8 @@ from lark import Tree
 from lark.visitors import Interpreter
 from pydantic import Field
 
-from knowde.complex.system.sysnet import SysNet
-from knowde.complex.system.sysnet.sysnode import SysArg, SysNode
+from knowde.complex.__core__.sysnet import SysNet
+from knowde.complex.__core__.sysnet.sysnode import SysArg, SysNode
 from knowde.feature.parser.tree2net.transformer import TSysArg
 from knowde.primitive.__core__.nxutil import Direction, EdgeType
 from knowde.primitive.parser import parse2tree
