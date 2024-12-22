@@ -75,7 +75,7 @@ def test_parse_missing_top_heading() -> None:
         # 1
         ## 2
         ### 3
-        !aaa
+        aaa
         """,
             """
         # 1
@@ -90,7 +90,7 @@ def test_parse_missing_top_heading() -> None:
         ### 3
         #### 4
         ##### 5
-        !aaa
+        aaa
         """,
             """
         # 1
