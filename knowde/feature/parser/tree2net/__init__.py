@@ -42,6 +42,7 @@ class SysNetInterpreter(Interpreter[SysNode, TReturn], BaseModel):
         self.sn = SysNet(root=first)
         self._add_siblings(tree, first)
         self.sn.add_resolved_edges()
+        self.sn.replace_quoterms()
         return self.sn
 
     def _add_siblings(self, tree: Tree, parent: SysNode) -> list[SysNode]:
