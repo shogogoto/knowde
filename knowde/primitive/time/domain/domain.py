@@ -5,10 +5,10 @@ from typing import Optional, Self
 
 from pydantic import BaseModel, Field, model_validator
 
-from knowde.core.domain import Entity
-from knowde.core.domain.domain import APIReturn
-from knowde.core.errors.domain import NotExistsAccessError
-from knowde.core.types import NXGraph
+from knowde.primitive.__core__.domain import Entity
+from knowde.primitive.__core__.domain.domain import APIReturn
+from knowde.primitive.__core__.errors.domain import NotExistsAccessError
+from knowde.primitive.__core__.types import NXGraph
 
 from .errors import InvalidTimeYMDError
 

@@ -5,12 +5,12 @@ from typing import TypeAlias
 
 from lark import Tree
 from lark.visitors import Interpreter
-from pydantic import BaseModel, Field
+from pydantic import Field
 
-from knowde.complex.system.sysnet import SysNet
-from knowde.complex.system.sysnet.sysnode import SysArg, SysNode
-from knowde.core.nxutil import Direction, EdgeType
+from knowde.complex.__core__.sysnet import SysNet
+from knowde.complex.__core__.sysnet.sysnode import SysArg, SysNode
 from knowde.feature.parser.tree2net.transformer import TSysArg
+from knowde.primitive.__core__.nxutil import Direction, EdgeType
 from knowde.primitive.parser import parse2tree
 from knowde.primitive.parser.testing import treeprint
 from knowde.primitive.term.errors import MarkUncontainedError
@@ -32,7 +32,7 @@ def parse2net(txt: str, do_print: bool = False) -> SysNet:  # noqa: FBT001 FBT00
 TReturn: TypeAlias = tuple[SysNode, EdgeType, Direction]
 
 
-class SysNetInterpreter(Interpreter[SysNode, TReturn], BaseModel):
+class SysNetInterpreter(Interpreter[SysNode, TReturn]):
     """SysNet構築."""
 
     sn: SysNet = Field(default_factory=lambda: SysNet(root="dummy"))
@@ -42,6 +42,7 @@ class SysNetInterpreter(Interpreter[SysNode, TReturn], BaseModel):
         self.sn = SysNet(root=first)
         self._add_siblings(tree, first)
         self.sn.add_resolved_edges()
+        self.sn.replace_quoterms()
         return self.sn
 
     def _add_siblings(self, tree: Tree, parent: SysNode) -> list[SysNode]:

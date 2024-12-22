@@ -5,10 +5,10 @@ from fastapi import FastAPI
 
 from knowde.complex import deduct_router, def_router
 from knowde.complex.deduction.proposition import p_router
-from knowde.core import ErrorHandlingMiddleware
 from knowde.primitive import (
     tl_router,
 )
+from knowde.primitive.__core__ import ErrorHandlingMiddleware
 
 api = FastAPI()
 api.add_middleware(ErrorHandlingMiddleware)

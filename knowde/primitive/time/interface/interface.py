@@ -1,11 +1,11 @@
 """timeline interface."""
 import click
 
-from knowde.core.api.api_param import APIPath, APIQuery, NullPath
-from knowde.core.api.endpoint import Endpoint
-from knowde.core.api.facade import ClientFactory
-from knowde.core.api.paramfunc import to_bodyfunc, to_queryfunc
-from knowde.core.cli.field.model2click import model2decorator
+from knowde.primitive.__core__.api.api_param import APIPath, APIQuery, NullPath
+from knowde.primitive.__core__.api.endpoint import Endpoint
+from knowde.primitive.__core__.api.facade import ClientFactory
+from knowde.primitive.__core__.api.paramfunc import to_bodyfunc, to_queryfunc
+from knowde.primitive.__core__.cli.field.model2click import model2decorator
 from knowde.primitive.time.domain.domain import TimeValue
 from knowde.primitive.time.domain.timestr import TimeStr
 from knowde.primitive.time.interface.dto import (

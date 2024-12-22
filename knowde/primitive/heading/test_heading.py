@@ -1,7 +1,7 @@
 """test."""
 from networkx import DiGraph
 
-from knowde.core.nxutil import EdgeType
+from knowde.primitive.__core__.nxutil import EdgeType
 from knowde.primitive.heading import get_heading_path, get_headings
 
 

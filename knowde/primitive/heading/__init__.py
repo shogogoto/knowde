@@ -5,7 +5,7 @@ from typing import Hashable
 
 import networkx as nx
 
-from knowde.core.nxutil import EdgeType, succ_attr, to_nodes
+from knowde.primitive.__core__.nxutil import EdgeType, succ_attr, to_nodes
 
 
 class HeadingNotFoundError(Exception):

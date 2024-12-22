@@ -13,14 +13,18 @@ from knowde.complex.definition.repo.definition import (
     remove_definition,
 )
 from knowde.complex.definition.service import detail_service
-from knowde.core import Endpoint, each_args
-from knowde.core.api.api_param import APIPath, APIQuery, NullPath
-from knowde.core.api.check_response import (
+from knowde.primitive.__core__ import Endpoint, each_args
+from knowde.primitive.__core__.api.api_param import APIPath, APIQuery, NullPath
+from knowde.primitive.__core__.api.check_response import (
     check_delete,
 )
-from knowde.core.api.endpoint import router2delete, router2get, router2tpost
-from knowde.core.api.paramfunc import to_bodyfunc
-from knowde.core.cli.field.model2click import model2decorator
+from knowde.primitive.__core__.api.endpoint import (
+    router2delete,
+    router2get,
+    router2tpost,
+)
+from knowde.primitive.__core__.api.paramfunc import to_bodyfunc
+from knowde.primitive.__core__.cli.field.model2click import model2decorator
 
 def_router = Endpoint.Definition.create_router()
 add_client = NullPath().to_client(

@@ -1,10 +1,8 @@
 """test."""
 
 
-import pytest
-
-from knowde.core.nxutil import EdgeType, to_nested
 from knowde.feature.parser.tree2net import parse2net
+from knowde.primitive.__core__.nxutil import EdgeType, to_nested
 from knowde.primitive.heading import get_heading_path
 
 
@@ -62,7 +60,6 @@ def test_add_ctx() -> None:
     assert list(EdgeType.ANTI.pred(sn.graph, "anti aaaaaa")) == ["aaa"]
 
 
-@pytest.mark.skip()
 def test_replace_quoterm() -> None:
     """引用用語."""
     _s = """
@@ -78,17 +75,9 @@ def test_replace_quoterm() -> None:
     """
 
     sn = parse2net(_s)
-    assert sn.quoterms == ["`A`"]
-    # nxprint(sn.graph)
-    sn.replace_quoterms()
-    # nxprint(sn.graph)
-    # print(to_nested(sn.graph, "aaa", EdgeType.SIBLING.succ))
-    # print(to_nested(sn.graph, "aaa", EdgeType.BELOW.succ))
-    # assert to_nested(sn.graph, "aaa", EdgeType.SIBLING.succ) == {
-    #     "bbb": {},
-    #     "ccc": {"ddd": {}},
-    # }
-
-
-def test_multiline_def() -> None:
-    """改行付き定義."""
+    assert to_nested(sn.graph, "aaa", EdgeType.SIBLING.succ) == {"bbb": {}}
+    # belowを1つに統合しようと思ったけどやめた
+    assert to_nested(sn.graph, "aaa", EdgeType.BELOW.succ) == {
+        "aAA": {},
+        "ccc": {},
+    }

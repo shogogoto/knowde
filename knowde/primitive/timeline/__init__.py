@@ -4,7 +4,7 @@ from typing import Final
 
 from pydantic import BaseModel
 
-from knowde.core.types import NXGraph
+from knowde.primitive.__core__.types import NXGraph
 
 # = Anno Domini, 主の年に, 西暦紀元後
 SOCIETY_TIMELINE: Final = "AD"

@@ -2,8 +2,8 @@
 from neomodel import StringProperty
 
 from knowde.complex.definition.sentence.domain import MAX_CHARS, Sentence
-from knowde.core.label_repo.base import LBase
-from knowde.core.label_repo.util import LabelUtil
+from knowde.primitive.__core__.label_repo.base import LBase
+from knowde.primitive.__core__.label_repo.util import LabelUtil
 
 
 class LSentence(LBase):  # noqa: D101

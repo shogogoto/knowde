@@ -7,7 +7,7 @@ from typing import Self
 from pydantic import BaseModel, Field
 
 from knowde.complex.deduction.proposition.domain import Proposition
-from knowde.core.domain import APIReturn, Entity
+from knowde.primitive.__core__.domain import APIReturn, Entity
 
 
 class Deduction(Entity, frozen=True):

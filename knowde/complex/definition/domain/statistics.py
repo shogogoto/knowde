@@ -4,7 +4,7 @@ from __future__ import annotations
 from pydantic import BaseModel, Field
 
 from knowde.complex.definition.domain.domain import Definition
-from knowde.core.domain import APIReturn
+from knowde.primitive.__core__.domain import APIReturn
 
 
 class DepStatistics(BaseModel, frozen=True):

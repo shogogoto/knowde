@@ -75,7 +75,7 @@ def test_parse_missing_top_heading() -> None:
         # 1
         ## 2
         ### 3
-        !aaa
+        aaa
         """,
             """
         # 1
@@ -90,7 +90,7 @@ def test_parse_missing_top_heading() -> None:
         ### 3
         #### 4
         ##### 5
-        !aaa
+        aaa
         """,
             """
         # 1
@@ -138,5 +138,23 @@ def test_parser_quoterm() -> None:
                 -> `b1`
                     -> `bb1`
                     -> bb2
+    """
+    _t = parse2tree(_s)
+
+
+def test_parse_comment() -> None:
+    """コメント."""
+    _s = r"""
+        ! aaa
+        # 1
+            `ctx`
+            ! aaa
+                ! aaa
+                -> `b1`
+                ! aaa
+            ! aaa
+        ! aaa
+
+        ! aaa
     """
     _t = parse2tree(_s)

@@ -3,7 +3,7 @@
 
 import networkx as nx
 
-from knowde.complex.system.sysnet import EdgeType
+from knowde.complex.__core__.sysnet import EdgeType
 
 from . import Navi
 

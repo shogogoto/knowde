@@ -1,5 +1,5 @@
 """error."""
-from knowde.core.errors.errors import DomainError
+from knowde.primitive.__core__.errors.errors import DomainError
 
 
 class MonthRangeError(DomainError):

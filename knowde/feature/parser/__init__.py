@@ -1,16 +1,12 @@
 # ruff: noqa
 """load-file."""
 
-
-from pprint import pp
 from typing import IO
 
 import click
 from lark import LarkError
-from lark.indenter import DedentError
-import networkx as nx
-
-from knowde.core.nxutil import nxprint
+from knowde.primitive.__core__.nxutil import nxprint
+from knowde.primitive.__core__.nxutil.errors import MultiEdgesError
 from knowde.feature.parser.tree2net import parse2net
 from knowde.primitive.parser.errors import ParserError
 
@@ -22,12 +18,14 @@ def parse_cmd(stdin: IO) -> None:
     txt = stdin.read()
     try:
         sn = parse2net(txt, True)
-        nxprint(sn.graph, True)
-        pr = nx.pagerank(sn.graph)
-        pr = {sn.get(k): v for k, v in pr.items()}
-        pp(pr)
-        pp(sorted(pr.items(), key=lambda i: i[1]))
+        nxprint(sn.graph)
+        # pr = nx.pagerank(sn.graph)
+        # pr = {sn.get(k): v for k, v in pr.items()}
+        # pp(pr)
+        # pp(sorted(pr.items(), key=lambda i: i[1]))
     except ParserError as e:
         print(e)  # noqa: T201
     except LarkError as e:
+        print(e)  # noqa: T201
+    except MultiEdgesError as e:
         print(e)  # noqa: T201

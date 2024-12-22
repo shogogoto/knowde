@@ -8,9 +8,9 @@ from typing import AbstractSet, Iterable, NoReturn, Self
 import networkx as nx
 from pydantic import BaseModel, Field, PrivateAttr, field_validator
 
-from knowde.core.dupchk import DuplicationChecker
-from knowde.core.nxutil import EdgeType, to_nested
-from knowde.core.types import NXGraph
+from knowde.primitive.__core__.dupchk import DuplicationChecker
+from knowde.primitive.__core__.nxutil import EdgeType, to_nested
+from knowde.primitive.__core__.types import NXGraph
 
 from .errors import (
     AliasContainsMarkError,
@@ -115,7 +115,7 @@ def term_dup_checker() -> DuplicationChecker:
     """用語重複チェッカー."""
 
     def _err(t: Term) -> NoReturn:
-        msg = f"用語{t}が重複しています"
+        msg = f"用語'{t}'が重複しています"
         raise TermConflictError(msg)
 
     return DuplicationChecker(err_fn=_err)

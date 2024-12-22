@@ -27,9 +27,9 @@ from knowde.complex.definition.repo.statistics import statistics_query
 from knowde.complex.definition.sentence import LSentence
 from knowde.complex.definition.sentence.domain import Sentence
 from knowde.complex.definition.term import LTerm, TermUtil
-from knowde.core.label_repo.base import RelBase
-from knowde.core.label_repo.query import QueryResult, query_cypher
-from knowde.core.label_repo.rel import RelUtil
+from knowde.primitive.__core__.label_repo.base import RelBase
+from knowde.primitive.__core__.label_repo.query import QueryResult, query_cypher
+from knowde.primitive.__core__.label_repo.rel import RelUtil
 
 RelDefUtil = RelUtil(
     t_source=LTerm,
