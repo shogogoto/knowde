@@ -111,9 +111,14 @@ class Term(BaseModel, frozen=True):
         )
 
 
-def _err_fn(t: Term) -> NoReturn:
-    msg = f"用語{t}が重複しています"
-    raise TermConflictError(msg)
+def term_dup_checker() -> DuplicationChecker:
+    """用語重複チェッカー."""
+
+    def _err(t: Term) -> NoReturn:
+        msg = f"用語{t}が重複しています"
+        raise TermConflictError(msg)
+
+    return DuplicationChecker(err_fn=_err)
 
 
 class MergedTerms(BaseModel, frozen=True):
@@ -121,7 +126,7 @@ class MergedTerms(BaseModel, frozen=True):
 
     terms: list[Term] = Field(default_factory=list, init=False)
     _chk: DuplicationChecker = PrivateAttr(
-        default_factory=lambda: DuplicationChecker(err_fn=_err_fn),
+        default_factory=term_dup_checker,
     )
 
     def __getitem__(self, i: int) -> Term:  # noqa: D105

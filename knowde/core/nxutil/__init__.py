@@ -190,20 +190,24 @@ class EdgeType(Enum):
         """エッジを遡って前を取得."""
         return pred_attr("type", self)
 
-    def get_succ(self, g: nx.DiGraph, n: Hashable) -> None | Hashable:
+    def get_succ_or_none(self, g: nx.DiGraph, n: Hashable) -> None | Hashable:
         """1つの先を返す."""
-        return _get_one(list(self.succ(g, n)))
+        return _get_one_or_none(list(self.succ(g, n)))
 
-    def get_pred(self, g: nx.DiGraph, n: Hashable) -> None | Hashable:
+    def get_pred_or_none(self, g: nx.DiGraph, n: Hashable) -> None | Hashable:
         """1つの前を返す."""
-        return _get_one(list(self.pred(g, n)))
+        return _get_one_or_none(list(self.pred(g, n)))
 
 
-def _get_one(ls: list[Hashable]) -> None | Hashable:
+def _get_one_or_none(ls: list[Hashable]) -> None | Hashable:
     """1つまたはなしを取得."""
-    if len(ls) == 0:
-        return None
-    return ls[0]
+    match len(ls):
+        case 0:
+            return None
+        case 1:
+            return ls[0]
+        case _:
+            raise
 
 
 def replace_node(g: nx.DiGraph, old: Hashable, new: Hashable) -> None:
@@ -215,3 +219,7 @@ def replace_node(g: nx.DiGraph, old: Hashable, new: Hashable) -> None:
     for succ in g.successors(old):
         g.add_edge(new, succ, **g.get_edge_data(old, succ))
     g.remove_node(old)
+
+
+# def add_siblings(g: nx.DiGraph, old: Hashable, new: Hashable) -> None:
+#     """Old BELOW を new SIBLINGに追加する."""
