@@ -22,12 +22,13 @@ H6: "######" HEAD
 
 ?block: stmt [_INDENT (block)+ _DEDENT]
 ?stmt: line | ctxline
-?line: (ONELINE|COMMENT) _NL
-ctxline: ctype line
+?line: (ONELINE|COMMENT|QUOTERM) _NL
+ctxline: ctype block
 
 ANY: /[^\n]+/
 COMMENT: "!" ANY
 
+QUOTERM: "`" ANY "`"
 ONELINE: ANY
 
 // 文脈

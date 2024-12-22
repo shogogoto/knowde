@@ -128,3 +128,15 @@ def test_parse_context() -> None:
                 2. two
     """
     _t = parse2tree(_s)
+
+
+def test_parser_quoterm() -> None:
+    """引用用語のパース."""
+    _s = r"""
+        # 1
+            `ctx`
+                -> `b1`
+                    -> `bb1`
+                    -> bb2
+    """
+    _t = parse2tree(_s)

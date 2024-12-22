@@ -22,9 +22,8 @@ def parse_cmd(stdin: IO) -> None:
     txt = stdin.read()
     try:
         sn = parse2net(txt, True)
-
-        nxprint(sn.g, True)
-        pr = nx.pagerank(sn.g)
+        nxprint(sn.graph, True)
+        pr = nx.pagerank(sn.graph)
         pr = {sn.get(k): v for k, v in pr.items()}
         pp(pr)
         pp(sorted(pr.items(), key=lambda i: i[1]))

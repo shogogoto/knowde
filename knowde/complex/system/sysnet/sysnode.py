@@ -48,3 +48,15 @@ class Duplicable(BaseModel, frozen=True):
 
     def __str__(self) -> str:  # noqa: D105
         return str(self.n)
+
+
+def arg2node(arg: SysArg) -> SysNode:
+    """変換."""
+    match arg:
+        case Term() | str():
+            return arg
+        case Def():
+            return arg.sentence
+        case _:
+            msg = f"{type(arg)}: {arg} is not allowed."
+            raise TypeError(msg)

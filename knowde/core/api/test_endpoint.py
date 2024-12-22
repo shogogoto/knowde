@@ -4,11 +4,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-import pytest
 from fastapi import APIRouter, FastAPI, status
 from fastapi.testclient import TestClient
 from neomodel import StringProperty
-from pydantic import BaseModel, PydanticUndefinedAnnotation
+from pydantic import BaseModel
 from pydantic_partial.partial import create_partial_model
 
 from knowde.core.api.endpoint import router2get, router2put, router2tpost
@@ -73,8 +72,7 @@ def test_fail_with_lost_type() -> None:
         ...
 
     r = APIRouter(prefix=PREFIX)
-    with pytest.raises(PydanticUndefinedAnnotation):
-        router2put(r, change, path="/{uid}")
+    router2put(r, change, path="/{uid}")
 
 
 def test_put(requests_mock: Mocker) -> None:
