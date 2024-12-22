@@ -3,11 +3,12 @@ from __future__ import annotations
 
 from collections import Counter
 from functools import cached_property
-from typing import AbstractSet, Iterable, Self
+from typing import AbstractSet, Iterable, NoReturn, Self
 
 import networkx as nx
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, PrivateAttr, field_validator
 
+from knowde.core.dupchk import DuplicationChecker
 from knowde.core.nxutil import EdgeType, to_nested
 from knowde.core.types import NXGraph
 
@@ -110,11 +111,18 @@ class Term(BaseModel, frozen=True):
         )
 
 
+def _err_fn(t: Term) -> NoReturn:
+    msg = f"用語{t}が重複しています"
+    raise TermConflictError(msg)
+
+
 class MergedTerms(BaseModel, frozen=True):
     """用語一覧."""
 
     terms: list[Term] = Field(default_factory=list, init=False)
-    origins: list[Term] = Field(default_factory=list, init=False)
+    _chk: DuplicationChecker = PrivateAttr(
+        default_factory=lambda: DuplicationChecker(err_fn=_err_fn),
+    )
 
     def __getitem__(self, i: int) -> Term:  # noqa: D105
         return self.terms[i]
@@ -126,16 +134,13 @@ class MergedTerms(BaseModel, frozen=True):
     def add(self, *ts: Term) -> Self:
         """用語を追加する."""
         for t in ts:
-            if t in self.origins:
-                msg = "用語定義が重複しています"
-                raise TermConflictError(msg, t)
+            self._chk(t)
             c = self._common(t)
             if c is None:
                 self.terms.append(t)
             else:
                 self.terms.remove(c)
                 self.terms.append(c.merge(t))
-            self.origins.append(t)
         return self
 
     def _common(self, t: Term) -> Term | None:
