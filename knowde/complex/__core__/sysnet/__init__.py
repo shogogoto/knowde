@@ -9,7 +9,7 @@ from lark import Token
 from networkx import DiGraph
 from pydantic import BaseModel, PrivateAttr
 
-from knowde.primitive.__core__.dupchk import DuplicationChecker
+from knowde.complex.__core__.sysnet.dupchk import SysArgDupChecker
 from knowde.primitive.__core__.nxutil import (
     EdgeType,
     replace_node,
@@ -21,14 +21,12 @@ from knowde.primitive.term import (
     Term,
     TermResolver,
     resolve_sentence,
-    term_dup_checker,
 )
 
 from .errors import (
     AlreadyAddedError,
     SysNetNotFoundError,
     UnResolvedTermError,
-    sentence_dup_checker,
 )
 from .sysnode import Def, SysArg, SysNode
 
@@ -38,43 +36,29 @@ class SysNet(BaseModel):
 
     root: str
     _g: NXGraph = PrivateAttr(default_factory=DiGraph, init=False)
-    _term_chk: DuplicationChecker = PrivateAttr(default_factory=term_dup_checker)
-    _s_chk: DuplicationChecker = PrivateAttr(default_factory=sentence_dup_checker)
-    # _md: MergedTerms = PrivateAttr(default_factory=MergedTerms, init=False)
+    _chk: SysArgDupChecker = PrivateAttr(default_factory=SysArgDupChecker)
     _is_resolved: bool = PrivateAttr(default=False)
 
     @property
-    def graph(self) -> DiGraph:  # noqa: D102
+    def g(self) -> DiGraph:  # noqa: D102
         return self._g
 
     def model_post_init(self, __context: Any) -> None:  # noqa: ANN401 D102
         self._g.add_node(self.root)
-        self._dup_chk(self.root)
+        self._chk(self.root)
 
     def add(self, t: EdgeType, *path: SysArg) -> None:
         """既存nodeから開始していない場合はrootからedgeを伸ばすように登録."""
         match len(path):
             case l if l == 1:
                 n = path[0]
-                self._dup_chk(n)
+                self._chk(n)
                 self.add_arg(n)
             case l if l >= 2:  # noqa: PLR2004
                 for u, v in pairwise(path):
                     self.add_new_edge(t, u, v)
             case _:
                 pass
-
-    def _dup_chk(self, n: SysArg) -> None:
-        match n:
-            case Term():
-                self._term_chk(n)
-            case Def():
-                self._term_chk(n.term)
-                self._s_chk(n.sentence)
-            case str():
-                self._s_chk(n)
-            case _:
-                raise TypeError
 
     def add_new_edge(self, t: EdgeType, u: SysArg, v: SysArg) -> None:
         """追加済みのはず."""
@@ -122,10 +106,10 @@ class SysNet(BaseModel):
         hs = get_headings(self._g, self.root)
         return [n for n in self._g.nodes if isinstance(n, str) and n not in hs]
 
+    ################################################# 用語解決
     @cached_property
     def resolver(self) -> TermResolver:  # noqa: D102
         terms = [n for n in self._g.nodes if isinstance(n, Term)]
-        # print("term::", terms)
         # return self._md.to_resolver()
         return MergedTerms().add(*terms).to_resolver()
 
@@ -138,6 +122,13 @@ class SysNet(BaseModel):
         self.resolver.add_edges(self._g, self.sentences)
         self._is_resolved = True
 
+    def get_resolved(self, s: str) -> dict:
+        """解決済み入れ子文を取得."""
+        if not self._is_resolved:
+            raise UnResolvedTermError
+        return resolve_sentence(self._g, s)
+
+    ################################################# 引用用語置換
     @property
     def quoterms(self) -> list[str]:
         """引用用語."""
@@ -154,9 +145,3 @@ class SysNet(BaseModel):
                 replace_node(self._g, qt, d.sentence)
             else:
                 raise TypeError
-
-    def get_resolved(self, s: str) -> dict:
-        """解決済み入れ子文を取得."""
-        if not self._is_resolved:
-            raise UnResolvedTermError
-        return resolve_sentence(self._g, s)

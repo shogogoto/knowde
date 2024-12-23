@@ -18,7 +18,7 @@ def parse_cmd(stdin: IO) -> None:
     txt = stdin.read()
     try:
         sn = parse2net(txt, True)
-        nxprint(sn.graph)
+        nxprint(sn.g)
         # pr = nx.pagerank(sn.graph)
         # pr = {sn.get(k): v for k, v in pr.items()}
         # pp(pr)
