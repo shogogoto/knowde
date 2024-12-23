@@ -3,10 +3,10 @@ from __future__ import annotations
 
 from functools import cached_property
 from itertools import pairwise
-from typing import Any, Hashable
+from typing import TYPE_CHECKING, Any, Hashable
 
+import networkx as nx
 from lark import Token
-from networkx import DiGraph
 from pydantic import BaseModel, PrivateAttr
 
 from knowde.complex.__core__.sysnet.dupchk import SysArgDupChecker
@@ -31,12 +31,16 @@ from .errors import (
 )
 from .sysnode import Def, SysArg, SysNode
 
+if TYPE_CHECKING:
+    from networkx import DiGraph
+
 
 class SysNet(BaseModel):
     """系ネットワーク."""
 
     root: str
-    _g: NXGraph = PrivateAttr(default_factory=DiGraph, init=False)
+    _g: NXGraph = PrivateAttr(default_factory=nx.MultiDiGraph, init=False)
+    # _g: NXGraph = PrivateAttr(default_factory=nx.DiGraph, init=False)
     _chk: SysArgDupChecker = PrivateAttr(default_factory=SysArgDupChecker)
     _is_resolved: bool = PrivateAttr(default=False)
 
@@ -77,7 +81,8 @@ class SysNet(BaseModel):
                 self._g.add_node(n)
                 return n
             case Def():
-                EdgeType.DEF.add_edge(self._g, n.term, n.sentence)
+                if n.sentence not in self._g:
+                    EdgeType.DEF.add_edge(self._g, n.term, n.sentence)
                 return n.sentence
             case _:
                 msg = f"{type(n)}: {n} is not allowed."
@@ -153,4 +158,5 @@ class SysNet(BaseModel):
             if isinstance(d, Def):
                 replace_node(self._g, qt, d.sentence)
             else:
-                raise TypeError
+                msg = "It must be Def Type"
+                raise TypeError(msg, d)

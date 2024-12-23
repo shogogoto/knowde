@@ -56,7 +56,7 @@ class SysNetInterpreter(Interpreter[SysNode, TReturn]):
                     siblings.append(n)
             else:
                 siblings.append(c)
-        self.sn.add(EdgeType.SIBLING, parent, *siblings)
+        self.sn.add(EdgeType.SIBLING, *siblings)
         return siblings
 
     def block(self, tree: Tree) -> TReturn:  # noqa: D102
@@ -80,12 +80,7 @@ class SysNetInterpreter(Interpreter[SysNode, TReturn]):
         return h, EdgeType.HEAD, Direction.FORWARD
 
 
-def add_dipath(
-    d: Direction,
-    t: EdgeType,
-    sn: SysNet,
-    *ns: SysArg,
-) -> None:
+def add_dipath(d: Direction, t: EdgeType, sn: SysNet, *ns: SysArg) -> None:
     """方向を追加."""
     match d:
         case Direction.FORWARD:

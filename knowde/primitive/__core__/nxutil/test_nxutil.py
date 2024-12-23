@@ -8,7 +8,7 @@ from . import axiom_paths, filter_edge_attr, leaf_paths, succ_attr, to_nested
 
 
 def test_to_nested() -> None:  # noqa: D103
-    g = nx.DiGraph()
+    g = nx.MultiDiGraph()
     g.add_edge("sys", "h1", type="x")
     g.add_edge("h1", "h12", type="x")
     g.add_edge("h12", "h121", type="x")

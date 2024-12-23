@@ -3,7 +3,7 @@
 
 from knowde.feature.parser.tree2net import parse2net
 from knowde.primitive.__core__.nxutil import EdgeType, to_nested
-from knowde.primitive.heading import get_heading_path
+from knowde.primitive.heading import get_heading_path, get_headings
 
 
 def test_add_heading() -> None:
@@ -24,14 +24,11 @@ def test_add_heading() -> None:
                 <- jjj
     """
     sn = parse2net(_s)
+    assert get_headings(sn.g, sn.root) == {"# h1", "## h2", "### h3"}
     assert get_heading_path(sn.g, sn.root, "ccc") == ["# h1"]
     assert get_heading_path(sn.g, sn.root, "ddd") == ["# h1", "## h2"]
     assert get_heading_path(sn.g, sn.root, "iii") == ["# h1", "## h2", "### h3"]
     assert get_heading_path(sn.g, sn.root, "jjj") == ["# h1", "## h2", "### h3"]
-
-
-# def test_sibling() -> None:
-#     """兄弟追加."""
 
 
 def test_add_ctx() -> None:

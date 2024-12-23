@@ -37,11 +37,7 @@ def to_nested(g: nx.DiGraph, start: Hashable, f: Accessor) -> dict:
 #     """有向グラフから関連をたどって."""
 
 
-def to_nodes(
-    g: nx.DiGraph,
-    start: Hashable,
-    f: Accessor,
-) -> set[Hashable]:
+def to_nodes(g: nx.DiGraph, start: Hashable, f: Accessor) -> set[Hashable]:
     """有向グラフを辿ってノードを取得."""
     s = set()
 
@@ -58,8 +54,8 @@ def succ_attr(attr_name: str, value: Any) -> Accessor:  # noqa: ANN401
     """次を関係の属性から辿る."""
 
     def _f(g: nx.DiGraph, start: Hashable) -> Iterator[Hashable]:
-        for succ in g.successors(start):
-            if g.edges[start, succ].get(attr_name) == value:
+        for _, succ, d in g.out_edges(start, data=True):
+            if any(d) and d[attr_name] == value:
                 _f(g, succ)
                 yield succ
 
@@ -70,8 +66,8 @@ def pred_attr(attr_name: str, value: Any) -> Accessor:  # noqa: ANN401
     """前を関係の属性から辿る."""
 
     def _f(g: nx.DiGraph, start: Hashable) -> Iterator[Hashable]:
-        for pred in g.predecessors(start):
-            if g.edges[pred, start].get(attr_name) == value:
+        for pred, _, d in g.in_edges(start, data=True):
+            if any(d) and d[attr_name] == value:
                 _f(g, pred)
                 yield pred
 
@@ -211,9 +207,7 @@ def _get_one_or_none(ls: list[Hashable], t: EdgeType, src: Hashable) -> None | H
         case _:
             msg = (
                 f"'{src}'から複数の関係がヒットしました. 1つだけに修正してね: {t} \n\t"
-                + "\n\t".join(
-                    ls,
-                )
+                + "\n\t".join(ls)
             )
             raise MultiEdgesError(msg)
 
@@ -221,11 +215,11 @@ def _get_one_or_none(ls: list[Hashable], t: EdgeType, src: Hashable) -> None | H
 def replace_node(g: nx.DiGraph, old: Hashable, new: Hashable) -> None:
     """エッジを保ってノードを置換."""
     g.add_node(new)
-    for pred in g.predecessors(old):
-        g.add_edge(pred, new, **g.get_edge_data(pred, old))
 
-    for succ in g.successors(old):
-        g.add_edge(new, succ, **g.get_edge_data(old, succ))
+    for pred, _, data in g.in_edges(old, data=True):
+        g.add_edge(pred, new, **data)
+    for _, succ, data in g.out_edges(old, data=True):
+        g.add_edge(new, succ, **data)
     g.remove_node(old)
 
 
