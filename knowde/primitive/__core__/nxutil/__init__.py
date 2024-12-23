@@ -21,11 +21,7 @@ def nxprint(g: nx.DiGraph, detail: bool = False) -> None:  # noqa: FBT001 FBT002
         pp(nx.to_dict_of_dicts(g))
 
 
-def to_nested(
-    g: nx.DiGraph,
-    start: Hashable,
-    f: Accessor,
-) -> dict:
+def to_nested(g: nx.DiGraph, start: Hashable, f: Accessor) -> dict:
     """有向グラフから入れ子の辞書を作成."""
 
     def _f(n: Hashable) -> dict:
@@ -35,6 +31,10 @@ def to_nested(
         return {anode: _f(anode) for anode in nlist}
 
     return _f(start)
+
+
+# def to_list(g: nx.DiGraph, start: Hashable, f: Accessor) -> list[Hashable]:
+#     """有向グラフから関連をたどって."""
 
 
 def to_nodes(

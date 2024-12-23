@@ -20,6 +20,10 @@ class UnaddedYetError(Exception):
     """追加済みのはずなのにまだ追加されていない."""
 
 
+class QuotermNotFoundError(Exception):
+    """引用用語が存在しない."""
+
+
 class SentenceConflictError(Exception):
     """1文が重複追加."""
 

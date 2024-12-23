@@ -25,6 +25,7 @@ from knowde.primitive.term import (
 
 from .errors import (
     AlreadyAddedError,
+    QuotermNotFoundError,
     SysNetNotFoundError,
     UnResolvedTermError,
 )
@@ -106,12 +107,15 @@ class SysNet(BaseModel):
         hs = get_headings(self._g, self.root)
         return [n for n in self._g.nodes if isinstance(n, str) and n not in hs]
 
+    @property
+    def terms(self) -> list[Term]:
+        """用語."""
+        return [n for n in self._g.nodes if isinstance(n, Term)]
+
     ################################################# 用語解決
     @cached_property
     def resolver(self) -> TermResolver:  # noqa: D102
-        terms = [n for n in self._g.nodes if isinstance(n, Term)]
-        # return self._md.to_resolver()
-        return MergedTerms().add(*terms).to_resolver()
+        return MergedTerms().add(*self.terms).to_resolver()
 
     def add_resolved_edges(self) -> None:
         """事前の全用語解決.
@@ -120,6 +124,7 @@ class SysNet(BaseModel):
         DBやstageからは解決済みのnetworkを復元
         """
         self.resolver.add_edges(self._g, self.sentences)
+        # self._g = nx.freeze(self._g)
         self._is_resolved = True
 
     def get_resolved(self, s: str) -> dict:
@@ -139,7 +144,11 @@ class SysNet(BaseModel):
     def replace_quoterms(self) -> None:
         """引用用語を1文に置換."""
         for qt in self.quoterms:
-            term = self.resolver.lookup[qt.replace("`", "")]
+            name = qt.replace("`", "")
+            if name not in self.resolver.lookup:
+                msg = f"'{name}'は用語として定義されていません"
+                raise QuotermNotFoundError(msg)
+            term = self.resolver.lookup[name]
             d = self.get(term)
             if isinstance(d, Def):
                 replace_node(self._g, qt, d.sentence)
