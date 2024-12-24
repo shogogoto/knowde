@@ -13,7 +13,6 @@ from knowde.feature.parser.tree2net.transformer import TSysArg
 from knowde.primitive.__core__.nxutil import Direction, EdgeType
 from knowde.primitive.parser import parse2tree
 from knowde.primitive.parser.testing import treeprint
-from knowde.primitive.term.errors import MarkUncontainedError
 
 
 def parse2net(txt: str, do_print: bool = False) -> SysNet:  # noqa: FBT001 FBT002
@@ -22,10 +21,7 @@ def parse2net(txt: str, do_print: bool = False) -> SysNet:  # noqa: FBT001 FBT00
     if do_print:
         treeprint(_t, True)  # noqa: FBT003
     si = SysNetInterpreter()
-    try:
-        si.visit(_t)
-    except MarkUncontainedError as e:
-        print(e)  # noqa: T201
+    si.visit(_t)
     return si.sn
 
 
@@ -92,6 +88,3 @@ def add_dipath(d: Direction, t: EdgeType, sn: SysNet, *ns: SysArg) -> None:
             sn.add(t, *ns)
         case _:
             raise TypeError
-
-
-# return datetime.strptime(v, "%Y-%m-%d").astimezone(TZ).date()

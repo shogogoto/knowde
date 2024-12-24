@@ -5,10 +5,12 @@ from typing import IO
 
 import click
 from lark import LarkError
+from knowde.complex.system.ranking import get_ranking
 from knowde.primitive.__core__.nxutil import nxprint
 from knowde.primitive.__core__.nxutil.errors import MultiEdgesError
 from knowde.feature.parser.tree2net import parse2net
 from knowde.primitive.parser.errors import ParserError
+from knowde.primitive.term.errors import MarkUncontainedError
 
 
 @click.command("parse")
@@ -18,7 +20,6 @@ def parse_cmd(stdin: IO) -> None:
     txt = stdin.read()
     try:
         sn = parse2net(txt, True)
-        nxprint(sn.g)
         # pr = nx.pagerank(sn.graph)
         # pr = {sn.get(k): v for k, v in pr.items()}
         # pp(pr)
@@ -28,4 +29,6 @@ def parse_cmd(stdin: IO) -> None:
     except LarkError as e:
         print(e)  # noqa: T201
     except MultiEdgesError as e:
+        print(e)  # noqa: T201
+    except MarkUncontainedError as e:
         print(e)  # noqa: T201
