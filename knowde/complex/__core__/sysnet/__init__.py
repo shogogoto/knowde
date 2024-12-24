@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from functools import cached_property
 from itertools import pairwise
+from pprint import pp
 from typing import TYPE_CHECKING, Any, Hashable
 
 import networkx as nx
@@ -11,6 +12,7 @@ from pydantic import BaseModel, PrivateAttr
 
 from knowde.complex.__core__.sysnet.dupchk import SysArgDupChecker
 from knowde.primitive.__core__.nxutil import (
+    Direction,
     EdgeType,
     replace_node,
 )
@@ -25,6 +27,7 @@ from knowde.primitive.term import (
 
 from .errors import (
     AlreadyAddedError,
+    DefSentenceConflictError,
     QuotermNotFoundError,
     SysNetNotFoundError,
     UnResolvedTermError,
@@ -65,6 +68,19 @@ class SysNet(BaseModel):
             case _:
                 pass
 
+    def add_directed(self, t: EdgeType, d: Direction, *args: SysArg) -> None:
+        """方向付き追加."""
+        match d:
+            case Direction.FORWARD:
+                self.add(t, *args)
+            case Direction.BACKWARD:
+                self.add(t, *reversed(args))
+            case Direction.BOTH:
+                self.add(t, *reversed(args))
+                self.add(t, *args)
+            case _:
+                raise TypeError
+
     def add_new_edge(self, t: EdgeType, u: SysArg, v: SysArg) -> None:
         """追加済みのはず."""
         un = self.add_arg(u)
@@ -81,8 +97,15 @@ class SysNet(BaseModel):
                 self._g.add_node(n)
                 return n
             case Def():
-                if n.sentence not in self._g:
-                    EdgeType.DEF.add_edge(self._g, n.term, n.sentence)
+                terms = list(EdgeType.DEF.pred(self._g, n.sentence))
+                match len(terms):
+                    case 0:  # 新規登録
+                        EdgeType.DEF.add_edge(self._g, n.term, n.sentence)
+                    case l if l == 1 and n.term == terms[0]:  # 登録済み
+                        pass
+                    case _:
+                        msg = f"'{n}'が他の定義文と重複しています"
+                        raise DefSentenceConflictError(msg, terms)
                 return n.sentence
             case _:
                 msg = f"{type(n)}: {n} is not allowed."
@@ -151,6 +174,7 @@ class SysNet(BaseModel):
         for qt in self.quoterms:
             name = qt.replace("`", "")
             if name not in self.resolver.lookup:
+                pp(self.resolver.lookup)
                 msg = f"'{name}'は用語として定義されていません"
                 raise QuotermNotFoundError(msg)
             term = self.resolver.lookup[name]

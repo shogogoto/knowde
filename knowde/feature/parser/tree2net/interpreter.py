@@ -30,10 +30,11 @@ class SysNetInterpreter(Interpreter[SysNode, TReturn]):
     def _add_siblings(self, tree: Tree, parent: SysNode) -> list[SysNode]:
         """兄弟を設定."""
         siblings = []
+        self.sn.add_arg(parent)
         for c in tree.children[1:]:
             if isinstance(c, Tree):
                 n, t, d = self.visit(c)
-                add_dipath(d, t, self.sn, parent, n)
+                self.sn.add_directed(t, d, parent, n)
                 if t == EdgeType.BELOW:
                     siblings.append(n)
             else:
@@ -45,14 +46,15 @@ class SysNetInterpreter(Interpreter[SysNode, TReturn]):
         parent = tree.children[0]
         children = self._add_siblings(tree, parent)
         if len(children) > 0:
-            add_dipath(Direction.FORWARD, EdgeType.BELOW, self.sn, parent, children[0])
+            self.sn.add_directed(EdgeType.BELOW, Direction.FORWARD, parent, children[0])
         return parent, EdgeType.BELOW, Direction.FORWARD
 
     def ctxline(self, tree: Tree) -> TReturn:  # noqa: D102
         t, d = tree.children[0]
         parent = tree.children[1]
         if isinstance(parent, Tree):
-            parent, _, _ = self.visit(parent)
+            n, t_, d_ = self.visit(parent)
+            parent = n
         return parent, t, d
 
     def __default__(self, tree: Tree) -> TReturn:

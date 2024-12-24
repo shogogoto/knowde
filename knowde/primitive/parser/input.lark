@@ -26,13 +26,13 @@ H6: "######" HEAD
 ctxline: ctype block
 
 ANY: /[^\n]+/
-COMMENT: "!" ANY _NL
+COMMENT.1: "!" ANY _NL
 
 QUOTERM: "`" ANY "`"
 ONELINE: ANY
 
 // 文脈
-?ctype.2: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM|SIMILAR|WHEN|WHERE)
+?ctype.2: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM|SIMILAR|BY|WHEN|WHERE)
 THUS.2:    "->"   // 故に
 CAUSE.2:   "<-"   // なぜなら
 ANTONYM.2: "<->"  // 対義関係

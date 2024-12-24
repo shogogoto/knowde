@@ -16,12 +16,12 @@ class AlreadyAddedError(Exception):
     """なぜか既に追加済み."""
 
 
-class UnaddedYetError(Exception):
-    """追加済みのはずなのにまだ追加されていない."""
-
-
 class QuotermNotFoundError(Exception):
     """引用用語が存在しない."""
+
+
+class DefSentenceConflictError(Exception):
+    """定義の文が既出."""
 
 
 class SentenceConflictError(Exception):
