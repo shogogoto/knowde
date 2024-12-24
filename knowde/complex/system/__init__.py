@@ -1,4 +1,4 @@
-"""系:知識ネットワークの単位."""
+"""系:知識ネットワークの単位. 後にcomplex直下に移動予定."""
 
 
 from pydantic import BaseModel

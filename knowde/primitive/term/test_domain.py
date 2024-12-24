@@ -15,24 +15,6 @@ from .errors import (
     TermResolveError,
 )
 
-"""
-Termは名前の集合に与える識別子
-A=B=C:
-は {A, B, C} -> term -> 言明
-という中間層
-
-重複した名の宣言は禁止
-ただし、実はこの名も宣言済みの名と同じ概念であることが読書のあとになって発覚する場合がある
-
-一覧のスコープ:
-    ソースごと
-    見出しごと
-
-表示形式:
-    言明付き
-    言明の依存関係情報
-"""
-
 
 def test_alias_error() -> None:
     """Alias contains marks."""

@@ -157,11 +157,12 @@ class MergedTerms(BaseModel, frozen=True):
             case 1:
                 return ls[0]
             case _:
-                raise TermConflictError
+                msg = "重複によってマージできませんでした"
+                raise TermConflictError(msg, ls)
 
     @cached_property
     def atoms(self) -> dict[str, Term]:
-        """参照なしの原子用語."""
+        """参照{}を含まない用語."""
         d = {}
         for t in self.terms:
             if t.alias:
@@ -200,6 +201,9 @@ class MergedTerms(BaseModel, frozen=True):
         return TermResolver(g=g, lookup=lookup)
 
 
+# lookup {name: Term}辞書
+#  nameに引用がある
+#  nameに引用がない
 def next_lookup(
     lookup: dict[str, Term],
     terms: AbstractSet[Term],
@@ -222,7 +226,7 @@ class TermResolver(BaseModel, frozen=True):
     """用語解決器."""
 
     g: NXGraph
-    lookup: dict[str, Term]
+    lookup: dict[str, Term]  # {name: Term}辞書
 
     def __call__(self, s: str) -> dict:
         """任意の文字列を用語解決.

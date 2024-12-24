@@ -5,7 +5,7 @@ from typing import Hashable
 
 import networkx as nx
 
-from knowde.primitive.__core__.nxutil import EdgeType, succ_attr, to_nodes
+from knowde.primitive.__core__.nxutil import EdgeType, to_nodes
 
 
 class HeadingNotFoundError(Exception):
@@ -14,14 +14,17 @@ class HeadingNotFoundError(Exception):
 
 def get_headings(g: nx.DiGraph, root: Hashable) -> set[str]:
     """見出しセット."""
-    ns = to_nodes(g, root, succ_attr("type", EdgeType.HEAD))
+    ns = to_nodes(g, root, EdgeType.HEAD.succ)
     return {str(n) for n in ns}
 
 
-def get_heading_path(g: nx.DiGraph, root: Hashable, n: Hashable) -> list[Hashable]:
+def get_heading_path(g: nx.MultiDiGraph, root: Hashable, n: Hashable) -> list[Hashable]:
     """直近の見出しパス."""
-    paths = list(nx.shortest_simple_paths(g.to_undirected(), root, n))
+    paths = list(nx.all_simple_paths(g.to_undirected(), root, n))
     if len(paths) == 0:
         raise HeadingNotFoundError
-    p = paths[0]
-    return [e for e in p if e in get_headings(g, root)]
+    minp = paths[0]
+    for p in paths:
+        if len(minp) > len(p):
+            minp = p
+    return [e for e in minp if e in get_headings(g, root)]
