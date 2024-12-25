@@ -24,4 +24,5 @@ class SysArgDupChecker(BaseModel):
             case str():
                 self._s_chk(n)
             case _:
-                raise TypeError
+                msg = f"{type(n)} must be Term or str or Def Type."
+                raise TypeError(msg, n)

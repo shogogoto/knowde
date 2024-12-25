@@ -9,6 +9,48 @@ from knowde.primitive.__core__.nxutil import EdgeType, to_nested
 from knowde.primitive.heading import get_heading_path, get_headings
 
 
+def test_add_block() -> None:
+    """blockを正しく配置."""
+    _s = """
+        # h1
+            1
+            2
+                21
+            3
+                31
+                32
+            4
+                41
+                42
+                    421
+                43
+                    431
+                    432
+                44
+                    441
+                    442
+                        4421
+                        4422
+                        4423
+    """
+    sn = parse2net(_s)
+    assert list(EdgeType.BELOW.succ(sn.g, sn.root)) == ["1"]
+    assert to_nested(sn.g, "1", EdgeType.SIBLING.succ) == {"2": {"3": {"4": {}}}}
+    assert list(EdgeType.BELOW.succ(sn.g, "2")) == ["21"]
+    assert to_nested(sn.g, "21", EdgeType.SIBLING.succ) == {}
+    assert list(EdgeType.BELOW.succ(sn.g, "3")) == ["31"]
+    assert to_nested(sn.g, "31", EdgeType.SIBLING.succ) == {"32": {}}
+    assert list(EdgeType.BELOW.succ(sn.g, "4")) == ["41"]
+    assert to_nested(sn.g, "41", EdgeType.SIBLING.succ) == {"42": {"43": {"44": {}}}}
+    assert list(EdgeType.BELOW.succ(sn.g, "42")) == ["421"]
+    assert to_nested(sn.g, "421", EdgeType.SIBLING.succ) == {}
+    assert list(EdgeType.BELOW.succ(sn.g, "43")) == ["431"]
+    assert list(EdgeType.BELOW.succ(sn.g, "44")) == ["441"]
+    assert to_nested(sn.g, "441", EdgeType.SIBLING.succ) == {"442": {}}
+    assert list(EdgeType.BELOW.succ(sn.g, "442")) == ["4421"]
+    assert to_nested(sn.g, "4421", EdgeType.SIBLING.succ) == {"4422": {"4423": {}}}
+
+
 def test_add_heading() -> None:
     """headingを正しく取得できる."""
     _s = """
@@ -17,6 +59,8 @@ def test_add_heading() -> None:
             bbb
                 ccc
                 eee
+                    eEE
+                    eeE
         ## h2
             fff
             ggg
@@ -29,6 +73,8 @@ def test_add_heading() -> None:
     sn = parse2net(_s)
     assert get_headings(sn.g, sn.root) == {"# h1", "## h2", "### h3"}
     assert get_heading_path(sn.g, sn.root, "ccc") == ["# h1"]
+    assert get_heading_path(sn.g, sn.root, "eEE") == ["# h1"]
+    assert get_heading_path(sn.g, sn.root, "eeE") == ["# h1"]
     assert get_heading_path(sn.g, sn.root, "ddd") == ["# h1", "## h2"]
     assert get_heading_path(sn.g, sn.root, "iii") == ["# h1", "## h2", "### h3"]
     assert get_heading_path(sn.g, sn.root, "jjj") == ["# h1", "## h2", "### h3"]
@@ -100,3 +146,32 @@ def test_duplicate_def_sentence() -> None:
     """
     with pytest.raises(DefSentenceConflictError):
         parse2net(_s)
+
+
+def test_non_dupedge() -> None:
+    """なんかBELOW Edgeで重複起きた."""
+    # 電磁気学の創始者-[BELOW]->マクスウェル
+    _s = """
+        # h1
+        ## 2. 科学哲学の始まり
+          ペテン: 奥義が隠されているという見せかけ
+          「科学哲学」という語彙の初出: 形而上学という{ペテン}から人間精神を開放しよう
+            諸科学のクラス分けの着想
+              by. アンドレ=マリー・アンペール, アンペール: 電磁気学の創始者
+                when. 1775 ~ 1836
+                where. フランス
+                電気におけるニュートンと称された
+                  by. マクスウェル:
+                    when. 1831 ~ 79
+                    where. イギリス
+                カントを愛読していた
+              by. オーギュスト・コント, コント:
+                when. 1789 ~ 1857
+                「基礎科学の哲学はベーコンの探求した第一哲学を構成するのに充分なのだ」
+
+            イギリス哲学の語彙に加える
+              when. 1804
+              by. ウィリアム。ヒューウェル: ケンブリッジ大学道徳哲学の教授
+                when. 1794 ~ 1866
+    """
+    _sn = parse2net(_s)

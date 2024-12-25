@@ -18,7 +18,7 @@ def get_headings(g: nx.DiGraph, root: Hashable) -> set[str]:
     return {str(n) for n in ns}
 
 
-def get_heading_path(g: nx.MultiDiGraph, root: Hashable, n: Hashable) -> list[Hashable]:
+def get_heading_path(g: nx.DiGraph, root: Hashable, n: Hashable) -> list[Hashable]:
     """直近の見出しパス."""
     paths = list(nx.all_simple_paths(g.to_undirected(), root, n))
     if len(paths) == 0:

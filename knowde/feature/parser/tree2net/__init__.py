@@ -12,7 +12,7 @@ def parse2net(txt: str, do_print: bool = False) -> SysNet:  # noqa: FBT001 FBT00
     """文からsysnetへ."""
     _t = parse2tree(txt, TSysArg())
     if do_print:
-        treeprint(_t, True)  # noqa: FBT003
+        treeprint(_t)
     si = SysNetInterpreter()
     si.visit(_t)
     return si.sn
