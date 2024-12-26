@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from enum import Enum, auto
-from functools import cached_property
+from functools import cache, cached_property
 from pprint import pp
 from typing import Any, Callable, Hashable, Iterator
 
@@ -21,6 +21,7 @@ def nxprint(g: nx.DiGraph, detail: bool = False) -> None:  # noqa: FBT001 FBT002
         pp(nx.to_dict_of_dicts(g))
 
 
+@cache
 def to_nested(g: nx.DiGraph, start: Hashable, f: Accessor) -> dict:
     """有向グラフから入れ子の辞書を作成."""
 
@@ -37,14 +38,14 @@ def to_nested(g: nx.DiGraph, start: Hashable, f: Accessor) -> dict:
 #     """有向グラフから関連をたどって."""
 
 
-def to_nodes(g: nx.DiGraph, start: Hashable, f: Accessor) -> set[Hashable]:
+def to_nodes(g: nx.DiGraph, start: Hashable, f: Accessor) -> list[Hashable]:
     """有向グラフを辿ってノードを取得."""
-    s = set()
+    s = []
 
     def _f(n: Hashable) -> None:
         nlist = list(f(g, n))
-        s.add(n)
-        s.union([_f(anode) for anode in nlist])
+        s.append(n)
+        s.extend([_f(anode) for anode in nlist])
 
     _f(start)
     return s
@@ -131,19 +132,24 @@ class Direction(Enum):
 class EdgeType(Enum):
     """グラフ関係の種類."""
 
+    # 文章構成
     HEAD = auto()  # 見出しを配下にする
     SIBLING = auto()  # 兄弟 同階層 並列
     BELOW = auto()  # 配下 階層が下がる 直列
+
+    # 意味的関係
     DEF = auto()  # term -> 文
     RESOLVED = auto()  # 用語解決関係 文 -> 文
-
     TO = auto()  # 依存
     EXAMPLE = auto()  # 具体
+
+    # 付加的
     WHEN = auto()
     WHERE = auto()
     NUM = auto()
     BY = auto()
     REF = auto()
+
     # both
     ANTI = auto()  # 反対
     SIMILAR = auto()  # 類似

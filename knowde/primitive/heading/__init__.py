@@ -15,7 +15,7 @@ class HeadingNotFoundError(Exception):
 def get_headings(g: nx.DiGraph, root: Hashable) -> set[str]:
     """見出しセット."""
     ns = to_nodes(g, root, EdgeType.HEAD.succ)
-    return {str(n) for n in ns}
+    return {str(n) for n in ns if n}
 
 
 def get_heading_path(g: nx.DiGraph, root: Hashable, n: Hashable) -> list[Hashable]:
