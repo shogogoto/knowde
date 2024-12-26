@@ -6,9 +6,7 @@ from typing import TYPE_CHECKING, Hashable, OrderedDict, Self
 
 from pydantic import BaseModel
 
-from knowde.complex.__core__.sysnet import EdgeType, SysNet
-from knowde.complex.__core__.sysnet.sysnode import SysNode
-from knowde.primitive.__core__.nxutil import axiom_paths, leaf_paths
+from knowde.primitive.__core__.nxutil import EdgeType, axiom_paths, leaf_paths
 
 if TYPE_CHECKING:
     from networkx import DiGraph
@@ -23,7 +21,7 @@ class Navi(BaseModel, frozen=True):
     t: EdgeType
 
     @classmethod
-    def create(cls, g: DiGraph, n: SysNode, t: EdgeType) -> Self:
+    def create(cls, g: DiGraph, n: Hashable, t: EdgeType) -> Self:
         """ファクトリー."""
         return cls(
             node=n,
@@ -51,7 +49,7 @@ class Navi(BaseModel, frozen=True):
         return verticallist2d(self.axiom_paths, depth)
 
     @classmethod
-    def batch_create(cls, g: DiGraph, n: SysNode) -> dict[EdgeType, Navi]:
+    def batch_create(cls, g: DiGraph, n: Hashable) -> dict[EdgeType, Navi]:
         """全てのタイプで作成."""
         return {t: cls.create(g, n, t) for t in EdgeType}
 
@@ -64,23 +62,3 @@ def verticallist2d(ls2d: list[list[Hashable]], depth: int) -> list[Hashable]:
         return [e for e in ls if e is not None]
     except IndexError:
         return []
-
-
-class Explorer(BaseModel):
-    """ネットワーク上を移動."""
-
-    current: SysNode
-    navis: dict[EdgeType, Navi]
-    sn: SysNet
-
-    def succ(self, _t: EdgeType, i: int) -> None:
-        """先へ移動."""
-        self.current.succs[i]
-
-    def pred(self, _t: EdgeType, i: int) -> None:
-        """前へ移動."""
-        self.current.preds[i]
-
-    def pretty(self) -> str:
-        """見やすく表示."""
-        return ""

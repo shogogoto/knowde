@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from networkx import DiGraph
 
 
-class SysNet(BaseModel):
+class SysNet(BaseModel, frozen=True):
     """系ネットワーク."""
 
     root: str
@@ -114,7 +114,8 @@ class SysNet(BaseModel):
     def get(self, n: SysNode) -> SysArg:
         """文に紐づく用語があれば定義を返す."""
         if n not in self._g:
-            raise SysNetNotFoundError
+            msg = f"{n} is not in system."
+            raise SysNetNotFoundError(msg)
         match n:
             case str():
                 term = EdgeType.DEF.get_pred_or_none(self._g, n)
