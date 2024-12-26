@@ -23,9 +23,10 @@
 from __future__ import annotations
 
 from functools import cache
-from typing import Generic, Self, TypeVar, override
+from typing import Generic, Self, TypeVar
 
 from pydantic import BaseModel
+from typing_extensions import override
 
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.sysnet.sysnode import SysArg
