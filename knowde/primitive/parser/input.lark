@@ -1,17 +1,17 @@
-?start:  _NL* unit*
-?unit: (h1|COMMENT)
+?start:  _NL*  unit*
+?unit: (h1)
 
-h1: H1 COMMENT* _NL [_INDENT [source_about _NL]* block* _DEDENT] (h2)*
+h1: H1 (_NL COMMENT)* _NL [_INDENT [source_about _NL]* block* _DEDENT] (h2)*
 ?source_about: AUTHOR | PUBLISHED | URL
 AUTHOR.1: "@author " ANY       //著者
 PUBLISHED.1: "@published " ANY // 第一出版日
 URL.1: "@url " ANY
 
-h2: H2 COMMENT* _NL [_INDENT block* _DEDENT] (h3)*
-h3: H3 COMMENT* _NL [_INDENT block* _DEDENT] (h4)*
-h4: H4 COMMENT* _NL [_INDENT block* _DEDENT] (h5)*
-h5: H5 COMMENT* _NL [_INDENT block* _DEDENT] (h6)*
-h6: H6 COMMENT* _NL [_INDENT block* _DEDENT]
+h2: H2 (_NL COMMENT)* _NL  [_INDENT block* _DEDENT] (h3)*
+h3: H3 (_NL COMMENT)* _NL  [_INDENT block* _DEDENT] (h4)*
+h4: H4 (_NL COMMENT)* _NL  [_INDENT block* _DEDENT] (h5)*
+h5: H5 (_NL COMMENT)* _NL  [_INDENT block* _DEDENT] (h6)*
+h6: H6 (_NL COMMENT)* _NL  [_INDENT block* _DEDENT]
 HEAD: /[^#\n]+/
 H1: "#" HEAD
 H2: "##" HEAD
@@ -26,7 +26,7 @@ H6: "######" HEAD
 ctxline: ctype block
 
 ANY: /[^\n]+/
-COMMENT.1: "!" ANY _NL
+COMMENT.1: "!" ANY
 
 QUOTERM: "`" ANY "`"
 ONELINE: ANY
@@ -49,4 +49,6 @@ _NL: /(\r?\n[\t ]*)+/
 %declare _INDENT _DEDENT
 %import common.WS_INLINE
 %import common.CNAME
-%ignore COMMENT _NL
+
+%ignore _NL COMMENT
+
