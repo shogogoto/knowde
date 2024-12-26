@@ -54,14 +54,20 @@ def test_add_block() -> None:
 def test_add_heading() -> None:
     """headingを正しく取得できる."""
     _s = """
+        !c00
         # h1
+        !c0
             aaa
+        !c1
             bbb
                 ccc
                 eee
+                !c2
                     eEE
+        !c2
                     eeE
         ## h2
+        !c3
             fff
             ggg
                 -> ddd
