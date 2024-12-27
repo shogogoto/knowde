@@ -145,16 +145,16 @@ def test_parser_quoterm() -> None:
 def test_parse_comment() -> None:
     """コメント."""
     _s = r"""
-        ! aaa
+        ! a
         # 1
             `ctx`
-            ! aaa
-                ! aaa
+            ! b
+                ! c
                 -> `b1`
-                ! aaa
-            ! aaa
-        ! aaa
+                ! d
+            ! e
+        ! f
 
-        ! aaa
+        ! g
     """
     _t = parse2tree(_s)
