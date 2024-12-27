@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from enum import Enum, auto
-from functools import cached_property
+from functools import cache, cached_property
 from pprint import pp
 from typing import Any, Callable, Hashable, Iterator
 
@@ -21,11 +21,8 @@ def nxprint(g: nx.DiGraph, detail: bool = False) -> None:  # noqa: FBT001 FBT002
         pp(nx.to_dict_of_dicts(g))
 
 
-def to_nested(
-    g: nx.DiGraph,
-    start: Hashable,
-    f: Accessor,
-) -> dict:
+@cache
+def to_nested(g: nx.DiGraph, start: Hashable, f: Accessor) -> dict:
     """有向グラフから入れ子の辞書を作成."""
 
     def _f(n: Hashable) -> dict:
@@ -37,18 +34,18 @@ def to_nested(
     return _f(start)
 
 
-def to_nodes(
-    g: nx.DiGraph,
-    start: Hashable,
-    f: Accessor,
-) -> set[Hashable]:
+# def to_list(g: nx.DiGraph, start: Hashable, f: Accessor) -> list[Hashable]:
+#     """有向グラフから関連をたどって."""
+
+
+def to_nodes(g: nx.DiGraph, start: Hashable, f: Accessor) -> list[Hashable]:
     """有向グラフを辿ってノードを取得."""
-    s = set()
+    s = []
 
     def _f(n: Hashable) -> None:
         nlist = list(f(g, n))
-        s.add(n)
-        s.union([_f(anode) for anode in nlist])
+        s.append(n)
+        s.extend([_f(anode) for anode in nlist])
 
     _f(start)
     return s
@@ -58,8 +55,8 @@ def succ_attr(attr_name: str, value: Any) -> Accessor:  # noqa: ANN401
     """次を関係の属性から辿る."""
 
     def _f(g: nx.DiGraph, start: Hashable) -> Iterator[Hashable]:
-        for succ in g.successors(start):
-            if g.edges[start, succ].get(attr_name) == value:
+        for _, succ, d in g.out_edges(start, data=True):
+            if any(d) and d[attr_name] == value:
                 _f(g, succ)
                 yield succ
 
@@ -70,8 +67,8 @@ def pred_attr(attr_name: str, value: Any) -> Accessor:  # noqa: ANN401
     """前を関係の属性から辿る."""
 
     def _f(g: nx.DiGraph, start: Hashable) -> Iterator[Hashable]:
-        for pred in g.predecessors(start):
-            if g.edges[pred, start].get(attr_name) == value:
+        for pred, _, d in g.in_edges(start, data=True):
+            if any(d) and d[attr_name] == value:
                 _f(g, pred)
                 yield pred
 
@@ -135,19 +132,24 @@ class Direction(Enum):
 class EdgeType(Enum):
     """グラフ関係の種類."""
 
+    # 文章構成
     HEAD = auto()  # 見出しを配下にする
     SIBLING = auto()  # 兄弟 同階層 並列
     BELOW = auto()  # 配下 階層が下がる 直列
+
+    # 意味的関係
     DEF = auto()  # term -> 文
     RESOLVED = auto()  # 用語解決関係 文 -> 文
-
     TO = auto()  # 依存
     EXAMPLE = auto()  # 具体
+
+    # 付加的
     WHEN = auto()
     WHERE = auto()
     NUM = auto()
     BY = auto()
     REF = auto()
+
     # both
     ANTI = auto()  # 反対
     SIMILAR = auto()  # 類似
@@ -211,9 +213,7 @@ def _get_one_or_none(ls: list[Hashable], t: EdgeType, src: Hashable) -> None | H
         case _:
             msg = (
                 f"'{src}'から複数の関係がヒットしました. 1つだけに修正してね: {t} \n\t"
-                + "\n\t".join(
-                    ls,
-                )
+                + "\n\t".join(ls)
             )
             raise MultiEdgesError(msg)
 
@@ -221,11 +221,11 @@ def _get_one_or_none(ls: list[Hashable], t: EdgeType, src: Hashable) -> None | H
 def replace_node(g: nx.DiGraph, old: Hashable, new: Hashable) -> None:
     """エッジを保ってノードを置換."""
     g.add_node(new)
-    for pred in g.predecessors(old):
-        g.add_edge(pred, new, **g.get_edge_data(pred, old))
 
-    for succ in g.successors(old):
-        g.add_edge(new, succ, **g.get_edge_data(old, succ))
+    for pred, _, data in g.in_edges(old, data=True):
+        g.add_edge(pred, new, **data)
+    for _, succ, data in g.out_edges(old, data=True):
+        g.add_edge(new, succ, **data)
     g.remove_node(old)
 
 

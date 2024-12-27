@@ -1,9 +1,6 @@
 """用語関連."""
 
 
-
-
-
 # def test_duplicate_term() -> None:
 #     """用語の重複は弾く."""
 #     _s = r"""

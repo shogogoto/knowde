@@ -4,23 +4,31 @@ from typing import NoReturn
 from knowde.primitive.__core__.dupchk import DuplicationChecker
 
 
-class UnResolvedTermError(Exception):
+class InterpreterError(Exception):
+    """構文木解析用."""
+
+
+class UnResolvedTermError(InterpreterError):
     """用語解決がまだ."""
 
 
-class SysNetNotFoundError(Exception):
+class SysNetNotFoundError(InterpreterError):
     """ネットワークに含まれないノード."""
 
 
-class AlreadyAddedError(Exception):
+class AlreadyAddedError(InterpreterError):
     """なぜか既に追加済み."""
 
 
-class UnaddedYetError(Exception):
-    """追加済みのはずなのにまだ追加されていない."""
+class QuotermNotFoundError(InterpreterError):
+    """引用用語が存在しない."""
 
 
-class SentenceConflictError(Exception):
+class DefSentenceConflictError(InterpreterError):
+    """定義の文が既出."""
+
+
+class SentenceConflictError(InterpreterError):
     """1文が重複追加."""
 
 

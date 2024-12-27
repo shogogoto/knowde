@@ -50,6 +50,12 @@ class Duplicable(BaseModel, frozen=True):
         return str(self.n)
 
 
+class DummySentence(Duplicable, frozen=True):
+    """Termのみの場合に擬似的に定義とみなすための空文字列."""
+
+    n: str = ""
+
+
 def arg2node(arg: SysArg) -> SysNode:
     """変換."""
     match arg:
