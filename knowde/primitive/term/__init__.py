@@ -97,6 +97,11 @@ class Term(BaseModel, frozen=True):
         only_other = len(self.names) > 1 or len(other.names) == 1
         return only_self or only_other
 
+    @property
+    def has_only_alias(self) -> bool:
+        """aliasのみ."""
+        return self.alias and len(self.names) == 0
+
     def merge(self, other: Term) -> Term:
         """名前を併せた用語へ."""
         if not self.allows_merge(other):
