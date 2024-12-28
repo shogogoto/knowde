@@ -213,7 +213,7 @@ def _get_one_or_none(ls: list[Hashable], t: EdgeType, src: Hashable) -> None | H
         case _:
             msg = (
                 f"'{src}'から複数の関係がヒットしました. 1つだけに修正してね: {t} \n\t"
-                + "\n\t".join(ls)
+                + "\n\t".join(map(str, ls))
             )
             raise MultiEdgesError(msg)
 

@@ -3,7 +3,7 @@
 
 from lark import Token, Transformer
 
-from knowde.complex.__core__.sysnet.sysnode import Def, SysArg
+from knowde.complex.__core__.sysnet.sysnode import Def, Duplicable, SysArg
 from knowde.primitive.__core__.nxutil import EdgeType
 from knowde.primitive.parser.lineparse import parse_line
 from knowde.primitive.term import Term
@@ -26,6 +26,7 @@ class TSysArg(Transformer):
 
     ANTONYM = lambda _, _tok: EdgeType.ANTI.both  # noqa: E731
     SIMILAR = lambda _, _tok: EdgeType.SIMILAR.both  # noqa: E731
+    DUPLICABLE = lambda _, _tok: Duplicable(n=_tok)  # noqa: E731
 
     def ONELINE(self, tok: Token) -> SysArg:  # noqa: N802 D102
         v = "".join(tok.split("   "))  # 適当な\nに対応する空白

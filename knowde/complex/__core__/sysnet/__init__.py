@@ -10,6 +10,7 @@ import networkx as nx
 from lark import Token
 from pydantic import BaseModel, PrivateAttr
 
+from knowde.complex.__core__.sysnet.adder import add_def
 from knowde.complex.__core__.sysnet.dupchk import SysArgDupChecker
 from knowde.primitive.__core__.nxutil import (
     Direction,
@@ -27,12 +28,11 @@ from knowde.primitive.term import (
 
 from .errors import (
     AlreadyAddedError,
-    DefSentenceConflictError,
     QuotermNotFoundError,
     SysNetNotFoundError,
     UnResolvedTermError,
 )
-from .sysnode import Def, SysArg, SysNode
+from .sysnode import Def, Duplicable, SysArg, SysNode
 
 if TYPE_CHECKING:
     from networkx import DiGraph
@@ -91,21 +91,17 @@ class SysNet(BaseModel, frozen=True):
         t.add_edge(self._g, un, vn)
 
     def add_arg(self, n: Hashable) -> SysNode:
-        """新規追加."""
+        """追加してSysNodeのみを返す."""
         match n:
-            case Term() | str():
+            case Term():
+                d = Def.dummy(n)
+                add_def(self._g, d)
+                return n
+            case str() | Duplicable():
                 self._g.add_node(n)
                 return n
             case Def():
-                terms = list(EdgeType.DEF.pred(self._g, n.sentence))
-                match len(terms):
-                    case 0:  # 新規登録
-                        EdgeType.DEF.add_edge(self._g, n.term, n.sentence)
-                    case l if l == 1 and n.term == terms[0]:  # 登録済み
-                        pass
-                    case _:
-                        msg = f"'{n}'が他の定義文と重複しています"
-                        raise DefSentenceConflictError(msg, terms)
+                add_def(self._g, n)
                 return n.sentence
             case _:
                 msg = f"{type(n)}: {n} is not allowed."
@@ -117,7 +113,7 @@ class SysNet(BaseModel, frozen=True):
             msg = f"{n} is not in system."
             raise SysNetNotFoundError(msg)
         match n:
-            case str():
+            case str() | Duplicable():
                 term = EdgeType.DEF.get_pred_or_none(self._g, n)
                 if term is None:
                     return n
@@ -134,7 +130,9 @@ class SysNet(BaseModel, frozen=True):
     def sentences(self) -> list[str]:
         """文."""
         hs = get_headings(self._g, self.root)
-        return [n for n in self._g.nodes if isinstance(n, str) and n not in hs]
+        return [
+            n for n in self._g.nodes if isinstance(n, (str, Duplicable)) and n not in hs
+        ]
 
     @property
     def terms(self) -> list[Term]:
@@ -147,11 +145,7 @@ class SysNet(BaseModel, frozen=True):
         return MergedTerms().add(*self.terms).to_resolver()
 
     def add_resolved_edges(self) -> None:
-        """事前の全用語解決.
-
-        統計情報を得るためには、全て用語解決しとかないといけない
-        DBやstageからは解決済みのnetworkを復元
-        """
+        """事前の全用語解決."""
         self.resolver.add_edges(self._g, self.sentences)
         # self._g = nx.freeze(self._g)
         self._is_resolved = True

@@ -1,22 +1,20 @@
 """系ネットワークのノード."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Self, TypeAlias
-from uuid import uuid4
+from functools import cache
+from typing import Self, TypeAlias
+from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
 from knowde.primitive.term import Term
-
-if TYPE_CHECKING:
-    from uuid import UUID
 
 
 class Def(BaseModel, frozen=True):
     """定義."""
 
     term: Term
-    sentence: str
+    sentence: str | DummySentence
 
     @classmethod
     def create(cls, sentence: str, names: list[str], alias: str | None = None) -> Self:
@@ -30,9 +28,11 @@ class Def(BaseModel, frozen=True):
     def __str__(self) -> str:  # noqa: D105
         return f"{self.term}: {self.sentence}"
 
-
-SysNode: TypeAlias = Term | str
-SysArg: TypeAlias = SysNode | Def
+    @classmethod
+    @cache
+    def dummy(cls, t: Term) -> Self:
+        """Create vacuous def."""
+        return cls(term=t, sentence=DummySentence())
 
 
 class Duplicable(BaseModel, frozen=True):
@@ -49,20 +49,15 @@ class Duplicable(BaseModel, frozen=True):
     def __str__(self) -> str:  # noqa: D105
         return str(self.n)
 
+    def __eq__(self, other: Self) -> bool:  # noqa: D105
+        return str(self) == str(other)
+
 
 class DummySentence(Duplicable, frozen=True):
     """Termのみの場合に擬似的に定義とみなすための空文字列."""
 
-    n: str = ""
+    n: str = "<<<not defined>>>"
 
 
-def arg2node(arg: SysArg) -> SysNode:
-    """変換."""
-    match arg:
-        case Term() | str():
-            return arg
-        case Def():
-            return arg.sentence
-        case _:
-            msg = f"{type(arg)}: {arg} is not allowed."
-            raise TypeError(msg)
+SysNode: TypeAlias = Term | str | Duplicable
+SysArg: TypeAlias = SysNode | Def
