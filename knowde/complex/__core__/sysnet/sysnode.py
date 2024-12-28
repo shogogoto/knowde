@@ -60,4 +60,4 @@ class DummySentence(Duplicable, frozen=True):
 
 
 SysNode: TypeAlias = Term | str | Duplicable
-SysArg: TypeAlias = Term | str | Def
+SysArg: TypeAlias = SysNode | Def

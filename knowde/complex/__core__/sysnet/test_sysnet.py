@@ -6,7 +6,7 @@ from knowde.primitive.term import Term
 
 from . import EdgeType, SysNet
 from .errors import SysNetNotFoundError
-from .sysnode import Def
+from .sysnode import Def, Duplicable
 
 
 def test_setup_term() -> None:
@@ -67,3 +67,13 @@ def test_vacuous_def() -> None:
     assert sn.get(t1) == Def.dummy(t1)
     assert sn.get(t2) != Def.dummy(t1)
     assert sn.get(t2) == Def.dummy(t2)
+
+
+def test_duplicable() -> None:
+    """重複可能な文."""
+    sn = SysNet(root="sys")
+    d1 = Duplicable(n="+++ dup1 +++")
+    d2 = Duplicable(n="+++ dup1 +++")
+    sn.add(EdgeType.BELOW, sn.root, d1)
+    sn.add(EdgeType.SIBLING, d1, d2)
+    assert sn.sentences == [d1, d2]

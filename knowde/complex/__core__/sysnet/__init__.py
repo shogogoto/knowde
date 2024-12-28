@@ -97,7 +97,7 @@ class SysNet(BaseModel, frozen=True):
                 d = Def.dummy(n)
                 add_def(self._g, d)
                 return n
-            case str():
+            case str() | Duplicable():
                 self._g.add_node(n)
                 return n
             case Def():
@@ -130,7 +130,9 @@ class SysNet(BaseModel, frozen=True):
     def sentences(self) -> list[str]:
         """文."""
         hs = get_headings(self._g, self.root)
-        return [n for n in self._g.nodes if isinstance(n, str) and n not in hs]
+        return [
+            n for n in self._g.nodes if isinstance(n, (str, Duplicable)) and n not in hs
+        ]
 
     @property
     def terms(self) -> list[Term]:
