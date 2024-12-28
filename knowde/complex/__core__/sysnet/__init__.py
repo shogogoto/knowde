@@ -32,7 +32,7 @@ from .errors import (
     SysNetNotFoundError,
     UnResolvedTermError,
 )
-from .sysnode import Def, DummySentence, SysArg, SysNode
+from .sysnode import Def, Duplicable, SysArg, SysNode
 
 if TYPE_CHECKING:
     from networkx import DiGraph
@@ -113,7 +113,7 @@ class SysNet(BaseModel, frozen=True):
             msg = f"{n} is not in system."
             raise SysNetNotFoundError(msg)
         match n:
-            case str() | DummySentence():
+            case str() | Duplicable():
                 term = EdgeType.DEF.get_pred_or_none(self._g, n)
                 if term is None:
                     return n
