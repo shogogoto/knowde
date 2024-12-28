@@ -49,8 +49,21 @@ def test_get() -> None:
     assert sn.get("aaa") == df
     assert sn.get(Term.create("A")) == df
     assert sn.get("bbb") == "bbb"
-    assert sn.get(t) == t
+    assert sn.get(t) == Def.dummy(t)
     with pytest.raises(SysNetNotFoundError):
         sn.get("dummy")
     with pytest.raises(SysNetNotFoundError):
         sn.get(Term.create("dummy"))
+
+
+def test_vacuous_def() -> None:
+    """空定義 複数."""
+    sn = SysNet(root="sys")
+    t1 = Term.create("A")
+    t2 = Term.create("B")
+
+    sn.add(EdgeType.BELOW, sn.root, t1, t2)
+
+    assert sn.get(t1) == Def.dummy(t1)
+    assert sn.get(t2) != Def.dummy(t1)
+    assert sn.get(t2) == Def.dummy(t2)
