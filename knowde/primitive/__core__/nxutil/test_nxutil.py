@@ -4,7 +4,9 @@
 import networkx as nx
 import pytest
 
-from . import axiom_paths, filter_edge_attr, leaf_paths, succ_attr, to_nested
+from knowde.primitive.__core__.nxutil.util import succ_attr
+
+from . import axiom_paths, filter_edge_attr, leaf_paths, to_nested
 
 
 def test_to_nested() -> None:  # noqa: D103
