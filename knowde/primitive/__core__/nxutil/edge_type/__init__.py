@@ -4,13 +4,13 @@ from __future__ import annotations
 import json
 from enum import Enum, auto
 from functools import cached_property
-from typing import Any, Callable, Final, Hashable
+from typing import Callable, Final, Hashable
 
 import networkx as nx
 
-from .errors import MultiEdgesError
-from .types import Accessor
-from .util import pred_attr, succ_attr
+from knowde.primitive.__core__.nxutil.errors import MultiEdgesError
+from knowde.primitive.__core__.nxutil.types import Accessor
+from knowde.primitive.__core__.nxutil.util import pred_attr, succ_attr
 
 
 class Direction(Enum):
@@ -116,10 +116,10 @@ T_EDGE_KEY: Final = "type"
 class TEdgeJson(json.JSONEncoder):
     """EdgeType serialize用."""
 
-    def default(self, obj: Any) -> None:  # noqa: D102 ANN401
-        if isinstance(obj, EdgeType):
-            return obj.name
-        return super().default(obj)
+    def default(self, o: object) -> object:  # noqa: D102
+        if isinstance(o, EdgeType):
+            return o.name
+        return super().default(o)
 
     @classmethod
     def as_enum(cls, d: dict) -> dict:

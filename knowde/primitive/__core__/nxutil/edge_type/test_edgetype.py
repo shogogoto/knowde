@@ -1,7 +1,7 @@
 """test."""
 import json
 
-from .edge_type import EdgeType, TEdgeJson
+from . import EdgeType, TEdgeJson
 
 
 def test_encode_t_edge() -> None:
