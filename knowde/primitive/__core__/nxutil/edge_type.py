@@ -1,10 +1,9 @@
 """エッジの種類."""
 from __future__ import annotations
 
-import json
 from enum import Enum, auto
 from functools import cached_property
-from typing import Callable, Final, Hashable
+from typing import Callable, Hashable
 
 import networkx as nx
 
@@ -108,22 +107,3 @@ def _get_one_or_none(ls: list[Hashable], t: EdgeType, src: Hashable) -> None | H
                 + "\n\t".join(map(str, ls))
             )
             raise MultiEdgesError(msg)
-
-
-T_EDGE_KEY: Final = "type"
-
-
-class TEdgeJson(json.JSONEncoder):
-    """EdgeType serialize用."""
-
-    def default(self, o: object) -> object:  # noqa: D102
-        if isinstance(o, EdgeType):
-            return o.name
-        return super().default(o)
-
-    @classmethod
-    def as_enum(cls, d: dict) -> dict:
-        """For json load."""
-        if T_EDGE_KEY in d:
-            d[T_EDGE_KEY] = EdgeType[d[T_EDGE_KEY]]
-        return d

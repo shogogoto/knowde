@@ -1,12 +1,22 @@
 """test."""
 
 
+import json
 from pathlib import Path
 
 import networkx as nx
 
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
-from knowde.primitive.__core__.nxutil.io import nxread, nxwrite
+
+from . import TEdgeJson, nxread, nxwrite
+
+
+def test_encode_t_edge() -> None:
+    """Enum encode."""
+    d = {"type": EdgeType.TO}
+
+    txt = json.dumps(d, cls=TEdgeJson)
+    assert d == json.loads(txt, object_hook=TEdgeJson.as_enum)
 
 
 def test_io(tmp_path: Path) -> None:
