@@ -10,8 +10,6 @@ import networkx as nx
 from lark import Token
 from pydantic import BaseModel, PrivateAttr
 
-from knowde.complex.__core__.sysnet.adder import add_def
-from knowde.complex.__core__.sysnet.dupchk import SysArgDupChecker
 from knowde.primitive.__core__.nxutil import (
     Direction,
     EdgeType,
@@ -26,6 +24,8 @@ from knowde.primitive.term import (
     resolve_sentence,
 )
 
+from .adder import add_def
+from .dupchk import SysArgDupChecker
 from .errors import (
     AlreadyAddedError,
     QuotermNotFoundError,
@@ -42,7 +42,7 @@ class SysNet(BaseModel, frozen=True):
     """系ネットワーク."""
 
     root: str
-    _g: NXGraph = PrivateAttr(default_factory=nx.MultiDiGraph, init=False)
+    _g: NXGraph = PrivateAttr(default_factory=nx.MultiDiGraph, init=True)
     # _g: NXGraph = PrivateAttr(default_factory=nx.DiGraph, init=False)
     _chk: SysArgDupChecker = PrivateAttr(default_factory=SysArgDupChecker)
     _is_resolved: bool = PrivateAttr(default=False)
