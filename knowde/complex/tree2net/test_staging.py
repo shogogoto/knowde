@@ -4,7 +4,7 @@
 import networkx as nx
 
 from knowde.complex.__core__.file_io import nx2json_dump, nxread
-from knowde.feature.parser.tree2net import parse2net
+from knowde.complex.tree2net import parse2net
 
 
 def test_inout() -> None:
