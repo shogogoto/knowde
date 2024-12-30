@@ -4,8 +4,7 @@ from __future__ import annotations
 import click
 
 from knowde.complex import deduct_cli, def_cli
-from knowde.feature import parse_cmd
-from knowde.feature.parser import rank_cmd
+from knowde.feature.parser import input_group
 from knowde.primitive import tl_cli
 
 __version__ = "0.0.0"
@@ -25,5 +24,4 @@ def version() -> None:
 cli.add_command(def_cli)
 cli.add_command(deduct_cli)
 cli.add_command(tl_cli)
-cli.add_command(parse_cmd)
-cli.add_command(rank_cmd)
+cli.add_command(input_group)
