@@ -1,6 +1,5 @@
 """file I/O for networkx graph."""
 import json
-from functools import cache
 from pathlib import Path
 from typing import Final
 from uuid import UUID
@@ -15,16 +14,6 @@ from knowde.complex.__core__.sysnet.sysnode import (
 )
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.term import Term
-
-_DIR_PATH = Path.home() / ".knowde"
-
-
-@cache
-def dir_path() -> Path:
-    """ファイル保管用ディレクトリ."""
-    _DIR_PATH.mkdir(parents=True, exist_ok=True)
-    return _DIR_PATH
-
 
 T_EDGE_KEY: Final = "type"
 
@@ -44,7 +33,7 @@ class NxJsonalyzer(json.JSONEncoder):
         return super().default(o)
 
     @classmethod
-    def restore(cls, d: dict) -> dict:
+    def restore(cls, d: object) -> object:
         """For json load."""
         if T_EDGE_KEY in d:
             d[T_EDGE_KEY] = EdgeType[d[T_EDGE_KEY]]
