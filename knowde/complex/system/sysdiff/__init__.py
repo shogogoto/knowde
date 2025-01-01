@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from itertools import product
+from typing import Generic, Iterable, Self, TypeVar
 
 import Levenshtein
 from pydantic import BaseModel
@@ -12,12 +13,17 @@ from knowde.primitive.term import Term
 
 # class TermDifference
 
+# diff
+# 3種類 term, sentence, edge
 
-class TermDiff(BaseModel, frozen=True):
+T = TypeVar("T")
+
+
+class SysNodeDiff(BaseModel, Generic[T], frozen=True):
     """SysNet間の用語差分."""
 
-    added: set[Term]
-    removed: set[Term]
+    added: set[T]
+    removed: set[T]
 
     def __str__(self) -> str:  # noqa: D105
         return f"-{self.removed}\n+{self.added}"
@@ -25,14 +31,20 @@ class TermDiff(BaseModel, frozen=True):
     def n(self) -> tuple[int, int]:  # noqa: D102
         return len(self.added), len(self.removed)
 
+    @classmethod
+    def terms(cls, old: SysNet, new: SysNet) -> Self:  # noqa: D102
+        t1 = set(old.terms)
+        t2 = set(new.terms)
+        return cls(added=t2 - t1, removed=t1 - t2)
 
-def termdiff(old: SysNet, new: SysNet) -> TermDiff:
-    """sn1からsn2への変化."""
-    t1 = set(old.terms)
-    t2 = set(new.terms)
-    added = t2 - t1
-    removed = t1 - t2
-    return TermDiff(added=added, removed=removed)
+    @classmethod
+    def sentences(cls, old: SysNet, new: SysNet) -> Self:  # noqa: D102
+        s1 = set(old.sentences)
+        s2 = set(new.sentences)
+        return cls(added=s2 - s1, removed=s1 - s2)
+
+    def product(self) -> Iterable[tuple[T, T]]:  # noqa: D102
+        return product(self.removed, self.added)
 
 
 class IdentificationError(Exception):
@@ -45,12 +57,9 @@ def identify_sentence(
     threshold_ratio: float = 0.6,
 ) -> dict[str, str]:
     """変更前後の文の同定."""
-    o = set(old.sentences)
-    n = set(new.sentences)
-    added = n - o
-    removed = o - n
+    diff = SysNodeDiff.sentences(old, new)
     d = {}
-    for s_old, s_new in product(removed, added):
+    for s_old, s_new in diff.product():
         r = Levenshtein.ratio(s_old, s_new)
         if r > threshold_ratio:
             if s_old in d:
@@ -69,9 +78,9 @@ def identify_term(
     threshold_ratio: float = 0.6,
 ) -> dict[Term, Term]:
     """変更前後のtermを同定."""
-    diff = termdiff(old, new)
+    diff = SysNodeDiff.terms(old, new)
     d = {}
-    for t_old, t_new in product(diff.removed, diff.added):
+    for t_old, t_new in diff.product():
         d1 = old.get(t_old)
         d2 = new.get(t_new)
         # 同じ文に対する異なるtermは同じと同定

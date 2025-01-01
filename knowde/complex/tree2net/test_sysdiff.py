@@ -1,7 +1,11 @@
 """系の差分."""
 
 
-from knowde.complex.system.sysdiff import identify_sentence, identify_term, termdiff
+from knowde.complex.system.sysdiff import (
+    SysNodeDiff,
+    identify_sentence,
+    identify_term,
+)
 from knowde.complex.tree2net import parse2net
 from knowde.primitive.term import Term
 
@@ -23,7 +27,7 @@ def test_term_diff() -> None:
 
     sn1 = parse2net(_s1)
     sn2 = parse2net(_s2)
-    d = termdiff(sn1, sn2)
+    d = SysNodeDiff.terms(sn1, sn2)
     assert d.added == {Term.create("D")}
     assert d.removed == {Term.create("A")}
 
