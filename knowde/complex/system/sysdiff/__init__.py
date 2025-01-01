@@ -68,18 +68,21 @@ def identify_term(
     new: SysNet,
     threshold_ratio: float = 0.6,
 ) -> dict[Term, Term]:
-    """変更前と変更後を同定."""
+    """変更前後のtermを同定."""
     diff = termdiff(old, new)
     d = {}
-    s_ident = identify_sentence(old, new, threshold_ratio)
     for t_old, t_new in product(diff.removed, diff.added):
         d1 = old.get(t_old)
         d2 = new.get(t_new)
         # 同じ文に対する異なるtermは同じと同定
-        if isinstance(d1, Def) and isinstance(d2, Def):
-            if d1.sentence == d2.sentence:
-                d[t_old] = t_new
-                continue
-            if d1.sentence in s_ident:
-                pass
+        if isinstance(d1, Def) and isinstance(d2, Def) and d1.sentence == d2.sentence:
+            d[t_old] = t_new
+    s_ident = identify_sentence(old, new, threshold_ratio)
+    for t_old in diff.removed:
+        d1 = old.get(t_old)
+        if isinstance(d1, Def) and d1.sentence in s_ident:
+            s_new = s_ident[d1.sentence]
+            d2 = new.get(s_new)
+            if isinstance(d2, Def):
+                d[t_old] = d2.term
     return d

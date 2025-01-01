@@ -68,14 +68,20 @@ def test_identify_changed_term() -> None:
     txt1 = """
         # title
             A: qawsedrftg
+            PPP: aaa
+            QQQ: zxcvbnm
 
     """
 
     txt2 = """
         # title
             A, B: qawsedrftg
+            PPP: bbb
+            RRR: zxcvbnmZ
     """
     sn1 = parse2net(txt1)
     sn2 = parse2net(txt2)
-
-    assert identify_term(sn1, sn2) == {Term.create("A"): Term.create("A", "B")}
+    assert identify_term(sn1, sn2) == {
+        Term.create("A"): Term.create("A", "B"),
+        Term.create("QQQ"): Term.create("RRR"),
+    }
