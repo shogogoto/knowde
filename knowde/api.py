@@ -3,12 +3,12 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
-from knowde.complex import deduct_router, def_router
-from knowde.complex.deduction.proposition import p_router
 from knowde.primitive import (
     tl_router,
 )
 from knowde.primitive.__core__ import ErrorHandlingMiddleware
+from knowde.tmp import deduct_router, def_router
+from knowde.tmp.deduction.proposition import p_router
 
 api = FastAPI()
 api.add_middleware(ErrorHandlingMiddleware)

@@ -3,9 +3,9 @@ from __future__ import annotations
 
 import click
 
-from knowde.complex import deduct_cli, def_cli
 from knowde.feature.parser import input_group
 from knowde.primitive import tl_cli
+from knowde.tmp import deduct_cli, def_cli
 
 __version__ = "0.0.0"
 
