@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from enum import Enum, auto
 from functools import cached_property
-from typing import Callable, Hashable
+from typing import Callable, Hashable, Self
 
 import networkx as nx
 
@@ -44,6 +44,10 @@ class EdgeType(Enum):
     # both
     ANTI = auto()  # 反対
     SIMILAR = auto()  # 類似
+
+    def to_tuple(self, u: Hashable, v: Hashable) -> tuple[Hashable, Self, Hashable]:
+        """To tuple."""
+        return u, self, v
 
     @property
     def forward(self) -> tuple[EdgeType, Direction]:

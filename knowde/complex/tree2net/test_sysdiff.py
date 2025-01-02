@@ -3,10 +3,12 @@
 
 from knowde.complex.system.sysdiff import (
     SysNodeDiff,
+    edgediff,
     identify_sentence,
     identify_term,
 )
 from knowde.complex.tree2net import parse2net
+from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.term import Term
 
 
@@ -88,4 +90,34 @@ def test_identify_changed_term() -> None:
     assert identify_term(sn1, sn2) == {
         Term.create("A"): Term.create("A", "B"),
         Term.create("QQQ"): Term.create("RRR"),
+    }
+
+
+def test_edgediff() -> None:
+    """関係の変更."""
+    txt1 = """
+        # title
+            A: aaa
+            B: bbb
+            C: ccc
+    """
+
+    txt2 = """
+        # title2
+            A: aaa
+                BB: bbb
+            C: ccc
+    """
+    sn1 = parse2net(txt1)
+    sn1.add_resolved_edges()
+    sn2 = parse2net(txt2)
+    sn2.add_resolved_edges()
+    ed = edgediff(sn1, sn2)
+    assert ed.removed == {
+        EdgeType.SIBLING.to_tuple("aaa", "bbb"),
+        EdgeType.SIBLING.to_tuple("bbb", "ccc"),
+    }
+    assert ed.added == {
+        EdgeType.BELOW.to_tuple("aaa", "bbb"),
+        EdgeType.SIBLING.to_tuple("aaa", "ccc"),
     }

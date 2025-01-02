@@ -2,17 +2,17 @@
 from __future__ import annotations
 
 from itertools import product
-from typing import Generic, Iterable, Self, TypeVar
+from typing import Generic, Hashable, Iterable, Self, TypeAlias, TypeVar
 
 import Levenshtein
 from pydantic import BaseModel
 
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.sysnet.sysnode import Def
+from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.term import Term
 
 # class TermDifference
-
 # diff
 # 3種類 term, sentence, edge
 
@@ -95,3 +95,43 @@ def identify_term(
             if isinstance(d2, Def):
                 d[t_old] = d2.term
     return d
+
+
+TypedEdge: TypeAlias = tuple[Hashable, EdgeType, Hashable]
+
+
+def edges2tuples(sn: SysNet) -> set[TypedEdge]:
+    """edgeをsetに変換."""
+    edges = set()
+    for s in sn.sentences:
+        e = {(u, attr["type"], v) for u, v, attr in sn.g.out_edges(s, data=True)}
+        edges = edges.union(e)
+    return edges
+
+
+def edgestr(te: TypedEdge) -> str:
+    """To string."""
+    u, t, v = te
+    return f"'{u}'-[{t.name}]->'{v}'"
+
+
+class EdgeDiff(BaseModel, frozen=True):
+    """関係変更."""
+
+    added: set[TypedEdge]
+    removed: set[TypedEdge]
+
+    def __str__(self) -> str:  # noqa: D105
+        lines = []
+        lines.extend(f"- {edgestr(r)}" for r in self.removed)
+        lines.extend(f"+ {edgestr(r)}" for r in self.added)
+        return "\n".join(lines)
+
+
+def edgediff(old: SysNet, new: SysNet) -> EdgeDiff:
+    """関係の差分."""
+    old_edges = edges2tuples(old)
+    new_edges = edges2tuples(new)
+    added = new_edges - old_edges
+    removed = old_edges - new_edges
+    return EdgeDiff(added=added, removed=removed)
