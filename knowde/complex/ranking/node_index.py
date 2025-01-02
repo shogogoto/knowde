@@ -82,7 +82,7 @@ class Description(RankIndex[list[SysArg]], frozen=True):
         vals = []
         for below_s in EdgeType.BELOW.succ(sn.g, s):
             sibs = to_nodes(sn.g, below_s, EdgeType.SIBLING.succ)
-            vals.append([sn.get(n) for n in sibs if n])
+            vals.append([sn.get(n) for n in sibs if n])  # None排除
         return vals
 
     @override

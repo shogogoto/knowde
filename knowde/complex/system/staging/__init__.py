@@ -1,6 +1,7 @@
 """永続化前の中間ファイル."""
 
-from click import Path
+from pathlib import Path
+
 from pydantic import BaseModel
 
 from knowde.complex.__core__.sysnet import SysNet
@@ -21,5 +22,5 @@ class Stage(BaseModel, frozen=True):
 
     def read(self, p: Path) -> SysNet:
         """File -> SysNet."""
-        g = nxread(p)
+        g = nxread(p.read_text())
         return SysNet(root=p.name, _g=g)

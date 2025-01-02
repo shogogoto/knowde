@@ -1,3 +1,3 @@
-"""高々数個のprimitiveに依存したパッケージ."""
+"""old package そのうち削除."""
 from .deduction import *  # noqa: F403
 from .definition import *  # noqa: F403

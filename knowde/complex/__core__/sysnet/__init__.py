@@ -4,7 +4,7 @@ from __future__ import annotations
 from functools import cached_property
 from itertools import pairwise
 from pprint import pp
-from typing import TYPE_CHECKING, Any, Hashable
+from typing import Any, Hashable
 
 import networkx as nx
 from lark import Token
@@ -34,9 +34,6 @@ from .errors import (
 )
 from .sysnode import Def, Duplicable, SysArg, SysNode
 
-if TYPE_CHECKING:
-    from networkx import DiGraph
-
 
 class SysNet(BaseModel, frozen=True):
     """系ネットワーク."""
@@ -48,7 +45,7 @@ class SysNet(BaseModel, frozen=True):
     _is_resolved: bool = PrivateAttr(default=False)
 
     @property
-    def g(self) -> DiGraph:  # noqa: D102
+    def g(self) -> nx.MultiDiGraph:  # noqa: D102
         return self._g
 
     def model_post_init(self, __context: Any) -> None:  # noqa: ANN401 D102
