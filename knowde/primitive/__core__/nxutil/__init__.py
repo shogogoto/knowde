@@ -45,11 +45,11 @@ def to_nodes(g: nx.DiGraph, start: Hashable, f: Accessor) -> list[Hashable]:
     return s
 
 
-def filter_edge_attr(g: nx.DiGraph, name: str, value: Any) -> nx.DiGraph:  # noqa: ANN401
+def filter_edge_attr(g: nx.DiGraph, name: str, value: Any) -> nx.Graph:  # noqa: ANN401
     """ある属性のエッジのみを抽出する関数を返す."""
 
-    def _f(u: Hashable, v: Hashable) -> bool:
-        return g[u][v][name] == value
+    def _f(u: Hashable, v: Hashable, attr: dict) -> bool:
+        return g[u][v][attr][name] == value
 
     return nx.subgraph_view(g, filter_edge=_f)
 
@@ -92,3 +92,14 @@ def replace_node(g: nx.DiGraph, old: Hashable, new: Hashable) -> None:
     for _, succ, data in g.out_edges(old, data=True):
         g.add_edge(new, succ, **data)
     g.remove_node(old)
+
+
+def get_axioms(g: nx.MultiDiGraph, *types: Any) -> list[Hashable]:  # noqa: ANN401
+    """出発点を取得."""
+
+    def _f(u: Hashable, v: Hashable, attr: dict) -> bool:
+        return g[u][v][attr]["type"] in types
+
+    sub: nx.MultiDiGraph = nx.subgraph_view(g, filter_edge=_f)
+
+    return [n for n in sub.nodes if sub.in_degree(n) == 0 and sub.degree(n) != 0]
