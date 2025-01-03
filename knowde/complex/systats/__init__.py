@@ -5,8 +5,16 @@ import operator
 from functools import reduce
 from typing import Callable, Hashable, TypeAlias
 
+import networkx as nx
+from more_itertools import flatten
+
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.sysnet.sysnode import Duplicable
+from knowde.complex.systats.nw1_n1 import (
+    get_details,
+    get_parent_or_none,
+    has_dependency,
+)
 from knowde.primitive.term import Term
 
 """
@@ -55,7 +63,7 @@ def n_isolation(_sn: SysNet) -> int:
     """孤立したnode."""
 
 
-def get_isolation(sn: SysNet) -> None:
+def get_isolation(sn: SysNet) -> list[Hashable]:
     """孤立したノード.
 
     SIBLINGは無視 <=> parentを持たない
@@ -65,23 +73,23 @@ def get_isolation(sn: SysNet) -> None:
     TOを持たない
     """
 
-    def include_isolation_edge(u: Hashable, v: Hashable, idx: int) -> bool:
+    def include_isolation_node(n: Hashable) -> bool:
         """parentもなく、詳細もなく、TOなどの関係もない."""
-        _et = sn.g[u][v][idx]
-        # print(u, v, et)
-        # filter_edge=lambda u, v, attr: sn.g[u][v][attr]["type"] != EdgeType.HEAD,
-        return False
+        if n not in sn.sentences:
+            return False
+        parent = get_parent_or_none(sn, n)
+        if parent is not None:
+            return False
+        details = list(flatten(get_details(sn, n)))
+        if len(details) > 0:
+            return False
+        return not has_dependency(sn, n)
 
-    # sub = nx.subgraph_view(
-    #     sn.g,
-    #     filter_node=lambda n: n in sn.sentences,  # 見出し削除
-    #     filter_edge=include_isolation_edge,
-    # )
-
-    # print("#" * 80)
-    # nxprint(sub)
-    # print(sub.nodes)
-    # print(sub.edges)
+    sub = nx.subgraph_view(
+        sn.g,
+        filter_node=include_isolation_node,  # 見出し削除
+    )
+    return list(sub.nodes)
 
 
 def n_axiom(_sn: SysNet) -> int:

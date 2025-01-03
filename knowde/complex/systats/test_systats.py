@@ -25,12 +25,12 @@ def test_get_isolation() -> None:
             eee{B}
             fff
             G{B}: ggg
+
     """
     _sn = parse2net(_s)
     _sn.add_resolved_edges()
     _sn.replace_quoterms()
-    get_isolation(_sn)
-    # assert get_isolation(_sn) == ["aaa", "fff"]
+    assert get_isolation(_sn) == ["aaa", "fff", "ggg"]
 
 
 @pytest.mark.skip()

@@ -1,6 +1,7 @@
 """1network 1nodeを引数にする関数."""
 from __future__ import annotations
 
+from functools import cache
 from typing import Final, Hashable
 
 from knowde.complex.__core__.sysnet import SysNet
@@ -40,15 +41,18 @@ DEP_EDGE_TYPES: Final = [
     EdgeType.EXAMPLE,
     EdgeType.SIMILAR,
     EdgeType.ANTI,
+    EdgeType.RESOLVED,
 ]
 
 
+@cache
 def has_dependency(sn: SysNet, n: SysArg) -> bool:
     """意味的に重要なエッジを持つ."""
     _in = sn.g.in_edges(n, data=True)
     _out = sn.g.out_edges(n, data=True)
 
-    for _, _, attr in _in:
+    for _u, _, attr in _in:
         if attr["type"] in DEP_EDGE_TYPES:
             return True
-    return any(attr["type"] in DEP_EDGE_TYPES for _, v, attr in _out)
+
+    return any(attr["type"] in DEP_EDGE_TYPES for _, _v, attr in _out)
