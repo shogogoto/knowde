@@ -16,7 +16,7 @@ from .errors import (
 )
 
 
-def test_alias_error() -> None:
+def test_alias_has_mark_error() -> None:
     """Alias contains marks."""
     with pytest.raises(AliasContainsMarkError):
         Term.create(alias="a{b}")
@@ -118,12 +118,14 @@ def test_lookup() -> None:
     t2 = Term.create("A1", "A2")
     t3 = Term.create("B{A}")
     t4 = Term.create("C{BA}")
-    mt.add(t1, t2, t3, t4)
+    t5 = Term.create(alias="only")
+    t6 = Term.create("D{A1}", alias="not0th")
+    mt.add(t1, t2, t3, t4, t5, t6)
     # 0th
-    assert mt.atoms == {"A": t1, "a": t1, "A1": t2, "A2": t2}
+    assert mt.atoms == {"A": t1, "a": t1, "A1": t2, "A2": t2, "only": t5}
     # 1th
     l1, _ = next_lookup(mt.atoms, mt.frozen)
-    assert l1 == {"BA": t3}
+    assert l1 == {"BA": t3, "DA1": t6, "not0th": t6}
     # 2th
     d = {**mt.atoms, **l1}
     l2, _ = next_lookup(d, mt.frozen)
@@ -150,8 +152,8 @@ def test_lookup_error() -> None:
         mt.to_resolver()
 
 
-def test_resolve_term() -> None:
-    """用語解決."""
+def test_resolve() -> None:
+    """文の用語解決."""
     t1 = Term.create("A", alias="a")
     t2 = Term.create("A1", "A2")
     t3 = Term.create("B{A}")
@@ -171,3 +173,16 @@ def test_resolve_term() -> None:
 
     with pytest.raises(MarkUncontainedError):
         resolver("x{uncontained}x")
+
+
+def test_resolve_term() -> None:
+    """用語の用語解決."""
+    t1 = Term.create("A", alias="a")
+    t2 = Term.create("A1", "A2")
+    t3 = Term.create("B{A}")
+    t4 = Term.create("C{A1}")
+    t5 = Term.create("D{BA}")
+    t6 = Term.create("E{DBA}")
+    resolver = MergedTerms().add(t1, t2, t3, t4, t5, t6).to_resolver()
+
+    resolver.resolve_term(t3)

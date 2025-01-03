@@ -33,7 +33,7 @@ class Term(BaseModel, frozen=True):
     alias: str | None = Field(
         default=None,
         title="別名",
-        description="参照用の無意味な記号",
+        description="参照用の無意味な記号(参照を持たない)",
     )
     rep: str = Field(default="", title="代表名")
 
@@ -115,6 +115,12 @@ class Term(BaseModel, frozen=True):
             rep=self.rep,
         )
 
+    def has_mark(self) -> bool:
+        """参照{}を持つか否か."""
+        if len(self.names) == 0:
+            return False
+        return any(contains_mark_symbol(n) for n in self.names)
+
 
 def term_dup_checker() -> DuplicationChecker:
     """用語重複チェッカー."""
@@ -170,7 +176,7 @@ class MergedTerms(BaseModel, frozen=True):
         """参照{}を含まない用語."""
         d = {}
         for t in self.terms:
-            if t.alias:
+            if t.alias and not t.has_mark():
                 d[t.alias] = t
             for n in t.names:
                 if not contains_mark_symbol(n):
@@ -190,6 +196,7 @@ class MergedTerms(BaseModel, frozen=True):
         while True:
             _next, diff = next_lookup(lookup, self.frozen)
             for t in _next.values():
+                # print(t, type(t))
                 for n in t.names:
                     marks = pick_marks(n)
                     atom = replace_markers(n, *marks)
@@ -264,3 +271,6 @@ class TermResolver(BaseModel, frozen=True):
             else:
                 d[t] = v
         return d
+
+    def resolve_term(self, t: Term) -> None:
+        """用語を用語解決."""
