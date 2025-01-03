@@ -4,7 +4,7 @@
 import pytest
 
 from knowde.complex.__core__.tree2net import parse2net
-from knowde.complex.system.systats import (
+from knowde.complex.systats import (
     get_isolation,
 )
 

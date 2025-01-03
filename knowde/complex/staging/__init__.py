@@ -4,8 +4,9 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
+from knowde.complex.__core__.file_io import nxread, nxwrite
 from knowde.complex.__core__.sysnet import SysNet
-from knowde.primitive.file_io import dir_path, nxread, nxwrite
+from knowde.primitive.fs import dir_path
 
 """
 networkxのCRUD
