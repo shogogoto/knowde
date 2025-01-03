@@ -4,18 +4,18 @@ from __future__ import annotations
 from functools import cached_property
 from itertools import pairwise
 from pprint import pp
-from typing import TYPE_CHECKING, Any, Hashable
+from typing import Any, Hashable
 
 import networkx as nx
 from lark import Token
 from pydantic import BaseModel, PrivateAttr
 
-from knowde.complex.__core__.sysnet.adder import add_def
-from knowde.complex.__core__.sysnet.dupchk import SysArgDupChecker
+from knowde.complex.__core__.sysnet.term_resolve import add_resolve_edge
 from knowde.primitive.__core__.nxutil import (
     Direction,
     EdgeType,
     replace_node,
+    to_nested,
 )
 from knowde.primitive.__core__.types import NXGraph
 from knowde.primitive.heading import get_headings
@@ -23,9 +23,10 @@ from knowde.primitive.term import (
     MergedTerms,
     Term,
     TermResolver,
-    resolve_sentence,
 )
 
+from .adder import add_def
+from .dupchk import SysArgDupChecker
 from .errors import (
     AlreadyAddedError,
     QuotermNotFoundError,
@@ -34,21 +35,18 @@ from .errors import (
 )
 from .sysnode import Def, Duplicable, SysArg, SysNode
 
-if TYPE_CHECKING:
-    from networkx import DiGraph
-
 
 class SysNet(BaseModel, frozen=True):
     """系ネットワーク."""
 
     root: str
-    _g: NXGraph = PrivateAttr(default_factory=nx.MultiDiGraph, init=False)
+    _g: NXGraph = PrivateAttr(default_factory=nx.MultiDiGraph, init=True)
     # _g: NXGraph = PrivateAttr(default_factory=nx.DiGraph, init=False)
     _chk: SysArgDupChecker = PrivateAttr(default_factory=SysArgDupChecker)
     _is_resolved: bool = PrivateAttr(default=False)
 
     @property
-    def g(self) -> DiGraph:  # noqa: D102
+    def g(self) -> nx.MultiDiGraph:  # noqa: D102
         return self._g
 
     def model_post_init(self, __context: Any) -> None:  # noqa: ANN401 D102
@@ -146,7 +144,11 @@ class SysNet(BaseModel, frozen=True):
 
     def add_resolved_edges(self) -> None:
         """事前の全用語解決."""
-        self.resolver.add_edges(self._g, self.sentences)
+        r = self.resolver
+        for s in self.sentences:
+            d = r(s)
+            termd = r.mark2term(d)
+            add_resolve_edge(self._g, s, termd)
         # self._g = nx.freeze(self._g)
         self._is_resolved = True
 
@@ -154,7 +156,7 @@ class SysNet(BaseModel, frozen=True):
         """解決済み入れ子文を取得."""
         if not self._is_resolved:
             raise UnResolvedTermError
-        return resolve_sentence(self._g, s)
+        return to_nested(self._g, s, EdgeType.RESOLVED.succ)
 
     ################################################# 引用用語置換
     @property

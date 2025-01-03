@@ -45,7 +45,7 @@ def test_navi() -> None:
     #     └─╼ 2
     #         ├─╼ 5
     #         └─╼ 6 - 999
-    g = nx.balanced_tree(2, 2, nx.DiGraph())
+    g = nx.balanced_tree(2, 2, nx.MultiDiGraph())
     g.add_edge(4, 99)
     g.add_edge(6, 999)
     nx.set_edge_attributes(g, EdgeType.TO, "type")

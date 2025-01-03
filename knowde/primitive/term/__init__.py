@@ -3,13 +3,13 @@ from __future__ import annotations
 
 from collections import Counter
 from functools import cached_property
-from typing import AbstractSet, Iterable, NoReturn, Self
+from typing import AbstractSet, NoReturn, Self
 
 import networkx as nx
 from pydantic import BaseModel, Field, PrivateAttr, field_validator
 
 from knowde.primitive.__core__.dupchk import DuplicationChecker
-from knowde.primitive.__core__.nxutil import EdgeType, to_nested
+from knowde.primitive.__core__.nxutil import to_nested
 from knowde.primitive.__core__.types import NXGraph
 
 from .errors import (
@@ -33,7 +33,7 @@ class Term(BaseModel, frozen=True):
     alias: str | None = Field(
         default=None,
         title="別名",
-        description="参照用の無意味な記号",
+        description="参照用の無意味な記号(参照を持たない)",
     )
     rep: str = Field(default="", title="代表名")
 
@@ -115,6 +115,12 @@ class Term(BaseModel, frozen=True):
             rep=self.rep,
         )
 
+    def has_mark(self) -> bool:
+        """参照{}を持つか否か."""
+        if len(self.names) == 0:
+            return False
+        return any(contains_mark_symbol(n) for n in self.names)
+
 
 def term_dup_checker() -> DuplicationChecker:
     """用語重複チェッカー."""
@@ -170,7 +176,7 @@ class MergedTerms(BaseModel, frozen=True):
         """参照{}を含まない用語."""
         d = {}
         for t in self.terms:
-            if t.alias:
+            if t.alias and not t.has_mark():
                 d[t.alias] = t
             for n in t.names:
                 if not contains_mark_symbol(n):
@@ -230,10 +236,10 @@ def next_lookup(
 class TermResolver(BaseModel, frozen=True):
     """用語解決器."""
 
-    g: NXGraph
+    g: NXGraph  # mark network
     lookup: dict[str, Term]  # {name: Term}辞書
 
-    def __call__(self, s: str) -> dict:
+    def __call__(self, s: str) -> dict[str, str | dict]:
         """任意の文字列を用語解決.
 
         Return:
@@ -248,12 +254,12 @@ class TermResolver(BaseModel, frozen=True):
                 raise MarkUncontainedError(msg)
         return {m: to_nested(self.g, m, lambda g, n: g.successors(n)) for m in marks}
 
-    def mark2term(self, md: dict) -> dict:
+    def mark2term(self, md: dict) -> dict[Term, dict]:
         """markに対応する用語に変換する.
 
         Return:
         ------
-            {term: {term:{...:{}}}}
+            {Term: {Term:{...:{}}}}
 
         """
         d = {}
@@ -265,26 +271,7 @@ class TermResolver(BaseModel, frozen=True):
                 d[t] = v
         return d
 
-    def add_edges(self, g: nx.DiGraph, sentences: Iterable[str]) -> None:
-        """文とそこに埋めこられた用語を関係付ける."""
-        for s in sentences:
-            d = self(s)
-            td = self.mark2term(d)
-            _add_resolve_edge(g, s, td)
-
-
-def _add_resolve_edge(g: nx.DiGraph, start: str, termd: dict) -> None:
-    """(start)-[RESOLVE]->(marked sentence)."""
-    for k, v in termd.items():
-        ls = list(EdgeType.DEF.succ(g, k))
-        if len(ls) == 0:
-            continue
-        s = ls[0]  # 文
-        EdgeType.RESOLVED.add_edge(g, start, s)  # 文 -> 文
-        if any(v):  # 空でない
-            _add_resolve_edge(g, str(s), v)
-
-
-def resolve_sentence(g: nx.DiGraph, s: str) -> dict:
-    """解決済み入れ子文を取得."""
-    return to_nested(g, s, EdgeType.RESOLVED.succ)
+    def resolve_term(self, t: Term) -> dict[Term, str | dict]:
+        """用語を用語解決."""
+        marks = [k for k, v in self.lookup.items() if v == t]
+        return {m: to_nested(self.g, m, lambda g, n: g.successors(n)) for m in marks}

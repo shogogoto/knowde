@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from functools import cache
-from typing import Self, TypeAlias
+from typing import Final, Self, TypeAlias
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
@@ -52,11 +52,18 @@ class Duplicable(BaseModel, frozen=True):
     def __eq__(self, other: Self) -> bool:  # noqa: D105
         return str(self) == str(other)
 
+    def __repr__(self) -> str:
+        """Class representation."""
+        return f"Dupl({self})"
+
+
+DUMMY_SENTENCE: Final = "<<<not defined>>>"
+
 
 class DummySentence(Duplicable, frozen=True):
     """Termのみの場合に擬似的に定義とみなすための空文字列."""
 
-    n: str = "<<<not defined>>>"
+    n: str = DUMMY_SENTENCE
 
 
 SysNode: TypeAlias = Term | str | Duplicable
