@@ -196,7 +196,6 @@ class MergedTerms(BaseModel, frozen=True):
         while True:
             _next, diff = next_lookup(lookup, self.frozen)
             for t in _next.values():
-                # print(t, type(t))
                 for n in t.names:
                     marks = pick_marks(n)
                     atom = replace_markers(n, *marks)
@@ -240,7 +239,7 @@ class TermResolver(BaseModel, frozen=True):
     g: NXGraph  # mark network
     lookup: dict[str, Term]  # {name: Term}辞書
 
-    def __call__(self, s: str) -> dict:
+    def __call__(self, s: str) -> dict[str, str | dict]:
         """任意の文字列を用語解決.
 
         Return:
@@ -272,5 +271,7 @@ class TermResolver(BaseModel, frozen=True):
                 d[t] = v
         return d
 
-    def resolve_term(self, t: Term) -> None:
+    def resolve_term(self, t: Term) -> dict[Term, str | dict]:
         """用語を用語解決."""
+        marks = [k for k, v in self.lookup.items() if v == t]
+        return {m: to_nested(self.g, m, lambda g, n: g.successors(n)) for m in marks}

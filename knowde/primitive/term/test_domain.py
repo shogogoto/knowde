@@ -184,5 +184,4 @@ def test_resolve_term() -> None:
     t5 = Term.create("D{BA}")
     t6 = Term.create("E{DBA}")
     resolver = MergedTerms().add(t1, t2, t3, t4, t5, t6).to_resolver()
-
-    resolver.resolve_term(t3)
+    assert resolver.resolve_term(t6) == {"EDBA": {"DBA": {"BA": {"A": {}}}}}
