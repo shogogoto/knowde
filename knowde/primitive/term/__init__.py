@@ -3,13 +3,13 @@ from __future__ import annotations
 
 from collections import Counter
 from functools import cached_property
-from typing import AbstractSet, Iterable, NoReturn, Self
+from typing import AbstractSet, NoReturn, Self
 
 import networkx as nx
 from pydantic import BaseModel, Field, PrivateAttr, field_validator
 
 from knowde.primitive.__core__.dupchk import DuplicationChecker
-from knowde.primitive.__core__.nxutil import EdgeType, to_nested
+from knowde.primitive.__core__.nxutil import to_nested
 from knowde.primitive.__core__.types import NXGraph
 
 from .errors import (
@@ -230,7 +230,7 @@ def next_lookup(
 class TermResolver(BaseModel, frozen=True):
     """用語解決器."""
 
-    g: NXGraph
+    g: NXGraph  # mark network
     lookup: dict[str, Term]  # {name: Term}辞書
 
     def __call__(self, s: str) -> dict:
@@ -248,12 +248,12 @@ class TermResolver(BaseModel, frozen=True):
                 raise MarkUncontainedError(msg)
         return {m: to_nested(self.g, m, lambda g, n: g.successors(n)) for m in marks}
 
-    def mark2term(self, md: dict) -> dict:
+    def mark2term(self, md: dict) -> dict[Term, dict]:
         """markに対応する用語に変換する.
 
         Return:
         ------
-            {term: {term:{...:{}}}}
+            {Term: {Term:{...:{}}}}
 
         """
         d = {}
@@ -264,27 +264,3 @@ class TermResolver(BaseModel, frozen=True):
             else:
                 d[t] = v
         return d
-
-    def add_edges(self, g: nx.DiGraph, sentences: Iterable[str]) -> None:
-        """文とそこに埋めこられた用語を関係付ける."""
-        for s in sentences:
-            d = self(s)
-            td = self.mark2term(d)
-            _add_resolve_edge(g, s, td)
-
-
-def _add_resolve_edge(g: nx.DiGraph, start: str, termd: dict) -> None:
-    """(start)-[RESOLVE]->(marked sentence)."""
-    for k, v in termd.items():
-        ls = list(EdgeType.DEF.succ(g, k))
-        if len(ls) == 0:
-            continue
-        s = ls[0]  # 文
-        EdgeType.RESOLVED.add_edge(g, start, s)  # 文 -> 文
-        if any(v):  # 空でない
-            _add_resolve_edge(g, str(s), v)
-
-
-def resolve_sentence(g: nx.DiGraph, s: str) -> dict:
-    """解決済み入れ子文を取得."""
-    return to_nested(g, s, EdgeType.RESOLVED.succ)

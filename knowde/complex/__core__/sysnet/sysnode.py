@@ -52,6 +52,10 @@ class Duplicable(BaseModel, frozen=True):
     def __eq__(self, other: Self) -> bool:  # noqa: D105
         return str(self) == str(other)
 
+    def __repr__(self) -> str:
+        """Class representation."""
+        return f"Dupl({self})"
+
 
 DUMMY_SENTENCE: Final = "<<<not defined>>>"
 
