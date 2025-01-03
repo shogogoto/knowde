@@ -1,7 +1,7 @@
 """1network 1nodeを引数にする関数."""
 from __future__ import annotations
 
-from typing import Hashable
+from typing import Final, Hashable
 
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.sysnet.sysnode import SysArg, SysNode
@@ -10,7 +10,7 @@ from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.heading import get_headings
 
 
-def get_details(sn: SysNet, n: Hashable) -> list[SysNode]:
+def get_details(sn: SysNet, n: Hashable) -> list[list[SysNode]]:
     """詳細な記述."""
     vals = []
     for below_s in EdgeType.BELOW.succ(sn.g, n):
@@ -32,3 +32,23 @@ def get_parent_or_none(sn: SysNet, n: SysArg) -> SysNode | None:
     if parent[0] in get_headings(sn.g, sn.root):
         return None
     return parent[0]
+
+
+# 依存性関連エッジ
+DEP_EDGE_TYPES: Final = [
+    EdgeType.TO,
+    EdgeType.EXAMPLE,
+    EdgeType.SIMILAR,
+    EdgeType.ANTI,
+]
+
+
+def has_dependency(sn: SysNet, n: SysArg) -> bool:
+    """意味的に重要なエッジを持つ."""
+    _in = sn.g.in_edges(n, data=True)
+    _out = sn.g.out_edges(n, data=True)
+
+    for _, _, attr in _in:
+        if attr["type"] in DEP_EDGE_TYPES:
+            return True
+    return any(attr["type"] in DEP_EDGE_TYPES for _, v, attr in _out)
