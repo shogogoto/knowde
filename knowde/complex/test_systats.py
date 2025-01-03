@@ -3,10 +3,10 @@
 
 import pytest
 
+from knowde.complex.__core__.tree2net import parse2net
 from knowde.complex.system.systats import (
     get_isolation,
 )
-from knowde.complex.tree2net import parse2net
 
 
 def test_get_isolation() -> None:

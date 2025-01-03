@@ -1,5 +1,5 @@
 """test duplicable."""
-from knowde.complex.tree2net import parse2net
+from knowde.complex.__core__.tree2net import parse2net
 
 
 def test_duplicable() -> None:

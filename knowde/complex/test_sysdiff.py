@@ -1,13 +1,13 @@
 """系の差分."""
 
 
+from knowde.complex.__core__.tree2net import parse2net
 from knowde.complex.system.sysdiff import (
     SysNodeDiff,
     edgediff,
     identify_sentence,
     identify_term,
 )
-from knowde.complex.tree2net import parse2net
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.term import Term
 

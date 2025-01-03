@@ -4,7 +4,7 @@
 import pytest
 
 from knowde.complex.__core__.sysnet.errors import DefSentenceConflictError
-from knowde.complex.tree2net import parse2net
+from knowde.complex.__core__.tree2net import parse2net
 from knowde.primitive.__core__.nxutil import EdgeType, to_nested
 from knowde.primitive.heading import get_heading_path, get_headings
 
