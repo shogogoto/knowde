@@ -10,7 +10,6 @@ import networkx as nx
 from lark import Token
 from pydantic import BaseModel, PrivateAttr
 
-from knowde.complex.__core__.sysnet.term_resolve import add_resolve_edge
 from knowde.primitive.__core__.nxutil import (
     Direction,
     EdgeType,
@@ -143,12 +142,19 @@ class SysNet(BaseModel, frozen=True):
         return MergedTerms().add(*self.terms).to_resolver()
 
     def add_resolved_edges(self) -> None:
-        """事前の全用語解決."""
+        """termとsentenceの依存関係エッジをsentence同士で張る."""
         r = self.resolver
         for s in self.sentences:
-            d = r(s)
-            termd = r.mark2term(d)
-            add_resolve_edge(self._g, s, termd)
+            stc_resolved = r(s)
+            termd = r.mark2term(stc_resolved)
+            got = self.get(s)
+            if isinstance(got, Def):
+                t_resolved = r.mark2term(r.resolve_term(got.term))[got.term]
+                termd.update(t_resolved)
+            for t in termd:
+                n = self.get(t)
+                if isinstance(n, Def):
+                    EdgeType.RESOLVED.add_edge(self.g, s, n.sentence)
         # self._g = nx.freeze(self._g)
         self._is_resolved = True
 

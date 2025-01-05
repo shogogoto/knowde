@@ -1,6 +1,31 @@
 """用語関連."""
 
 
+from knowde.complex.__core__.tree2net import parse2net
+
+
+def test_add_resolved_edge() -> None:
+    """parse2net版."""
+    _s = r"""
+        # h1
+            A: df
+            B: b{A}b
+            C{B}: ccc
+            D: d{CB}d
+        ## h2
+            P{D}: ppp
+            Q: qqq
+            X:
+    """
+    sn = parse2net(_s)
+    assert sn.get_resolved("df") == {}
+    assert sn.get_resolved("b{A}b") == {"df": {}}
+    assert sn.get_resolved("ccc") == {"b{A}b": {"df": {}}}
+    assert sn.get_resolved("d{CB}d") == {"ccc": {"b{A}b": {"df": {}}}}
+    assert sn.get_resolved("ppp") == {"d{CB}d": {"ccc": {"b{A}b": {"df": {}}}}}
+    assert sn.get_resolved("qqq") == {}
+
+
 # def test_duplicate_term() -> None:
 #     """用語の重複は弾く."""
 #     _s = r"""

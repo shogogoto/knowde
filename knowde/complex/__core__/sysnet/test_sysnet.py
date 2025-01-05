@@ -16,10 +16,10 @@ def test_setup_term() -> None:
     sn.add(
         EdgeType.SIBLING,
         "h1",
-        Def.create("df", ["A"]),
-        Def.create("b{A}b", ["B"]),
-        Def.create("ccc", ["C{B}"]),
-        Def.create("d{CB}d", ["D"]),
+        Def.create("df", ["A"]),  # term, sentence 0 0
+        Def.create("b{A}b", ["B"]),  # 0 1
+        Def.create("ccc", ["C{B}"]),  # 1 0
+        Def.create("d{CB}d", ["D"]),  # 2 0
     )
     sn.add(
         EdgeType.SIBLING,
@@ -33,7 +33,7 @@ def test_setup_term() -> None:
     assert sn.get_resolved("b{A}b") == {"df": {}}
     assert sn.get_resolved("ccc") == {"b{A}b": {"df": {}}}
     assert sn.get_resolved("d{CB}d") == {"ccc": {"b{A}b": {"df": {}}}}
-    assert sn.get_resolved("ppp") == {}
+    assert sn.get_resolved("ppp") == {"d{CB}d": {"ccc": {"b{A}b": {"df": {}}}}}
     assert sn.get_resolved("qqq") == {}
 
 
