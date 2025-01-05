@@ -9,12 +9,13 @@ import networkx as nx
 from more_itertools import flatten
 
 from knowde.complex.__core__.sysnet import SysNet
-from knowde.complex.__core__.sysnet.sysnode import Duplicable
+from knowde.complex.__core__.sysnet.sysnode import Duplicable, SysArg
 from knowde.complex.systats.nw1_n1 import (
     get_details,
     get_parent_or_none,
     has_dependency,
 )
+from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.term import Term
 
 """
@@ -27,10 +28,6 @@ axioms数
 """
 
 Systats: TypeAlias = Callable[[SysNet], int]
-
-
-def n_node(sn: SysNet) -> int:  # noqa: D103
-    return len(sn.g.nodes)
 
 
 def n_edge(sn: SysNet) -> int:  # noqa: D103
@@ -83,10 +80,6 @@ def get_isolation(sn: SysNet) -> list[Hashable]:
         details = list(flatten(get_details(sn, n)))
         if len(details) > 0:
             return False
-        # d = sn.get(n)
-        # if isinstance(d, Def):
-        #     print("isinstance def::", n)
-        #     print(sn.get_resolved(n))
         return not has_dependency(sn, n)
 
     sub = nx.subgraph_view(
@@ -96,33 +89,45 @@ def get_isolation(sn: SysNet) -> list[Hashable]:
     return list(sub.nodes)
 
 
-def n_axiom(_sn: SysNet) -> int:
-    """出発点となるDef or sentence."""
-    # axiom_paths()
-    return 0
-    # to_sub = filter_edge_attr(sn.g, "type", EdgeType.TO)
-    # below_sub = filter_edge_attr(sn.g, "type", EdgeType.TO)
-    # print(to_sub)
-    # for _s in sn.sentences:
-    #     pass
-    # a_sibs = get_axioms(sn.g, EdgeType.BELOW)
-    # parents = [(s, list(EdgeType.BELOW.pred(sn.g, s))) for s in a_sibs]
-    # a = [p[0] for p in parents if p[1][0] in get_headings(sn.g, sn.root)]
-    # print(a_sibs)
+def get_axiom_to(sn: SysNet) -> list[Hashable]:
+    """TOの出発点となるDef or sentence."""
 
-    # print(a)
+    def filter_axiom(n: Hashable) -> bool:
+        """parentもなく、詳細もなく、TOなどの関係もない."""
+        if n not in sn.sentences:
+            return False
+        has_to = len(list(EdgeType.TO.succ(sn.g, n))) > 0
+        has_from = len(list(EdgeType.TO.pred(sn.g, n))) == 0
+        return has_to and has_from
 
-    # def _f(u: Hashable, v: Hashable, attr: dict) -> bool:
-    #     return g[u][v][attr]["type"] in types
+    sub = nx.subgraph_view(
+        sn.g,
+        filter_node=filter_axiom,  # 見出し削除
+    )
+    return list(sub.nodes)
 
-    # sub: nx.MultiDiGraph = nx.subgraph_view(g, filter_edge=_f)
+
+def get_axiom_resolved(sn: SysNet) -> list[SysArg]:
+    """RESOVEDの出発点."""
+
+    def filter_axiom(n: Hashable) -> bool:
+        """parentもなく、詳細もなく、TOなどの関係もない."""
+        if n not in sn.sentences:
+            return False
+        has_refer = len(list(EdgeType.RESOLVED.pred(sn.g, n))) > 0
+        has_referred = len(list(EdgeType.RESOLVED.succ(sn.g, n))) == 0
+        return has_refer and has_referred
+
+    sub = nx.subgraph_view(
+        sn.g,
+        filter_node=filter_axiom,  # 見出し削除
+    )
+    return [sn.get(n) for n in sub.nodes]
 
 
 def get_systats(sn: SysNet) -> dict[str, int]:
     """系の統計情報."""
-    # print(get_isolation(sn))
     return {
-        "n_node": n_node(sn),
         "n_edge": n_edge(sn),
         "n_term": n_term(sn),
         "n_sentence": n_sentence(sn),
