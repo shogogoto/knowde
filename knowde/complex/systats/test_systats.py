@@ -28,9 +28,7 @@ def test_get_isolation() -> None:
 
     """
     _sn = parse2net(_s)
-    _sn.add_resolved_edges()
-    _sn.replace_quoterms()
-    assert get_isolation(_sn) == ["aaa", "fff", "ggg"]
+    assert get_isolation(_sn) == ["aaa", "fff"]
 
 
 @pytest.mark.skip()
@@ -38,8 +36,8 @@ def test_n_nodes() -> None:
     """node数."""
     _s = r"""
         # h1
-            aaa
-            B: bbb
+            A: aaa
+            B: bbb{A}
                 B1: bbb1
                 bbb2
                 bbb3
@@ -51,11 +49,13 @@ def test_n_nodes() -> None:
             fff
             G{B}: ggg
     """
-    _sn = parse2net(_s)
-    _sn.add_resolved_edges()
-    _sn.replace_quoterms()
+    # print("#" * 80)
+    sn = parse2net(_s)
+
+    # print(to_nested(sn.g, "ggg", EdgeType.RESOLVED.succ))
+    # print(to_nested(sn.g, "ggg", EdgeType.RESOLVED.pred))
+    # nxprint(sn.g, True)
+    assert sn.get_resolved("ggg") == {"bbb": {}}
+    # nxprint(_sn.g, True)
     # print("#" * 80)
     # print(get_systats(_sn))
-    # print(n_axiom(_sn))
-
-    # nxprint(_sn.g, True)

@@ -83,6 +83,10 @@ def get_isolation(sn: SysNet) -> list[Hashable]:
         details = list(flatten(get_details(sn, n)))
         if len(details) > 0:
             return False
+        # d = sn.get(n)
+        # if isinstance(d, Def):
+        #     print("isinstance def::", n)
+        #     print(sn.get_resolved(n))
         return not has_dependency(sn, n)
 
     sub = nx.subgraph_view(
@@ -94,6 +98,7 @@ def get_isolation(sn: SysNet) -> list[Hashable]:
 
 def n_axiom(_sn: SysNet) -> int:
     """出発点となるDef or sentence."""
+    # axiom_paths()
     return 0
     # to_sub = filter_edge_attr(sn.g, "type", EdgeType.TO)
     # below_sub = filter_edge_attr(sn.g, "type", EdgeType.TO)
@@ -115,10 +120,12 @@ def n_axiom(_sn: SysNet) -> int:
 
 def get_systats(sn: SysNet) -> dict[str, int]:
     """系の統計情報."""
+    # print(get_isolation(sn))
     return {
         "n_node": n_node(sn),
         "n_edge": n_edge(sn),
         "n_term": n_term(sn),
         "n_sentence": n_sentence(sn),
         "n_char": n_char(sn),
+        "n_isolation": len(get_isolation(sn)),
     }
