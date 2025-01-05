@@ -26,7 +26,8 @@ class TSysArg(Transformer):
 
     ANTONYM = lambda _, _tok: EdgeType.ANTI.both  # noqa: E731
     SIMILAR = lambda _, _tok: EdgeType.SIMILAR.both  # noqa: E731
-    DUPLICABLE = lambda _, _tok: Duplicable(n=_tok)  # noqa: E731
+    DUPLICABLE = lambda _, _tok: Duplicable(n=_tok.strip())  # noqa: E731
+    QUOTERM = lambda _, _tok: Token(type=_tok.type, value=_tok.strip())  # noqa: E731
 
     def ONELINE(self, tok: Token) -> SysArg:  # noqa: N802 D102
         v = "".join(tok.split("   "))  # 適当な\nに対応する空白

@@ -2,7 +2,7 @@
 from pydantic import BaseModel, PrivateAttr
 
 from knowde.complex.__core__.sysnet.errors import sentence_dup_checker
-from knowde.complex.__core__.sysnet.sysnode import Def, SysArg
+from knowde.complex.__core__.sysnet.sysnode import Def, Duplicable, SysArg
 from knowde.primitive.__core__.dupchk import DuplicationChecker
 from knowde.primitive.term import Term, term_dup_checker
 
@@ -23,6 +23,8 @@ class SysArgDupChecker(BaseModel):
                 self._s_chk(n.sentence)
             case str():
                 self._s_chk(n)
+            case Duplicable():
+                pass
             case _:
                 msg = f"{type(n)} must be Term or str or Def Type."
                 raise TypeError(msg, n)
