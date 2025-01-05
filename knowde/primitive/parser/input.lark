@@ -21,16 +21,16 @@ H5: "#####" HEAD
 H6: "######" HEAD
 
 ?block: stmt [_INDENT (block)+ _DEDENT]
-?stmt: (line|ctxline|COMMENT _NL)
+?stmt:  (line|ctxline|COMMENT _NL)
 ?line: (ONELINE|QUOTERM|DUPLICABLE) _NL
 ctxline: ctype block
 
 ANY: /[^\n]+/
 COMMENT.1: "!" ANY
 
-QUOTERM: "`" ANY "`"
 ONELINE: ANY
-DUPLICABLE: "+++" ANY "+++"
+QUOTERM: /[ \t]/* "`" ANY "`"
+DUPLICABLE: /[ \t]/* "+++" ANY "+++"
 
 // 文脈
 ?ctype.2: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM|SIMILAR|BY|WHEN|WHERE)

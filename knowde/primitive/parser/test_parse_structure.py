@@ -135,9 +135,10 @@ def test_parser_quoterm() -> None:
     _s = r"""
         # 1
             `ctx`
-                -> `b1`
-                    -> `bb1`
+                ->`b1`
+                    ->`bb1`
                     -> bb2
+                    -> +++dup+++
     """
     _t = parse2tree(_s)
 
