@@ -15,15 +15,12 @@ def try_parse2net(s: str) -> SysNet:
     """エラーを握りつぶしたパース."""
     try:
         return parse2net(s)
-    except LarkError as e:
-        print(e)  # noqa: T201
-    except ParserError as e:
-        print(e)  # noqa: T201
-    except TermError as e:
-        print(e)  # noqa: T201
-    except InterpreterError as e:
-        print(e)  # noqa: T201
-    except MultiEdgesError as e:
-        print(e)  # noqa: T201
+    except (
+        LarkError,
+        ParserError,
+        TermError,
+        InterpreterError,
+        MultiEdgesError,
+    ) as e:
+        print(f"{type(e).__name__}:", e)  # noqa: T201
     sys.exit(1)
-    return None

@@ -250,7 +250,7 @@ class TermResolver(BaseModel, frozen=True):
         marks = pick_marks(s)
         for m in marks:
             if m not in self.g:
-                msg = f"'{m}'は用語として存在しません at {s}"
+                msg = f"'{m}'は用語として存在しません at '{s}'"
                 raise MarkUncontainedError(msg)
         return {m: to_nested(self.g, m, lambda g, n: g.successors(n)) for m in marks}
 
@@ -271,7 +271,7 @@ class TermResolver(BaseModel, frozen=True):
                 d[t] = v
         return d
 
-    def resolve_term(self, t: Term) -> dict[Term, str | dict]:
+    def resolve_term(self, t: Term) -> dict[str, str | dict]:
         """用語を用語解決."""
         marks = [k for k, v in self.lookup.items() if v == t]
         return {m: to_nested(self.g, m, lambda g, n: g.successors(n)) for m in marks}

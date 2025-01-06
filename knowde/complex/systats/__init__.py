@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import operator
+from enum import Enum
 from functools import reduce
 from typing import Callable, Hashable, TypeAlias
 
@@ -18,28 +19,60 @@ from knowde.complex.systats.nw1_n1 import (
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.term import Term
 
-"""
-node数
-edge数
-term数
-sentences数
-axioms数
-字数
-"""
-
-Systats: TypeAlias = Callable[[SysNet], int]
+SystatsFn: TypeAlias = Callable[[SysNet], int]
+SystatsRatioFn: TypeAlias = Callable[[SysNet], float]
 
 
-def n_edge(sn: SysNet) -> int:  # noqa: D103
-    return len(sn.g.edges)
+class Systats(Enum):
+    """統計情報の構成要素."""
+
+    EDGE = ("edge", lambda sn: len(sn.g.edges))
+    TERM = ("term", lambda sn: len(sn.terms))
+    SENTENCE = ("sentence", lambda sn: len(sn.sentences))
+    CHAR = ("char", lambda sn: n_char(sn))
+    ISOLATION = ("isolation", lambda sn: len(get_isolation(sn)))
+    AXIOM = ("axiom", lambda sn: len(get_axiom_to(sn)))
+    TERM_AXIOM = ("term_axiom", lambda sn: len(get_axiom_resolved(sn)))
+
+    label: str
+    fn: SystatsFn
+
+    def __init__(self, label: str, fn: SystatsFn) -> None:
+        """For merge."""
+        self.label = label
+        self.fn = fn
 
 
-def n_term(sn: SysNet) -> int:  # noqa: D103
-    return len(sn.terms)
+class UnificationRatio(Enum):
+    """1系の統合化(まとまり具体)指標.
+
+    Systatsの組み合わせ
+    """
+
+    ISOLATION = (
+        "isoration_ratio",
+        lambda sn: Systats.ISOLATION.fn(sn) / Systats.SENTENCE.fn(sn),
+    )
+    TERM = (
+        "axiom_term_ratio",
+        lambda sn: Systats.TERM_AXIOM.fn(sn) / Systats.TERM.fn(sn),
+    )
+    AXIOM = (
+        "axiom_ratio",
+        lambda sn: Systats.AXIOM.fn(sn) / Systats.SENTENCE.fn(sn),
+    )
+
+    label: str
+    fn: SystatsRatioFn
+
+    def __init__(self, label: str, fn: SystatsRatioFn) -> None:
+        """For merge."""
+        self.label = label
+        self.fn = lambda sn: round(fn(sn), 3)
 
 
-def n_sentence(sn: SysNet) -> int:  # noqa: D103
-    return len(sn.sentences)
+# def get_systats_ratio(sn: SysNet) -> dict:
+#     """1系統計からの比率比率."""
 
 
 def n_char(sn: SysNet) -> int:  # noqa: D103
@@ -56,18 +89,11 @@ def n_char(sn: SysNet) -> int:  # noqa: D103
     return c
 
 
-def n_isolation(_sn: SysNet) -> int:
-    """孤立したnode."""
-
-
 def get_isolation(sn: SysNet) -> list[Hashable]:
     """孤立したノード.
 
     SIBLINGは無視 <=> parentを持たない
-    HEADも無視
-    見出しとの関連も無視
-    BELOW関係(詳細)を持たない
-    TOを持たない
+    HEAD、TO、RESOLVEDも無視
     """
 
     def include_isolation_node(n: Hashable) -> bool:
@@ -108,7 +134,7 @@ def get_axiom_to(sn: SysNet) -> list[Hashable]:
 
 
 def get_axiom_resolved(sn: SysNet) -> list[SysArg]:
-    """RESOVEDの出発点."""
+    """RESOLVEDの出発点."""
 
     def filter_axiom(n: Hashable) -> bool:
         """parentもなく、詳細もなく、TOなどの関係もない."""
@@ -123,14 +149,3 @@ def get_axiom_resolved(sn: SysNet) -> list[SysArg]:
         filter_node=filter_axiom,  # 見出し削除
     )
     return [sn.get(n) for n in sub.nodes]
-
-
-def get_systats(sn: SysNet) -> dict[str, int]:
-    """系の統計情報."""
-    return {
-        "n_edge": n_edge(sn),
-        "n_term": n_term(sn),
-        "n_sentence": n_sentence(sn),
-        "n_char": n_char(sn),
-        "n_isolation": len(get_isolation(sn)),
-    }
