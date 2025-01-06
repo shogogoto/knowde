@@ -45,7 +45,7 @@ enable = true
 vcs = "git"
 
 [tool.poetry-dynamic-versioning.substitution]
-files = ["knowde/cli.py"]
+files = ["knowde/feature/cli.py"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
@@ -57,9 +57,9 @@ ptw        = "ptw -- -v -s --durations=0 --ff" # ispytest-watch
 lint       = "ruff check ."
 lintfix    = "ruff . --fix"
 pre-commit = "pre-commit install"
-dev        = "fastapi dev knowde/api.py --reload --host 0.0.0.0"
+dev        = "fastapi dev knowde/feature/api.py --reload --host 0.0.0.0"
 # serve      = "uvicorn knowde:api --reload --host 0.0.0.0 --port 8000"
-serve      = "fastapi run knowde/api.py"
+serve      = "fastapi run knowde/feature/api.py"
 
 [tool.ruff]
 select = ["ALL"]

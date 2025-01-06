@@ -8,5 +8,5 @@ E2E機能を意識せずにprimitiveなどの部品群を作り始めたのが
   混乱と行き先の不透明さ、やる気の低下の原因では?
 /featureの各ディレクトリ直下のテストはe2eテスト
 """
-
-from .parser import parse_cmd  # noqa: F401
+# ruff: noqa
+from .cli import cli
