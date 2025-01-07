@@ -111,7 +111,7 @@ def test_merge_term() -> None:
     assert len(s) == 2  # noqa: PLR2004
 
 
-def test_lookup() -> None:
+def test_next_lookup() -> None:
     """参照."""
     mt = MergedTerms()
     t1 = Term.create("A", alias="a")
@@ -161,7 +161,7 @@ def test_resolve() -> None:
     t5 = Term.create("D{BA}")
     t6 = Term.create("E{DBA}")
     resolver = MergedTerms().add(t1, t2, t3, t4, t5, t6).to_resolver()
-    d = resolver("aaa{EDBA}a{CA1}aaa")
+    d = resolver.sentence2marktree("aaa{EDBA}a{CA1}aaa")
     assert d == {
         "EDBA": {"DBA": {"BA": {"A": {}}}},
         "CA1": {"A1": {}},
@@ -172,7 +172,7 @@ def test_resolve() -> None:
     }
 
     with pytest.raises(MarkUncontainedError):
-        resolver("x{uncontained}x")
+        resolver.sentence2marktree("x{uncontained}x")
 
 
 def test_resolve_term() -> None:
@@ -184,4 +184,4 @@ def test_resolve_term() -> None:
     t5 = Term.create("D{BA}")
     t6 = Term.create("E{DBA}")
     resolver = MergedTerms().add(t1, t2, t3, t4, t5, t6).to_resolver()
-    assert resolver.resolve_term(t6) == {"EDBA": {"DBA": {"BA": {"A": {}}}}}
+    assert resolver.term2marktree(t6) == {"EDBA": {"DBA": {"BA": {"A": {}}}}}

@@ -100,7 +100,7 @@ class Term(BaseModel, frozen=True):
     @property
     def has_only_alias(self) -> bool:
         """aliasのみ."""
-        return self.alias and len(self.names) == 0
+        return self.alias is not None and len(self.names) == 0
 
     def merge(self, other: Term) -> Term:
         """名前を併せた用語へ."""
@@ -120,6 +120,18 @@ class Term(BaseModel, frozen=True):
         if len(self.names) == 0:
             return False
         return any(contains_mark_symbol(n) for n in self.names)
+
+    @property
+    def marktree(self) -> nx.DiGraph:
+        """マークを全て返す."""
+        g = nx.DiGraph()
+        for n in self.names:
+            marks = pick_marks(n)
+            atom = replace_markers(n, *marks)
+            g.add_node(atom)
+            for m in marks:
+                g.add_edge(atom, m)
+        return g
 
 
 def term_dup_checker() -> DuplicationChecker:
@@ -184,11 +196,16 @@ class MergedTerms(BaseModel, frozen=True):
         return d
 
     @cached_property
+    def no_referred(self) -> frozenset[Term]:
+        """参照{を含まない用語}."""
+        return frozenset({t for t in self.terms if not t.has_mark()})
+
+    @cached_property
     def frozen(self) -> frozenset[Term]:
         """Frozen merged terms."""
         return frozenset(self.terms)
 
-    def to_resolver(self) -> TermResolver:
+    def to_resolver(self) -> MarkResolver:
         """用語ネットワーク作成."""
         g = nx.DiGraph()
         lookup = self.atoms
@@ -201,6 +218,8 @@ class MergedTerms(BaseModel, frozen=True):
                     atom = replace_markers(n, *marks)
                     for m in marks:
                         g.add_edge(atom, m)
+                if t.alias:  # g.successorsでエラーでないように
+                    g.add_node(t.alias)
             d = {**lookup, **_next}
             if lookup == d:
                 n_diff = len(diff)
@@ -209,12 +228,10 @@ class MergedTerms(BaseModel, frozen=True):
         if n_diff > 0:
             msg = f"{set(diff)}が用語解決できませんでした"
             raise TermResolveError(msg)
-        return TermResolver(g=g, lookup=lookup)
+        return MarkResolver(g=g, lookup=lookup)
 
 
-# lookup {name: Term}辞書
-#  nameに引用がある
-#  nameに引用がない
+# lookup {name|alias: Term}辞書
 def next_lookup(
     lookup: dict[str, Term],
     terms: AbstractSet[Term],
@@ -233,14 +250,14 @@ def next_lookup(
     return d, diff
 
 
-class TermResolver(BaseModel, frozen=True):
-    """用語解決器."""
+class MarkResolver(BaseModel, frozen=True):
+    """mark解決器."""
 
     g: NXGraph  # mark network
-    lookup: dict[str, Term]  # {name: Term}辞書
+    lookup: dict[str, Term]  # {mark: Term}辞書
 
-    def __call__(self, s: str) -> dict[str, str | dict]:
-        """任意の文字列を用語解決.
+    def sentence2marktree(self, s: str) -> dict[str, str | dict]:
+        """任意の文字列を用語解決 mark dict tree.
 
         Return:
         ------
@@ -271,7 +288,7 @@ class TermResolver(BaseModel, frozen=True):
                 d[t] = v
         return d
 
-    def resolve_term(self, t: Term) -> dict[str, str | dict]:
+    def term2marktree(self, t: Term) -> dict[str, str | dict]:
         """用語を用語解決."""
         marks = [k for k, v in self.lookup.items() if v == t]
         return {m: to_nested(self.g, m, lambda g, n: g.successors(n)) for m in marks}

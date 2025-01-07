@@ -1,8 +1,12 @@
 """test."""
+import pytest
+
 from knowde.primitive.term import MergedTerms, Term
+from knowde.primitive.term.errors import MarkUncontainedError
 from knowde.primitive.term.termdiff import (
     get_lookup,
     get_refer_terms,
+    to_lookup,
 )
 
 
@@ -41,7 +45,7 @@ def test_lookup_refactored() -> None:
     assert get_lookup(r3) == {}
 
 
-def test_vacuous_refer() -> None:
+def test_no_refer() -> None:
     """."""
     mt = MergedTerms()
     t1 = Term.create("Y{X}", alias="not_exist")  # 参照がない場合
@@ -68,4 +72,48 @@ def test_vacuous_refer() -> None:
     # 残る
     assert s - rd2 == {t1}
 
-    # to_markterm_graph(s)
+
+def test_to_lookup() -> None:
+    """markの依存関係."""
+    t1 = Term.create("A", alias="a")
+    t2 = Term.create("A1", "A2")
+    t3 = Term.create("B{A}")
+    t4 = Term.create("C{A1}")
+    t5 = Term.create("D{BA}")
+    t6 = Term.create("E{DBA}")
+    # ex = Term.create("X{Y}")
+    mt = MergedTerms().add(t1, t2, t3, t4, t5, t6)
+    # ╟── a
+    # ╟── A2
+    # ╟── CA1
+    # ╎   └─╼ A1
+    # ╙── EDBA
+    #    └─╼ DBA
+    #        └─╼ BA
+    #            └─╼ A
+    assert to_lookup(mt.frozen) == {
+        "a": t1,
+        "A": t1,
+        "A2": t2,
+        "A1": t2,
+        "BA": t3,
+        "CA1": t4,
+        "DBA": t5,
+        "EDBA": t6,
+    }
+
+
+def test_to_lookup_with_unmarked() -> None:
+    """参照が存在しない."""
+    t1 = Term.create("A", alias="a")
+    t2 = Term.create("A1", "A2")
+    t3 = Term.create("B{A}")
+    ex = Term.create("X{Y}")
+    mt = MergedTerms().add(ex)
+    with pytest.raises(MarkUncontainedError):
+        to_lookup(mt.frozen)
+
+    ex = Term.create("X{Y}")
+    mt2 = MergedTerms().add(t1, t2, t3, ex)
+    with pytest.raises(MarkUncontainedError):
+        to_lookup(mt2.frozen)

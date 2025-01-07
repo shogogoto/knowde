@@ -181,3 +181,27 @@ def test_non_dupedge() -> None:
                 when. 1794 ~ 1866
     """
     _sn = parse2net(_s)
+
+
+def test_alias_resolve_error() -> None:
+    """エラー再現(alias引用でMarkUncontainedError)."""
+    _s = """
+    # x
+        アリストテレス:
+        AU |{アリストテレス}の宇宙: 月より内側が変化する世界、外側は不可侵の永久不変領域
+          <-> ケプラーの超新星: 急に現れて天文学者たちを驚かせた
+            when. 1604/10/9 ~
+            ガリレオは視差が月より小さいことより{ケプラーの超新星}が月の外側にあると証明
+              {AU}が誤りであることを決定づけた
+          <-> ティコの超新星: {AU}の最初の反証
+            when. 1572
+            by. ティコ・ブラーエ, ティコ: デンマークの天文学者
+              when. 1546 ~ 1601
+    """
+    _sn = parse2net(_s)
+
+    # pp(sn.resolver.lookup)
+    # nxprint(sn.resolver.g)
+
+    # print("#" * 80)
+    # print(sn.get_resolved("{ティコの超新星}が誤りであることを決定づけた"))

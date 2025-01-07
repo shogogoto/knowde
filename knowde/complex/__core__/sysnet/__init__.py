@@ -19,9 +19,9 @@ from knowde.primitive.__core__.nxutil import (
 from knowde.primitive.__core__.types import NXGraph
 from knowde.primitive.heading import get_headings
 from knowde.primitive.term import (
+    MarkResolver,
     MergedTerms,
     Term,
-    TermResolver,
 )
 
 from .adder import add_def
@@ -138,22 +138,23 @@ class SysNet(BaseModel, frozen=True):
 
     ################################################# 用語解決
     @cached_property
-    def resolver(self) -> TermResolver:  # noqa: D102
+    def resolver(self) -> MarkResolver:  # noqa: D102
         return MergedTerms().add(*self.terms).to_resolver()
 
     def add_resolved_edges(self) -> None:
         """termとsentenceの依存関係エッジをsentence同士で張る."""
         r = self.resolver
         for s in self.sentences:
-            stc_resolved = r(s)
-            termd = r.mark2term(stc_resolved)
+            mt = r.sentence2marktree(s)  # sentenceからmark tree
+            termtree = r.mark2term(mt)  # 文のmark解決
             got = self.get(s)
-            if isinstance(got, Def):
-                t_resolved = r.mark2term(r.resolve_term(got.term))[got.term]
-                termd.update(t_resolved)
-            for t in termd:
+            if isinstance(got, Def):  # term側のmark解決
+                t_resolved = r.mark2term(r.term2marktree(got.term))[got.term]
+                termtree.update(t_resolved)
+            for t in termtree:
                 n = self.get(t)
                 if isinstance(n, Def):
+                    # print("RES::", s, n.sentence)
                     EdgeType.RESOLVED.add_edge(self.g, s, n.sentence)
         # self._g = nx.freeze(self._g)
         self._is_resolved = True

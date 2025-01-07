@@ -2,16 +2,14 @@
 from __future__ import annotations
 
 from functools import cache
-from typing import TYPE_CHECKING, AbstractSet, TypeAlias
+from typing import AbstractSet, TypeAlias
 
 from knowde.primitive.term import Term
+from knowde.primitive.term.errors import MarkUncontainedError
 from knowde.primitive.term.mark.domain import (
     pick_marks,
     replace_markers,
 )
-
-if TYPE_CHECKING:
-    import networkx as nx
 
 
 def get_refer_terms(
@@ -47,18 +45,20 @@ def get_lookup(terms: frozenset[Term]) -> Lookup:
     return d
 
 
-# def next_lookup(old: Lookup, refer: AbstractSet[Term]) -> Lookup:
-#     """lookupを参照するtermを結合して返す."""
-#     lookup = get_lookup(frozenset(refer))
-#     get_refer_terms()
-
-
-def to_markterm_graph(terms: AbstractSet[Term]) -> tuple[nx.DiGraph, Lookup]:
+def to_lookup(terms: AbstractSet[Term]) -> Lookup:
     """markの依存関係グラフ."""
-    atomic = frozenset({t for t in terms if not t.has_mark()})
-    _refer = get_refer_terms(terms, atomic)
-    _lookup = get_lookup(atomic)
-
-    # print("#" * 80)
-    # print(refer)
-    # print(lookup)
+    referred = frozenset({t for t in terms if not t.has_mark()})
+    lookup = get_lookup(referred)
+    diff = terms - referred
+    while len(diff) > 0:
+        refer = get_refer_terms(terms, referred)
+        lookup = lookup | get_lookup(refer)
+        referred = referred | refer
+        _next = terms - referred
+        if _next == diff:  # 同じdiffが残り続ける
+            msg = "解決できませんでした"
+            raise MarkUncontainedError(msg, _next)
+        diff = _next
+    # g = reduce(nx.compose, [t.marktree for t in terms])
+    # nxprint(g)
+    return lookup

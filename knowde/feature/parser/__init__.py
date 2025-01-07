@@ -1,10 +1,12 @@
 """load-file."""
 
+from pprint import pp
 from typing import IO
 
 import click
 
 from knowde.complex.__core__.file_io import nx2json_dump
+from knowde.complex.systats import Systats, UnificationRatio
 from knowde.feature.__core__ import try_parse2net
 
 """
@@ -24,12 +26,7 @@ from knowde.feature.__core__ import try_parse2net
 """
 
 
-@click.group("input")
-def input_group() -> None:
-    """テキスト入力."""
-
-
-@input_group.command("parse")
+@click.command("parse")
 @click.argument("stdin", type=click.File("r"), default="-")
 def parse_cmd(stdin: IO) -> None:
     """入力テキストのパース."""
@@ -44,13 +41,15 @@ def parse_cmd(stdin: IO) -> None:
     # pp(sorted(pr.items(), key=lambda i: i[1]))
 
 
-@input_group.command("view")
+@click.command("view")
 @click.argument("stdin", type=click.File("r"), default="-")
 # @click.option("-n", "--number", type=click.INT, help="表示数")
 def rank_cmd(stdin: IO) -> None:
     """重要度でソート."""
     txt = stdin.read()
-    _sn = try_parse2net(txt)
+    sn = try_parse2net(txt)
+    pp({r.label: r.fn(sn) for r in UnificationRatio})
+    pp({st.label: st.fn(sn) for st in Systats})
     # chunks = get_ranking(_sn)
     # for c in chunks:
     #     print(c.rank, c)
