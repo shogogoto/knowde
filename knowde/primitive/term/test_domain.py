@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import pytest
 
+from knowde.primitive.term.markresolver import MarkResolver
+
 from . import (
     MergedTerms,
     Term,
@@ -160,7 +162,8 @@ def test_resolve() -> None:
     t4 = Term.create("C{A1}")
     t5 = Term.create("D{BA}")
     t6 = Term.create("E{DBA}")
-    resolver = MergedTerms().add(t1, t2, t3, t4, t5, t6).to_resolver()
+    mt = MergedTerms().add(t1, t2, t3, t4, t5, t6)
+    resolver = MarkResolver.create(mt)
     d = resolver.sentence2marktree("aaa{EDBA}a{CA1}aaa")
     assert d == {
         "EDBA": {"DBA": {"BA": {"A": {}}}},
@@ -174,14 +177,4 @@ def test_resolve() -> None:
     with pytest.raises(MarkUncontainedError):
         resolver.sentence2marktree("x{uncontained}x")
 
-
-def test_resolve_term() -> None:
-    """用語の用語解決."""
-    t1 = Term.create("A", alias="a")
-    t2 = Term.create("A1", "A2")
-    t3 = Term.create("B{A}")
-    t4 = Term.create("C{A1}")
-    t5 = Term.create("D{BA}")
-    t6 = Term.create("E{DBA}")
-    resolver = MergedTerms().add(t1, t2, t3, t4, t5, t6).to_resolver()
     assert resolver.term2marktree(t6) == {"EDBA": {"DBA": {"BA": {"A": {}}}}}

@@ -19,10 +19,10 @@ from knowde.primitive.__core__.nxutil import (
 from knowde.primitive.__core__.types import NXGraph
 from knowde.primitive.heading import get_headings
 from knowde.primitive.term import (
-    MarkResolver,
     MergedTerms,
     Term,
 )
+from knowde.primitive.term.markresolver import MarkResolver
 
 from .adder import add_def
 from .dupchk import SysArgDupChecker
@@ -139,7 +139,8 @@ class SysNet(BaseModel, frozen=True):
     ################################################# 用語解決
     @cached_property
     def resolver(self) -> MarkResolver:  # noqa: D102
-        return MergedTerms().add(*self.terms).to_resolver()
+        mt = MergedTerms().add(*self.terms)
+        return MarkResolver.create(mt)
 
     def add_resolved_edges(self) -> None:
         """termとsentenceの依存関係エッジをsentence同士で張る."""

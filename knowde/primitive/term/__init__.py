@@ -2,19 +2,17 @@
 from __future__ import annotations
 
 from collections import Counter
-from functools import cached_property
+from functools import cached_property, reduce
 from typing import AbstractSet, NoReturn, Self
 
 import networkx as nx
 from pydantic import BaseModel, Field, PrivateAttr, field_validator
 
 from knowde.primitive.__core__.dupchk import DuplicationChecker
-from knowde.primitive.__core__.nxutil import to_nested
-from knowde.primitive.__core__.types import NXGraph
+from knowde.primitive.__core__.nxutil import nxprint
 
 from .errors import (
     AliasContainsMarkError,
-    MarkUncontainedError,
     TermConflictError,
     TermMergeError,
     TermResolveError,
@@ -145,7 +143,7 @@ def term_dup_checker() -> DuplicationChecker:
 
 
 class MergedTerms(BaseModel, frozen=True):
-    """用語一覧."""
+    """マージした用語一覧."""
 
     terms: list[Term] = Field(default_factory=list, init=False)
     _chk: DuplicationChecker = PrivateAttr(
@@ -205,11 +203,16 @@ class MergedTerms(BaseModel, frozen=True):
         """Frozen merged terms."""
         return frozenset(self.terms)
 
-    def to_resolver(self) -> MarkResolver:
+    def to_resolver(self) -> tuple[nx.DiGraph, dict]:
         """用語ネットワーク作成."""
         g = nx.DiGraph()
         lookup = self.atoms
         g.add_nodes_from(lookup.keys())
+
+        mtrees = [t.marktree for t in self.frozen]
+        if len(mtrees) > 0:
+            g2 = reduce(nx.compose, mtrees)
+            nxprint(g2)
         while True:
             _next, diff = next_lookup(lookup, self.frozen)
             for t in _next.values():
@@ -228,7 +231,8 @@ class MergedTerms(BaseModel, frozen=True):
         if n_diff > 0:
             msg = f"{set(diff)}が用語解決できませんでした"
             raise TermResolveError(msg)
-        return MarkResolver(g=g, lookup=lookup)
+        return g, lookup
+        # return MarkResolver(g=g, lookup=lookup)
 
 
 # lookup {name|alias: Term}辞書
@@ -248,47 +252,3 @@ def next_lookup(
         if t.alias:
             d[t.alias] = t
     return d, diff
-
-
-class MarkResolver(BaseModel, frozen=True):
-    """mark解決器."""
-
-    g: NXGraph  # mark network
-    lookup: dict[str, Term]  # {mark: Term}辞書
-
-    def sentence2marktree(self, s: str) -> dict[str, str | dict]:
-        """任意の文字列を用語解決 mark dict tree.
-
-        Return:
-        ------
-            {mark: {mark:{...:{}}}}
-
-        """
-        marks = pick_marks(s)
-        for m in marks:
-            if m not in self.g:
-                msg = f"'{m}'は用語として存在しません at '{s}'"
-                raise MarkUncontainedError(msg)
-        return {m: to_nested(self.g, m, lambda g, n: g.successors(n)) for m in marks}
-
-    def mark2term(self, md: dict) -> dict[Term, dict]:
-        """markに対応する用語に変換する.
-
-        Return:
-        ------
-            {Term: {Term:{...:{}}}}
-
-        """
-        d = {}
-        for k, v in md.items():
-            t = self.lookup[k]
-            if any(v):  # 空でない
-                d[t] = self.mark2term(v)
-            else:
-                d[t] = v
-        return d
-
-    def term2marktree(self, t: Term) -> dict[str, str | dict]:
-        """用語を用語解決."""
-        marks = [k for k, v in self.lookup.items() if v == t]
-        return {m: to_nested(self.g, m, lambda g, n: g.successors(n)) for m in marks}

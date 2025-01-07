@@ -3,11 +3,7 @@ import pytest
 
 from knowde.primitive.term import MergedTerms, Term
 from knowde.primitive.term.errors import MarkUncontainedError
-from knowde.primitive.term.termdiff import (
-    get_lookup,
-    get_refer_terms,
-    to_lookup,
-)
+from knowde.primitive.term.marklookup import get_lookup, get_refer_terms, to_lookup
 
 
 def test_lookup_refactored() -> None:

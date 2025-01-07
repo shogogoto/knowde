@@ -60,5 +60,4 @@ def to_lookup(terms: AbstractSet[Term]) -> Lookup:
             raise MarkUncontainedError(msg, _next)
         diff = _next
     # g = reduce(nx.compose, [t.marktree for t in terms])
-    # nxprint(g)
     return lookup
