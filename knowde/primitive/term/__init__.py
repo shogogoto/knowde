@@ -2,20 +2,19 @@
 from __future__ import annotations
 
 from collections import Counter
-from functools import cached_property, reduce
-from typing import AbstractSet, NoReturn, Self
+from functools import cached_property
+from typing import NoReturn, Self
 
 import networkx as nx
+from more_itertools import flatten
 from pydantic import BaseModel, Field, PrivateAttr, field_validator
 
 from knowde.primitive.__core__.dupchk import DuplicationChecker
-from knowde.primitive.__core__.nxutil import nxprint
 
 from .errors import (
     AliasContainsMarkError,
     TermConflictError,
     TermMergeError,
-    TermResolveError,
 )
 from .mark import (
     contains_mark_symbol,
@@ -129,7 +128,16 @@ class Term(BaseModel, frozen=True):
             g.add_node(atom)
             for m in marks:
                 g.add_edge(atom, m)
+            if self.alias is not None:
+                g.add_edge(self.alias, atom)
+        if self.alias is not None:
+            g.add_node(self.alias)
         return g
+
+    @property
+    def marks(self) -> list[str]:
+        """Flatten marks."""
+        return list(flatten([pick_marks(n) for n in self.names]))
 
 
 def term_dup_checker() -> DuplicationChecker:
@@ -182,73 +190,6 @@ class MergedTerms(BaseModel, frozen=True):
                 raise TermConflictError(msg, ls)
 
     @cached_property
-    def atoms(self) -> dict[str, Term]:
-        """参照{}を含まない用語."""
-        d = {}
-        for t in self.terms:
-            if t.alias and not t.has_mark():
-                d[t.alias] = t
-            for n in t.names:
-                if not contains_mark_symbol(n):
-                    d[n] = t
-        return d
-
-    @cached_property
-    def no_referred(self) -> frozenset[Term]:
-        """参照{を含まない用語}."""
-        return frozenset({t for t in self.terms if not t.has_mark()})
-
-    @cached_property
     def frozen(self) -> frozenset[Term]:
         """Frozen merged terms."""
         return frozenset(self.terms)
-
-    def to_resolver(self) -> tuple[nx.DiGraph, dict]:
-        """用語ネットワーク作成."""
-        g = nx.DiGraph()
-        lookup = self.atoms
-        g.add_nodes_from(lookup.keys())
-
-        mtrees = [t.marktree for t in self.frozen]
-        if len(mtrees) > 0:
-            g2 = reduce(nx.compose, mtrees)
-            nxprint(g2)
-        while True:
-            _next, diff = next_lookup(lookup, self.frozen)
-            for t in _next.values():
-                for n in t.names:
-                    marks = pick_marks(n)
-                    atom = replace_markers(n, *marks)
-                    for m in marks:
-                        g.add_edge(atom, m)
-                if t.alias:  # g.successorsでエラーでないように
-                    g.add_node(t.alias)
-            d = {**lookup, **_next}
-            if lookup == d:
-                n_diff = len(diff)
-                break
-            lookup = d
-        if n_diff > 0:
-            msg = f"{set(diff)}が用語解決できませんでした"
-            raise TermResolveError(msg)
-        return g, lookup
-        # return MarkResolver(g=g, lookup=lookup)
-
-
-# lookup {name|alias: Term}辞書
-def next_lookup(
-    lookup: dict[str, Term],
-    terms: AbstractSet[Term],
-) -> tuple[dict[str, Term], AbstractSet[Term]]:
-    """直参照の用語lookupを取得."""
-    diff = terms - set(lookup.values())
-    d = {}
-    for t in diff:
-        for n in t.names:
-            marks = pick_marks(n)
-            if all(m in lookup for m in marks):
-                atom = replace_markers(n, *marks)
-                d[atom] = t
-        if t.alias:
-            d[t.alias] = t
-    return d, diff

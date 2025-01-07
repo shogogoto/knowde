@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Self
 
+import networkx as nx
 from pydantic import BaseModel
 
 from knowde.primitive.__core__.nxutil import to_nested
@@ -10,6 +11,7 @@ from knowde.primitive.__core__.types import NXGraph
 from knowde.primitive.term import MergedTerms, Term
 from knowde.primitive.term.errors import MarkUncontainedError
 from knowde.primitive.term.mark.domain import pick_marks
+from knowde.primitive.term.marklookup import to_lookup
 
 
 class MarkResolver(BaseModel, frozen=True):
@@ -21,7 +23,10 @@ class MarkResolver(BaseModel, frozen=True):
     @classmethod
     def create(cls, mt: MergedTerms) -> Self:
         """Create instance."""
-        g, lookup = mt.to_resolver()
+        lookup = to_lookup(mt.frozen)
+        g = nx.DiGraph()
+        for t in mt.frozen:
+            g = nx.compose(g, t.marktree)
         return cls(g=g, lookup=lookup)
 
     def sentence2marktree(self, s: str) -> dict[str, str | dict]:

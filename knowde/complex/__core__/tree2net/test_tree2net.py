@@ -7,6 +7,7 @@ from knowde.complex.__core__.sysnet.errors import DefSentenceConflictError
 from knowde.complex.__core__.tree2net import parse2net
 from knowde.primitive.__core__.nxutil import EdgeType, to_nested
 from knowde.primitive.heading import get_heading_path, get_headings
+from knowde.primitive.term.errors import MarkUncontainedError
 
 
 def test_add_block() -> None:
@@ -187,7 +188,6 @@ def test_alias_resolve_error() -> None:
     """エラー再現(alias引用でMarkUncontainedError)."""
     _s = """
     # x
-        アリストテレス:
         AU |{アリストテレス}の宇宙: 月より内側が変化する世界、外側は不可侵の永久不変領域
           <-> ケプラーの超新星: 急に現れて天文学者たちを驚かせた
             when. 1604/10/9 ~
@@ -198,10 +198,5 @@ def test_alias_resolve_error() -> None:
             by. ティコ・ブラーエ, ティコ: デンマークの天文学者
               when. 1546 ~ 1601
     """
-    _sn = parse2net(_s)
-
-    # pp(sn.resolver.lookup)
-    # nxprint(sn.resolver.g)
-
-    # print("#" * 80)
-    # print(sn.get_resolved("{ティコの超新星}が誤りであることを決定づけた"))
+    with pytest.raises(MarkUncontainedError):
+        _sn = parse2net(_s)  # アリストテレス が未定義

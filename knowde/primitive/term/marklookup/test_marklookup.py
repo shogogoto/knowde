@@ -17,9 +17,10 @@ def test_lookup_refactored() -> None:
     t6 = Term.create("D{A1}", alias="not0th")
     mt.add(t1, t2, t3, t4, t5, t6)
     s = set(mt.terms)
+    no_referred = frozenset({t for t in s if not t.has_mark()})
     # 0th
-    assert mt.no_referred == {t1, t2, t5}  # 参照なし
-    assert get_lookup(mt.no_referred) == {
+    assert no_referred == {t1, t2, t5}  # 参照なし
+    assert get_lookup(no_referred) == {
         "A": t1,
         "a": t1,
         "A1": t2,
@@ -27,11 +28,11 @@ def test_lookup_refactored() -> None:
         "only": t5,
     }
     # 1th
-    r1 = get_refer_terms(s, mt.no_referred)
+    r1 = get_refer_terms(s, no_referred)
     assert r1 == {t3, t6}
     assert get_lookup(r1) == {"BA": t3, "DA1": t6, "not0th": t6}
     # 2th
-    rd = frozenset({*r1, *mt.no_referred})
+    rd = frozenset({*r1, *no_referred})
     r2 = get_refer_terms(s, rd)
     assert r2 == {t4}
     assert get_lookup(r2) == {"CBA": t4}
@@ -51,13 +52,14 @@ def test_no_refer() -> None:
     t5 = Term.create("C{BA}")
     mt.add(t1, t2, t3, t4, t5)
     s = set(mt.terms)
+    no_referred = frozenset({t for t in s if not t.has_mark()})
     # 0th
-    assert mt.no_referred == {t2, t3}
+    assert no_referred == {t2, t3}
     # 1th
-    r1 = get_refer_terms(s, mt.no_referred)
+    r1 = get_refer_terms(s, no_referred)
     assert r1 == {t4}
     # 2th
-    rd = frozenset({*r1, *mt.no_referred})
+    rd = frozenset({*r1, *no_referred})
     r2 = get_refer_terms(s, rd)
     assert r2 == {t5}
     # 3th
@@ -77,7 +79,6 @@ def test_to_lookup() -> None:
     t4 = Term.create("C{A1}")
     t5 = Term.create("D{BA}")
     t6 = Term.create("E{DBA}")
-    # ex = Term.create("X{Y}")
     mt = MergedTerms().add(t1, t2, t3, t4, t5, t6)
     # ╟── a
     # ╟── A2

@@ -56,8 +56,10 @@ def to_lookup(terms: AbstractSet[Term]) -> Lookup:
         referred = referred | refer
         _next = terms - referred
         if _next == diff:  # 同じdiffが残り続ける
-            msg = "解決できませんでした"
-            raise MarkUncontainedError(msg, _next)
+            marks = next(iter(_next)).marks
+            m = next(m for m in marks if m not in lookup)
+            msg = f"'{m}'を解決できませんでした"
+            raise MarkUncontainedError(msg, set(_next))
         diff = _next
     # g = reduce(nx.compose, [t.marktree for t in terms])
     return lookup
