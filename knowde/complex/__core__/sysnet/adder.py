@@ -4,9 +4,8 @@
 import networkx as nx
 
 from knowde.complex.__core__.sysnet.errors import DefSentenceConflictError
-from knowde.complex.__core__.sysnet.sysnode import Def, SysArg, SysNode
+from knowde.complex.__core__.sysnet.sysnode import Def
 from knowde.primitive.__core__.nxutil import EdgeType
-from knowde.primitive.term import Term
 
 
 def add_def(g: nx.DiGraph, d: Def) -> None:
@@ -20,15 +19,3 @@ def add_def(g: nx.DiGraph, d: Def) -> None:
         case _:
             msg = f"'{d}'が他の定義文と重複しています"
             raise DefSentenceConflictError(msg, terms)
-
-
-def arg2node(arg: SysArg) -> SysNode:
-    """変換."""
-    match arg:
-        case Term() | str():
-            return arg
-        case Def():
-            return arg.sentence
-        case _:
-            msg = f"{type(arg)}: {arg} is not allowed."
-            raise TypeError(msg)
