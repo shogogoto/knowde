@@ -3,20 +3,20 @@ from __future__ import annotations
 
 import pytest
 
+from knowde.primitive.term.markresolver import MarkResolver
+
 from . import (
     MergedTerms,
     Term,
-    next_lookup,
 )
 from .errors import (
     AliasContainsMarkError,
     MarkUncontainedError,
     TermConflictError,
-    TermResolveError,
 )
 
 
-def test_alias_error() -> None:
+def test_alias_has_mark_error() -> None:
     """Alias contains marks."""
     with pytest.raises(AliasContainsMarkError):
         Term.create(alias="a{b}")
@@ -111,55 +111,17 @@ def test_merge_term() -> None:
     assert len(s) == 2  # noqa: PLR2004
 
 
-def test_lookup() -> None:
-    """参照."""
-    mt = MergedTerms()
-    t1 = Term.create("A", alias="a")
-    t2 = Term.create("A1", "A2")
-    t3 = Term.create("B{A}")
-    t4 = Term.create("C{BA}")
-    mt.add(t1, t2, t3, t4)
-    # 0th
-    assert mt.atoms == {"A": t1, "a": t1, "A1": t2, "A2": t2}
-    # 1th
-    l1, _ = next_lookup(mt.atoms, mt.frozen)
-    assert l1 == {"BA": t3}
-    # 2th
-    d = {**mt.atoms, **l1}
-    l2, _ = next_lookup(d, mt.frozen)
-    assert l2 == {"CBA": t4}
-
-    # 3th
-    d = {**d, **l2}
-    l3, _ = next_lookup(d, mt.frozen)
-    assert l3 == {}
-
-
-def test_lookup_error() -> None:
-    """参照失敗."""
-    mt = MergedTerms()
-    mt.add(
-        Term.create("A", alias="a"),
-        Term.create("A1", "A2"),
-        Term.create("B{A}"),
-        Term.create("C{A1}"),
-        Term.create("D{BA}"),
-        Term.create("xx{X}xx"),
-    )
-    with pytest.raises(TermResolveError):
-        mt.to_resolver()
-
-
-def test_resolve_term() -> None:
-    """用語解決."""
+def test_resolve() -> None:
+    """文の用語解決."""
     t1 = Term.create("A", alias="a")
     t2 = Term.create("A1", "A2")
     t3 = Term.create("B{A}")
     t4 = Term.create("C{A1}")
     t5 = Term.create("D{BA}")
     t6 = Term.create("E{DBA}")
-    resolver = MergedTerms().add(t1, t2, t3, t4, t5, t6).to_resolver()
-    d = resolver("aaa{EDBA}a{CA1}aaa")
+    mt = MergedTerms().add(t1, t2, t3, t4, t5, t6)
+    resolver = MarkResolver.create(mt)
+    d = resolver.sentence2marktree("aaa{EDBA}a{CA1}aaa")
     assert d == {
         "EDBA": {"DBA": {"BA": {"A": {}}}},
         "CA1": {"A1": {}},
@@ -170,4 +132,6 @@ def test_resolve_term() -> None:
     }
 
     with pytest.raises(MarkUncontainedError):
-        resolver("x{uncontained}x")
+        resolver.sentence2marktree("x{uncontained}x")
+
+    assert resolver.term2marktree(t6) == {"EDBA": {"DBA": {"BA": {"A": {}}}}}

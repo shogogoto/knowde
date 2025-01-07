@@ -3,29 +3,27 @@ from __future__ import annotations
 
 from functools import cached_property
 from itertools import pairwise
-from pprint import pp
-from typing import TYPE_CHECKING, Any, Hashable
+from typing import Any, Hashable
 
 import networkx as nx
 from lark import Token
 from pydantic import BaseModel, PrivateAttr
 
-from knowde.complex.__core__.sysnet.adder import add_def
-from knowde.complex.__core__.sysnet.dupchk import SysArgDupChecker
 from knowde.primitive.__core__.nxutil import (
     Direction,
     EdgeType,
     replace_node,
+    to_nested,
 )
 from knowde.primitive.__core__.types import NXGraph
 from knowde.primitive.heading import get_headings
 from knowde.primitive.term import (
     MergedTerms,
     Term,
-    TermResolver,
-    resolve_sentence,
 )
+from knowde.primitive.term.markresolver import MarkResolver
 
+from .adder import add_def
 from .errors import (
     AlreadyAddedError,
     QuotermNotFoundError,
@@ -34,33 +32,36 @@ from .errors import (
 )
 from .sysnode import Def, Duplicable, SysArg, SysNode
 
-if TYPE_CHECKING:
-    from networkx import DiGraph
+"""
+責任、役割は何だ?
+Termのマージ
+Def同士の依存関係の解決
+quotermの置換
+"""
 
 
 class SysNet(BaseModel, frozen=True):
     """系ネットワーク."""
 
     root: str
-    _g: NXGraph = PrivateAttr(default_factory=nx.MultiDiGraph, init=False)
-    # _g: NXGraph = PrivateAttr(default_factory=nx.DiGraph, init=False)
-    _chk: SysArgDupChecker = PrivateAttr(default_factory=SysArgDupChecker)
+    _g: NXGraph = PrivateAttr(default_factory=nx.MultiDiGraph)
+    # _chk: SysArgDupChecker = PrivateAttr(default_factory=SysArgDupChecker)
     _is_resolved: bool = PrivateAttr(default=False)
 
     @property
-    def g(self) -> DiGraph:  # noqa: D102
+    def g(self) -> nx.DiGraph:  # noqa: D102
         return self._g
 
     def model_post_init(self, __context: Any) -> None:  # noqa: ANN401 D102
         self._g.add_node(self.root)
-        self._chk(self.root)
+        # self._chk(self.root)
 
     def add(self, t: EdgeType, *path: SysArg) -> None:
         """既存nodeから開始していない場合はrootからedgeを伸ばすように登録."""
         match len(path):
             case l if l == 1:
                 n = path[0]
-                self._chk(n)
+                # self._chk(n)
                 self.add_arg(n)
             case l if l >= 2:  # noqa: PLR2004
                 for u, v in pairwise(path):
@@ -141,12 +142,24 @@ class SysNet(BaseModel, frozen=True):
 
     ################################################# 用語解決
     @cached_property
-    def resolver(self) -> TermResolver:  # noqa: D102
-        return MergedTerms().add(*self.terms).to_resolver()
+    def resolver(self) -> MarkResolver:  # noqa: D102
+        mt = MergedTerms().add(*self.terms)
+        return MarkResolver.create(mt)
 
     def add_resolved_edges(self) -> None:
-        """事前の全用語解決."""
-        self.resolver.add_edges(self._g, self.sentences)
+        """Defの依存関係エッジをsentence同士で張る."""
+        r = self.resolver
+        for s in self.sentences:
+            mt = r.sentence2marktree(s)  # sentenceからmark tree
+            termtree = r.mark2term(mt)  # 文のmark解決
+            got = self.get(s)
+            if isinstance(got, Def):  # term側のmark解決
+                t_resolved = r.mark2term(r.term2marktree(got.term))[got.term]
+                termtree.update(t_resolved)
+            for t in termtree:
+                n = self.get(t)
+                if isinstance(n, Def):
+                    EdgeType.RESOLVED.add_edge(self.g, s, n.sentence)
         # self._g = nx.freeze(self._g)
         self._is_resolved = True
 
@@ -154,7 +167,7 @@ class SysNet(BaseModel, frozen=True):
         """解決済み入れ子文を取得."""
         if not self._is_resolved:
             raise UnResolvedTermError
-        return resolve_sentence(self._g, s)
+        return to_nested(self._g, s, EdgeType.RESOLVED.succ)
 
     ################################################# 引用用語置換
     @property
@@ -169,7 +182,6 @@ class SysNet(BaseModel, frozen=True):
         for qt in self.quoterms:
             name = qt.replace("`", "")
             if name not in self.resolver.lookup:
-                pp(self.resolver.lookup)
                 msg = f"'{name}'は用語として定義されていません"
                 raise QuotermNotFoundError(msg)
             term = self.resolver.lookup[name]
