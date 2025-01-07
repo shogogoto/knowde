@@ -9,7 +9,7 @@ from .errors import SysNetNotFoundError
 from .sysnode import Def, Duplicable
 
 
-def test_setup_term() -> None:
+def test_resolved() -> None:
     """用語解決."""
     sn = SysNet(root="sys")
     sn.add(EdgeType.HEAD, sn.root, "h1", "h2")
@@ -77,3 +77,17 @@ def test_duplicable() -> None:
     sn.add(EdgeType.BELOW, sn.root, d1)
     sn.add(EdgeType.SIBLING, d1, d2)
     assert sn.sentences == [d1, d2]
+
+
+# def test_merged_term() -> None:
+#     """用語のマージがある場合."""
+#     sn = SysNet(root="sys")
+#     sn.add(EdgeType.HEAD, sn.root, "h1")
+#     sn.add(
+#         EdgeType.SIBLING,
+#         "h1",
+#         Def.create("aaa", ["A"]),
+#         Def.create("bbb", ["A", "B"]),
+#     )
+
+#     sn.add_resolved_edges()

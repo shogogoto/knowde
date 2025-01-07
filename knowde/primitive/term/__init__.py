@@ -154,9 +154,7 @@ class MergedTerms(BaseModel, frozen=True):
     """マージした用語一覧."""
 
     terms: list[Term] = Field(default_factory=list, init=False)
-    _chk: DuplicationChecker = PrivateAttr(
-        default_factory=term_dup_checker,
-    )
+    _chk: DuplicationChecker = PrivateAttr(default_factory=term_dup_checker)
 
     def __getitem__(self, i: int) -> Term:  # noqa: D105
         return self.terms[i]

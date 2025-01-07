@@ -5,7 +5,6 @@ from typing import Annotated, Any
 
 import networkx as nx
 from neomodel import StructuredNode
-from networkx import DiGraph
 from pydantic import (
     PlainSerializer,
     PlainValidator,
@@ -29,14 +28,14 @@ NeoModel = Annotated[
 ]
 
 
-def _validate_graph(v: Any, info: ValidationInfo) -> DiGraph:  # noqa: ARG001 ANN401
-    if isinstance(v, DiGraph):
+def _validate_graph(v: Any, info: ValidationInfo) -> nx.DiGraph:  # noqa: ARG001 ANN401
+    if isinstance(v, nx.DiGraph):
         return v
     raise TypeError
 
 
 NXGraph = Annotated[
-    DiGraph,
+    nx.DiGraph,
     PlainValidator(_validate_graph),
     PlainSerializer(lambda x: nx.node_link_data(x)),
 ]

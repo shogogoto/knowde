@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from functools import cached_property
 from itertools import pairwise
-from pprint import pp
 from typing import Any, Hashable
 
 import networkx as nx
@@ -25,7 +24,6 @@ from knowde.primitive.term import (
 from knowde.primitive.term.markresolver import MarkResolver
 
 from .adder import add_def
-from .dupchk import SysArgDupChecker
 from .errors import (
     AlreadyAddedError,
     QuotermNotFoundError,
@@ -34,30 +32,36 @@ from .errors import (
 )
 from .sysnode import Def, Duplicable, SysArg, SysNode
 
+"""
+責任、役割は何だ?
+Termのマージ
+Def同士の依存関係の解決
+quotermの置換
+"""
+
 
 class SysNet(BaseModel, frozen=True):
     """系ネットワーク."""
 
     root: str
-    _g: NXGraph = PrivateAttr(default_factory=nx.MultiDiGraph, init=True)
-    # _g: NXGraph = PrivateAttr(default_factory=nx.DiGraph, init=False)
-    _chk: SysArgDupChecker = PrivateAttr(default_factory=SysArgDupChecker)
+    _g: NXGraph = PrivateAttr(default_factory=nx.MultiDiGraph)
+    # _chk: SysArgDupChecker = PrivateAttr(default_factory=SysArgDupChecker)
     _is_resolved: bool = PrivateAttr(default=False)
 
     @property
-    def g(self) -> nx.MultiDiGraph:  # noqa: D102
+    def g(self) -> nx.DiGraph:  # noqa: D102
         return self._g
 
     def model_post_init(self, __context: Any) -> None:  # noqa: ANN401 D102
         self._g.add_node(self.root)
-        self._chk(self.root)
+        # self._chk(self.root)
 
     def add(self, t: EdgeType, *path: SysArg) -> None:
         """既存nodeから開始していない場合はrootからedgeを伸ばすように登録."""
         match len(path):
             case l if l == 1:
                 n = path[0]
-                self._chk(n)
+                # self._chk(n)
                 self.add_arg(n)
             case l if l >= 2:  # noqa: PLR2004
                 for u, v in pairwise(path):
@@ -143,7 +147,7 @@ class SysNet(BaseModel, frozen=True):
         return MarkResolver.create(mt)
 
     def add_resolved_edges(self) -> None:
-        """termとsentenceの依存関係エッジをsentence同士で張る."""
+        """Defの依存関係エッジをsentence同士で張る."""
         r = self.resolver
         for s in self.sentences:
             mt = r.sentence2marktree(s)  # sentenceからmark tree
@@ -155,7 +159,6 @@ class SysNet(BaseModel, frozen=True):
             for t in termtree:
                 n = self.get(t)
                 if isinstance(n, Def):
-                    # print("RES::", s, n.sentence)
                     EdgeType.RESOLVED.add_edge(self.g, s, n.sentence)
         # self._g = nx.freeze(self._g)
         self._is_resolved = True
@@ -179,7 +182,6 @@ class SysNet(BaseModel, frozen=True):
         for qt in self.quoterms:
             name = qt.replace("`", "")
             if name not in self.resolver.lookup:
-                pp(self.resolver.lookup)
                 msg = f"'{name}'は用語として定義されていません"
                 raise QuotermNotFoundError(msg)
             term = self.resolver.lookup[name]
