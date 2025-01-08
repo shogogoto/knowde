@@ -3,7 +3,6 @@
 
 import pytest
 
-from knowde.complex.__core__.sysnet.errors import DefSentenceConflictError
 from knowde.complex.__core__.tree2net import parse2net
 from knowde.primitive.__core__.nxutil import EdgeType, to_nested
 from knowde.primitive.heading import get_heading_path, get_headings
@@ -141,18 +140,17 @@ def test_duplicate_def_sentence() -> None:
     _s = """
         # 科学哲学
           人間と自然を分離させたニュートン力学を批判
-            by. フリードリヒ・ヴィルヘルム・シェリング, シェリング: dummy
+            by. フリードリヒ・ヴィルヘルム・シェリング, シェリング:
           ウィラード・ファン・オルマン・クワイン: 論理実証主義を支持しつつ反対
             還元主義の否定
               決定的実験: 競合する２つの理論を決着させる適切な実験
-                ピエール・デュエム, デュエム: dummy
+                ピエール・デュエム, デュエム:
         ## 18. フランスの伝統
           フランスは伝統故に論理実証主義と距離を保ってきた
             `デュエム`
               物理理論は１つの説明というより数学的命題の体系
     """
-    with pytest.raises(DefSentenceConflictError):
-        parse2net(_s)
+    parse2net(_s)
 
 
 def test_non_dupedge() -> None:

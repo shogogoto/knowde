@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.tree2net.directed_edge import (
+    DirectedEdgeCollection,
     add_resolved_edges,
     replace_quoterms,
 )
@@ -17,6 +18,7 @@ from .transformer import TSysArg
 
 if TYPE_CHECKING:
     import networkx as nx
+    from lark import Tree
 
 
 def parse2net(txt: str, do_print: bool = False) -> SysNet:  # noqa: FBT001 FBT002
@@ -26,12 +28,8 @@ def parse2net(txt: str, do_print: bool = False) -> SysNet:  # noqa: FBT001 FBT00
         treeprint(_t, True)  # noqa: FBT003
     si = SysNetInterpreter()
     si.visit(_t)
-    g, resolver = extract_leaves(_t)
-    si.col.add_edges(g)
-    add_resolved_edges(g, resolver)
-    replace_quoterms(g, resolver)
+    g = _build_graph(_t, si.col)
     return SysNet(root=si.root, g=g)
-    # return si.sn
 
 
 def parse2graph(txt: str, do_print: bool = False) -> nx.MultiDiGraph:  # noqa: FBT001 FBT002
@@ -41,9 +39,12 @@ def parse2graph(txt: str, do_print: bool = False) -> nx.MultiDiGraph:  # noqa: F
         treeprint(_t, True)  # noqa: FBT003
     si = SysNetInterpreter()
     si.visit(_t)
+    return _build_graph(_t, si.col)
 
-    g, resolver = extract_leaves(_t)
-    si.col.add_edges(g)
+
+def _build_graph(tree: Tree, col: DirectedEdgeCollection) -> nx.MultiDiGraph:
+    g, resolver = extract_leaves(tree)
+    col.add_edges(g)
     add_resolved_edges(g, resolver)
     replace_quoterms(g, resolver)
     return g

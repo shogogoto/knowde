@@ -110,9 +110,7 @@ def test_edgediff() -> None:
             C: ccc
     """
     sn1 = parse2net(txt1)
-    sn1.add_resolved_edges()
     sn2 = parse2net(txt2)
-    sn2.add_resolved_edges()
     ed = edgediff(sn1, sn2)
     assert ed.removed == {
         EdgeType.SIBLING.to_tuple("aaa", "bbb"),
