@@ -9,7 +9,7 @@ from typing_extensions import override
 from knowde.complex.__core__.sysnet.sysnode import Def, IDef
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.__core__.util import parted
-from knowde.primitive.term import MergedTerms, Term
+from knowde.primitive.term import MergedTerms, Term, eq_term
 
 if TYPE_CHECKING:
     import networkx as nx
@@ -35,14 +35,15 @@ class MergedDef(IDef, frozen=True):
         """Batch create."""
 
         def _will_merge(t: Term, d: Def) -> bool:
-            return t.allows_merge(d.term) or t == d.term
+            t_ = d.term
+            return t.allows_merge(t_) or eq_term(t, t_)
 
         ls = []
         remain = []
         other = defs
         for t in mt.frozen:
             tgt, other = parted(other, lambda d: _will_merge(t, d))  # noqa: B023
-            if len(tgt) == 1:  # マージ不要
+            if len(tgt) <= 1:  # マージ不要
                 remain.extend(tgt)
                 continue
             stcs = [d.sentence for d in tgt if not d.is_dummy]

@@ -29,18 +29,6 @@ if TYPE_CHECKING:
     from lark import Tree
 
 
-def extract_leaves(tree: Tree) -> tuple[nx.MultiDiGraph, MarkResolver]:
-    """transformedなASTを処理."""
-    leaves = get_leaves(tree)
-    mt = check_and_merge_term(to_term(leaves))
-    check_duplicated_sentence(leaves)
-    mdefs, stddefs = MergedDef.create(mt, to_def(leaves))
-    g = nx.MultiDiGraph()
-    [md.add_edge(g) for md in mdefs]
-    [d.add_edge(g) for d in stddefs]
-    return g, MarkResolver.create(mt)
-
-
 def parse2net(txt: str, do_print: bool = False) -> SysNet:  # noqa: FBT001 FBT002
     """文からsysnetへ."""
     _t = parse2tree(txt, TSysArg())
@@ -52,14 +40,21 @@ def parse2net(txt: str, do_print: bool = False) -> SysNet:  # noqa: FBT001 FBT00
     return SysNet(root=si.root, g=g)
 
 
-def parse2graph(txt: str, do_print: bool = False) -> nx.MultiDiGraph:  # noqa: FBT001 FBT002
-    """文からsysnetへ(remake)."""
-    return parse2net(txt, do_print).g
-
-
 def _build_graph(tree: Tree, col: DirectedEdgeCollection) -> nx.MultiDiGraph:
-    g, resolver = extract_leaves(tree)
+    g, resolver = _extract_leaves(tree)
     col.add_edges(g)
     add_resolved_edges(g, resolver)
     replace_quoterms(g, resolver)
     return g
+
+
+def _extract_leaves(tree: Tree) -> tuple[nx.MultiDiGraph, MarkResolver]:
+    """transformedなASTを処理."""
+    leaves = get_leaves(tree)
+    mt = check_and_merge_term(to_term(leaves))
+    check_duplicated_sentence(leaves)
+    mdefs, stddefs = MergedDef.create(mt, to_def(leaves))
+    g = nx.MultiDiGraph()
+    [md.add_edge(g) for md in mdefs]
+    [d.add_edge(g) for d in stddefs]
+    return g, MarkResolver.create(mt)

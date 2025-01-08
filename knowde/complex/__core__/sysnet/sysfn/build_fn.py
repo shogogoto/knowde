@@ -33,7 +33,8 @@ def add_resolved_edges(g: nx.DiGraph, resolver: MarkResolver) -> None:
         termtree = resolver.mark2term(mt)  # 文のmark解決
         got = get_ifdef(g, s)
         if isinstance(got, Def):  # term側のmark解決
-            t_resolved = resolver.mark2term(resolver.term2marktree(got.term))[got.term]
+            d = resolver.term2marktree(got.term)
+            t_resolved = resolver.mark2term(d)[got.term]
             termtree.update(t_resolved)
         for t in termtree:
             n = get_ifdef(g, t)
