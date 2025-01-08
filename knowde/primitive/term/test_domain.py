@@ -8,6 +8,7 @@ from knowde.primitive.term.markresolver import MarkResolver
 from . import (
     MergedTerms,
     Term,
+    check_and_merge_term,
 )
 from .errors import (
     AliasContainsMarkError,
@@ -135,3 +136,9 @@ def test_resolve() -> None:
         resolver.sentence2marktree("x{uncontained}x")
 
     assert resolver.term2marktree(t6) == {"EDBA": {"DBA": {"BA": {"A": {}}}}}
+
+
+def test_duplicate_term() -> None:
+    """用語重複."""
+    with pytest.raises(TermConflictError):
+        check_and_merge_term([Term.create("A")] * 2)

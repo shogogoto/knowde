@@ -33,7 +33,8 @@ class TSysArg(Transformer):
         v = "".join(tok.split("   "))  # 適当な\nに対応する空白
         alias, names, sentence = parse_line(v)
         if sentence is None:
-            return Term.create(*names, alias=alias)
+            t = Term.create(*names, alias=alias)
+            return Def.dummy(t)
         if alias is None and len(names) == 0:
             return sentence
         return Def.create(sentence, names, alias)

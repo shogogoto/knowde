@@ -1,4 +1,6 @@
 """系エラー."""
+
+
 from typing import NoReturn
 
 from knowde.primitive.__core__.dupchk import DuplicationChecker

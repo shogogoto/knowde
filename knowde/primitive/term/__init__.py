@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from collections import Counter
 from functools import cached_property
-from typing import NoReturn, Self
+from typing import Iterable, NoReturn, Self
 
 import networkx as nx
 from more_itertools import flatten
@@ -23,16 +23,28 @@ from .mark import (
 )
 
 
+def eq_term(t1: Term, t2: Term) -> bool:
+    """比較."""
+    return t1.has(*t2.names) and t1.alias == t2.alias
+
+
 class Term(BaseModel, frozen=True):
     """用語."""
 
-    names: frozenset[str] = Field(default_factory=frozenset)
+    names: tuple[str, ...] = Field(default_factory=tuple)
     alias: str | None = Field(
         default=None,
         title="別名",
         description="参照用の無意味な記号(参照を持たない)",
     )
-    rep: str = Field(default="", title="代表名")
+    # rep: str = Field(default="", title="代表名")
+
+    @property
+    def rep(self) -> str:
+        """代表名."""
+        if len(self.names) == 0:
+            return ""
+        return next(iter(self.names))
 
     @field_validator("names")
     @classmethod
@@ -55,11 +67,7 @@ class Term(BaseModel, frozen=True):
 
     @classmethod
     def create(cls, *names: str, alias: str | None = None) -> Self:  # noqa: D102
-        match len(names):
-            case 0:
-                return cls(names=frozenset(names), alias=alias)
-            case _:
-                return cls(names=frozenset(names), alias=alias, rep=names[0])
+        return cls(names=names, alias=alias)
 
     def __repr__(self) -> str:
         """Class representation."""
@@ -67,7 +75,7 @@ class Term(BaseModel, frozen=True):
 
     def __str__(self) -> str:
         """Display for user."""
-        subs = ", ".join(self.names - {self.rep})
+        subs = ", ".join(set(self.names) - {self.rep})
         if len(subs) > 0:
             subs = f"({subs})"
         al = ""
@@ -103,13 +111,12 @@ class Term(BaseModel, frozen=True):
         """名前を併せた用語へ."""
         if not self.allows_merge(other):
             raise TermMergeError(self, other)
-        s1 = self.names
-        s2 = other.names
+        s1 = set(self.names)
+        s2 = set(other.names)
         diff = s2.difference(s1)
         return Term(
-            names=frozenset.union(self.names, diff),
+            names=self.names + tuple(diff),
             alias=self.alias,
-            rep=self.rep,
         )
 
     def has_mark(self) -> bool:
@@ -191,3 +198,8 @@ class MergedTerms(BaseModel, frozen=True):
     def frozen(self) -> frozenset[Term]:
         """Frozen merged terms."""
         return frozenset(self.terms)
+
+
+def check_and_merge_term(terms: Iterable[Term]) -> MergedTerms:
+    """重複チェック."""
+    return MergedTerms().add(*terms)

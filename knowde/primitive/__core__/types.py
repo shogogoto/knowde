@@ -35,7 +35,7 @@ def _validate_graph(v: Any, info: ValidationInfo) -> nx.DiGraph:  # noqa: ARG001
 
 
 NXGraph = Annotated[
-    nx.DiGraph,
+    nx.MultiDiGraph,
     PlainValidator(_validate_graph),
     PlainSerializer(lambda x: nx.node_link_data(x)),
 ]

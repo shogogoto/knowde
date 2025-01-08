@@ -4,7 +4,7 @@ from __future__ import annotations
 from functools import cache
 from pathlib import Path
 from textwrap import dedent
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Hashable
 
 from lark import Lark, Transformer, Tree, UnexpectedInput
 from lark.indenter import DedentError, Indenter
@@ -63,3 +63,8 @@ def parse2tree(
         i = detect_undent(create_parser().parse, lines, pivot, w)
         msg = f"Undedent was detected at line {i}. Fix indent. \n" + lines[i]
         raise UndedentError(msg) from e
+
+
+def get_leaves(tree: Tree) -> list[Hashable]:
+    """leafを全て取得."""
+    return list(tree.scan_values(lambda v: not isinstance(v, Tree)))
