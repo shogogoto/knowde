@@ -4,11 +4,10 @@ from __future__ import annotations
 from typing import Self
 
 import networkx as nx
-from lark import Token, Tree
+from lark import Tree
 from pydantic import Field
 from typing_extensions import override
 
-from knowde.complex.__core__.sysnet.adder import add_def
 from knowde.complex.__core__.sysnet.sysnode import (
     Def,
     DummySentence,
@@ -19,17 +18,20 @@ from knowde.complex.__core__.sysnet.sysnode import (
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.__core__.util import parted
 from knowde.primitive.term import MergedTerms, Term
+from knowde.primitive.term.markresolver import MarkResolver
 
 from .errors import sentence_dup_checker
 
 
-def extract_leaves(tree: Tree) -> tuple[MergedTerms, nx.DiGraph]:
+def extract_leaves(tree: Tree) -> tuple[nx.MultiDiGraph, MarkResolver]:
     """transformedなASTを処理."""
     leaves = get_leaves(tree)
     mt = check_and_merge_term(leaves)
-    # md = MergedDef.create(mt, to_def(leaves))
-    dg = to_def_graph(leaves)
-    return mt, dg
+    mdefs, stddefs = MergedDef.create(mt, to_def(leaves))
+    g = nx.MultiDiGraph()
+    [md.add_edge(g) for md in mdefs]
+    [d.add_edge(g) for d in stddefs]
+    return g, MarkResolver.create(mt)
 
 
 def check_and_merge_term(leaves: list[SysArg]) -> MergedTerms:
@@ -61,13 +63,13 @@ class MergedDef(IDef, frozen=True):
     @classmethod
     def create(cls, mt: MergedTerms, defs: list[Def]) -> tuple[list[Self], list[Def]]:
         """Batch create."""
-        other = defs
 
         def _will_merge(t: Term, d: Def) -> bool:
             return t.allows_merge(d.term) or t == d.term
 
         ls = []
         remain = []
+        other = defs
         for t in mt.frozen:
             tgt, other = parted(other, lambda d: _will_merge(t, d))  # noqa: B023
             if len(tgt) == 1:  # マージ不要
@@ -95,11 +97,6 @@ def get_leaves(tree: Tree) -> list[SysArg]:
     return list(tree.scan_values(lambda v: not isinstance(v, Tree)))
 
 
-def is_quoterm(v: SysArg) -> bool:
-    """filter用."""
-    return isinstance(v, Token) and v.type == "QUOTERM"
-
-
 def is_duplicable(v: SysArg) -> bool:
     """filter用."""
     return isinstance(v, Duplicable)
@@ -119,12 +116,3 @@ def to_sentence(vs: list[SysArg]) -> list[str | DummySentence]:
 def to_def(vs: list[SysArg]) -> list[Def]:
     """文のみを取り出す."""
     return [v for v in vs if isinstance(v, Def)]
-
-
-def to_def_graph(vs: list[SysArg]) -> nx.MultiDiGraph:
-    """defのみを取り出す."""
-    dg = nx.MultiDiGraph()
-    defs = [v for v in vs if isinstance(v, Def)]
-    for _def in defs:
-        add_def(dg, _def)
-    return dg
