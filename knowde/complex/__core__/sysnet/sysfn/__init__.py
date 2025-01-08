@@ -33,6 +33,21 @@ def to_quoterm(vs: Iterable[SysArg]) -> list[Token]:
     return [v for v in vs if isinstance(v, Token) and v.type == "QUOTERM"]
 
 
+def node2sentence(n: SysArg) -> str | DummySentence:
+    """関係のハブとなる文へ."""
+    match n:
+        case Term():
+            d = Def.dummy(n)
+            return d.sentence
+        case str() | Duplicable():
+            return n
+        case Def():
+            return n.sentence
+        case _:
+            msg = f"{type(n)}: {n} is not allowed."
+            raise TypeError(msg)
+
+
 def to_sentence(vs: Iterable[Hashable]) -> list[str | DummySentence]:
     """文のみを取り出す."""
     defed = [v.sentence for v in vs if isinstance(v, Def)]

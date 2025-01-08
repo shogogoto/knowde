@@ -11,12 +11,12 @@ from knowde.complex.__core__.sysnet.sysfn import (
     to_def,
     to_term,
 )
-from knowde.complex.__core__.sysnet.sysnode.merged_def import MergedDef
-from knowde.complex.__core__.tree2net.directed_edge import (
-    DirectedEdgeCollection,
+from knowde.complex.__core__.sysnet.sysfn.build_fn import (
     add_resolved_edges,
     replace_quoterms,
 )
+from knowde.complex.__core__.sysnet.sysnode.merged_def import MergedDef
+from knowde.complex.__core__.tree2net.directed_edge import DirectedEdgeCollection
 from knowde.primitive.parser import get_leaves, parse2tree
 from knowde.primitive.parser.testing import treeprint
 from knowde.primitive.term import check_and_merge_term
