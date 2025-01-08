@@ -39,7 +39,7 @@ def check_and_merge_term(leaves: list[SysArg]) -> MergedTerms:
     mt = MergedTerms().add(*to_term(leaves))
     s_chk = sentence_dup_checker()
     for s in to_sentence(leaves):
-        if isinstance(s, DummySentence):
+        if isinstance(s, (DummySentence, Duplicable)):
             continue
         s_chk(s)
     return mt

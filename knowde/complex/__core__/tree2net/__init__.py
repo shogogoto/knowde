@@ -26,7 +26,12 @@ def parse2net(txt: str, do_print: bool = False) -> SysNet:  # noqa: FBT001 FBT00
         treeprint(_t, True)  # noqa: FBT003
     si = SysNetInterpreter()
     si.visit(_t)
-    return si.sn
+    g, resolver = extract_leaves(_t)
+    si.col.add_edges(g)
+    add_resolved_edges(g, resolver)
+    replace_quoterms(g, resolver)
+    return SysNet(root=si.root, g=g)
+    # return si.sn
 
 
 def parse2graph(txt: str, do_print: bool = False) -> nx.MultiDiGraph:  # noqa: FBT001 FBT002

@@ -1,6 +1,7 @@
 """用語関連."""
 
 
+
 from knowde.complex.__core__.tree2net import parse2net
 
 
