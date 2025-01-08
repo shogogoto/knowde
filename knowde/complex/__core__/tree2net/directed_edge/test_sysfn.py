@@ -8,12 +8,9 @@ from knowde.complex.__core__.sysnet.errors import SysNetNotFoundError
 from knowde.complex.__core__.sysnet.sysfn import to_sentence, to_term
 from knowde.complex.__core__.sysnet.sysnode import Def, Duplicable
 from knowde.complex.__core__.tree2net.directed_edge import add_resolved_edges, get_ifdef
-from knowde.complex.__core__.tree2net.directed_edge.extraction import (
-    check_and_merge_term,
-)
 from knowde.primitive.__core__.nxutil import to_nested
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
-from knowde.primitive.term import Term
+from knowde.primitive.term import Term, check_and_merge_term
 from knowde.primitive.term.markresolver import MarkResolver
 
 

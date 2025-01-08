@@ -3,39 +3,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Self
 
-import networkx as nx
 from pydantic import Field
 from typing_extensions import override
 
-from knowde.complex.__core__.sysnet.sysfn import (
-    check_duplicated_sentence,
-    to_def,
-    to_term,
-)
-from knowde.complex.__core__.sysnet.sysnode import (
-    Def,
-    IDef,
-)
+from knowde.complex.__core__.sysnet.sysnode import Def, IDef
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.__core__.util import parted
-from knowde.primitive.parser import get_leaves
-from knowde.primitive.term import MergedTerms, Term, check_and_merge_term
-from knowde.primitive.term.markresolver import MarkResolver
+from knowde.primitive.term import MergedTerms, Term
 
 if TYPE_CHECKING:
-    from lark import Tree
-
-
-def extract_leaves(tree: Tree) -> tuple[nx.MultiDiGraph, MarkResolver]:
-    """transformedなASTを処理."""
-    leaves = get_leaves(tree)
-    mt = check_and_merge_term(to_term(leaves))
-    check_duplicated_sentence(leaves)
-    mdefs, stddefs = MergedDef.create(mt, to_def(leaves))
-    g = nx.MultiDiGraph()
-    [md.add_edge(g) for md in mdefs]
-    [d.add_edge(g) for d in stddefs]
-    return g, MarkResolver.create(mt)
+    import networkx as nx
 
 
 class MergedDef(IDef, frozen=True):

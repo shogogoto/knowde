@@ -3,22 +3,42 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import networkx as nx
+
 from knowde.complex.__core__.sysnet import SysNet
+from knowde.complex.__core__.sysnet.sysfn import (
+    check_duplicated_sentence,
+    to_def,
+    to_term,
+)
+from knowde.complex.__core__.sysnet.sysnode.merged_def import MergedDef
 from knowde.complex.__core__.tree2net.directed_edge import (
     DirectedEdgeCollection,
     add_resolved_edges,
     replace_quoterms,
 )
-from knowde.complex.__core__.tree2net.directed_edge.extraction import extract_leaves
-from knowde.primitive.parser import parse2tree
+from knowde.primitive.parser import get_leaves, parse2tree
 from knowde.primitive.parser.testing import treeprint
+from knowde.primitive.term import check_and_merge_term
+from knowde.primitive.term.markresolver import MarkResolver
 
 from .interpreter import SysNetInterpreter
 from .transformer import TSysArg
 
 if TYPE_CHECKING:
-    import networkx as nx
     from lark import Tree
+
+
+def extract_leaves(tree: Tree) -> tuple[nx.MultiDiGraph, MarkResolver]:
+    """transformedなASTを処理."""
+    leaves = get_leaves(tree)
+    mt = check_and_merge_term(to_term(leaves))
+    check_duplicated_sentence(leaves)
+    mdefs, stddefs = MergedDef.create(mt, to_def(leaves))
+    g = nx.MultiDiGraph()
+    [md.add_edge(g) for md in mdefs]
+    [d.add_edge(g) for d in stddefs]
+    return g, MarkResolver.create(mt)
 
 
 def parse2net(txt: str, do_print: bool = False) -> SysNet:  # noqa: FBT001 FBT002

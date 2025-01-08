@@ -7,42 +7,17 @@ from pytest_unordered import unordered
 
 from knowde.complex.__core__.sysnet.errors import (
     DefSentenceConflictError,
-    SentenceConflictError,
 )
-from knowde.complex.__core__.sysnet.sysfn import check_duplicated_sentence, to_term
+from knowde.complex.__core__.sysnet.sysfn import (
+    to_def,
+    to_term,
+)
 from knowde.complex.__core__.sysnet.sysnode import Def
 from knowde.complex.__core__.tree2net.transformer import TSysArg
 from knowde.primitive.parser import get_leaves, parse2tree
-from knowde.primitive.term import Term
-from knowde.primitive.term.errors import TermConflictError
+from knowde.primitive.term import Term, check_and_merge_term
 
-from . import MergedDef, check_and_merge_term, to_def
-
-
-def test_duplicate_term() -> None:
-    """用語重複."""
-    _s = """
-        # X
-            A: aaa
-            A: dupl
-    """
-    _t = parse2tree(_s, TSysArg())
-    leaves = get_leaves(_t)
-    with pytest.raises(TermConflictError):
-        check_and_merge_term(to_term(leaves))
-
-
-def test_duplicate_sentence() -> None:
-    """文重複."""
-    _s = """
-        # X
-            aaa
-            A: aaa
-    """
-    _t = parse2tree(_s, TSysArg())
-    leaves = get_leaves(_t)
-    with pytest.raises(SentenceConflictError):
-        check_duplicated_sentence(leaves)
+from . import MergedDef
 
 
 def test_merged_def() -> None:
