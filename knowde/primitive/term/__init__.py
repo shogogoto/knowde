@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from collections import Counter
 from functools import cached_property
-from typing import NoReturn, Self
+from typing import Iterable, NoReturn, Self
 
 import networkx as nx
 from more_itertools import flatten
@@ -191,3 +191,8 @@ class MergedTerms(BaseModel, frozen=True):
     def frozen(self) -> frozenset[Term]:
         """Frozen merged terms."""
         return frozenset(self.terms)
+
+
+def check_and_merge_term(terms: Iterable[Term]) -> MergedTerms:
+    """重複チェック."""
+    return MergedTerms().add(*terms)

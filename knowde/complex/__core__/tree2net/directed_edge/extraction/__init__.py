@@ -1,49 +1,41 @@
 """ツリーの重複チェック."""
 from __future__ import annotations
 
-from typing import Self
+from typing import TYPE_CHECKING, Self
 
 import networkx as nx
-from lark import Tree
 from pydantic import Field
 from typing_extensions import override
 
-from knowde.complex.__core__.sysnet.sysfn import to_def, to_sentence, to_term
+from knowde.complex.__core__.sysnet.sysfn import (
+    check_duplicated_sentence,
+    to_def,
+    to_term,
+)
 from knowde.complex.__core__.sysnet.sysnode import (
     Def,
-    DummySentence,
-    Duplicable,
     IDef,
-    SysArg,
 )
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.__core__.util import parted
-from knowde.primitive.term import MergedTerms, Term
+from knowde.primitive.parser import get_leaves
+from knowde.primitive.term import MergedTerms, Term, check_and_merge_term
 from knowde.primitive.term.markresolver import MarkResolver
 
-from .errors import sentence_dup_checker
+if TYPE_CHECKING:
+    from lark import Tree
 
 
 def extract_leaves(tree: Tree) -> tuple[nx.MultiDiGraph, MarkResolver]:
     """transformedなASTを処理."""
     leaves = get_leaves(tree)
-    mt = check_and_merge_term(leaves)
+    mt = check_and_merge_term(to_term(leaves))
+    check_duplicated_sentence(leaves)
     mdefs, stddefs = MergedDef.create(mt, to_def(leaves))
     g = nx.MultiDiGraph()
     [md.add_edge(g) for md in mdefs]
     [d.add_edge(g) for d in stddefs]
     return g, MarkResolver.create(mt)
-
-
-def check_and_merge_term(leaves: list[SysArg]) -> MergedTerms:
-    """重複チェック."""
-    mt = MergedTerms().add(*to_term(leaves))
-    s_chk = sentence_dup_checker()
-    for s in to_sentence(leaves):
-        if isinstance(s, (DummySentence, Duplicable)):
-            continue
-        s_chk(s)
-    return mt
 
 
 class MergedDef(IDef, frozen=True):
@@ -89,8 +81,3 @@ class MergedDef(IDef, frozen=True):
         if len(subs) >= 1:
             EdgeType.BELOW.add_path(g, d.sentence, subs[0])
             EdgeType.SIBLING.add_path(g, *subs)
-
-
-def get_leaves(tree: Tree) -> list[SysArg]:
-    """leafを全て取得."""
-    return list(tree.scan_values(lambda v: not isinstance(v, Tree)))

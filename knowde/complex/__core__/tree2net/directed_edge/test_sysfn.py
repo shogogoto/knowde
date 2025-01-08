@@ -5,11 +5,11 @@ import networkx as nx
 import pytest
 
 from knowde.complex.__core__.sysnet.errors import SysNetNotFoundError
+from knowde.complex.__core__.sysnet.sysfn import to_sentence, to_term
 from knowde.complex.__core__.sysnet.sysnode import Def, Duplicable
 from knowde.complex.__core__.tree2net.directed_edge import add_resolved_edges, get_ifdef
 from knowde.complex.__core__.tree2net.directed_edge.extraction import (
     check_and_merge_term,
-    to_sentence,
 )
 from knowde.primitive.__core__.nxutil import to_nested
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
@@ -37,7 +37,7 @@ def test_resolved() -> None:
     ]
     EdgeType.SIBLING.add_path(g, "h2", *to_sentence(defs2))
     [d.add_edge(g) for d in [*defs, *defs2]]
-    mt = check_and_merge_term([*defs, *defs2])
+    mt = check_and_merge_term(to_term([*defs, *defs2]))
     resolver = MarkResolver.create(mt)
     add_resolved_edges(g, resolver)
     access = EdgeType.RESOLVED.succ

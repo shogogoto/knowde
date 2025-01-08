@@ -1,11 +1,14 @@
 """sys系関数."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING, Hashable, Iterable
 
 from lark import Token
 
-from knowde.complex.__core__.sysnet.errors import SysNetNotFoundError
+from knowde.complex.__core__.sysnet.errors import (
+    SysNetNotFoundError,
+    sentence_dup_checker,
+)
 from knowde.complex.__core__.sysnet.sysnode import (
     Def,
     DummySentence,
@@ -20,7 +23,7 @@ if TYPE_CHECKING:
     import networkx as nx
 
 
-def to_term(vs: Iterable[SysArg]) -> list[Term]:
+def to_term(vs: Iterable[Hashable]) -> list[Term]:
     """termのみを取り出す."""
     return [v.term for v in vs if isinstance(v, Def)]
 
@@ -30,10 +33,19 @@ def to_quoterm(vs: Iterable[SysArg]) -> list[Token]:
     return [v for v in vs if isinstance(v, Token) and v.type == "QUOTERM"]
 
 
-def to_sentence(vs: Iterable[SysArg]) -> list[str | DummySentence]:
+def to_sentence(vs: Iterable[Hashable]) -> list[str | DummySentence]:
     """文のみを取り出す."""
     defed = [v.sentence for v in vs if isinstance(v, Def)]
     return [*defed, *[v for v in vs if isinstance(v, (str, Duplicable))]]
+
+
+def check_duplicated_sentence(vs: Iterable[Hashable]) -> None:
+    """文の重複チェック."""
+    s_chk = sentence_dup_checker()
+    for s in to_sentence(vs):
+        if isinstance(s, (DummySentence, Duplicable)):
+            continue
+        s_chk(s)
 
 
 def to_def(vs: Iterable[SysArg]) -> list[Def]:
