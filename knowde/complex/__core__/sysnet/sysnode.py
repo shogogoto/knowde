@@ -73,6 +73,11 @@ class Def(IDef, frozen=True):
                 msg = f"'{self}'が他の定義文と重複しています"
                 raise DefSentenceConflictError(msg, terms)
 
+    @property
+    def is_dummy(self) -> bool:
+        """文がダミー."""
+        return isinstance(self.sentence, DummySentence)
+
 
 class Duplicable(BaseModel, frozen=True):
     """コメントや区分け文字列.

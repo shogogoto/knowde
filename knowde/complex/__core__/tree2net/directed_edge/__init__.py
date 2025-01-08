@@ -6,20 +6,13 @@ from typing import TYPE_CHECKING, Any, Callable, Hashable, TypeAlias
 from lark import Token  # noqa: TCH002
 from pydantic import BaseModel, Field
 
-from knowde.complex.__core__.sysnet.errors import (
-    QuotermNotFoundError,
-    SysNetNotFoundError,
-)
+from knowde.complex.__core__.sysnet.errors import QuotermNotFoundError
+from knowde.complex.__core__.sysnet.sysfn import get_ifdef, to_quoterm, to_sentence
 from knowde.complex.__core__.sysnet.sysnode import (
     Def,
     DummySentence,
     Duplicable,
     SysArg,
-    SysNode,
-)
-from knowde.complex.__core__.tree2net.directed_edge.extraction import (
-    to_quoterm,
-    to_sentence,
 )
 from knowde.primitive.__core__.nxutil import replace_node
 from knowde.primitive.__core__.nxutil.edge_type import Direction, EdgeType
@@ -77,7 +70,7 @@ class DirectedEdgeCollection(BaseModel):
             v.add_edge(g, node2sentence)
 
 
-def node2sentence(n: SysArg) -> str | DummySentence | Token:
+def node2sentence(n: SysArg) -> str | DummySentence:
     """関係のハブとなる文へ."""
     match n:
         case Term():
@@ -104,26 +97,6 @@ def replace_quoterms(g: nx.DiGraph, resolver: MarkResolver) -> None:
         if s is None:
             raise TypeError
         replace_node(g, qt, s)
-
-
-def get_ifdef(g: nx.DiGraph, n: SysNode) -> SysArg:
-    """defがあれば返す."""
-    if n not in g:
-        msg = f"{n} is not in this graph."
-        raise SysNetNotFoundError(msg)
-    match n:
-        case str() | Duplicable():
-            term = EdgeType.DEF.get_pred_or_none(g, n)
-            if term is None:
-                return n
-            return Def(term=term, sentence=n)
-        case Term():
-            s = EdgeType.DEF.get_succ_or_none(g, n)
-            if s is None:
-                return n
-            return Def(term=n, sentence=s)
-        case _:
-            raise TypeError(n)
 
 
 def add_resolved_edges(g: nx.DiGraph, resolver: MarkResolver) -> None:

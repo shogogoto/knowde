@@ -1,13 +1,14 @@
 """ツリーの重複チェック."""
 from __future__ import annotations
 
-from typing import Iterable, Self
+from typing import Self
 
 import networkx as nx
-from lark import Token, Tree
+from lark import Tree
 from pydantic import Field
 from typing_extensions import override
 
+from knowde.complex.__core__.sysnet.sysfn import to_def, to_sentence, to_term
 from knowde.complex.__core__.sysnet.sysnode import (
     Def,
     DummySentence,
@@ -75,9 +76,7 @@ class MergedDef(IDef, frozen=True):
             if len(tgt) == 1:  # マージ不要
                 remain.extend(tgt)
                 continue
-            stcs = [
-                d.sentence for d in tgt if not isinstance(d.sentence, DummySentence)
-            ]
+            stcs = [d.sentence for d in tgt if not d.is_dummy]
             ls.append(cls.one(t, *stcs))
         return ls, remain
 
@@ -95,29 +94,3 @@ class MergedDef(IDef, frozen=True):
 def get_leaves(tree: Tree) -> list[SysArg]:
     """leafを全て取得."""
     return list(tree.scan_values(lambda v: not isinstance(v, Tree)))
-
-
-def is_duplicable(v: SysArg) -> bool:
-    """filter用."""
-    return isinstance(v, Duplicable)
-
-
-def to_term(vs: Iterable[SysArg]) -> list[Term]:
-    """termのみを取り出す."""
-    return [v.term for v in vs if isinstance(v, Def)]
-
-
-def to_quoterm(vs: Iterable[SysArg]) -> list[Token]:
-    """termのみを取り出す."""
-    return [v for v in vs if isinstance(v, Token) and v.type == "QUOTERM"]
-
-
-def to_sentence(vs: Iterable[SysArg]) -> list[str | DummySentence]:
-    """文のみを取り出す."""
-    defed = [v.sentence for v in vs if isinstance(v, Def)]
-    return [*defed, *[v for v in vs if isinstance(v, (str, Duplicable))]]
-
-
-def to_def(vs: Iterable[SysArg]) -> list[Def]:
-    """文のみを取り出す."""
-    return [v for v in vs if isinstance(v, Def)]

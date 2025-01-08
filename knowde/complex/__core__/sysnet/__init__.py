@@ -4,18 +4,14 @@ from __future__ import annotations
 import networkx as nx
 from pydantic import BaseModel, Field
 
-from knowde.primitive.__core__.nxutil import (
-    EdgeType,
-    to_nested,
-)
+from knowde.complex.__core__.sysnet.sysfn import get_ifdef
+from knowde.primitive.__core__.nxutil import EdgeType, to_nested
 from knowde.primitive.__core__.types import NXGraph
 from knowde.primitive.heading import get_headings
 from knowde.primitive.term import Term
 
-from .errors import (
-    SysNetNotFoundError,
-)
-from .sysnode import Def, Duplicable, SysArg, SysNode
+from .errors import SysNetNotFoundError
+from .sysnode import Duplicable, SysArg, SysNode
 
 
 class SysNet(BaseModel, frozen=True):
@@ -29,20 +25,7 @@ class SysNet(BaseModel, frozen=True):
         if n not in self.g:
             msg = f"{n} is not in system[{self.root}]."
             raise SysNetNotFoundError(msg)
-        # return get_ifdef(self.g, n)
-        match n:
-            case str() | Duplicable():
-                term = EdgeType.DEF.get_pred_or_none(self.g, n)
-                if term is None:
-                    return n
-                return Def(term=term, sentence=n)
-            case Term():
-                s = EdgeType.DEF.get_succ_or_none(self.g, n)
-                if s is None:
-                    return n
-                return Def(term=n, sentence=s)
-            case _:
-                raise TypeError
+        return get_ifdef(self.g, n)
 
     @property
     def sentences(self) -> list[str]:
