@@ -34,14 +34,20 @@ def exclude_heading(children: list[Hashable]) -> list:
     return [c for c in children if not (isinstance(c, Token) and c.type in H_TYPES)]
 
 
-class SysNetInterpreter(Interpreter[SysNode, TReturn], BaseModel):
+class SysNetInterpreter(
+    Interpreter[SysNode, TReturn],
+    BaseModel,
+    arbitrary_types_allowed=True,
+):
     """SysNet構築."""
 
     sn: SysNet = Field(default_factory=lambda: SysNet(root="dummy"))  # 差し替えられる
     col: DirectedEdgeCollection = Field(default_factory=DirectedEdgeCollection)
+    root: Token | str = "dummy"
 
     def h1(self, tree: Tree) -> SysNet:  # noqa: D102
         p = tree.children[0]
+        self.root = p
         self.sn = SysNet(root=p)
         children = self.visit_children(tree)
         self._add_indent(children[1:], p)

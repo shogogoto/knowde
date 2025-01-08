@@ -110,7 +110,7 @@ def to_term(vs: list[SysArg]) -> list[Term]:
 def to_sentence(vs: list[SysArg]) -> list[str | DummySentence]:
     """文のみを取り出す."""
     defed = [v.sentence for v in vs if isinstance(v, Def)]
-    return [*defed, *[v for v in vs if isinstance(v, str)]]
+    return [*defed, *[v for v in vs if isinstance(v, (str, Duplicable))]]
 
 
 def to_def(vs: list[SysArg]) -> list[Def]:

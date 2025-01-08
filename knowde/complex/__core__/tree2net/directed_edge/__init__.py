@@ -6,13 +6,18 @@ from typing import TYPE_CHECKING, Any, Callable, Hashable, TypeAlias
 from lark import Token
 from pydantic import BaseModel, Field
 
-from knowde.complex.__core__.sysnet.errors import QuotermNotFoundError
+from knowde.complex.__core__.sysnet.errors import (
+    QuotermNotFoundError,
+    SysNetNotFoundError,
+)
 from knowde.complex.__core__.sysnet.sysnode import (
     Def,
     DummySentence,
     Duplicable,
     SysArg,
+    SysNode,
 )
+from knowde.complex.__core__.tree2net.directed_edge.extraction import to_sentence
 from knowde.primitive.__core__.nxutil import replace_node
 from knowde.primitive.__core__.nxutil.edge_type import Direction, EdgeType
 from knowde.primitive.term import Term
@@ -89,10 +94,6 @@ def is_quoterm(v: SysArg) -> bool:
     return isinstance(v, Token) and v.type == "QUOTERM"
 
 
-# def get_ifdef(g: nx.DiGraph, n: SysNode) -> None:
-#     pass
-
-
 def replace_quoterms(g: nx.DiGraph, resolver: MarkResolver) -> None:
     """引用用語を1文に置換."""
     for qt in [n for n in g.nodes if is_quoterm(n)]:
@@ -105,3 +106,38 @@ def replace_quoterms(g: nx.DiGraph, resolver: MarkResolver) -> None:
         if s is None:
             raise TypeError
         replace_node(g, qt, s)
+
+
+def get_ifdef(g: nx.DiGraph, n: SysNode) -> SysArg:
+    """defがあれば返す."""
+    if n not in g:
+        msg = f"{n} is not in this graph."
+        raise SysNetNotFoundError(msg)
+    match n:
+        case str() | Duplicable():
+            term = EdgeType.DEF.get_pred_or_none(g, n)
+            if term is None:
+                return n
+            return Def(term=term, sentence=n)
+        case Term():
+            s = EdgeType.DEF.get_succ_or_none(g, n)
+            if s is None:
+                return n
+            return Def(term=n, sentence=s)
+        case _:
+            raise TypeError(n)
+
+
+def add_resolved_edges(g: nx.DiGraph, resolver: MarkResolver) -> None:
+    """Defの依存関係エッジをsentence同士で張る."""
+    for s in to_sentence(g.nodes):
+        mt = resolver.sentence2marktree(s)  # sentenceからmark tree
+        termtree = resolver.mark2term(mt)  # 文のmark解決
+        got = get_ifdef(g, s)
+        if isinstance(got, Def):  # term側のmark解決
+            t_resolved = resolver.mark2term(resolver.term2marktree(got.term))[got.term]
+            termtree.update(t_resolved)
+        for t in termtree:
+            n = get_ifdef(g, t)
+            if isinstance(n, Def):
+                EdgeType.RESOLVED.add_edge(g, s, n.sentence)

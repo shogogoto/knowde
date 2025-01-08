@@ -4,7 +4,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from knowde.complex.__core__.sysnet import SysNet
-from knowde.complex.__core__.tree2net.directed_edge import replace_quoterms
+from knowde.complex.__core__.tree2net.directed_edge import (
+    add_resolved_edges,
+    replace_quoterms,
+)
 from knowde.complex.__core__.tree2net.directed_edge.extraction import extract_leaves
 from knowde.primitive.parser import parse2tree
 from knowde.primitive.parser.testing import treeprint
@@ -36,5 +39,6 @@ def parse2graph(txt: str, do_print: bool = False) -> nx.MultiDiGraph:  # noqa: F
 
     g, resolver = extract_leaves(_t)
     si.col.add_edges(g)
+    add_resolved_edges(g, resolver)
     replace_quoterms(g, resolver)
     return g
