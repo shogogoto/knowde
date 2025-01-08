@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable, Hashable, TypeAlias
 
-from lark import Token
+from lark import Token  # noqa: TCH002
 from pydantic import BaseModel, Field
 
 from knowde.complex.__core__.sysnet.errors import (
@@ -17,7 +17,10 @@ from knowde.complex.__core__.sysnet.sysnode import (
     SysArg,
     SysNode,
 )
-from knowde.complex.__core__.tree2net.directed_edge.extraction import to_sentence
+from knowde.complex.__core__.tree2net.directed_edge.extraction import (
+    to_quoterm,
+    to_sentence,
+)
 from knowde.primitive.__core__.nxutil import replace_node
 from knowde.primitive.__core__.nxutil.edge_type import Direction, EdgeType
 from knowde.primitive.term import Term
@@ -89,14 +92,9 @@ def node2sentence(n: SysArg) -> str | DummySentence | Token:
             raise TypeError(msg)
 
 
-def is_quoterm(v: SysArg) -> bool:
-    """filter用."""
-    return isinstance(v, Token) and v.type == "QUOTERM"
-
-
 def replace_quoterms(g: nx.DiGraph, resolver: MarkResolver) -> None:
     """引用用語を1文に置換."""
-    for qt in [n for n in g.nodes if is_quoterm(n)]:
+    for qt in to_quoterm(g.nodes):
         name = qt.replace("`", "")
         if name not in resolver.lookup:
             msg = f"'{name}'は用語として定義されていません"

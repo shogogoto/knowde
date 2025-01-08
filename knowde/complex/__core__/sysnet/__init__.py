@@ -1,8 +1,6 @@
 """系ネットワーク."""
 from __future__ import annotations
 
-from typing import Any
-
 import networkx as nx
 from pydantic import BaseModel, Field
 
@@ -12,9 +10,7 @@ from knowde.primitive.__core__.nxutil import (
 )
 from knowde.primitive.__core__.types import NXGraph
 from knowde.primitive.heading import get_headings
-from knowde.primitive.term import (
-    Term,
-)
+from knowde.primitive.term import Term
 
 from .errors import (
     SysNetNotFoundError,
@@ -28,15 +24,12 @@ class SysNet(BaseModel, frozen=True):
     root: str
     g: NXGraph = Field(default_factory=nx.MultiDiGraph)
 
-    def model_post_init(self, __context: Any) -> None:  # noqa: ANN401 D102
-        self.g.add_node(self.root)
-        # self._chk(self.root)
-
     def get(self, n: SysNode) -> SysArg:
         """文に紐づく用語があれば定義を返す."""
         if n not in self.g:
             msg = f"{n} is not in system[{self.root}]."
             raise SysNetNotFoundError(msg)
+        # return get_ifdef(self.g, n)
         match n:
             case str() | Duplicable():
                 term = EdgeType.DEF.get_pred_or_none(self.g, n)

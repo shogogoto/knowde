@@ -1,10 +1,10 @@
 """ツリーの重複チェック."""
 from __future__ import annotations
 
-from typing import Self
+from typing import Iterable, Self
 
 import networkx as nx
-from lark import Tree
+from lark import Token, Tree
 from pydantic import Field
 from typing_extensions import override
 
@@ -102,17 +102,22 @@ def is_duplicable(v: SysArg) -> bool:
     return isinstance(v, Duplicable)
 
 
-def to_term(vs: list[SysArg]) -> list[Term]:
+def to_term(vs: Iterable[SysArg]) -> list[Term]:
     """termのみを取り出す."""
     return [v.term for v in vs if isinstance(v, Def)]
 
 
-def to_sentence(vs: list[SysArg]) -> list[str | DummySentence]:
+def to_quoterm(vs: Iterable[SysArg]) -> list[Token]:
+    """termのみを取り出す."""
+    return [v for v in vs if isinstance(v, Token) and v.type == "QUOTERM"]
+
+
+def to_sentence(vs: Iterable[SysArg]) -> list[str | DummySentence]:
     """文のみを取り出す."""
     defed = [v.sentence for v in vs if isinstance(v, Def)]
     return [*defed, *[v for v in vs if isinstance(v, (str, Duplicable))]]
 
 
-def to_def(vs: list[SysArg]) -> list[Def]:
+def to_def(vs: Iterable[SysArg]) -> list[Def]:
     """文のみを取り出す."""
     return [v for v in vs if isinstance(v, Def)]

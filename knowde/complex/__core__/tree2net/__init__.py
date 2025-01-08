@@ -34,12 +34,7 @@ def parse2net(txt: str, do_print: bool = False) -> SysNet:  # noqa: FBT001 FBT00
 
 def parse2graph(txt: str, do_print: bool = False) -> nx.MultiDiGraph:  # noqa: FBT001 FBT002
     """文からsysnetへ(remake)."""
-    _t = parse2tree(txt, TSysArg())
-    if do_print:
-        treeprint(_t, True)  # noqa: FBT003
-    si = SysNetInterpreter()
-    si.visit(_t)
-    return _build_graph(_t, si.col)
+    return parse2net(txt, do_print).g
 
 
 def _build_graph(tree: Tree, col: DirectedEdgeCollection) -> nx.MultiDiGraph:
