@@ -37,13 +37,13 @@ def get_parent_or_none(sn: SysNet, n: SysArg) -> SysNode | None:
 
 def get_refer(sn: SysNet, n: SysArg) -> list[SysArg]:
     """引用・利用する側."""
-    vals = list(EdgeType.RESOLVED.succ(sn.g, n))
+    vals = list(EdgeType.RESOLVED.pred(sn.g, n))
     return list(map(sn.get, vals))
 
 
 def get_referred(sn: SysNet, n: SysArg) -> list[SysArg]:
     """引用される依存元."""
-    vals = list(EdgeType.RESOLVED.pred(sn.g, n))
+    vals = list(EdgeType.RESOLVED.succ(sn.g, n))
     return list(map(sn.get, vals))
 
 
