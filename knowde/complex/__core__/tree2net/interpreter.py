@@ -33,8 +33,8 @@ def exclude_heading(children: list[Hashable]) -> list:
     return [c for c in children if not (isinstance(c, Token) and c.type in H_TYPES)]
 
 
-class SysNetInterpreter(
-    Interpreter[SysNode, TReturn],
+class SysNetInterpreter[SysNode, TReturn](
+    Interpreter,
     BaseModel,
     arbitrary_types_allowed=True,
 ):

@@ -9,22 +9,6 @@ from knowde.complex.__core__.file_io import nx2json_dump
 from knowde.complex.systats import Systats, UnificationRatio
 from knowde.feature.__core__ import try_parse2net
 
-"""
-欲しいCLIは?
-    フィードバックを得られるもの
-        1. 文法チェック
-        2. view
-            1NW(+別バージョン)のみまず提供するか
-            1NW0N
-            1NW1N
-            1NW2N
-            2NW0N
-            2NW1N
-            2NW2N
-        3. 差分
-
-"""
-
 
 @click.command("parse")
 @click.argument("stdin", type=click.File("r"), default="-")
