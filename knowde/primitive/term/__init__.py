@@ -87,6 +87,8 @@ class Term(BaseModel, frozen=True):
         """同じ名前を持つ."""
         s1 = set(self.names)
         s2 = set(names)
+        if len(s1) == len(s2) == 0:
+            return True
         common = s1.intersection(s2)
         return len(common) > 0
 
