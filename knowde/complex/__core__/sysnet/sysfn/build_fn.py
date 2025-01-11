@@ -16,10 +16,10 @@ def replace_quoterms(g: nx.DiGraph, resolver: MarkResolver) -> None:
     """引用用語を1文に置換."""
     for qt in to_quoterm(g.nodes):
         name = qt.replace("`", "")
-        if name not in resolver.lookup:
+        term = resolver.lookup.get(name)
+        if term is None:
             msg = f"'{name}'は用語として定義されていません"
             raise QuotermNotFoundError(msg)
-        term = resolver.lookup[name]
         s = EdgeType.DEF.get_succ_or_none(g, term)
         if s is None:
             raise TypeError

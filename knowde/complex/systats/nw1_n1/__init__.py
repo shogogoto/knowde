@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from functools import cache
-from typing import Final, Hashable
+from typing import Final
 
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.sysnet.sysnode import SysArg, SysNode
@@ -11,7 +11,7 @@ from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.heading import get_headings
 
 
-def get_details(sn: SysNet, n: Hashable) -> list[list[SysNode]]:
+def get_details(sn: SysNet, n: SysArg) -> list[list[SysNode]]:
     """詳細な記述."""
     vals = []
     for below_s in EdgeType.BELOW.succ(sn.g, n):
@@ -33,6 +33,30 @@ def get_parent_or_none(sn: SysNet, n: SysArg) -> SysNode | None:
     if parent[0] in get_headings(sn.g, sn.root):
         return None
     return parent[0]
+
+
+def get_refer(sn: SysNet, n: SysArg) -> list[SysArg]:
+    """引用・利用する側."""
+    vals = list(EdgeType.RESOLVED.succ(sn.g, n))
+    return list(map(sn.get, vals))
+
+
+def get_referred(sn: SysNet, n: SysArg) -> list[SysArg]:
+    """引用される依存元."""
+    vals = list(EdgeType.RESOLVED.pred(sn.g, n))
+    return list(map(sn.get, vals))
+
+
+def get_premise(sn: SysNet, n: SysArg) -> list[SysArg]:
+    """前提."""
+    vals = list(EdgeType.TO.pred(sn.g, n))
+    return list(map(sn.get, vals))
+
+
+def get_conclusion(sn: SysNet, n: SysArg) -> list[SysArg]:
+    """帰結."""
+    vals = list(EdgeType.TO.succ(sn.g, n))
+    return list(map(sn.get, vals))
 
 
 # 依存性関連エッジ

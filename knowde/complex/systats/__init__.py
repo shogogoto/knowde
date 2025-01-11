@@ -71,10 +71,6 @@ class UnificationRatio(Enum):
         self.fn = lambda sn: round(fn(sn), 3)
 
 
-# def get_systats_ratio(sn: SysNet) -> dict:
-#     """1系統計からの比率比率."""
-
-
 def n_char(sn: SysNet) -> int:  # noqa: D103
     c = 0
     for n in sn.g.nodes:

@@ -25,7 +25,8 @@ if TYPE_CHECKING:
 
 def to_term(vs: Iterable[Hashable]) -> list[Term]:
     """termのみを取り出す."""
-    return [v.term for v in vs if isinstance(v, Def)]
+    terms = [n for n in vs if isinstance(n, Term)]
+    return [*terms, *[v.term for v in vs if isinstance(v, Def)]]
 
 
 def to_quoterm(vs: Iterable[SysArg]) -> list[Token]:

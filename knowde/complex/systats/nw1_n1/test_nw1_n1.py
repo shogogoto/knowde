@@ -3,8 +3,10 @@
 
 from knowde.complex.__core__.tree2net import parse2net
 from knowde.complex.systats.nw1_n1 import (
+    get_conclusion,
     get_details,
     get_parent_or_none,
+    get_premise,
     has_dependency,
 )
 
@@ -57,3 +59,41 @@ def test_has_dependency() -> None:
     _sn = parse2net(_s)
     assert has_dependency(_sn, "aaa")
     assert not has_dependency(_sn, "bro")
+
+
+def test_refer_referred() -> None:
+    """用語引用."""
+    _s = r"""
+        # h1
+            aaa
+                -> A| bbb
+                <- 000
+                <-> ccc
+            bro
+                little
+            `A`
+                -> ddd
+
+    """
+    sn = parse2net(_s)
+    assert get_premise(sn, "bbb") == ["aaa"]
+    assert get_conclusion(sn, "bbb") == ["ddd"]
+
+
+def test_premise_conclusion() -> None:
+    """用語引用."""
+    _s = r"""
+        # h1
+            aaa
+                -> A| bbb
+                <- 000
+                <-> ccc
+            bro
+                little
+            `A`
+                -> ddd
+
+    """
+    sn = parse2net(_s)
+    assert get_premise(sn, "bbb") == ["aaa"]
+    assert get_conclusion(sn, "bbb") == ["ddd"]

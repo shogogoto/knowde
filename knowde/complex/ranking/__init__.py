@@ -8,7 +8,8 @@ from pydantic import BaseModel
 
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.sysnet.sysnode import SysArg
-from knowde.complex.__core__.tree2net.ranking.node_index import (
+
+from .node_index import (
     Conclusion,
     Description,
     Premise,

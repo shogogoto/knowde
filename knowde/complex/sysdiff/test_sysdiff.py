@@ -1,4 +1,4 @@
-"""系の差分."""
+"""ネットワーク2 node0 系の差分."""
 
 
 from knowde.complex.__core__.tree2net import parse2net

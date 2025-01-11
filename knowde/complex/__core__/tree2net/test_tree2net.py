@@ -183,7 +183,6 @@ def test_non_dupedge() -> None:
     # """
 
 
-@pytest.mark.skip()  # _sn = parse2net(_s)
 def test_alias_resolve_error() -> None:
     """エラー再現(alias引用でMarkUncontainedError)."""
     _s = """

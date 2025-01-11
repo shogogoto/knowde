@@ -4,14 +4,14 @@ from __future__ import annotations
 import networkx as nx
 from pydantic import BaseModel, Field
 
-from knowde.complex.__core__.sysnet.sysfn import get_ifdef
+from knowde.complex.__core__.sysnet.sysfn import get_ifdef, to_sentence, to_term
 from knowde.primitive.__core__.nxutil import EdgeType, to_nested
 from knowde.primitive.__core__.types import NXGraph
 from knowde.primitive.heading import get_headings
 from knowde.primitive.term import Term
 
 from .errors import SysNetNotFoundError
-from .sysnode import Duplicable, SysArg, SysNode
+from .sysnode import SysArg, SysNode
 
 
 class SysNet(BaseModel, frozen=True):
@@ -30,15 +30,14 @@ class SysNet(BaseModel, frozen=True):
     @property
     def sentences(self) -> list[str]:
         """文."""
+        stc = to_sentence(self.g.nodes)
         hs = get_headings(self.g, self.root)
-        return [
-            n for n in self.g.nodes if isinstance(n, (str, Duplicable)) and n not in hs
-        ]
+        return [n for n in stc if n not in hs]
 
     @property
     def terms(self) -> list[Term]:
         """用語."""
-        return [n for n in self.g.nodes if isinstance(n, Term)]
+        return to_term(self.g.nodes)
 
     def get_resolved(self, s: str) -> dict:
         """解決済み入れ子文を取得."""
