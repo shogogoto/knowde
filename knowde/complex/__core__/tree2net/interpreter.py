@@ -1,7 +1,7 @@
 """parse treeを再帰的に解析."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Final, Hashable, TypeAlias
+from typing import TYPE_CHECKING, Final, Hashable
 
 from lark import Token, Tree
 from lark.visitors import Interpreter
@@ -17,8 +17,6 @@ from knowde.primitive.__core__.util import parted
 if TYPE_CHECKING:
     from lark.tree import Branch
 
-TReturn: TypeAlias = tuple[SysNode]
-
 
 H_TYPES: Final = [f"H{i}" for i in range(2, 7)]
 
@@ -33,7 +31,7 @@ def exclude_heading(children: list[Hashable]) -> list:
     return [c for c in children if not (isinstance(c, Token) and c.type in H_TYPES)]
 
 
-class SysNetInterpreter[SysNode, TReturn](
+class SysNetInterpreter(
     Interpreter,
     BaseModel,
     arbitrary_types_allowed=True,
@@ -60,7 +58,7 @@ class SysNetInterpreter[SysNode, TReturn](
             self.col.append(EdgeType.BELOW, Direction.FORWARD, parent, c)
             break
 
-    def block(self, tree: Tree) -> TReturn:  # noqa: D102
+    def block(self, tree: Tree) -> Branch:  # noqa: D102
         p = tree.children[0]
         children = self.visit_children(tree)
         ctxs, ns = parted(children[1:], lambda x: isinstance(x, tuple))
@@ -69,14 +67,14 @@ class SysNetInterpreter[SysNode, TReturn](
         self._add_indent(ns, p)
         return p
 
-    def ctxline(self, tree: Tree) -> TReturn:  # noqa: D102
+    def ctxline(self, tree: Tree) -> tuple[Branch, EdgeType, Direction]:  # noqa: D102
         t, d = tree.children[0]
         parent = tree.children[1]
         if isinstance(parent, Tree):
             parent = self.visit(parent)
         return parent, t, d
 
-    def __default__(self, tree: Tree) -> TReturn:
+    def __default__(self, tree: Tree) -> Branch:
         """Heading要素."""
         children = self.visit_children(tree)
         p = children[0]
