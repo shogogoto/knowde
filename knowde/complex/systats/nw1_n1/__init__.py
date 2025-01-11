@@ -2,13 +2,15 @@
 from __future__ import annotations
 
 from functools import cache
-from typing import Final
+from typing import Any, Callable, Final, Iterable, TypeAlias
 
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.sysnet.sysnode import SysArg, SysNode
 from knowde.primitive.__core__.nxutil import axiom_paths, to_nodes
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.heading import get_headings
+
+Nw1N1Fn: TypeAlias = Callable[[SysNet, SysArg], Any]
 
 
 def get_details(sn: SysNet, n: SysArg) -> list[list[SysNode]]:
@@ -58,6 +60,26 @@ def get_conclusion(sn: SysNet, n: SysArg) -> list[SysArg]:
     vals = list(EdgeType.TO.succ(sn.g, n))
     return list(map(sn.get, vals))
 
+
+def recursively_nw1n1(fn: Nw1N1Fn, count: int) -> Nw1N1Fn:
+    """再帰的取得."""
+    if count < 1:
+        raise ValueError
+
+    def _f(sn: SysNet, ns: Iterable[SysArg], i: int) -> Iterable:
+        """再帰."""
+        if i == 0:
+            return ns
+        return [e if isinstance(e, list) else [e, _f(sn, fn(sn, e), i - 1)] for e in ns]
+
+    def _g(sn: SysNet, n: SysArg) -> list:
+        ret = fn(sn, n)
+        return list(_f(sn, ret, count - 1))
+
+    return _g
+
+
+#######################################################
 
 # 依存性関連エッジ
 DEP_EDGE_TYPES: Final = [

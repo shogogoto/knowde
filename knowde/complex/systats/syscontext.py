@@ -33,3 +33,6 @@ class SysContext(Enum):
         """For merge."""
         self.prefix = prefix
         self.fn = fn
+
+
+# recursive get

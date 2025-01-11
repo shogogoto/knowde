@@ -13,6 +13,7 @@ from knowde.complex.systats.nw1_n1 import (
     get_refer,
     get_referred,
     has_dependency,
+    recursively_nw1n1,
 )
 
 
@@ -21,7 +22,7 @@ def test_get_detail_parent() -> None:
     _s = r"""
         # h1
             aaa
-            bbb
+            B: bbb
                 b1
                 b2
                     b21
@@ -30,10 +31,13 @@ def test_get_detail_parent() -> None:
             ccc
                 c1
                 c2
+            `B`
+                1b
+                2b
     """
     _sn = parse2net(_s)
     assert get_details(_sn, "aaa") == []
-    assert get_details(_sn, "bbb") == [["b1", "b2"]]
+    assert get_details(_sn, "bbb") == [["b1", "b2"], ["1b", "2b"]]
 
     assert get_parent_or_none(_sn, "aaa") is None
     assert get_parent_or_none(_sn, "b2") == "bbb"
@@ -112,3 +116,35 @@ def test_premise_conclusion() -> None:
     sn = parse2net(_s)
     assert get_premise(sn, "bbb") == ["aaa"]
     assert get_conclusion(sn, "bbb") == ["ddd"]
+
+
+def test_recursively() -> None:
+    """再帰的取得."""
+    _s = r"""
+        # h1
+            aaa
+                -> bbb
+                -> ccc
+                    -> ddd
+                        -> eee
+                    -> fff
+                -> ggg
+    """
+    sn = parse2net(_s)
+    f1 = recursively_nw1n1(get_conclusion, 1)
+    assert f1(sn, "aaa") == ["bbb", "ccc", "ggg"]
+    f2 = recursively_nw1n1(get_conclusion, 2)
+    assert f2(sn, "aaa") == [["bbb", []], ["ccc", ["ddd", "fff"]], ["ggg", []]]
+    f3 = recursively_nw1n1(get_conclusion, 3)
+    assert f3(sn, "aaa") == [
+        ["bbb", []],
+        ["ccc", [["ddd", ["eee"]], ["fff", []]]],
+        ["ggg", []],
+    ]
+    for i in range(4, 7):
+        f4 = recursively_nw1n1(get_conclusion, i)
+        assert f4(sn, "aaa") == [
+            ["bbb", []],
+            ["ccc", [["ddd", [["eee", []]]], ["fff", []]]],
+            ["ggg", []],
+        ]

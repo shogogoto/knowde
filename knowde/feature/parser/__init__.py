@@ -18,17 +18,23 @@ def parse_cmd(stdin: IO) -> None:
     _sn = try_parse2net(txt)
     js = nx2json_dump(_sn.g)
     print(js)  # noqa: T201
-    # g = nxread(js)
-    # pr = nx.pagerank(sn.graph)
-    # pr = {sn.get(k): v for k, v in pr.items()}
-    # pp(pr)
-    # pp(sorted(pr.items(), key=lambda i: i[1]))
+
+
+"""
+NW1
+    N0 ここ実装
+        重み付け
+        recursive n回
+    N1
+    N2
+
+"""
 
 
 @click.command("view")
 @click.argument("stdin", type=click.File("r"), default="-")
 # @click.option("-n", "--number", type=click.INT, help="表示数")
-def rank_cmd(stdin: IO) -> None:
+def view_cmd(stdin: IO) -> None:
     """重要度でソート."""
     txt = stdin.read()
     sn = try_parse2net(txt)
