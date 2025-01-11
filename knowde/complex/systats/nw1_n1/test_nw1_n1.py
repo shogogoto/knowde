@@ -7,7 +7,7 @@ from knowde.complex.__core__.sysnet.sysnode import Def
 from knowde.complex.__core__.tree2net import parse2net
 from knowde.complex.systats.nw1_n1 import (
     get_conclusion,
-    get_details,
+    get_detail,
     get_parent_or_none,
     get_premise,
     get_refer,
@@ -36,8 +36,8 @@ def test_get_detail_parent() -> None:
                 2b
     """
     _sn = parse2net(_s)
-    assert get_details(_sn, "aaa") == []
-    assert get_details(_sn, "bbb") == [["b1", "b2"], ["1b", "2b"]]
+    assert get_detail(_sn, "aaa") == []
+    assert get_detail(_sn, "bbb") == ["b1", "b2", "1b", "2b"]
 
     assert get_parent_or_none(_sn, "aaa") is None
     assert get_parent_or_none(_sn, "b2") == "bbb"
@@ -148,3 +148,30 @@ def test_recursively() -> None:
             ["ccc", [["ddd", [["eee", []]]], ["fff", []]]],
             ["ggg", []],
         ]
+
+
+def test_get_detail_recursively() -> None:
+    """詳細の再帰的取得."""
+    _s = r"""
+        # h
+            1
+                11
+                    21
+                        31
+                        32
+                    22
+                        33
+                        34
+                            41
+                            42
+                12
+
+    """
+    sn = parse2net(_s)
+    f1 = recursively_nw1n1(get_detail, 1)
+    assert f1(sn, "1") == ["11", "12"]
+    f2 = recursively_nw1n1(get_detail, 3)
+    assert f2(sn, "1") == [
+        ["11", [["21", ["31", "32"]], ["22", ["33", "34"]]]],
+        ["12", []],
+    ]

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from functools import cache
-from typing import Any, Callable, Final, Iterable, TypeAlias
+from typing import Callable, Final, Iterable, TypeAlias
 
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.sysnet.sysnode import SysArg, SysNode
@@ -10,15 +10,15 @@ from knowde.primitive.__core__.nxutil import axiom_paths, to_nodes
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.heading import get_headings
 
-Nw1N1Fn: TypeAlias = Callable[[SysNet, SysArg], Any]
+Nw1N1Fn: TypeAlias = Callable[[SysNet, SysArg], list[SysArg]]
 
 
-def get_details(sn: SysNet, n: SysArg) -> list[list[SysNode]]:
+def get_detail(sn: SysNet, n: SysArg) -> list[SysArg]:
     """詳細な記述."""
     vals = []
     for below_s in EdgeType.BELOW.succ(sn.g, n):
         sibs = to_nodes(sn.g, below_s, EdgeType.SIBLING.succ)
-        vals.append([sn.get(s) for s in sibs if s])  # None排除
+        vals.extend([sn.get(s) for s in sibs if s])  # None排除
     return vals
 
 

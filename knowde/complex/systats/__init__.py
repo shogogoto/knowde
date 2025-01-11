@@ -12,7 +12,7 @@ from more_itertools import flatten
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.sysnet.sysnode import Duplicable, SysArg
 from knowde.complex.systats.nw1_n1 import (
-    get_details,
+    get_detail,
     get_parent_or_none,
     has_dependency,
 )
@@ -99,7 +99,7 @@ def get_isolation(sn: SysNet) -> list[Hashable]:
         parent = get_parent_or_none(sn, n)
         if parent is not None:
             return False
-        details = list(flatten(get_details(sn, n)))
+        details = list(flatten(get_detail(sn, n)))
         if len(details) > 0:
             return False
         return not has_dependency(sn, n)

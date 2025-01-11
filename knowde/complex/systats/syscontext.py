@@ -8,7 +8,7 @@ from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.sysnet.sysnode import SysArg
 from knowde.complex.systats.nw1_n1 import (
     get_conclusion,
-    get_details,
+    get_detail,
     get_premise,
     get_refer,
     get_referred,
@@ -20,7 +20,7 @@ SysContextFn: TypeAlias = Callable[[SysNet, SysArg], Any]
 class SysContext(Enum):
     """文脈."""
 
-    DETAIL = ("detail", get_details)
+    DETAIL = ("detail", get_detail)
     REFER = ("ref", get_refer)
     REFERRED = ("rd", get_referred)
     PREMISE = ("pre", get_premise)
@@ -33,6 +33,3 @@ class SysContext(Enum):
         """For merge."""
         self.prefix = prefix
         self.fn = fn
-
-
-# recursive get
