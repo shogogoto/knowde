@@ -25,7 +25,7 @@ from .mark import (
 
 def eq_term(t1: Term, t2: Term) -> bool:
     """比較."""
-    return t1.has(*t2.names) and t1.alias == t2.alias
+    return set(t1.names) == set(t2.names) and t1.alias == t2.alias
 
 
 class Term(BaseModel, frozen=True):
@@ -87,8 +87,6 @@ class Term(BaseModel, frozen=True):
         """同じ名前を持つ."""
         s1 = set(self.names)
         s2 = set(names)
-        if len(s1) == len(s2) == 0:
-            return True
         common = s1.intersection(s2)
         return len(common) > 0
 
