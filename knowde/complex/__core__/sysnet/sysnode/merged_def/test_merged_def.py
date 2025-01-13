@@ -35,33 +35,35 @@ def test_merged_def() -> None:
             ETC: etc
             C:
             P | ppp
+            Q | qqq
     """
     _t = parse2tree(_s, TSysArg())
     leaves = get_leaves(_t)
     mt = check_and_merge_term(to_term(leaves))
     defs = to_def(leaves)
-    mdefs, stddefs = MergedDef.create(mt, defs)
+    mdefs, stds = MergedDef.create_and_parted(mt, defs)
     assert mdefs == unordered(
         [
             MergedDef.one(Term.create("A", "A1", "A2"), "aaa1", "aaa2", "aaa3"),
             MergedDef.one(Term.create("B", "B2"), "bbb"),
         ],
     )
-    assert stddefs == unordered(
+    assert stds == unordered(
         [
             Def.create("etc", ["ETC"]),
             Def.dummy_from("C"),
             Def.create("ppp", [], alias="P"),
+            Def.create("qqq", [], alias="Q"),
         ],
     )
 
     # edge追加
     g = nx.MultiDiGraph()
     [md.add_edge(g) for md in mdefs]
-    [d.add_edge(g) for d in stddefs]
+    [d.add_edge(g) for d in stds]
 
     with pytest.raises(DefSentenceConflictError):
         [md.add_edge(g) for md in mdefs]
 
     with pytest.raises(DefSentenceConflictError):
-        [d.add_edge(g) for d in stddefs]
+        [d.add_edge(g) for d in stds]

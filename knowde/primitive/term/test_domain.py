@@ -98,8 +98,7 @@ def test_merge_term() -> None:
     # 共通ありで合併
     t1 = Term.create("X", "x1")
     t2 = Term.create("X", "x2")
-    s.add(t1)
-    s.add(t2)
+    s.add(t1, t2)
     assert len(s) == 1
     assert s[0] == Term.create("X", "x1", "x2")
 

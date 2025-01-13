@@ -31,24 +31,29 @@ class MergedDef(IDef, frozen=True):
         return cls(term=t, sentences=list(sentences))
 
     @classmethod
-    def create(cls, mt: MergedTerms, defs: list[Def]) -> tuple[list[Self], list[Def]]:
+    def create_and_parted(
+        cls,
+        mt: MergedTerms,
+        defs: list[Def],
+    ) -> tuple[list[Self], list[Def]]:
         """Batch create."""
 
         def _will_merge(t: Term, d: Def) -> bool:
+            """自分自信を含める."""
             t_ = d.term
             return t.allows_merge(t_) or eq_term(t, t_)
 
-        ls = []
-        remain = []
+        merged = []
+        std = []  # 普通のDef
         other = defs
         for t in mt.frozen:
             tgt, other = parted(other, lambda d: _will_merge(t, d))  # noqa: B023
             if len(tgt) <= 1:  # マージ不要
-                remain.extend(tgt)
+                std.extend(tgt)
                 continue
             stcs = [d.sentence for d in tgt if not d.is_dummy]
-            ls.append(cls.one(t, *stcs))
-        return ls, remain
+            merged.append(cls.one(t, *stcs))
+        return merged, std
 
     @override
     def add_edge(self, g: nx.DiGraph) -> None:

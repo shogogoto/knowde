@@ -7,6 +7,7 @@ from knowde.complex.__core__.sysnet.errors import QuotermNotFoundError
 from knowde.complex.__core__.sysnet.sysnode import Def
 from knowde.primitive.__core__.nxutil import replace_node
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
+from knowde.primitive.term.errors import TermResolveError
 from knowde.primitive.term.markresolver import MarkResolver
 
 from . import get_ifdef, to_quoterm, to_sentence
@@ -34,7 +35,11 @@ def add_resolved_edges(g: nx.DiGraph, resolver: MarkResolver) -> None:
         got = get_ifdef(g, s)
         if isinstance(got, Def):  # term側のmark解決
             d = resolver.term2marktree(got.term)
-            t_resolved = resolver.mark2term(d)[got.term]
+            tmd = resolver.mark2term(d)
+            t_resolved = tmd.get(got.term)
+            if t_resolved is None:
+                msg = "'{got.term}'は用語lookupに含まれていません."
+                raise TermResolveError(msg, resolver.lookup.values())
             termtree.update(t_resolved)
         for t in termtree:
             n = get_ifdef(g, t)

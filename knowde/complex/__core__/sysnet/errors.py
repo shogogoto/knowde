@@ -10,16 +10,8 @@ class InterpreterError(Exception):
     """構文木解析用."""
 
 
-class UnResolvedTermError(InterpreterError):
-    """用語解決がまだ."""
-
-
 class SysNetNotFoundError(InterpreterError):
     """ネットワークに含まれないノード."""
-
-
-class AlreadyAddedError(InterpreterError):
-    """なぜか既に追加済み."""
 
 
 class QuotermNotFoundError(InterpreterError):
@@ -28,6 +20,10 @@ class QuotermNotFoundError(InterpreterError):
 
 class DefSentenceConflictError(InterpreterError):
     """定義の文が既出."""
+
+
+class TermResolveError(InterpreterError):
+    """用語解決でのエラー."""
 
 
 class SentenceConflictError(InterpreterError):
