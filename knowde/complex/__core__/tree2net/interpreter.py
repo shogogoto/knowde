@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Final, Hashable
 
 from lark import Token, Tree
 from lark.visitors import Interpreter
-from pydantic import BaseModel, Field
 
 from knowde.complex.__core__.sysnet.sysnode import SysNode
 from knowde.complex.__core__.tree2net.directed_edge import (
@@ -31,15 +30,12 @@ def exclude_heading(children: list[Hashable]) -> list:
     return [c for c in children if not (isinstance(c, Token) and c.type in H_TYPES)]
 
 
-class SysNetInterpreter(
-    Interpreter,
-    BaseModel,
-    arbitrary_types_allowed=True,
-):
+class SysNetInterpreter(Interpreter):
     """SysNet構築."""
 
-    col: DirectedEdgeCollection = Field(default_factory=DirectedEdgeCollection)
-    root: Token | str = "__dummy__"
+    def __init__(self) -> None:  # noqa: D107
+        self.col: DirectedEdgeCollection = DirectedEdgeCollection()
+        self.root: Token | str = "__dummy__"
 
     def h1(self, tree: Tree) -> None:  # noqa: D102
         p = tree.children[0]
