@@ -10,7 +10,7 @@ from knowde.primitive.__core__.nxutil import axiom_paths, to_nodes
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.heading import get_headings
 
-Nw1N1Fn: TypeAlias = Callable[[SysNet, SysArg], list[SysArg]]
+Nw1N1Fn: TypeAlias = Callable[[SysNet, SysNode], list[SysArg]]
 
 
 def get_detail(sn: SysNet, n: SysArg) -> list[SysArg]:
@@ -22,9 +22,8 @@ def get_detail(sn: SysNet, n: SysArg) -> list[SysArg]:
     return vals
 
 
-def get_parent_or_none(sn: SysNet, n: SysArg) -> SysNode | None:
+def get_parent_or_none(sn: SysNet, n: SysNode) -> SysNode | None:
     """兄弟を辿ったらBELOW.predが存在するか."""
-    EdgeType.SIBLING.pred(sn.g, n)
     axioms = axiom_paths(sn.g, n, EdgeType.SIBLING)
     if len(axioms) == 0:
         return None
@@ -37,25 +36,25 @@ def get_parent_or_none(sn: SysNet, n: SysArg) -> SysNode | None:
     return parent[0]
 
 
-def get_refer(sn: SysNet, n: SysArg) -> list[SysArg]:
+def get_refer(sn: SysNet, n: SysNode) -> list[SysArg]:
     """引用・利用する側."""
     vals = list(EdgeType.RESOLVED.pred(sn.g, n))
     return list(map(sn.get, vals))
 
 
-def get_referred(sn: SysNet, n: SysArg) -> list[SysArg]:
+def get_referred(sn: SysNet, n: SysNode) -> list[SysArg]:
     """引用される依存元."""
     vals = list(EdgeType.RESOLVED.succ(sn.g, n))
     return list(map(sn.get, vals))
 
 
-def get_premise(sn: SysNet, n: SysArg) -> list[SysArg]:
+def get_premise(sn: SysNet, n: SysNode) -> list[SysArg]:
     """前提."""
     vals = list(EdgeType.TO.pred(sn.g, n))
     return list(map(sn.get, vals))
 
 
-def get_conclusion(sn: SysNet, n: SysArg) -> list[SysArg]:
+def get_conclusion(sn: SysNet, n: SysNode) -> list[SysArg]:
     """帰結."""
     vals = list(EdgeType.TO.succ(sn.g, n))
     return list(map(sn.get, vals))
@@ -66,13 +65,13 @@ def recursively_nw1n1(fn: Nw1N1Fn, count: int) -> Nw1N1Fn:
     if count < 1:
         raise ValueError
 
-    def _f(sn: SysNet, ns: Iterable[SysArg], i: int) -> Iterable:
+    def _f(sn: SysNet, ns: Iterable[SysNode], i: int) -> Iterable:
         """再帰."""
         if i == 0:
             return ns
         return [e if isinstance(e, list) else [e, _f(sn, fn(sn, e), i - 1)] for e in ns]
 
-    def _g(sn: SysNet, n: SysArg) -> list:
+    def _g(sn: SysNet, n: SysNode) -> list:
         ret = fn(sn, n)
         return list(_f(sn, ret, count - 1))
 

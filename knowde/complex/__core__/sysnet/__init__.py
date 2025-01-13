@@ -1,6 +1,8 @@
 """系ネットワーク."""
 from __future__ import annotations
 
+from functools import cached_property
+
 import networkx as nx
 from pydantic import BaseModel, Field
 
@@ -27,14 +29,14 @@ class SysNet(BaseModel, frozen=True):
             raise SysNetNotFoundError(msg)
         return get_ifdef(self.g, n)
 
-    @property
+    @cached_property
     def sentences(self) -> list[str]:
         """文."""
         stc = to_sentence(self.g.nodes)
         hs = get_headings(self.g, self.root)
         return [n for n in stc if n not in hs]
 
-    @property
+    @cached_property
     def terms(self) -> list[Term]:
         """用語."""
         return to_term(self.g.nodes)

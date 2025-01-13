@@ -45,7 +45,8 @@ def to_nodes(g: nx.DiGraph, start: Hashable, f: Accessor) -> list[Hashable]:
     return s
 
 
-def filter_edge_attr(g: nx.DiGraph, name: str, value: Any) -> nx.Graph:  # noqa: ANN401
+@cache
+def filter_edge_attr(g: nx.DiGraph, name: str, value: Any) -> nx.DiGraph:  # noqa: ANN401
     """ある属性のエッジのみを抽出する関数を返す."""
 
     def _f(u: Hashable, v: Hashable, attr: dict) -> bool:

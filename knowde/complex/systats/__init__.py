@@ -7,10 +7,9 @@ from functools import reduce
 from typing import Callable, Hashable, TypeAlias
 
 import networkx as nx
-from more_itertools import flatten
 
 from knowde.complex.__core__.sysnet import SysNet
-from knowde.complex.__core__.sysnet.sysnode import Duplicable, SysArg
+from knowde.complex.__core__.sysnet.sysnode import DummySentence, Duplicable, SysArg
 from knowde.complex.systats.nw1_n1 import (
     get_detail,
     get_parent_or_none,
@@ -49,6 +48,7 @@ class UnificationRatio(Enum):
     Systatsの組み合わせ
     """
 
+    # 時間かかりすぎ
     ISOLATION = (
         "isoration_ratio",
         lambda sn: Systats.ISOLATION.fn(sn) / Systats.SENTENCE.fn(sn),
@@ -78,7 +78,7 @@ def n_char(sn: SysNet) -> int:  # noqa: D103
             case str() | Duplicable():
                 c += len(str(n))
             case Term():
-                c += reduce(operator.add, map(len, n.names))
+                c += 0 if len(n.names) == 0 else reduce(operator.add, map(len, n.names))
                 c += len(n.alias) if n.alias else 0
             case _:
                 raise TypeError
@@ -96,11 +96,13 @@ def get_isolation(sn: SysNet) -> list[Hashable]:
         """parentもなく、詳細もなく、TOなどの関係もない."""
         if n not in sn.sentences:
             return False
+        if isinstance(n, DummySentence):
+            return False
         parent = get_parent_or_none(sn, n)
         if parent is not None:
             return False
-        details = list(flatten(get_detail(sn, n)))
-        if len(details) > 0:
+        detail = get_detail(sn, n)
+        if len(detail) > 0:
             return False
         return not has_dependency(sn, n)
 

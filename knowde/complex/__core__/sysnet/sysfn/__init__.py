@@ -52,7 +52,7 @@ def node2sentence(n: SysArg) -> str | DummySentence:
 def to_sentence(vs: Iterable[Hashable]) -> list[str | DummySentence]:
     """文のみを取り出す."""
     defed = [v.sentence for v in vs if isinstance(v, Def)]
-    return [*defed, *[v for v in vs if isinstance(v, (str, Duplicable))]]
+    return [*defed, *[v for v in vs if isinstance(v, (str, Duplicable, DummySentence))]]
 
 
 def check_duplicated_sentence(vs: Iterable[Hashable]) -> None:
@@ -60,6 +60,8 @@ def check_duplicated_sentence(vs: Iterable[Hashable]) -> None:
     s_chk = sentence_dup_checker()
     for s in to_sentence(vs):
         if isinstance(s, (DummySentence, Duplicable)):
+            continue
+        if isinstance(s, Token) and s.type == "QUOTERM":
             continue
         s_chk(s)
 
