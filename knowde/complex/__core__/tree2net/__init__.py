@@ -45,7 +45,7 @@ def _build_graph(tree: Tree, col: DirectedEdgeCollection) -> nx.MultiDiGraph:
     col.add_edges(g)
     add_resolved_edges(g, resolver)
     replace_quoterms(g, resolver)
-    return g
+    return nx.freeze(g)
 
 
 def _extract_leaves(tree: Tree) -> tuple[nx.MultiDiGraph, MarkResolver]:

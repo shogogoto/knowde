@@ -1,7 +1,8 @@
 """test."""
 
 
-from knowde.complex.__core__.sysnet.sysnode import Def
+from pytest_unordered import unordered
+
 from knowde.complex.__core__.tree2net import parse2net
 from knowde.complex.systats import (
     get_axiom_resolved,
@@ -28,7 +29,7 @@ def test_get_isolation() -> None:
             G{B}: ggg
     """
     _sn = parse2net(_s)
-    assert get_isolation(_sn) == ["aaa", "fff"]
+    assert get_isolation(_sn) == unordered(["aaa", "fff"])
 
     _s = r"""
         # h1
@@ -65,5 +66,5 @@ def test_get_axioms() -> None:
             fff
     """
     sn = parse2net(_s)
-    assert get_axiom_to(sn) == ["bbb2", "abc"]
-    assert get_axiom_resolved(sn) == [Def.create("aaa", ["A"])]
+    assert get_axiom_to(sn) == unordered(["bbb2", "abc"])
+    assert get_axiom_resolved(sn) == ["aaa"]

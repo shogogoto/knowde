@@ -44,3 +44,8 @@ class SysNet(BaseModel, frozen=True):
     def get_resolved(self, s: str) -> dict:
         """解決済み入れ子文を取得."""
         return to_nested(self.g, s, EdgeType.RESOLVED.succ)
+
+    @cached_property
+    def sentence_graph(self) -> nx.DiGraph:
+        """文のみのGraph."""
+        return nx.subgraph(self.g, [s for s in self.sentences if isinstance(s, str)])

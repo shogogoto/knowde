@@ -1,5 +1,7 @@
 """load-file."""
 
+from contextlib import contextmanager
+from cProfile import Profile
 from pprint import pp
 from typing import IO
 
@@ -16,20 +18,30 @@ NW1
 """
 
 
+@contextmanager
+def _profile():  # noqa: ANN202
+    pr = Profile()
+    pr.enable()
+    try:
+        yield pr
+    finally:
+        pr.disable()
+        pr.print_stats(sort="tottime")
+
+
 @click.command("view")
 @click.argument("stdin", type=click.File("r"), default="-")
 @click.option("-n", "--number", type=click.INT, default=50, help="表示数")
 def view_cmd(stdin: IO, number: int) -> None:
     """重要度でソート."""
-    txt = stdin.read()
-    # sn = try_parse2net(txt)
-    sn = parse2net(txt)
-    # nxprint(sn.g)
-    number  # noqa: B018
-    pp({r.label: r.fn(sn) for r in UnificationRatio})
-    pp({r.label: r.fn(sn) for r in Systats})
-    # p.disable()
-    # p.print_stats(sort="tottime")
+    with _profile():
+        txt = stdin.read()
+        # sn = try_parse2net(txt)
+        sn = parse2net(txt)
+        # nxprint(sn.g)
+        number  # noqa: B018
+        pp({r.label: r.fn(sn) for r in UnificationRatio})
+        pp({r.label: r.fn(sn) for r in Systats})
     # pp({st.label: st.fn(sn) for st in Systats})
 
 

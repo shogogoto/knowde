@@ -13,6 +13,7 @@ from knowde.primitive.heading import get_headings
 Nw1N1Fn: TypeAlias = Callable[[SysNet, SysNode], list[SysArg]]
 
 
+@cache
 def get_detail(sn: SysNet, n: SysArg) -> list[SysArg]:
     """詳細な記述."""
     vals = []
@@ -22,6 +23,7 @@ def get_detail(sn: SysNet, n: SysArg) -> list[SysArg]:
     return vals
 
 
+@cache
 def get_parent_or_none(sn: SysNet, n: SysNode) -> SysNode | None:
     """兄弟を辿ったらBELOW.predが存在するか."""
     axioms = axiom_paths(sn.g, n, EdgeType.SIBLING)
@@ -94,10 +96,9 @@ DEP_EDGE_TYPES: Final = [
 def has_dependency(sn: SysNet, n: SysArg) -> bool:
     """意味的に重要なエッジを持つ."""
     _in = sn.g.in_edges(n, data=True)
-    _out = sn.g.out_edges(n, data=True)
-
     for _u, _, attr in _in:
         if attr["type"] in DEP_EDGE_TYPES:
             return True
 
+    _out = sn.g.out_edges(n, data=True)
     return any(attr["type"] in DEP_EDGE_TYPES for _, _v, attr in _out)
