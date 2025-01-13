@@ -41,7 +41,6 @@ ruff-lsp = "^0.0.48"
 
 pytest-xdist = {extras = ["psutil"], version = "^3.6.1"}
 numpy = "^2.2.1"
-scalene = "^1.5.49"
 [tool.poetry-dynamic-versioning]
 enable = true
 vcs = "git"
