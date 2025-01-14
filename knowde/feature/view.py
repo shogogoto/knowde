@@ -26,7 +26,7 @@ def _profile():  # noqa: ANN202
         yield pr
     finally:
         pr.disable()
-        pr.print_stats(sort="tottime")
+        pr.print_stats(sort="cumtime")
 
 
 @click.command("view")

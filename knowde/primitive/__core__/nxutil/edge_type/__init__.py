@@ -99,19 +99,24 @@ class EdgeType(Enum):
 
     def subgraph(self, g: nx.DiGraph) -> nx.DiGraph:
         """同じタイプのエッジと繋がったノードを持つサブグラフ."""
-        nodes = set()
-        for u, v, data in g.edges(data=True):
-            if data["type"] == self:
-                nodes.add(u)
-                nodes.add(v)
-        return nx.subgraph(g, nodes)
+        return _etype_subgraph(g, self)
 
 
 @cache
-def edge_type_subgraph(g: nx.DiGraph, *ts: EdgeType) -> nx.DiGraph:
+def etype_subgraph(g: nx.DiGraph, *ts: EdgeType) -> nx.DiGraph:
     """キャッシュありサブグラフ."""
     gs = [t.subgraph(g) for t in ts]
     return reduce(nx.compose, gs)
+
+
+@cache
+def _etype_subgraph(g: nx.DiGraph, t: EdgeType) -> nx.DiGraph:
+    nodes = set()
+    for u, v, data in g.edges(data=True):
+        if data["type"] == t:
+            nodes.add(u)
+            nodes.add(v)
+    return nx.subgraph(g, nodes)
 
 
 def _get_one_or_none(ls: list[Hashable], t: EdgeType, src: Hashable) -> None | Hashable:

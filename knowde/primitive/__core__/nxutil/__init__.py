@@ -32,6 +32,7 @@ def to_nested(g: nx.DiGraph, start: Hashable, f: Accessor) -> dict:
     return _f(start)
 
 
+@cache
 def to_nodes(g: nx.DiGraph, start: Hashable, f: Accessor) -> list[Hashable]:
     """有向グラフを辿ってノードを取得."""
     s = []
@@ -46,11 +47,11 @@ def to_nodes(g: nx.DiGraph, start: Hashable, f: Accessor) -> list[Hashable]:
 
 
 @cache
-def filter_edge_attr(g: nx.DiGraph, name: str, value: Any) -> nx.DiGraph:  # noqa: ANN401
+def filter_edge_attr(g: nx.DiGraph, name: str, *values: Any) -> nx.DiGraph:  # noqa: ANN401
     """ある属性のエッジのみを抽出する関数を返す."""
 
     def _f(u: Hashable, v: Hashable, attr: dict) -> bool:
-        return g[u][v][attr][name] == value
+        return g[u][v][attr][name] in values
 
     return nx.subgraph_view(g, filter_edge=_f)
 
@@ -66,21 +67,31 @@ def _to_paths(g: nx.DiGraph, pairs: Edges) -> list[list[Hashable]]:
     return paths
 
 
+@cache
+def to_leaves(g: nx.DiGraph, *ts: Any) -> list[Hashable]:  # noqa: ANN401
+    """最先端を取得."""
+    sub = filter_edge_attr(g, "type", *ts)
+    return [n for n in sub.nodes if sub.out_degree(n) == 0 and sub.in_degree(n) != 0]
+
+
+@cache
+def to_axioms(g: nx.DiGraph, *ts: Any) -> list[Hashable]:  # noqa: ANN401
+    """根を取得."""
+    sub = filter_edge_attr(g, "type", *ts)
+    return [n for n in sub.nodes if sub.in_degree(n) == 0 and sub.out_degree(n) != 0]
+
+
 def leaf_paths(g: nx.DiGraph, tgt: Hashable, t: Any) -> list[list[Hashable]]:  # noqa: ANN401
     """入力ノードから特定の関係を遡って依存先がないノードまでのパスを返す."""
     sub = filter_edge_attr(g, "type", t)
-    edges = [
-        (tgt, n) for n in sub.nodes if sub.out_degree(n) == 0 and sub.degree(n) != 0
-    ]
-    return _to_paths(sub, edges)
+    pairs = [(tgt, lv) for lv in to_leaves(g, t)]
+    return _to_paths(sub, pairs)
 
 
 def axiom_paths(g: nx.DiGraph, tgt: Hashable, t: Any) -> list[list[Hashable]]:  # noqa: ANN401
     """入力ノードから特定の関係を遡って依存元がないノードまでのパスを返す."""
     sub = filter_edge_attr(g, "type", t)
-    pairs = [
-        (n, tgt) for n in sub.nodes if sub.in_degree(n) == 0 and sub.degree(n) != 0
-    ]
+    pairs = [(n, tgt) for n in to_axioms(g, t)]
     return _to_paths(sub, pairs)
 
 

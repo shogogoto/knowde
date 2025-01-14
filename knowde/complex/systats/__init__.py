@@ -15,7 +15,7 @@ from knowde.complex.systats.nw1_n1 import (
     get_parent_or_none,
     has_dependency,
 )
-from knowde.primitive.__core__.nxutil.edge_type import EdgeType, edge_type_subgraph
+from knowde.primitive.__core__.nxutil.edge_type import EdgeType, etype_subgraph
 from knowde.primitive.term import Term
 
 SystatsFn: TypeAlias = Callable[[SysNet], int]
@@ -103,8 +103,9 @@ def get_isolation(sn: SysNet) -> list[Hashable]:
         detail = get_detail(sn, n)
         return len(detail) == 0
 
+    sub = etype_subgraph(sn.sentence_graph, EdgeType.SIBLING, EdgeType.BELOW)
     sub = nx.subgraph_view(
-        edge_type_subgraph(sn.sentence_graph, EdgeType.SIBLING, EdgeType.BELOW),
+        sub,
         filter_node=include_isolation_node,  # 見出し削除
     )
     return list(sub.nodes)
@@ -120,7 +121,7 @@ def get_axiom_to(sn: SysNet) -> list[Hashable]:
         return has_to and has_from
 
     sub = nx.subgraph_view(
-        edge_type_subgraph(sn.sentence_graph, EdgeType.TO),
+        etype_subgraph(sn.sentence_graph, EdgeType.TO),
         filter_node=filter_axiom,  # 見出し削除
     )
     return list(sub.nodes)
@@ -136,7 +137,7 @@ def get_axiom_resolved(sn: SysNet) -> list[SysArg]:
         return has_refer and has_referred
 
     sub = nx.subgraph_view(
-        edge_type_subgraph(sn.sentence_graph, EdgeType.RESOLVED),
+        etype_subgraph(sn.sentence_graph, EdgeType.RESOLVED),
         filter_node=filter_axiom,  # 見出し削除
     )
     return list(sub.nodes)

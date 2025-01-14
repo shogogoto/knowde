@@ -27,6 +27,7 @@ def test_get_detail_parent() -> None:
                 b2
                     b21
                     b22
+                    b23
         ## h2
             ccc
                 c1
@@ -42,6 +43,8 @@ def test_get_detail_parent() -> None:
     assert get_parent_or_none(_sn, "aaa") is None
     assert get_parent_or_none(_sn, "b2") == "bbb"
     assert get_parent_or_none(_sn, "b21") == "b2"
+    assert get_parent_or_none(_sn, "b22") == "b2"
+    assert get_parent_or_none(_sn, "b23") == "b2"
     assert get_parent_or_none(_sn, "# h1") is None
     assert get_parent_or_none(_sn, "## h2") is None
 

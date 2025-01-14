@@ -1,6 +1,7 @@
 """見出し操作."""
 from __future__ import annotations
 
+from functools import cache
 from typing import Hashable
 
 import networkx as nx
@@ -12,12 +13,14 @@ class HeadingNotFoundError(Exception):
     """見出しが見つからない."""
 
 
+@cache
 def get_headings(g: nx.DiGraph, root: Hashable) -> set[str]:
     """見出しセット."""
     ns = to_nodes(g, root, EdgeType.HEAD.succ)
     return {str(n) for n in ns if n}
 
 
+@cache
 def get_heading_path(g: nx.DiGraph, root: Hashable, n: Hashable) -> list[Hashable]:
     """直近の見出しパス."""
     paths = list(nx.all_simple_paths(g.to_undirected(), root, n))
