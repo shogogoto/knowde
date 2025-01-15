@@ -22,13 +22,15 @@ H6: "######" HEAD
 
 ?block: stmt [_INDENT (block)+ _DEDENT]
 ?stmt:  (line|ctxline|COMMENT _NL)
-?line: (ONELINE|QUOTERM|DUPLICABLE) _NL
+?line: (ONELINE|MULTILINE|QUOTERM|DUPLICABLE) _NL
 ctxline: ctype block
 
 ANY: /[^\n]+/
 COMMENT.1: "!" ANY
 
 ONELINE: ANY
+MULSEP: /\\\n[\t ]*/
+MULTILINE: (ONELINE MULSEP)+ ONELINE
 QUOTERM: /[ \t]/* "`" ANY "`"
 DUPLICABLE: /[ \t]/* "+++" ANY "+++"
 

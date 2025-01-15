@@ -31,10 +31,21 @@ class TSysArg(Transformer):
 
     def ONELINE(self, tok: Token) -> SysArg:  # noqa: N802 D102
         v = "".join(tok.split("   "))  # 適当な\nに対応する空白
-        alias, names, sentence = parse_line(v)
-        if sentence is None:
-            t = Term.create(*names, alias=alias)
-            return Def.dummy(t)
-        if alias is None and len(names) == 0:
-            return sentence
-        return Def.create(sentence, names, alias)
+        return _parse2sysarg(v)
+
+    def MULTILINE(self, tok: Token) -> SysArg:  # noqa: N802 D102
+        sp = tok.split("\\\n")
+        v = ""
+        for s in sp:
+            v += s.lstrip()
+        return _parse2sysarg(v)
+
+
+def _parse2sysarg(v: str) -> SysArg:
+    alias, names, sentence = parse_line(v)
+    if sentence is None:
+        t = Term.create(*names, alias=alias)
+        return Def.dummy(t)
+    if alias is None and len(names) == 0:
+        return sentence
+    return Def.create(sentence, names, alias)
