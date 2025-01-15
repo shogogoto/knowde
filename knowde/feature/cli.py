@@ -2,10 +2,9 @@
 from __future__ import annotations
 
 import click
+import typer
 
 from knowde.feature.view import view_cmd
-from knowde.primitive import tl_cli
-from knowde.tmp import deduct_cli, def_cli
 
 __version__ = "0.0.0"
 
@@ -21,7 +20,15 @@ def version() -> None:
     click.echo(f"knowde {__version__}")
 
 
-cli.add_command(def_cli)
-cli.add_command(deduct_cli)
-cli.add_command(tl_cli)
+# cli.add_command(def_cli)
+# cli.add_command(deduct_cli)
+# cli.add_command(tl_cli)
 cli.add_command(view_cmd)
+
+vcli = typer.Typer()
+# vcli.command("view")(view_vcmd)
+
+
+# @vcli.command("version")
+# def version_() -> None:
+#     typer.echo(f"knowde {__version__}")

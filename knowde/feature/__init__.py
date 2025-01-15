@@ -9,4 +9,4 @@ E2E機能を意識せずにprimitiveなどの部品群を作り始めたのが
 /featureの各ディレクトリ直下のテストはe2eテスト
 """
 # ruff: noqa
-from .cli import cli
+from .cli import cli, vcli

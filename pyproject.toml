@@ -85,3 +85,4 @@ unsafe-fixes = true
 
 [tool.poetry.scripts]
 kn = "knowde:cli"
+# kd = "knowde:vcli"
