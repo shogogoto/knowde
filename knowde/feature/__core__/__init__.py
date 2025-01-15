@@ -30,7 +30,7 @@ def try_parse2net(s: str) -> SysNet:
 
 
 @contextmanager
-def profile() -> Generator[Profile]:
+def profile() -> Generator:
     """パフォーマンス計測してstdout."""
     pr = Profile()
     pr.enable()
