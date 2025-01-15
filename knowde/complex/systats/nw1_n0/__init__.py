@@ -53,20 +53,29 @@ class Systats(Enum):
         return {r.label: r.fn(sn) for r in cls}
 
 
+def get_ratio(sn: SysNet, numerator: NW1N0Fn, denominator: NW1N0Fn) -> float:
+    """ゼロ割エラー回避."""
+    n = numerator(sn)
+    d = denominator(sn)
+    if d == 0:
+        return float("inf")
+    return n / d
+
+
 class UnificationRatio(Enum):
     """1系の統合化(まとまり具体)指標."""
 
     ISOLATION = (
         "isoration_ratio",
-        lambda sn: Systats.ISOLATION.fn(sn) / Systats.SENTENCE.fn(sn),
+        lambda sn: get_ratio(sn, Systats.ISOLATION.fn, Systats.SENTENCE.fn),
     )
     TERM = (
         "axiom_term_ratio",
-        lambda sn: Systats.TERM_AXIOM.fn(sn) / Systats.TERM.fn(sn),
+        lambda sn: get_ratio(sn, Systats.TERM_AXIOM.fn, Systats.TERM.fn),
     )
     AXIOM = (
         "axiom_ratio",
-        lambda sn: Systats.AXIOM.fn(sn) / Systats.SENTENCE.fn(sn),
+        lambda sn: get_ratio(sn, Systats.AXIOM.fn, Systats.SENTENCE.fn),
     )
 
     label: str

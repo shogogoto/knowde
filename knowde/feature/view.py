@@ -34,7 +34,14 @@ ItemT = click.Choice(tuple(SysCtxItem))
 
 @click.command("view")
 @click.argument("stdin", type=click.File("r"), default="-")
-@click.option("-n", "--number", type=click.INT, default=15, help="表示行数数")
+@click.option(
+    "-n",
+    "--number",
+    type=click.INT,
+    default=15,
+    help="表示行数数",
+    show_default=True,
+)
 @click.option(
     "-i",
     "--item",
