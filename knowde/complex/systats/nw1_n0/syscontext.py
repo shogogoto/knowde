@@ -79,7 +79,7 @@ class SysCtxReturn(BaseModel, frozen=True):
     @cached_property
     def count(self) -> int:
         """総数."""
-        return len(list(collapse(self.ls)))
+        return len(list(collapse(self.ls, base_type=BaseModel)))
 
     @property
     def score(self) -> int:
