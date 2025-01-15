@@ -31,6 +31,7 @@ class EdgeType(Enum):
     # 意味的関係
     DEF = auto()  # term -> 文
     RESOLVED = auto()  # 用語解決関係 文 -> 文
+    QUOTERM = auto()  # 引用用語 term -> def
     TO = auto()  # 依存
     EXAMPLE = auto()  # 具体
 

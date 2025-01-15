@@ -5,7 +5,7 @@ import networkx as nx
 
 from knowde.complex.__core__.sysnet.errors import QuotermNotFoundError
 from knowde.complex.__core__.sysnet.sysnode import Def
-from knowde.primitive.__core__.nxutil import replace_node
+from knowde.primitive.__core__.nxutil import copy_old_edges
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.term.errors import TermResolveError
 from knowde.primitive.term.markresolver import MarkResolver
@@ -24,7 +24,9 @@ def replace_quoterms(g: nx.DiGraph, resolver: MarkResolver) -> None:
         s = EdgeType.DEF.get_succ_or_none(g, term)
         if s is None:
             raise TypeError
-        replace_node(g, qt, s)
+        EdgeType.QUOTERM.add_edge(g, qt, s)
+        copy_old_edges(g, qt, s, EdgeType.SIBLING)
+        # g.remove_node(qt)
 
 
 def add_resolved_edges(g: nx.DiGraph, resolver: MarkResolver) -> None:

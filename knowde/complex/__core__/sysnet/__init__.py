@@ -6,7 +6,12 @@ from functools import cached_property
 import networkx as nx
 from pydantic import BaseModel, Field
 
-from knowde.complex.__core__.sysnet.sysfn import get_ifdef, to_sentence, to_term
+from knowde.complex.__core__.sysnet.sysfn import (
+    get_ifdef,
+    get_ifquote,
+    to_sentence,
+    to_term,
+)
 from knowde.primitive.__core__.nxutil import EdgeType, to_nested
 from knowde.primitive.__core__.types import NXGraph
 from knowde.primitive.heading import get_headings
@@ -27,7 +32,8 @@ class SysNet(BaseModel, frozen=True):
         if n not in self.g:
             msg = f"{n} is not in system[{self.root}]."
             raise SysNetNotFoundError(msg)
-        return get_ifdef(self.g, n)
+        q = get_ifquote(self.g, n)
+        return q or get_ifdef(self.g, n)
 
     @cached_property
     def sentences(self) -> list[str]:

@@ -95,15 +95,23 @@ def axiom_paths(g: nx.DiGraph, tgt: Hashable, t: Any) -> list[list[Hashable]]:  
     return _to_paths(sub, pairs)
 
 
-def replace_node(g: nx.DiGraph, old: Hashable, new: Hashable) -> None:
-    """エッジを保ってノードを置換."""
+def copy_old_edges(
+    g: nx.DiGraph,
+    old: Hashable,
+    new: Hashable,
+    *ignore: EdgeType,
+) -> None:
+    """oldエッジをnew nodeにコピー."""
     g.add_node(new)
 
     for pred, _, data in g.in_edges(old, data=True):
+        if data["type"] in ignore:
+            continue
         g.add_edge(pred, new, **data)
     for _, succ, data in g.out_edges(old, data=True):
+        if data["type"] in ignore:
+            continue
         g.add_edge(new, succ, **data)
-    g.remove_node(old)
 
 
 def get_axioms(g: nx.MultiDiGraph, *types: Any) -> list[Hashable]:  # noqa: ANN401

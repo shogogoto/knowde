@@ -1,6 +1,7 @@
 """sys系関数."""
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING, Hashable, Iterable
 
 from lark import Token
@@ -89,3 +90,21 @@ def get_ifdef(g: nx.DiGraph, n: SysNode) -> SysArg:
             return Def(term=n, sentence=s)
         case _:
             raise TypeError(n)
+
+
+QUOTERM_PETTERN = re.compile(r"^`.*`$")
+
+
+def is_enclosed_in_backticks(s: str) -> bool:
+    """引用用語 or not."""
+    return bool(QUOTERM_PETTERN.match(s))
+
+
+def get_ifquote(g: nx.DiGraph, n: SysArg) -> SysArg:
+    """引用用語ならdefを返す."""
+    if isinstance(n, str) and is_enclosed_in_backticks(n):
+        succ = EdgeType.QUOTERM.get_succ_or_none(g, n)
+        if succ is None:
+            raise TypeError
+        return get_ifdef(g, succ)
+    return None
