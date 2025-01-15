@@ -7,6 +7,7 @@ from functools import cache, reduce
 from typing import Callable, Hashable, TypeAlias
 
 import networkx as nx
+from tabulate import tabulate
 
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.sysnet.sysnode import Duplicable, SysArg
@@ -18,7 +19,7 @@ from knowde.complex.systats.nw1_n1 import (
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType, etype_subgraph
 from knowde.primitive.term import Term
 
-SystatsFn: TypeAlias = Callable[[SysNet], int]
+NW1N0Fn: TypeAlias = Callable[[SysNet], int]
 SystatsRatioFn: TypeAlias = Callable[[SysNet], float]
 
 
@@ -34,21 +35,27 @@ class Systats(Enum):
     TERM_AXIOM = ("term_axiom", lambda sn: len(get_axiom_resolved(sn)))
 
     label: str
-    fn: SystatsFn
+    fn: NW1N0Fn
 
-    def __init__(self, label: str, fn: SystatsFn) -> None:
+    def __init__(self, label: str, fn: NW1N0Fn) -> None:
         """For merge."""
         self.label = label
         self.fn = fn
 
+    @classmethod
+    def table(cls, sn: SysNet) -> str:
+        """For view."""
+        return tabulate([cls.to_dict(sn)], headers="keys")
+
+    @classmethod
+    def to_dict(cls, sn: SysNet) -> dict[str, int]:
+        """For json etc."""
+        return {r.label: r.fn(sn) for r in cls}
+
 
 class UnificationRatio(Enum):
-    """1系の統合化(まとまり具体)指標.
+    """1系の統合化(まとまり具体)指標."""
 
-    Systatsの組み合わせ
-    """
-
-    # 時間かかりすぎ
     ISOLATION = (
         "isoration_ratio",
         lambda sn: Systats.ISOLATION.fn(sn) / Systats.SENTENCE.fn(sn),
@@ -69,6 +76,24 @@ class UnificationRatio(Enum):
         """For merge."""
         self.label = label
         self.fn = lambda sn: round(fn(sn), 3)
+
+    @classmethod
+    def table(cls, sn: SysNet) -> str:
+        """For view."""
+        return tabulate(
+            [cls.to_dictstr(sn)],
+            headers="keys",
+        )
+
+    @classmethod
+    def to_dict(cls, sn: SysNet) -> dict[str, float]:
+        """For json etc."""
+        return {r.label: r.fn(sn) for r in cls}
+
+    @classmethod
+    def to_dictstr(cls, sn: SysNet, n_digits: int = 2) -> dict[str, str]:
+        """For json etc."""
+        return {k: f"{v:.{n_digits}%}" for k, v in cls.to_dict(sn).items()}
 
 
 def n_char(sn: SysNet) -> int:  # noqa: D103

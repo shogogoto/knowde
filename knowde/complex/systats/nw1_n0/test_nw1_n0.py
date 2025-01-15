@@ -4,7 +4,8 @@
 from pytest_unordered import unordered
 
 from knowde.complex.__core__.tree2net import parse2net
-from knowde.complex.systats import (
+
+from . import (
     get_axiom_resolved,
     get_axiom_to,
     get_isolation,

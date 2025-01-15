@@ -1,48 +1,91 @@
 """load-file."""
+from __future__ import annotations
 
-from contextlib import contextmanager
-from cProfile import Profile
-from pprint import pp
 from typing import IO
 
 import click
+from tabulate import tabulate
 
-from knowde.complex.__core__.tree2net import parse2net
-from knowde.complex.systats import Systats, UnificationRatio
+from knowde.complex.systats.nw1_n0 import Systats, UnificationRatio
+from knowde.complex.systats.nw1_n0.syscontext import (
+    RecWeight,
+    SysContext,
+    SysContexts,
+    SysCtxItem,
+)
+from knowde.feature.__core__ import try_parse2net
 
 """
-NW1
-    N0 ここ実装
-        重み付け
-        recursive n回
+TODO:
+    # 表示項目の変更
+    #     default
+    #     Choice
+    #     ignore
+    重みつき
+    sort
+        数値として
+        文字列として
+    recursive n指定
 """
 
 
-@contextmanager
-def _profile():  # noqa: ANN202
-    pr = Profile()
-    pr.enable()
-    try:
-        yield pr
-    finally:
-        pr.disable()
-        pr.print_stats(sort="cumtime")
+ItemT = click.Choice(tuple(SysCtxItem))
 
 
 @click.command("view")
 @click.argument("stdin", type=click.File("r"), default="-")
-@click.option("-n", "--number", type=click.INT, default=50, help="表示数")
-def view_cmd(stdin: IO, number: int) -> None:
+@click.option("-n", "--number", type=click.INT, default=15, help="表示行数数")
+@click.option(
+    "-i",
+    "--item",
+    type=ItemT,
+    multiple=True,
+    default=tuple(SysCtxItem),
+    show_default=True,
+    help="表示項目",
+)
+@click.option(
+    "-ig",
+    "--ignore",
+    type=ItemT,
+    multiple=True,
+    help="非表示項目",
+    show_default=True,
+)
+@click.option(
+    "-c",
+    "--config",
+    type=click.Tuple([SysCtxItem, click.INT, click.INT]),
+    multiple=True,
+    help="(項目,再帰回数,重み)",
+)
+def view_cmd(
+    stdin: IO,
+    number: int,
+    item: tuple[SysCtxItem],
+    ignore: tuple[SysCtxItem],
+    config: tuple[RecWeight],
+) -> None:
     """重要度でソート."""
-    with _profile():
-        txt = stdin.read()
-        # sn = try_parse2net(txt)
-        sn = parse2net(txt)
-        # nxprint(sn.g)
-        number  # noqa: B018
-        pp({r.label: r.fn(sn) for r in UnificationRatio})
-        pp({r.label: r.fn(sn) for r in Systats})
-    # pp({st.label: st.fn(sn) for st in Systats})
+    txt = stdin.read()
+    sn = try_parse2net(txt)
+    # sn = parse2net(txt)
+    stats = Systats.to_dict(sn) | UnificationRatio.to_dictstr(sn)
+    click.echo(tabulate([stats], headers="keys"))
+    items = [SysContext.from_item(i) for i in item if i not in ignore]
+    ctx = SysContexts(values=items, num=number, configs=list(config))
+    click.echo(ctx.table(sn))
+
+
+# typerのがいいかどうか... file inputの補完が効かないからclickを使うままにしておく
+# def view_vcmd(
+#     # stdin: Annotated[typer.FileText, typer.Argument(mode="r")] = sys.stdin,
+#     p: Annotated[Path, typer.Argument(mode="r")],
+# ) -> None:
+#     txt = p.read_text()
+#     # sn = try_parse2net(txt)jk
+#     sn = parse2net(txt)
+#     nxprint(sn.g)
 
 
 # @click.command("parse")
