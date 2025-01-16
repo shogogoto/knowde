@@ -86,6 +86,11 @@ class SysCtxReturn(BaseModel, frozen=True):
         """重み付き."""
         return self.count * self.weight
 
+    # def detail(self) -> None:
+    #     """詳細."""
+    #     for e in self.ls:
+    #         print(e)
+
 
 class SysCtxView(BaseModel, frozen=True):
     """SysCtxReturnのまとめ."""
@@ -110,16 +115,6 @@ class SysCtxView(BaseModel, frozen=True):
     def index(self) -> int:
         """For sorting."""
         return sum([r.score for r in self.rets])
-
-
-"""
-どの項目を表示するか
-rec指定
-数値ではなくリストで表示
-表示行数指定
-
-n_rec, weight, listview or numview
-"""
 
 
 class RecWeight(NamedTuple):

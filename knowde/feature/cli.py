@@ -4,7 +4,7 @@ from __future__ import annotations
 import click
 import typer
 
-from knowde.feature.view import view_cmd
+from knowde.feature.view import detail_cmd, score_cmd, stat_cmd
 
 __version__ = "0.0.0"
 
@@ -23,7 +23,9 @@ def version() -> None:
 # cli.add_command(def_cli)
 # cli.add_command(deduct_cli)
 # cli.add_command(tl_cli)
-cli.add_command(view_cmd)
+cli.add_command(score_cmd)
+cli.add_command(detail_cmd)
+cli.add_command(stat_cmd)
 
 vcli = typer.Typer()
 # vcli.command("view")(view_vcmd)
