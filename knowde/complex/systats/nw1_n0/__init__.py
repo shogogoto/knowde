@@ -7,7 +7,6 @@ from functools import cache, reduce
 from typing import Callable, Hashable, TypeAlias
 
 import networkx as nx
-from tabulate import tabulate
 
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.sysnet.sysnode import Duplicable, SysArg
@@ -20,7 +19,7 @@ from knowde.primitive.__core__.nxutil.edge_type import EdgeType, etype_subgraph
 from knowde.primitive.term import Term
 
 NW1N0Fn: TypeAlias = Callable[[SysNet], int]
-SystatsRatioFn: TypeAlias = Callable[[SysNet], float]
+NW1N0RatioFn: TypeAlias = Callable[[SysNet], float]
 
 
 class Systats(Enum):
@@ -43,56 +42,38 @@ class Systats(Enum):
         self.fn = fn
 
     @classmethod
-    def table(cls, sn: SysNet) -> str:
-        """For view."""
-        return tabulate([cls.to_dict(sn)], headers="keys")
-
-    @classmethod
     def to_dict(cls, sn: SysNet) -> dict[str, int]:
         """For json etc."""
         return {r.label: r.fn(sn) for r in cls}
 
 
-def get_ratio(sn: SysNet, numerator: NW1N0Fn, denominator: NW1N0Fn) -> float:
+def ratio_fn(numerator: NW1N0Fn, denominator: NW1N0Fn) -> NW1N0RatioFn:
     """ゼロ割エラー回避."""
-    n = numerator(sn)
-    d = denominator(sn)
-    if d == 0:
-        return float("inf")
-    return n / d
+
+    def _fn(sn: SysNet) -> float:
+        n = numerator(sn)
+        d = denominator(sn)
+        if d == 0:
+            return float("inf")
+        return n / d
+
+    return _fn
 
 
 class UnificationRatio(Enum):
     """1系の統合化(まとまり具体)指標."""
 
-    ISOLATION = (
-        "isoration_ratio",
-        lambda sn: get_ratio(sn, Systats.ISOLATION.fn, Systats.SENTENCE.fn),
-    )
-    TERM = (
-        "axiom_term_ratio",
-        lambda sn: get_ratio(sn, Systats.TERM_AXIOM.fn, Systats.TERM.fn),
-    )
-    AXIOM = (
-        "axiom_ratio",
-        lambda sn: get_ratio(sn, Systats.AXIOM.fn, Systats.SENTENCE.fn),
-    )
+    ISOLATION = ("isoration_ratio", ratio_fn(Systats.ISOLATION.fn, Systats.SENTENCE.fn))
+    TERM = ("axiom_term_ratio", ratio_fn(Systats.TERM_AXIOM.fn, Systats.TERM.fn))
+    AXIOM = ("axiom_ratio", ratio_fn(Systats.AXIOM.fn, Systats.SENTENCE.fn))
 
     label: str
-    fn: SystatsRatioFn
+    fn: NW1N0RatioFn
 
-    def __init__(self, label: str, fn: SystatsRatioFn) -> None:
+    def __init__(self, label: str, fn: NW1N0RatioFn) -> None:
         """For merge."""
         self.label = label
         self.fn = lambda sn: round(fn(sn), 3)
-
-    @classmethod
-    def table(cls, sn: SysNet) -> str:
-        """For view."""
-        return tabulate(
-            [cls.to_dictstr(sn)],
-            headers="keys",
-        )
 
     @classmethod
     def to_dict(cls, sn: SysNet) -> dict[str, float]:

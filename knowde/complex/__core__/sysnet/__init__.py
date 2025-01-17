@@ -18,7 +18,7 @@ from knowde.primitive.heading import get_headings
 from knowde.primitive.term import Term
 
 from .errors import SysNetNotFoundError
-from .sysnode import SysArg, SysNode
+from .sysnode import DummySentence, SysArg, SysNode
 
 
 class SysNet(BaseModel, frozen=True):
@@ -36,7 +36,7 @@ class SysNet(BaseModel, frozen=True):
         return q or get_ifdef(self.g, n)
 
     @cached_property
-    def sentences(self) -> list[str]:
+    def sentences(self) -> list[str | DummySentence]:
         """文."""
         stc = to_sentence(self.g.nodes)
         hs = get_headings(self.g, self.root)
@@ -55,3 +55,7 @@ class SysNet(BaseModel, frozen=True):
     def sentence_graph(self) -> nx.DiGraph:
         """文のみのGraph."""
         return nx.subgraph(self.g, [s for s in self.sentences if isinstance(s, str)])
+
+    def match(self, pattern: str) -> list[SysNode]:
+        """部分一致したものを返す."""
+        return [n for n in self.g.nodes if pattern in str(n)]

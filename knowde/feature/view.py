@@ -5,38 +5,20 @@ import json
 from typing import IO
 
 import click
-from tabulate import tabulate
 
 from knowde.complex.systats.nw1_n0 import Systats, UnificationRatio
 from knowde.complex.systats.nw1_n0.syscontext import (
-    RecWeight,
-    SysContext,
+    Nw1N1Label,
+    RecursiveWeight,
     SysContexts,
-    SysCtxItem,
 )
 from knowde.feature.__core__ import try_parse2net
-from knowde.feature.__core__.cliutil import CLIUtil
-
-"""
-TODO:
-    # 表示項目の変更
-    #     default
-    #     Choice
-    #     ignore
-    重みつき
-    sort
-        数値として
-        文字列として
-    recursive n指定
-"""
-
-
-ItemT = click.Choice(tuple(SysCtxItem))
+from knowde.feature.__core__.cliutil import CLIUtil, echo_table
 
 
 @click.command("stat")
 @click.argument("stdin", type=click.File("r"), default="-")
-@click.option("--table/--json", default=True)
+@click.option("--table", is_flag=True, default=False, help="テーブル表示")
 def stat_cmd(
     stdin: IO,
     table: bool,  # noqa: FBT001
@@ -46,7 +28,7 @@ def stat_cmd(
     sn = try_parse2net(txt)
     stat = Systats.to_dict(sn) | UnificationRatio.to_dictstr(sn)
     if table:
-        click.echo(tabulate([stat], headers="keys"))
+        echo_table([stat])
     else:
         click.echo(json.dumps(stat, indent=2))
 
@@ -66,23 +48,23 @@ def stat_cmd(
 @click.option(
     "-c",
     "--config",
-    type=click.Tuple([SysCtxItem, click.INT, click.INT]),
+    # type=click.Tuple([SysCtxItem, click.INT, click.INT]),
+    type=(Nw1N1Label, click.INT, click.INT),
     multiple=True,
     help="(項目,再帰回数,重み)",
 )
 def score_cmd(
     stdin: IO,
     number: int,
-    item: tuple[SysCtxItem],
-    ignore: tuple[SysCtxItem],
-    config: tuple[RecWeight],
+    item: tuple[Nw1N1Label],
+    ignore: tuple[Nw1N1Label],
+    config: tuple[RecursiveWeight],
 ) -> None:
     """スコアでソート."""
     txt = stdin.read()
     sn = try_parse2net(txt)
-    items = [SysContext.from_item(i) for i in item if i not in ignore]
-    ctx = SysContexts(values=items, num=number, configs=list(config))
-    click.echo(ctx.table(sn))
+    ctx = SysContexts.create(item, ignore, config)
+    echo_table(ctx.to_json(sn, num=number))
 
 
 @click.command("detail")
@@ -93,19 +75,23 @@ def score_cmd(
 def detail_cmd(
     stdin: IO,
     pattern: str,
-    item: tuple[SysCtxItem],
-    ignore: tuple[SysCtxItem],
+    item: tuple[Nw1N1Label],
+    ignore: tuple[Nw1N1Label],
     # config: tuple[RecWeight],
 ) -> None:
     """詳細."""
     txt = stdin.read()
     sn = try_parse2net(txt)
-    tgts = [n for n in sn.g.nodes if pattern in n]
-    items = [SysContext.from_item(i) for i in item if i not in ignore]
-    # print("#" * 80)
-    for tgt in tgts:
-        _rets = [it(sn, tgt, 1, 1) for it in items]
-        # print(sn.get(tgt))
+    _ctx = SysContexts.create(item, ignore)
+
+    for _tgt in sn.match(pattern):
+        pass
+        # _rets = [it(sn, tgt, 1, 1) for it in item]
+        # a = sn.get(tgt)
+        # print(tgt)
+        # print(a)
+        # if pattern in str(a):
+        #     print(a)
         # for r in rets:
         #     r.detail()
     # sn = parse2net(txt)

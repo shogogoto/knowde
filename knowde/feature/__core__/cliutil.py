@@ -1,10 +1,15 @@
 """CLI用ユーティリティ."""
-from typing import Callable
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Callable
 
 import click
-from click.decorators import FC
+from tabulate import tabulate
 
-from knowde.complex.systats.nw1_n0.syscontext import SysCtxItem
+from knowde.complex.systats.nw1_n0.syscontext import Nw1N1Label
+
+if TYPE_CHECKING:
+    from click.decorators import FC
 
 
 class CLIUtil:
@@ -13,7 +18,7 @@ class CLIUtil:
     @classmethod
     def choice(cls) -> click.Choice:
         """Choice."""
-        return click.Choice(tuple(SysCtxItem))
+        return click.Choice(tuple(Nw1N1Label))
 
     @classmethod
     def item_option(cls) -> Callable[[FC], FC]:
@@ -23,7 +28,7 @@ class CLIUtil:
             "--item",
             type=cls.choice(),
             multiple=True,
-            default=tuple(SysCtxItem),
+            default=tuple(Nw1N1Label),
             show_default=True,
             help="表示項目",
         )
@@ -39,3 +44,8 @@ class CLIUtil:
             help="非表示項目",
             show_default=True,
         )
+
+
+def echo_table(ls: list[dict]) -> None:
+    """Echo by tabulate."""
+    click.echo(tabulate(ls, headers="keys"))

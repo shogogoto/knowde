@@ -10,14 +10,15 @@ __version__ = "0.0.0"
 
 
 @click.group()
+@click.version_option(version=__version__, prog_name="knowde")
 def cli() -> None:
     """Knowde CLI."""
 
 
-@cli.command()
-def version() -> None:
-    """Show self version."""
-    click.echo(f"knowde {__version__}")
+# @cli.command()
+# def version() -> None:
+#     """Show self version."""
+#     click.echo(f"knowde {__version__}")
 
 
 # cli.add_command(def_cli)
