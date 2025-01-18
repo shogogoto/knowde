@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Callable
 import click
 from tabulate import tabulate
 
-from knowde.complex.systats.nw1_n0.syscontext import Nw1N1Label
+from knowde.complex.systats.nw1_n1.ctxdetail import Nw1N1Label
 
 if TYPE_CHECKING:
     from click.decorators import FC

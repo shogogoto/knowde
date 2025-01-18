@@ -19,7 +19,6 @@ if TYPE_CHECKING:
 Nw1N1Fn: TypeAlias = Callable[[SysNet, SysNode], list[SysArg]]
 
 
-@cache
 def get_detail(sn: SysNet, n: SysArg) -> list[SysArg]:
     """詳細な記述."""
     vals = []
@@ -34,7 +33,6 @@ class ParentLookupError(Exception):
     """親テーブルを作る時に変なことが起きた."""
 
 
-@cache
 def parent_lookup(g: nx.DiGraph) -> dict:
     """親の辞書."""
     g = filter_edge_attr(g, "type", EdgeType.BELOW, EdgeType.SIBLING)
@@ -82,9 +80,10 @@ def get_conclusion(sn: SysNet, n: SysNode) -> list[SysArg]:
 def recursively_nw1n1(fn: Nw1N1Fn, count: int) -> Nw1N1Fn:
     """再帰的取得."""
     if count < 1:
-        raise ValueError
+        msg = "recursive count must be greater than 0"
+        raise ValueError(msg)
 
-    def _f(sn: SysNet, ns: Iterable[SysNode], i: int) -> Iterable:
+    def _f(sn: SysNet, ns: Iterable, i: int) -> Iterable:
         """再帰."""
         if i == 0:
             return ns

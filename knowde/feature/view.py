@@ -2,16 +2,18 @@
 from __future__ import annotations
 
 import json
+from pprint import pp
 from typing import IO
 
 import click
 
 from knowde.complex.systats.nw1_n0 import Systats, UnificationRatio
-from knowde.complex.systats.nw1_n0.syscontext import (
+from knowde.complex.systats.nw1_n0.scorable import (
+    LRWTpl,
     Nw1N1Label,
-    RecursiveWeight,
     SysContexts,
 )
+from knowde.complex.systats.nw1_n1.ctxdetail import Nw1N1Detail, Nw1N1Recursive
 from knowde.feature.__core__ import try_parse2net
 from knowde.feature.__core__.cliutil import CLIUtil, echo_table
 
@@ -58,7 +60,7 @@ def score_cmd(
     number: int,
     item: tuple[Nw1N1Label],
     ignore: tuple[Nw1N1Label],
-    config: tuple[RecursiveWeight],
+    config: tuple[LRWTpl],
 ) -> None:
     """スコアでソート."""
     txt = stdin.read()
@@ -72,29 +74,26 @@ def score_cmd(
 @click.argument("pattern", type=click.STRING)
 @CLIUtil.item_option()
 @CLIUtil.ignore_option()
+@click.option(
+    "-c",
+    "--config",
+    type=(Nw1N1Label, click.INT),
+    multiple=True,
+    help="(項目,再帰回数)",
+)
 def detail_cmd(
     stdin: IO,
     pattern: str,
     item: tuple[Nw1N1Label],
     ignore: tuple[Nw1N1Label],
-    # config: tuple[RecWeight],
+    config: tuple[Nw1N1Recursive],
 ) -> None:
     """詳細."""
     txt = stdin.read()
     sn = try_parse2net(txt)
-    _ctx = SysContexts.create(item, ignore)
-
+    detail = Nw1N1Detail.create(item, ignore, config)
     for _tgt in sn.match(pattern):
-        pass
-        # _rets = [it(sn, tgt, 1, 1) for it in item]
-        # a = sn.get(tgt)
-        # print(tgt)
-        # print(a)
-        # if pattern in str(a):
-        #     print(a)
-        # for r in rets:
-        #     r.detail()
-    # sn = parse2net(txt)
+        pp(detail(sn, _tgt))
 
 
 # typerのがいいかどうか... file inputの補完が効かないからclickを使うままにしておく
