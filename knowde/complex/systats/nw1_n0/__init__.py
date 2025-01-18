@@ -32,6 +32,8 @@ class Systats(Enum):
     ISOLATION = ("isolation", lambda sn: len(get_isolation(sn)))
     AXIOM = ("axiom", lambda sn: len(get_axiom_to(sn)))
     TERM_AXIOM = ("term_axiom", lambda sn: len(get_axiom_resolved(sn)))
+    DIAMETER = ("diameter", lambda sn: nx.diameter(sn.g.to_undirected()))
+    RADIUS = ("radius", lambda sn: nx.radius(sn.g.to_undirected()))
 
     label: str
     fn: NW1N0Fn
@@ -66,6 +68,7 @@ class UnificationRatio(Enum):
     ISOLATION = ("isoration_ratio", ratio_fn(Systats.ISOLATION.fn, Systats.SENTENCE.fn))
     TERM = ("axiom_term_ratio", ratio_fn(Systats.TERM_AXIOM.fn, Systats.TERM.fn))
     AXIOM = ("axiom_ratio", ratio_fn(Systats.AXIOM.fn, Systats.SENTENCE.fn))
+    DENSITY = ("density", lambda sn: nx.density(sn.g))
 
     label: str
     fn: NW1N0RatioFn

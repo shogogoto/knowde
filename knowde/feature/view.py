@@ -63,7 +63,7 @@ def score_cmd(
     ignore: tuple[Nw1N1Label],
     config: tuple[LRWTpl],
 ) -> None:
-    """スコアでソート."""
+    """ノードの文脈スコア順に表示."""
     txt = stdin.read()
     sn = try_parse2net(txt)
     ctx = SysContexts.create(item, ignore, config)
@@ -89,7 +89,7 @@ def detail_cmd(
     ignore: tuple[Nw1N1Label],
     config: tuple[Nw1N1Recursive],
 ) -> None:
-    """詳細."""
+    """文字列にマッチするノードの詳細."""
     txt = stdin.read()
     sn = try_parse2net(txt)
     detail = Nw1N1Detail.create(item, ignore, config)
