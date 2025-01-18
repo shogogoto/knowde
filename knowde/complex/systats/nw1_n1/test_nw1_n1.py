@@ -3,7 +3,6 @@
 
 from pytest_unordered import unordered
 
-from knowde.complex.__core__.sysnet.sysnode import Def
 from knowde.complex.__core__.tree2net import parse2net
 from knowde.complex.systats.nw1_n1 import (
     get_conclusion,
@@ -84,22 +83,17 @@ def test_refer_referred() -> None:
             E{D}: eee
     """
     sn = parse2net(_s)
-    assert get_refer(sn, "aaa") == unordered(
-        [
-            Def.create("b{A}b", ["B"]),
-            Def.create("c{A}c", ["C"]),
-        ],
-    )
+    assert get_refer(sn, "aaa") == unordered(["b{A}b", "c{A}c"])
     assert get_refer(sn, "b{A}b") == []
-    assert get_refer(sn, "c{A}c") == [Def.create("d{C}d", ["D"])]
-    assert get_refer(sn, "d{C}d") == [Def.create("eee", ["E{D}"])]
+    assert get_refer(sn, "c{A}c") == ["d{C}d"]
+    assert get_refer(sn, "d{C}d") == ["eee"]
     assert get_refer(sn, "eee") == []
 
     assert get_referred(sn, "aaa") == []
-    assert get_referred(sn, "b{A}b") == [Def.create("aaa", ["A"])]
-    assert get_referred(sn, "c{A}c") == [Def.create("aaa", ["A"])]
-    assert get_referred(sn, "d{C}d") == [Def.create("c{A}c", ["C"])]
-    assert get_referred(sn, "eee") == [Def.create("d{C}d", ["D"])]
+    assert get_referred(sn, "b{A}b") == ["aaa"]
+    assert get_referred(sn, "c{A}c") == ["aaa"]
+    assert get_referred(sn, "d{C}d") == ["c{A}c"]
+    assert get_referred(sn, "eee") == ["d{C}d"]
 
 
 def test_premise_conclusion() -> None:
@@ -178,3 +172,24 @@ def test_get_detail_recursively() -> None:
         ["11", [["21", ["31", "32"]], ["22", ["33", "34"]]]],
         ["12", []],
     ]
+
+
+def test_get_refer_recursively() -> None:
+    """referの再帰的取得."""
+    _s = r"""
+        # h
+            A: aaa
+            B: b{A}
+            C: c{B}
+            D: d{C}
+            E: e{D}
+            F: f{E}
+            G: g{F}
+    """
+    sn = parse2net(_s)
+    f1 = recursively_nw1n1(get_refer, 1)
+    assert f1(sn, "aaa") == ["b{A}"]
+    f2 = recursively_nw1n1(get_refer, 3)
+    assert f2(sn, "aaa") == [["b{A}", [["c{B}", ["d{C}"]]]]]
+    f3 = recursively_nw1n1(get_refer, 5)
+    assert f3(sn, "aaa") == [["b{A}", [["c{B}", [["d{C}", [["e{D}", ["f{E}"]]]]]]]]]

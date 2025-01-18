@@ -43,6 +43,7 @@ class CtxScorable(BaseModel, frozen=True):
     @classmethod
     def create(cls, sn: SysNet, n: SysNode, rw: LRWTpl) -> Self:
         """Instantiate."""
+        sn.check_contains(n)
         ctx = Nw1N1Ctx.from_label(rw.label)
         rec_f = recursively_nw1n1(ctx.fn, rw.n_rec)
         return cls(label=rw.label, ls=rec_f(sn, n), weight=rw.weight)

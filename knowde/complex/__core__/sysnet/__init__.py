@@ -29,9 +29,7 @@ class SysNet(BaseModel, frozen=True):
 
     def get(self, n: SysNode) -> SysArg:
         """文に紐づく用語があれば定義を返す."""
-        if n not in self.g:
-            msg = f"{n} is not in system[{self.root}]."
-            raise SysNetNotFoundError(msg)
+        self.check_contains(n)
         q = get_ifquote(self.g, n)
         return q or get_ifdef(self.g, n)
 
@@ -59,3 +57,9 @@ class SysNet(BaseModel, frozen=True):
     def match(self, pattern: str) -> list[SysNode]:
         """部分一致したものを返す."""
         return [n for n in self.g.nodes if pattern in str(n)]
+
+    def check_contains(self, n: SysNode) -> None:
+        """含なければエラー."""
+        if n not in self.g:
+            msg = f"{n} is not in system[{self.root}]."
+            raise SysNetNotFoundError(msg)

@@ -16,7 +16,7 @@ from knowde.primitive.__core__.nxutil.edge_type import EdgeType, etype_subgraph
 if TYPE_CHECKING:
     import networkx as nx
 
-Nw1N1Fn: TypeAlias = Callable[[SysNet, SysNode], list[SysArg]]
+Nw1N1Fn: TypeAlias = Callable[[SysNet, SysNode], list[SysNode]]
 
 
 def get_detail(sn: SysNet, n: SysArg) -> list[SysArg]:
@@ -53,28 +53,28 @@ def get_parent_or_none(sn: SysNet, n: SysNode) -> SysNode | None:
     return lookup.get(n)
 
 
-def get_refer(sn: SysNet, n: SysNode) -> list[SysArg]:
+def get_refer(sn: SysNet, n: SysNode) -> list[SysNode]:
     """引用・利用する側."""
     vals = EdgeType.RESOLVED.pred(sn.g, n)
-    return list(map(sn.get, vals))
+    return list(vals)
 
 
-def get_referred(sn: SysNet, n: SysNode) -> list[SysArg]:
+def get_referred(sn: SysNet, n: SysNode) -> list[SysNode]:
     """引用される依存元."""
     vals = EdgeType.RESOLVED.succ(sn.g, n)
-    return list(map(sn.get, vals))
+    return list(vals)
 
 
-def get_premise(sn: SysNet, n: SysNode) -> list[SysArg]:
+def get_premise(sn: SysNet, n: SysNode) -> list[SysNode]:
     """前提."""
     vals = EdgeType.TO.pred(sn.g, n)
-    return list(map(sn.get, vals))
+    return list(vals)
 
 
-def get_conclusion(sn: SysNet, n: SysNode) -> list[SysArg]:
+def get_conclusion(sn: SysNet, n: SysNode) -> list[SysNode]:
     """帰結."""
     vals = EdgeType.TO.succ(sn.g, n)
-    return list(map(sn.get, vals))
+    return list(vals)
 
 
 def recursively_nw1n1(fn: Nw1N1Fn, count: int) -> Nw1N1Fn:
