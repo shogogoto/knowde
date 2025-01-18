@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 Nw1N1Fn: TypeAlias = Callable[[SysNet, SysNode], list[SysNode]]
 
 
-def get_detail(sn: SysNet, n: SysArg) -> list[SysArg]:
+def get_detail(sn: SysNet, n: SysArg) -> list[SysNode]:
     """詳細な記述."""
     vals = []
     sub = etype_subgraph(sn.g, EdgeType.SIBLING, EdgeType.BELOW)
@@ -33,6 +33,7 @@ class ParentLookupError(Exception):
     """親テーブルを作る時に変なことが起きた."""
 
 
+@cache
 def parent_lookup(g: nx.DiGraph) -> dict:
     """親の辞書."""
     g = filter_edge_attr(g, "type", EdgeType.BELOW, EdgeType.SIBLING)

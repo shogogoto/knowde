@@ -12,7 +12,10 @@ from knowde.complex.systats.nw1_n0.scorable import (
     Nw1N1Label,
     SysContexts,
 )
-from knowde.complex.systats.nw1_n1.ctxdetail import Nw1N1Detail, Nw1N1Recursive
+from knowde.complex.systats.nw1_n1.ctxdetail import (
+    Nw1N1Detail,
+    Nw1N1Recursive,
+)
 from knowde.feature.__core__ import try_parse2net
 from knowde.feature.__core__.cliutil import CLIUtil, echo_table
 
@@ -49,7 +52,6 @@ def stat_cmd(
 @click.option(
     "-c",
     "--config",
-    # type=click.Tuple([SysCtxItem, click.INT, click.INT]),
     type=(Nw1N1Label, click.INT, click.INT),
     multiple=True,
     help="(項目,再帰回数,重み)",
@@ -91,13 +93,23 @@ def detail_cmd(
     txt = stdin.read()
     sn = try_parse2net(txt)
     detail = Nw1N1Detail.create(item, ignore, config)
-    for tgt in sn.match(pattern):
-        click.echo(detail.format(sn, tgt))
+    match = sn.match(pattern)
+    for i, tgt in enumerate(match):
+        click.echo(f"{i+1}. " + detail.format(sn, tgt))
+    click.echo(f"{len(match)}件ヒットしました")
+
+    # click.echo(
+    #     json.dumps(
+    #         apply_nest([detail.ctx_dict(sn, m) for m in match], str),
+    #         indent=2,
+    #         ensure_ascii=False,
+    #     ),
+    # )
 
 
-# typerのがいいかどうか... file inputの補完が効かないからclickを使うままにしておく
+# # typerのがいいかどうか... file inputの補完が効かないからclickを使うままにしておく
 # def view_vcmd(
-#     # stdin: Annotated[typer.FileText, typer.Argument(mode="r")] = sys.stdin,
+#     stdin: Annotated[typer.FileText, typer.Argument(mode="r")] = sys.stdin,
 #     p: Annotated[Path, typer.Argument(mode="r")],
 # ) -> None:
 #     txt = p.read_text()

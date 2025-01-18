@@ -8,7 +8,7 @@ from typing import Callable, Iterable, NamedTuple, Self
 from pydantic import BaseModel
 
 from knowde.complex.__core__.sysnet import SysNet
-from knowde.complex.__core__.sysnet.sysnode import Duplicable
+from knowde.complex.__core__.sysnet.sysnode import Duplicable, SysArg
 from knowde.complex.systats.nw1_n1 import (
     Nw1N1Fn,
     get_conclusion,
@@ -33,19 +33,21 @@ class Nw1N1Label(StrEnum):
 class Nw1N1Ctx(Enum):
     """1nw1n文脈."""
 
-    DETAIL = (Nw1N1Label.DETAIL, get_detail)
-    REFER = (Nw1N1Label.REFER, get_refer)
-    REFERRED = (Nw1N1Label.REFERRED, get_referred)
-    PREMISE = (Nw1N1Label.PREMISE, get_premise)
-    CONCLUSION = (Nw1N1Label.CONCLUSION, get_conclusion)
+    DETAIL = (Nw1N1Label.DETAIL, get_detail, "")
+    REFER = (Nw1N1Label.REFER, get_refer, ">>")
+    REFERRED = (Nw1N1Label.REFERRED, get_referred, "<<")
+    PREMISE = (Nw1N1Label.PREMISE, get_premise, "<-")
+    CONCLUSION = (Nw1N1Label.CONCLUSION, get_conclusion, "->")
 
     label: Nw1N1Label
     fn: Nw1N1Fn
+    prefix: str
 
-    def __init__(self, label: Nw1N1Label, fn: Nw1N1Fn) -> None:
+    def __init__(self, label: Nw1N1Label, fn: Nw1N1Fn, prefix: str) -> None:
         """For merge."""
         self.label = label
         self.fn = fn
+        self.prefix = prefix
 
     @classmethod
     def from_label(cls, label: Nw1N1Label) -> Self:
@@ -55,6 +57,10 @@ class Nw1N1Ctx(Enum):
                 return e
         raise ValueError(label)
 
+    def format(self, n: SysArg) -> str:
+        """整形."""
+        return f"{self.prefix} {n}"
+
 
 class Nw1N1Recursive(NamedTuple):
     """どのlabelで何回再帰的に返すか."""
@@ -63,12 +69,12 @@ class Nw1N1Recursive(NamedTuple):
     n_rec: int
 
 
-def apply_nested_list(nest: list, func: Callable) -> list:
+def apply_nest(nest: list, func: Callable) -> list:
     """入れ子リストに関数を適用."""
     res = []
     for item in nest:
         if isinstance(item, list):
-            res.append(apply_nested_list(item, func))
+            res.append(apply_nest(item, func))
         else:
             res.append(func(item))
     return res
@@ -80,13 +86,13 @@ class Nw1N1Detail(BaseModel, frozen=True):
     values: list[Nw1N1Ctx]
     recs: Iterable[Nw1N1Recursive]
 
-    def ctx_dict(self, sn: SysNet, n: str | Duplicable) -> dict[str, list]:
+    def ctx_dict(self, sn: SysNet, n: str | Duplicable) -> dict[Nw1N1Label, list]:
         """Aaaa."""
         d = {}
         for v in self.values:
             n_rec = self._get_n_rec(v.label)
             fn = recursively_nw1n1(v.fn, n_rec)
-            d[v.label.value] = apply_nested_list(fn(sn, n), lambda n: sn.get(n))
+            d[v.label.value] = apply_nest(fn(sn, n), lambda n: sn.get(n))
         return d
 
     def _get_n_rec(self, lb: Nw1N1Label) -> int:
@@ -110,24 +116,24 @@ class Nw1N1Detail(BaseModel, frozen=True):
 
     def format(self, sn: SysNet, n: str | Duplicable) -> str:
         """整形文字列."""
-        txt = f"[{sn.get(n)}]\n"
+        txt = f"{sn.get(n)}\n"
         d = self.ctx_dict(sn, n)
         for k, v in d.items():
-            content = to_indented_str(apply_nested_list(v, str))
+            fmt = Nw1N1Ctx.from_label(k).format
+            content = to_indented_str(apply_nest(v, fmt))
             if len(content) == 0:
                 continue
-            txt += f"@{k}\n"
             txt += textwrap.indent(content, "  ")
         return txt
 
 
-def to_indented_str(nested_list: list, prefix: str = "  ", level: int = 0) -> str:
+def to_indented_str(nested: list, length: int = 2, level: int = 0) -> str:
     """インデント付き文字列."""
     result = ""
-    indent = prefix * level
-    for item in nested_list:
+    indent = " " * length * level
+    for item in nested:
         if isinstance(item, list):
-            result += to_indented_str(item, prefix, level + 1)
+            result += to_indented_str(item, length, level + 1)
         else:
             result += indent + item + "\n"
     return result
