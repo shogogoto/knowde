@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-from pprint import pp
 from typing import IO
 
 import click
@@ -92,8 +91,8 @@ def detail_cmd(
     txt = stdin.read()
     sn = try_parse2net(txt)
     detail = Nw1N1Detail.create(item, ignore, config)
-    for _tgt in sn.match(pattern):
-        pp(detail(sn, _tgt))
+    for tgt in sn.match(pattern):
+        click.echo(detail.format(sn, tgt))
 
 
 # typerのがいいかどうか... file inputの補完が効かないからclickを使うままにしておく

@@ -25,7 +25,7 @@ def get_detail(sn: SysNet, n: SysArg) -> list[SysArg]:
     sub = etype_subgraph(sn.g, EdgeType.SIBLING, EdgeType.BELOW)
     for below_s in EdgeType.BELOW.succ(sub, n):
         sibs = to_nodes(sub, below_s, EdgeType.SIBLING.succ)
-        vals.extend([sn.get(s) for s in sibs if s])  # None排除
+        vals.extend([s for s in sibs if s])  # None排除
     return vals
 
 

@@ -50,7 +50,7 @@ def node2sentence(n: SysArg) -> str | DummySentence:
             raise TypeError(msg)
 
 
-def to_sentence(vs: Iterable[Hashable]) -> list[str | DummySentence]:
+def to_sentence(vs: Iterable[Hashable]) -> list[str | Duplicable]:
     """文のみを取り出す."""
     defed = [v.sentence for v in vs if isinstance(v, Def)]
     return [*defed, *[v for v in vs if isinstance(v, (str, Duplicable))]]

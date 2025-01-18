@@ -58,10 +58,10 @@ class CtxScorables(BaseModel, frozen=True):
     def __lt__(self, other: Self) -> bool:  # noqa: D105
         return self.score < other.score
 
-    def to_dict(self, _sn: SysNet) -> dict:
+    def to_dict(self, sn: SysNet) -> dict:
         """To dict for tabulate view."""
         d = self.get()
-        d["sentence"] = self.n
+        d["sentence"] = sn.get(self.n)  # for display
         return d
 
     def __len__(self) -> int:  # noqa: D105

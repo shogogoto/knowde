@@ -1,13 +1,14 @@
 """nw1n1の周辺情報というか文脈詳細というか."""
 from __future__ import annotations
 
+import textwrap
 from enum import Enum, StrEnum
-from typing import Iterable, NamedTuple, Self
+from typing import Callable, Iterable, NamedTuple, Self
 
 from pydantic import BaseModel
 
 from knowde.complex.__core__.sysnet import SysNet
-from knowde.complex.__core__.sysnet.sysnode import SysNode
+from knowde.complex.__core__.sysnet.sysnode import Duplicable
 from knowde.complex.systats.nw1_n1 import (
     Nw1N1Fn,
     get_conclusion,
@@ -62,19 +63,30 @@ class Nw1N1Recursive(NamedTuple):
     n_rec: int
 
 
+def apply_nested_list(nest: list, func: Callable) -> list:
+    """入れ子リストに関数を適用."""
+    res = []
+    for item in nest:
+        if isinstance(item, list):
+            res.append(apply_nested_list(item, func))
+        else:
+            res.append(func(item))
+    return res
+
+
 class Nw1N1Detail(BaseModel, frozen=True):
     """1nw 1nodeの詳細."""
 
     values: list[Nw1N1Ctx]
     recs: Iterable[Nw1N1Recursive]
 
-    def __call__(self, sn: SysNet, n: SysNode) -> dict:
+    def ctx_dict(self, sn: SysNet, n: str | Duplicable) -> dict[str, list]:
         """Aaaa."""
         d = {}
         for v in self.values:
             n_rec = self._get_n_rec(v.label)
             fn = recursively_nw1n1(v.fn, n_rec)
-            d[v.label.value] = fn(sn, n)
+            d[v.label.value] = apply_nested_list(fn(sn, n), lambda n: sn.get(n))
         return d
 
     def _get_n_rec(self, lb: Nw1N1Label) -> int:
@@ -95,3 +107,27 @@ class Nw1N1Detail(BaseModel, frozen=True):
             values=[Nw1N1Ctx.from_label(i) for i in targets if i not in ignores],
             recs=recs,
         )
+
+    def format(self, sn: SysNet, n: str | Duplicable) -> str:
+        """整形文字列."""
+        txt = f"[{sn.get(n)}]\n"
+        d = self.ctx_dict(sn, n)
+        for k, v in d.items():
+            content = to_indented_str(apply_nested_list(v, str))
+            if len(content) == 0:
+                continue
+            txt += f"@{k}\n"
+            txt += textwrap.indent(content, "  ")
+        return txt
+
+
+def to_indented_str(nested_list: list, prefix: str = "  ", level: int = 0) -> str:
+    """インデント付き文字列."""
+    result = ""
+    indent = prefix * level
+    for item in nested_list:
+        if isinstance(item, list):
+            result += to_indented_str(item, prefix, level + 1)
+        else:
+            result += indent + item + "\n"
+    return result
