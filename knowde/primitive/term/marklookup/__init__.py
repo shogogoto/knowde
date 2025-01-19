@@ -7,8 +7,7 @@ from typing import AbstractSet, TypeAlias
 from knowde.primitive.term import Term
 from knowde.primitive.term.errors import MarkUncontainedError
 from knowde.primitive.term.mark.domain import (
-    pick_marks,
-    replace_markers,
+    BRACE_MARKER,
 )
 
 
@@ -22,7 +21,7 @@ def get_refer_terms(
     ret = set()
     for t in diff:
         for n in t.names:
-            marks = pick_marks(n)
+            marks = BRACE_MARKER.pick(n)
             if all(m in lookup for m in marks):
                 ret.add(t)
     return frozenset(ret)
@@ -37,8 +36,8 @@ def get_lookup(terms: frozenset[Term]) -> Lookup:
     d = {}
     for t in terms:
         for n in t.names:
-            marks = pick_marks(n)
-            atom = replace_markers(n, *marks)
+            marks = BRACE_MARKER.pick(n)
+            atom = BRACE_MARKER.replace(n, *marks)
             d[atom] = t
         if t.alias:
             d[t.alias] = t

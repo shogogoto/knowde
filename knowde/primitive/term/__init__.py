@@ -10,16 +10,12 @@ from more_itertools import flatten
 from pydantic import BaseModel, Field, PrivateAttr, field_validator
 
 from knowde.primitive.__core__.dupchk import DuplicationChecker
+from knowde.primitive.term.mark.domain import BRACE_MARKER
 
 from .errors import (
     AliasContainsMarkError,
     TermConflictError,
     TermMergeError,
-)
-from .mark import (
-    contains_mark_symbol,
-    pick_marks,
-    replace_markers,
 )
 
 
@@ -60,7 +56,7 @@ class Term(BaseModel, frozen=True):
     @classmethod
     def _validate_alias(cls, v: str | None) -> str | None:
         """Validate duplication."""
-        if v is not None and contains_mark_symbol(v):
+        if v is not None and BRACE_MARKER.contains_symbol(v):
             msg = "aliasにMARK文字が含まれています"
             raise AliasContainsMarkError(msg)
         return v
@@ -123,15 +119,15 @@ class Term(BaseModel, frozen=True):
         """参照{}を持つか否か."""
         if len(self.names) == 0:
             return False
-        return any(contains_mark_symbol(n) for n in self.names)
+        return any(BRACE_MARKER.contains_symbol(n) for n in self.names)
 
     @property
     def marktree(self) -> nx.DiGraph:
         """マークを全て返す."""
         g = nx.DiGraph()
         for n in self.names:
-            marks = pick_marks(n)
-            atom = replace_markers(n, *marks)
+            marks = BRACE_MARKER.pick(n)
+            atom = BRACE_MARKER.replace(n, *marks)
             g.add_node(atom)
             for m in marks:
                 g.add_edge(atom, m)
@@ -144,7 +140,7 @@ class Term(BaseModel, frozen=True):
     @property
     def marks(self) -> list[str]:
         """Flatten marks."""
-        return list(flatten([pick_marks(n) for n in self.names]))
+        return list(flatten([BRACE_MARKER.pick(n) for n in self.names]))
 
 
 def term_dup_checker() -> DuplicationChecker:

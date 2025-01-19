@@ -3,6 +3,10 @@
 from __future__ import annotations
 
 import re
+from functools import cached_property
+from typing import Final
+
+from pydantic import BaseModel
 
 from .errors import (
     EmptyMarkError,
@@ -10,45 +14,54 @@ from .errors import (
     PlaceHolderMappingError,
 )
 
-MARK_OPEN = "{"
-MARK_CLOSE = "}"
+MARK_OPEN: Final = "{"
+MARK_CLOSE: Final = "}"
 
-MARK_PATTERN = re.compile(rf"\{MARK_OPEN}(.+?)\{MARK_CLOSE}")  # 非貪欲=最小マッチ
-
-
-def pick_marks(s: str) -> list[str]:
-    """マークの値を取り出す."""
-    if not contains_mark_symbol(s):
-        return []
-    marks = MARK_PATTERN.findall(s)
-    if any(map(contains_mark_symbol, marks)):
-        msg = f"マーク内に'{MARK_OPEN}'または'{MARK_CLOSE}'が含まれています: {s}"
-        raise MarkContainsMarkError(msg)
-    if len(marks) == 0:
-        msg = "マーク内に文字列を入力してください"
-        raise EmptyMarkError(msg)
-    return marks
+# 非貪欲=最小マッチ
+MARK_PATTERN: Final = re.compile(rf"\{MARK_OPEN}(.+?)\{MARK_CLOSE}")
 
 
-def contains_mark_symbol(s: str) -> bool:
-    """マーク文字を含むか."""
-    return MARK_OPEN in s or MARK_CLOSE in s
+class Marker(BaseModel, frozen=True):
+    """マークロジック."""
+
+    m_open: str
+    m_close: str
+
+    @cached_property
+    def pattern(self) -> re.Pattern[str]:
+        """Regex object."""
+        return re.compile(rf"\{self.m_open}(.+?)\{self.m_close}")
+
+    def pick(self, s: str) -> list[str]:
+        """マークの値を取り出す."""
+        if not self.contains_symbol(s):
+            return []
+        marks = self.pattern.findall(s)
+        if any(map(self.contains_symbol, marks)):
+            msg = (
+                f"マーク内に'{self.m_open}'または'{self.m_close}'が含まれています: {s}"
+            )
+            raise MarkContainsMarkError(msg)
+        if len(marks) == 0:
+            msg = "マーク内に文字列を入力してください"
+            raise EmptyMarkError(msg)
+        return marks
+
+    def contains_symbol(self, s: str) -> bool:
+        """マーク文字を含むか."""
+        return self.m_open in s or self.m_close in s
+
+    def replace(self, s: str, *repls: str) -> str:
+        """markを置き換える."""
+        ret = s
+        for repl in repls:
+            ret = self.pattern.sub(repl, ret, count=1)
+        return ret
 
 
-PLACE_HOLDER = "$@"
+BRACE_MARKER: Final = Marker(m_open=MARK_OPEN, m_close=MARK_CLOSE)
 
-
-def replace_placeholder(s: str) -> str:
-    """markをplaceholderに置き換える."""
-    return MARK_PATTERN.sub(PLACE_HOLDER, s)
-
-
-def replace_markers(s: str, *repls: str) -> str:
-    """markを置き換える."""
-    ret = s
-    for repl in repls:
-        ret = MARK_PATTERN.sub(repl, ret, count=1)
-    return ret
+PLACE_HOLDER: Final = "$@"
 
 
 def inject2placeholder(
@@ -68,8 +81,3 @@ def inject2placeholder(
     for v in values:
         ret = c.sub(prefix + v + suffix, ret, count=1)
     return ret
-
-
-def count_placeholder(s: str) -> int:
-    """文字列に含まれるプレースホルダーを数える."""
-    return s.count(PLACE_HOLDER)

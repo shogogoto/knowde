@@ -3,10 +3,9 @@
 import pytest
 
 from .domain import (
-    count_placeholder,
+    BRACE_MARKER,
+    PLACE_HOLDER,
     inject2placeholder,
-    pick_marks,
-    replace_placeholder,
 )
 from .errors import (
     EmptyMarkError,
@@ -19,20 +18,20 @@ def test_pick_mark() -> None:
     """文字列からマーク{}を識別する."""
     s1 = "xxx{def1}xxx"
     s2 = "{d1}x{d2}xxxx{d3}x"
-    assert pick_marks(s1) == ["def1"]
-    assert pick_marks(s2) == ["d1", "d2", "d3"]
+    assert BRACE_MARKER.pick(s1) == ["def1"]
+    assert BRACE_MARKER.pick(s2) == ["d1", "d2", "d3"]
 
 
 def test_pick_mark_empty() -> None:
     """mark内が空の場合、抽出しない."""
     s = "xx{}xx"
     with pytest.raises(EmptyMarkError):
-        pick_marks(s)
+        BRACE_MARKER.pick(s)
 
 
 def test_pick_mark_none() -> None:
     """markなし."""
-    assert pick_marks("xxx") == []
+    assert BRACE_MARKER.pick("xxx") == []
 
 
 def test_pick_mark_in_mark() -> None:
@@ -41,29 +40,22 @@ def test_pick_mark_in_mark() -> None:
     s2 = "{}}"
     s3 = "{{}}"
     with pytest.raises(MarkContainsMarkError):
-        pick_marks(s1)
+        BRACE_MARKER.pick(s1)
 
     with pytest.raises(MarkContainsMarkError):
-        pick_marks(s2)
+        BRACE_MARKER.pick(s2)
 
     with pytest.raises(MarkContainsMarkError):
-        pick_marks(s3)
+        BRACE_MARKER.pick(s3)
 
 
-def test_replace_marks() -> None:
+def test_replace_placeholder() -> None:
     """markをplaceholderへ置換."""
     s1 = "xx{def}xx"
     s2 = "xx{def}xx{def2}"
 
-    assert replace_placeholder(s1) == "xx$@xx"
-    assert replace_placeholder(s2) == "xx$@xx$@"
-
-
-def test_count_place_holder() -> None:
-    """プレースホルダーを数える."""
-    assert count_placeholder("xx$x@xx") == 0
-    assert count_placeholder("xx$@xx") == 1
-    assert count_placeholder("xx$@$@") == 2  # noqa: PLR2004
+    assert BRACE_MARKER.replace(s1, PLACE_HOLDER) == "xx$@xx"
+    assert BRACE_MARKER.replace(s2, *[PLACE_HOLDER] * 2) == "xx$@xx$@"
 
 
 def test_inject2placeholder() -> None:
