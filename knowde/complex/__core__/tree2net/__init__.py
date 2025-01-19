@@ -45,7 +45,7 @@ def _build_graph(tree: Tree, col: DirectedEdgeCollection) -> nx.MultiDiGraph:
     col.add_edges(g)
     add_resolved_edges(g, resolver)
     replace_quoterms(g, resolver)
-    return g
+    return nx.freeze(g)
 
 
 def _extract_leaves(tree: Tree) -> tuple[nx.MultiDiGraph, MarkResolver]:
@@ -53,7 +53,7 @@ def _extract_leaves(tree: Tree) -> tuple[nx.MultiDiGraph, MarkResolver]:
     leaves = get_leaves(tree)
     mt = check_and_merge_term(to_term(leaves))
     check_duplicated_sentence(leaves)
-    mdefs, stddefs = MergedDef.create(mt, to_def(leaves))
+    mdefs, stddefs = MergedDef.create_and_parted(mt, to_def(leaves))
     g = nx.MultiDiGraph()
     [md.add_edge(g) for md in mdefs]
     [d.add_edge(g) for d in stddefs]

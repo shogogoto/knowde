@@ -1,5 +1,8 @@
 """common."""
 import sys
+from contextlib import contextmanager
+from cProfile import Profile
+from typing import Generator
 
 from lark import LarkError
 
@@ -24,3 +27,15 @@ def try_parse2net(s: str) -> SysNet:
     ) as e:
         print(f"{type(e).__name__}:", e)  # noqa: T201
     sys.exit(1)
+
+
+@contextmanager
+def profile() -> Generator:
+    """パフォーマンス計測してstdout."""
+    pr = Profile()
+    pr.enable()
+    try:
+        yield pr
+    finally:
+        pr.disable()
+        pr.print_stats(sort="cumtime")

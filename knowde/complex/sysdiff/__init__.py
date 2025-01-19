@@ -1,4 +1,4 @@
-"""系の差分."""
+"""ネットワーク2 node0 系の差分."""
 from __future__ import annotations
 
 from itertools import product

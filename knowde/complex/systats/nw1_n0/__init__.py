@@ -3,24 +3,23 @@ from __future__ import annotations
 
 import operator
 from enum import Enum
-from functools import reduce
+from functools import cache, reduce
 from typing import Callable, Hashable, TypeAlias
 
 import networkx as nx
-from more_itertools import flatten
 
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.sysnet.sysnode import Duplicable, SysArg
 from knowde.complex.systats.nw1_n1 import (
-    get_details,
+    get_detail,
     get_parent_or_none,
     has_dependency,
 )
-from knowde.primitive.__core__.nxutil.edge_type import EdgeType
+from knowde.primitive.__core__.nxutil.edge_type import EdgeType, etype_subgraph
 from knowde.primitive.term import Term
 
-SystatsFn: TypeAlias = Callable[[SysNet], int]
-SystatsRatioFn: TypeAlias = Callable[[SysNet], float]
+NW1N0Fn: TypeAlias = Callable[[SysNet], int]
+NW1N0RatioFn: TypeAlias = Callable[[SysNet], float]
 
 
 class Systats(Enum):
@@ -33,46 +32,61 @@ class Systats(Enum):
     ISOLATION = ("isolation", lambda sn: len(get_isolation(sn)))
     AXIOM = ("axiom", lambda sn: len(get_axiom_to(sn)))
     TERM_AXIOM = ("term_axiom", lambda sn: len(get_axiom_resolved(sn)))
+    DIAMETER = ("diameter", lambda sn: nx.diameter(sn.g.to_undirected()))
+    RADIUS = ("radius", lambda sn: nx.radius(sn.g.to_undirected()))
 
     label: str
-    fn: SystatsFn
+    fn: NW1N0Fn
 
-    def __init__(self, label: str, fn: SystatsFn) -> None:
+    def __init__(self, label: str, fn: NW1N0Fn) -> None:
         """For merge."""
         self.label = label
         self.fn = fn
 
+    @classmethod
+    def to_dict(cls, sn: SysNet) -> dict[str, int]:
+        """For json etc."""
+        return {r.label: r.fn(sn) for r in cls}
+
+
+def ratio_fn(numerator: NW1N0Fn, denominator: NW1N0Fn) -> NW1N0RatioFn:
+    """ゼロ割エラー回避."""
+
+    def _fn(sn: SysNet) -> float:
+        n = numerator(sn)
+        d = denominator(sn)
+        if d == 0:
+            return float("inf")
+        return n / d
+
+    return _fn
+
 
 class UnificationRatio(Enum):
-    """1系の統合化(まとまり具体)指標.
+    """1系の統合化(まとまり具体)指標."""
 
-    Systatsの組み合わせ
-    """
-
-    ISOLATION = (
-        "isoration_ratio",
-        lambda sn: Systats.ISOLATION.fn(sn) / Systats.SENTENCE.fn(sn),
-    )
-    TERM = (
-        "axiom_term_ratio",
-        lambda sn: Systats.TERM_AXIOM.fn(sn) / Systats.TERM.fn(sn),
-    )
-    AXIOM = (
-        "axiom_ratio",
-        lambda sn: Systats.AXIOM.fn(sn) / Systats.SENTENCE.fn(sn),
-    )
+    ISOLATION = ("isoration_ratio", ratio_fn(Systats.ISOLATION.fn, Systats.SENTENCE.fn))
+    TERM = ("axiom_term_ratio", ratio_fn(Systats.TERM_AXIOM.fn, Systats.TERM.fn))
+    AXIOM = ("axiom_ratio", ratio_fn(Systats.AXIOM.fn, Systats.SENTENCE.fn))
+    DENSITY = ("density", lambda sn: nx.density(sn.g))
 
     label: str
-    fn: SystatsRatioFn
+    fn: NW1N0RatioFn
 
-    def __init__(self, label: str, fn: SystatsRatioFn) -> None:
+    def __init__(self, label: str, fn: NW1N0RatioFn) -> None:
         """For merge."""
         self.label = label
         self.fn = lambda sn: round(fn(sn), 3)
 
+    @classmethod
+    def to_dict(cls, sn: SysNet) -> dict[str, float]:
+        """For json etc."""
+        return {r.label: r.fn(sn) for r in cls}
 
-# def get_systats_ratio(sn: SysNet) -> dict:
-#     """1系統計からの比率比率."""
+    @classmethod
+    def to_dictstr(cls, sn: SysNet, n_digits: int = 2) -> dict[str, str]:
+        """For json etc."""
+        return {k: f"{v:.{n_digits}%}" for k, v in cls.to_dict(sn).items()}
 
 
 def n_char(sn: SysNet) -> int:  # noqa: D103
@@ -82,13 +96,14 @@ def n_char(sn: SysNet) -> int:  # noqa: D103
             case str() | Duplicable():
                 c += len(str(n))
             case Term():
-                c += reduce(operator.add, map(len, n.names))
+                c += 0 if len(n.names) == 0 else reduce(operator.add, map(len, n.names))
                 c += len(n.alias) if n.alias else 0
             case _:
                 raise TypeError
     return c
 
 
+@cache
 def get_isolation(sn: SysNet) -> list[Hashable]:
     """孤立したノード.
 
@@ -98,54 +113,49 @@ def get_isolation(sn: SysNet) -> list[Hashable]:
 
     def include_isolation_node(n: Hashable) -> bool:
         """parentもなく、詳細もなく、TOなどの関係もない."""
-        if n not in sn.sentences:
-            return False
         parent = get_parent_or_none(sn, n)
         if parent is not None:
             return False
-        details = list(flatten(get_details(sn, n)))
-        if len(details) > 0:
+        if has_dependency(sn, n):
             return False
-        return not has_dependency(sn, n)
+        detail = get_detail(sn, n)
+        return len(detail) == 0
 
+    sub = etype_subgraph(sn.sentence_graph, EdgeType.SIBLING, EdgeType.BELOW)
     sub = nx.subgraph_view(
-        sn.g,
+        sub,
         filter_node=include_isolation_node,  # 見出し削除
     )
     return list(sub.nodes)
 
 
+@cache
 def get_axiom_to(sn: SysNet) -> list[Hashable]:
     """TOの出発点となるDef or sentence."""
 
     def filter_axiom(n: Hashable) -> bool:
-        """parentもなく、詳細もなく、TOなどの関係もない."""
-        if n not in sn.sentences:
-            return False
         has_to = len(list(EdgeType.TO.succ(sn.g, n))) > 0
         has_from = len(list(EdgeType.TO.pred(sn.g, n))) == 0
         return has_to and has_from
 
     sub = nx.subgraph_view(
-        sn.g,
+        etype_subgraph(sn.sentence_graph, EdgeType.TO),
         filter_node=filter_axiom,  # 見出し削除
     )
     return list(sub.nodes)
 
 
+@cache
 def get_axiom_resolved(sn: SysNet) -> list[SysArg]:
     """RESOLVEDの出発点."""
 
     def filter_axiom(n: Hashable) -> bool:
-        """parentもなく、詳細もなく、TOなどの関係もない."""
-        if n not in sn.sentences:
-            return False
         has_refer = len(list(EdgeType.RESOLVED.pred(sn.g, n))) > 0
         has_referred = len(list(EdgeType.RESOLVED.succ(sn.g, n))) == 0
         return has_refer and has_referred
 
     sub = nx.subgraph_view(
-        sn.g,
+        etype_subgraph(sn.sentence_graph, EdgeType.RESOLVED),
         filter_node=filter_axiom,  # 見出し削除
     )
-    return [sn.get(n) for n in sub.nodes]
+    return list(sub.nodes)

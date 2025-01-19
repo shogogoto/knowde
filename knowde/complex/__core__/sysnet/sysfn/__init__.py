@@ -1,6 +1,7 @@
 """sys系関数."""
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING, Hashable, Iterable
 
 from lark import Token
@@ -25,7 +26,8 @@ if TYPE_CHECKING:
 
 def to_term(vs: Iterable[Hashable]) -> list[Term]:
     """termのみを取り出す."""
-    return [v.term for v in vs if isinstance(v, Def)]
+    terms = [n for n in vs if isinstance(n, Term)]
+    return [*terms, *[v.term for v in vs if isinstance(v, Def)]]
 
 
 def to_quoterm(vs: Iterable[SysArg]) -> list[Token]:
@@ -48,7 +50,7 @@ def node2sentence(n: SysArg) -> str | DummySentence:
             raise TypeError(msg)
 
 
-def to_sentence(vs: Iterable[Hashable]) -> list[str | DummySentence]:
+def to_sentence(vs: Iterable[Hashable]) -> list[str | Duplicable]:
     """文のみを取り出す."""
     defed = [v.sentence for v in vs if isinstance(v, Def)]
     return [*defed, *[v for v in vs if isinstance(v, (str, Duplicable))]]
@@ -59,6 +61,8 @@ def check_duplicated_sentence(vs: Iterable[Hashable]) -> None:
     s_chk = sentence_dup_checker()
     for s in to_sentence(vs):
         if isinstance(s, (DummySentence, Duplicable)):
+            continue
+        if isinstance(s, Token) and s.type == "QUOTERM":
             continue
         s_chk(s)
 
@@ -86,3 +90,21 @@ def get_ifdef(g: nx.DiGraph, n: SysNode) -> SysArg:
             return Def(term=n, sentence=s)
         case _:
             raise TypeError(n)
+
+
+QUOTERM_PETTERN = re.compile(r"^`.*`$")
+
+
+def is_enclosed_in_backticks(s: str) -> bool:
+    """引用用語 or not."""
+    return bool(QUOTERM_PETTERN.match(s))
+
+
+def get_ifquote(g: nx.DiGraph, n: SysArg) -> SysArg:
+    """引用用語ならdefを返す."""
+    if isinstance(n, str) and is_enclosed_in_backticks(n):
+        succ = EdgeType.QUOTERM.get_succ_or_none(g, n)
+        if succ is None:
+            raise TypeError
+        return get_ifdef(g, succ)
+    return None

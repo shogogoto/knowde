@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from enum import Enum, auto
-from functools import cached_property
+from functools import cache, cached_property, reduce
 from typing import Callable, Hashable, Self
 
 import networkx as nx
@@ -31,6 +31,7 @@ class EdgeType(Enum):
     # 意味的関係
     DEF = auto()  # term -> 文
     RESOLVED = auto()  # 用語解決関係 文 -> 文
+    QUOTERM = auto()  # 引用用語 term -> def
     TO = auto()  # 依存
     EXAMPLE = auto()  # 具体
 
@@ -96,6 +97,27 @@ class EdgeType(Enum):
     def get_pred_or_none(self, g: nx.DiGraph, n: Hashable) -> None | Hashable:
         """1つの前を返す."""
         return _get_one_or_none(list(self.pred(g, n)), self, n)
+
+    def subgraph(self, g: nx.DiGraph) -> nx.DiGraph:
+        """同じタイプのエッジと繋がったノードを持つサブグラフ."""
+        return _etype_subgraph(g, self)
+
+
+@cache
+def etype_subgraph(g: nx.DiGraph, *ts: EdgeType) -> nx.DiGraph:
+    """キャッシュありサブグラフ."""
+    gs = [t.subgraph(g) for t in ts]
+    return reduce(nx.compose, gs)
+
+
+@cache
+def _etype_subgraph(g: nx.DiGraph, t: EdgeType) -> nx.DiGraph:
+    nodes = set()
+    for u, v, data in g.edges(data=True):
+        if data["type"] == t:
+            nodes.add(u)
+            nodes.add(v)
+    return nx.subgraph(g, nodes)
 
 
 def _get_one_or_none(ls: list[Hashable], t: EdgeType, src: Hashable) -> None | Hashable:
