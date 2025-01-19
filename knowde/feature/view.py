@@ -10,7 +10,7 @@ from knowde.complex.systats.nw1_n0 import Systats, UnificationRatio
 from knowde.complex.systats.nw1_n0.scorable import (
     LRWTpl,
     Nw1N1Label,
-    SysContexts,
+    SyScore,
 )
 from knowde.complex.systats.nw1_n1.ctxdetail import (
     Nw1N1Detail,
@@ -66,7 +66,7 @@ def score_cmd(
     """ノードの文脈スコア順に表示."""
     txt = stdin.read()
     sn = try_parse2net(txt)
-    ctx = SysContexts.create(item, ignore, config)
+    ctx = SyScore.create(item, ignore, config)
     echo_table(ctx.to_json(sn, num=number))
 
 

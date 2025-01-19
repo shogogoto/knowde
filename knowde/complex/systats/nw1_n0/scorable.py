@@ -98,8 +98,8 @@ class CtxConfig(BaseModel, frozen=True):
         )
 
 
-class SysContexts(BaseModel, frozen=True):
-    """コレクション."""
+class SyScore(BaseModel, frozen=True):
+    """システムスコア."""
 
     values: list[Nw1N1Ctx]
     config: CtxConfig = Field(default_factory=lambda _: CtxConfig(configs=[]))
