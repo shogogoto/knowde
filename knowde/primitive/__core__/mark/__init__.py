@@ -14,11 +14,6 @@ from .errors import (
     PlaceHolderMappingError,
 )
 
-MARK_OPEN: Final = "{"
-MARK_CLOSE: Final = "}"
-
-MARK_PATTERN: Final = re.compile(rf"\{MARK_OPEN}(.+?)\{MARK_CLOSE}")
-
 
 class Marker(BaseModel, frozen=True):
     """マークロジック."""
@@ -29,7 +24,7 @@ class Marker(BaseModel, frozen=True):
     @cached_property
     def pattern(self) -> re.Pattern[str]:
         """非貪欲=最小マッチ."""
-        return re.compile(rf"\{self.m_open}(.+?)\{self.m_close}")
+        return re.compile(rf"{self.m_open}(.+?){self.m_close}")
 
     def pick(self, s: str) -> list[str]:
         """マークの値を取り出す."""
@@ -57,8 +52,6 @@ class Marker(BaseModel, frozen=True):
             ret = self.pattern.sub(repl, ret, count=1)
         return ret
 
-
-BRACE_MARKER: Final = Marker(m_open=MARK_OPEN, m_close=MARK_CLOSE)
 
 PLACE_HOLDER: Final = "$@"
 

@@ -2,8 +2,10 @@
 
 import pytest
 
-from . import BRACE_MARKER, PLACE_HOLDER, inject2placeholder
+from . import PLACE_HOLDER, Marker, inject2placeholder
 from .errors import EmptyMarkError, MarkContainsMarkError, PlaceHolderMappingError
+
+BRACE_MARKER = Marker(m_open="{", m_close="}")  # 波括弧
 
 
 def test_pick_mark() -> None:
