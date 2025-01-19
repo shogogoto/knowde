@@ -10,7 +10,7 @@ from more_itertools import flatten
 from pydantic import BaseModel, Field, PrivateAttr, field_validator
 
 from knowde.primitive.__core__.dupchk import DuplicationChecker
-from knowde.primitive.term.mark import BRACE_MARKER
+from knowde.primitive.__core__.mark import BRACE_MARKER
 
 from .errors import (
     AliasContainsMarkError,
