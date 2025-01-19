@@ -2,16 +2,8 @@
 
 import pytest
 
-from .domain import (
-    BRACE_MARKER,
-    PLACE_HOLDER,
-    inject2placeholder,
-)
-from .errors import (
-    EmptyMarkError,
-    MarkContainsMarkError,
-    PlaceHolderMappingError,
-)
+from . import BRACE_MARKER, PLACE_HOLDER, inject2placeholder
+from .errors import EmptyMarkError, MarkContainsMarkError, PlaceHolderMappingError
 
 
 def test_pick_mark() -> None:

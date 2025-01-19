@@ -6,9 +6,7 @@ from typing import AbstractSet, TypeAlias
 
 from knowde.primitive.term import Term
 from knowde.primitive.term.errors import MarkUncontainedError
-from knowde.primitive.term.mark.domain import (
-    BRACE_MARKER,
-)
+from knowde.primitive.term.mark import BRACE_MARKER
 
 
 def get_refer_terms(
