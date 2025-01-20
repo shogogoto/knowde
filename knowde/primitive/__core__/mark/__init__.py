@@ -28,12 +28,13 @@ class Marker(BaseModel, frozen=True):
 
     def pick(self, s: str) -> list[str]:
         """マークの値を取り出す."""
-        if not self.contains_symbol(s):
+        if not self.contains(s):
             return []
         marks = self.pattern.findall(s)
-        if any(map(self.contains_symbol, marks)):
+        if any(map(self.contains, marks)):
             msg = (
-                f"マーク内に'{self.m_open}'または'{self.m_close}'が含まれています: {s}"
+                f"マーク'{self.m_open} {self.m_close}'内に'{self.m_open}"
+                f"'または'{self.m_close}'が含まれています: {s}"
             )
             raise MarkContainsMarkError(msg)
         if len(marks) == 0:
@@ -41,7 +42,7 @@ class Marker(BaseModel, frozen=True):
             raise EmptyMarkError(msg)
         return marks
 
-    def contains_symbol(self, s: str) -> bool:
+    def contains(self, s: str) -> bool:
         """マーク文字を含むか."""
         return self.m_open in s or self.m_close in s
 

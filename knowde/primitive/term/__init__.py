@@ -56,7 +56,7 @@ class Term(BaseModel, frozen=True):
     @classmethod
     def _validate_alias(cls, v: str | None) -> str | None:
         """Validate duplication."""
-        if v is not None and BRACE_MARKER.contains_symbol(v):
+        if v is not None and BRACE_MARKER.contains(v):
             msg = "aliasにMARK文字が含まれています"
             raise AliasContainsMarkError(msg)
         return v
@@ -119,7 +119,7 @@ class Term(BaseModel, frozen=True):
         """参照{}を持つか否か."""
         if len(self.names) == 0:
             return False
-        return any(BRACE_MARKER.contains_symbol(n) for n in self.names)
+        return any(BRACE_MARKER.contains(n) for n in self.names)
 
     @property
     def marktree(self) -> nx.DiGraph:

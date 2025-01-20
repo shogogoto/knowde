@@ -177,3 +177,15 @@ def test_replace_quoterm() -> None:
         "aAA": {},
         "ccc": {},
     }
+
+
+def test_template() -> None:
+    """テンプレート."""
+    _s = """
+        # h1
+            _f(a,b)_: a + b
+    """
+
+    _sn = parse2net(_s)
+
+    # nxprint(sn.g)
