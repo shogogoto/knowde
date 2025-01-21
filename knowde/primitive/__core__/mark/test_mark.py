@@ -64,3 +64,13 @@ def test_inject2placeholder() -> None:
 
     with pytest.raises(PlaceHolderMappingError):  # 2 != 3
         inject2placeholder(s2, ["d1", "d2", "d3"])
+
+
+def test_nesting_mark() -> None:
+    """入れ子マーク."""
+    m = Marker(m_open=r"\[", m_close=r"\]")
+    s = "This is a [sample [nested] brace] str with [multiple [levels [of nesting]]]."
+    assert m.pick_nesting(s) == [
+        "sample [nested] brace",
+        "multiple [levels [of nesting]]",
+    ]

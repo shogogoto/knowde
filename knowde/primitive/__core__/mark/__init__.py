@@ -7,6 +7,7 @@ from functools import cached_property
 from typing import Final
 
 from pydantic import BaseModel
+from regex import regex
 
 from .errors import (
     EmptyMarkError,
@@ -52,6 +53,13 @@ class Marker(BaseModel, frozen=True):
         for repl in repls:
             ret = self.pattern.sub(repl, ret, count=1)
         return ret
+
+    def pick_nesting(self, s: str) -> list[str]:
+        """マーク入れ子を許容して最も外側にマッチして返す."""
+        o = self.m_open
+        c = self.m_close
+        pattern = rf"{o}((?:[^{o}{c}]++|(?R))*){c}"
+        return regex.findall(pattern, s)
 
 
 PLACE_HOLDER: Final = "$@"

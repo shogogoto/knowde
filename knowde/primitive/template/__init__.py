@@ -101,15 +101,25 @@ def template_dup_checker() -> DuplicationChecker:
     return DuplicationChecker(err_fn=_err)
 
 
-def get_nested(form: str) -> list[tuple[str, list[str]]]:
-    """formに含まれるテンプレート名と引数を返す."""
-    return [
-        (
-            get_template_name(m),
-            get_template_args(m),
-        )
-        for m in CALL_MARKER.pick(form)
-    ]
+def get_template_signature(txt: str) -> list:
+    """テンプレート名と引数の入れ子を含む文字列を分解."""
+    # print("nesting::", txt, "::", ANGLE_MARKER.pick_nesting(txt))
+    name = txt.split(ANGLE_MARKER.m_open, maxsplit=1)[0]
+    sig = []
+    sig.append(name.strip())
+    for m in ANGLE_MARKER.pick_nesting(txt):
+        # print(f"::{txt}::   ", m)
+        # if ANGLE_MARKER.contains(m):
+        #     print("cont!", m)
+        args = []
+        for s in m.split(ARG_SEP_TMPL):
+            if ANGLE_MARKER.contains(s):
+                args.append(get_template_signature(s))
+            else:
+                args.append(s.strip())
+        sig.append(args)
+    # print(txt, sig)
+    return sig
 
 
 # formにテンプレがあるか
@@ -119,26 +129,36 @@ def get_nested(form: str) -> list[tuple[str, list[str]]]:
 class Templates(BaseModel):
     """テンプレートのあつまり."""
 
+    values: list[Template] = Field(default_factory=list)
     _chk: DuplicationChecker = PrivateAttr(default_factory=template_dup_checker)
-
-    @property
-    def values(self) -> list[Template]:  # noqa: D102
-        return self._chk.ls
 
     def add(self, *ts: Template) -> Self:
         """templateを重複なく追加."""
         for t in ts:
-            self._chk(t)
+            self._chk(t.name)
+            self.values.append(t)
         return self
 
     def format(self, t: Template, *args: str) -> str:
         """formにあるテンプレを展開する."""
-        s = t.format(*args)
-        for name, _args in get_nested(s):
-            _t = self.get(name)
-            repl = self.format(_t, *_args) if _t.is_nested else _t.format(*_args)
-            s = CALL_MARKER.replace(s, repl)
-        return s
+        if t not in self.values:
+            msg = f"'{t.name}テンプレートは存在しません'"
+            raise TemplateNotFoundError(msg, t)
+
+        return t.format(*args)
+        # print("form:", s)
+        # called = CALL_MARKER.pick_nesting(s)
+
+        # for cl in called:
+        #     print("call", cl)
+        #     for m in ANGLE_MARKER.pick_nesting(cl):
+        #         print(get_template_signature(m))
+
+        # for name, _args in get_nested(s):
+        #     print(name, _args)
+        #     _t = self.get(name)
+        #     repl = self.format(_t, *_args) if _t.is_nested else _t.format(*_args)
+        #     s = CALL_MARKER.replace(s, repl)
 
     def get(self, name: str) -> Template:
         """Get template from name."""
