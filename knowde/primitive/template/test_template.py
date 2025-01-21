@@ -86,16 +86,15 @@ def test_duplicate_templates() -> None:
 @pytest.mark.parametrize(
     ("line", "expected"),
     [
-        ("f<x>", ["f", ["x"]]),
+        ("f <x>", ["f", ["x"]]),
         (" g<x, y>", ["g", ["x", "y"]]),
-        # ("g<x,f<1, 2>, y>", ["g", ["x", ["f", ["1", "2"]], "y"]]),
-        # ("g<f<1>, y>>>", ["g", [["f", ["1"]], "y"]]),
-        # ("h<g<f<1>, y>, 2>", ["h", [["g", [["f", ["1"]], "y"]], 2]]),
+        ("g<x,f<1, 2>>", ["g", ["x", ["f", ["1", "2"]]]]),
+        ("g<f<1>, y>>>", ["g", [["f", ["1"]], "y"]]),
+        ("h<g<f<1>, y>, 2>", ["h", [["g", [["f", ["1"]], "y"]], "2"]]),
     ],
 )
 def test_nested_template_signature(line: str, expected: list) -> None:
     """文字列からテンプレの名前と引数の値を再帰的に返す."""
-    # print("#" * 30)
     assert get_template_signature(line) == expected
 
 

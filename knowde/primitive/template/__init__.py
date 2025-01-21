@@ -101,24 +101,23 @@ def template_dup_checker() -> DuplicationChecker:
     return DuplicationChecker(err_fn=_err)
 
 
-def get_template_signature(txt: str) -> list:
+def get_template_signature(line: str) -> list:
     """テンプレート名と引数の入れ子を含む文字列を分解."""
-    # print("nesting::", txt, "::", ANGLE_MARKER.pick_nesting(txt))
-    name = txt.split(ANGLE_MARKER.m_open, maxsplit=1)[0]
     sig = []
-    sig.append(name.strip())
-    for m in ANGLE_MARKER.pick_nesting(txt):
-        # print(f"::{txt}::   ", m)
-        # if ANGLE_MARKER.contains(m):
-        #     print("cont!", m)
-        args = []
-        for s in m.split(ARG_SEP_TMPL):
-            if ANGLE_MARKER.contains(s):
-                args.append(get_template_signature(s))
-            else:
-                args.append(s.strip())
-        sig.append(args)
-    # print(txt, sig)
+    pre, _ = line.split(ANGLE_MARKER.m_open, maxsplit=1)
+    _, post = line.split(pre, maxsplit=1)
+    name = pre.strip()
+    for m in ANGLE_MARKER.pick_nesting(post):
+        sp = [s.strip() for s in m.split(ARG_SEP_TMPL)]
+        idxs = [i for i, s in enumerate(sp) if ANGLE_MARKER.contains(s)]
+        if len(idxs) == 0:
+            sig.extend([name, sp])
+        else:
+            imin = min(idxs)
+            imax = max(idxs)
+            contained = ARG_SEP_TMPL.join(sp[imin : imax + 1])
+            args = sp[:imin] + [get_template_signature(contained)] + sp[imax + 1 :]
+            sig.extend([name, args])
     return sig
 
 
