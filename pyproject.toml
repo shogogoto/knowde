@@ -55,7 +55,7 @@ build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.taskipy.tasks]
 test       = "pytest"
-ptw        = "ptw -- -v -s --durations=0 --ff" # ispytest-watch
+ptw        = "ptw -- -v -s --durations=0 --ff --testmon" # ispytest-watch
 lint       = "ruff check ."
 lintfix    = "ruff . --fix"
 pre-commit = "pre-commit install"

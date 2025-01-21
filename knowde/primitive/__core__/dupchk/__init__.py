@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Callable, Generic, Hashable, NoReturn, TypeVar
 
-from pydantic import BaseModel, PrivateAttr
+from pydantic import BaseModel, Field
 
 T = TypeVar("T", bound=Hashable)
 
@@ -16,10 +16,10 @@ class DuplicationChecker(
     """用語重複チェック."""
 
     err_fn: Callable[[T], NoReturn]
-    _ls: list[T] = PrivateAttr(default_factory=list, init=False)
+    ls: list[T] = Field(default_factory=list, init=False)
 
     def __call__(self, n: T) -> None:
         """チェック."""
-        if n in self._ls:
+        if n in self.ls:
             raise self.err_fn(n)
-        self._ls.append(n)
+        self.ls.append(n)

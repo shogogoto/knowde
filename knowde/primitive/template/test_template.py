@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import pytest
 
-from . import Template
+from . import Template, Templates
 from .errors import (
     InvalidTemplateNameError,
     TemplateArgMismatchError,
@@ -65,13 +65,7 @@ def test_invalid_template_name(line: str) -> None:
         Template.parse(line)
 
 
-@pytest.mark.parametrize(
-    ("line"),
-    [
-        ("f<x>:y"),
-        ("f<x, y>:a"),
-    ],
-)
+@pytest.mark.parametrize(("line"), [("f<x>:y"), ("f<x, y>:a")])
 def test_unused_template_arg(line: str) -> None:
     """formatに使われる文字列が引数にない場合にエラー."""
     with pytest.raises(TemplateUnusedArgError):
@@ -80,5 +74,23 @@ def test_unused_template_arg(line: str) -> None:
 
 # 入力にテンプレを含む場合は考えない <- f<x>: _g<_h<x>_>_
 #  みたいにテンプレートを定義すればいい
-def test_template_with_output() -> None:
-    """出力にテンプレを含む."""
+# @pytest.mark.parametrize(
+#     ("line", "args", "output", "name"),
+#     [
+#         # n_arg 1
+#         ("f<x>: abcxyz", ["a"], "abcayz", "f"),
+#         (" g < x >: (x, x)", ["abc"], "(abc, abc)", "g"),
+#         # n_arg 2
+#         ("func<x,  y >: x ~ y", ["X", "Y"], "X ~ Y", "func"),
+#         # n_arg 3
+#         ("f<x, y, z>: x + y + z", ["1", "2", "3"], "1 + 2 + 3", "f"),
+#     ],
+# )
+def test_1nested_template() -> None:
+    """出力に埋め込んだテンプレを呼び出す."""
+    t1 = Template.parse(r"f<x>: \\math{x}")
+    t2 = Template.parse("g<x>: ~`f<x>`~")
+    assert not t1.is_nested
+    assert t2.is_nested
+    ts = Templates().add(t1, t2)
+    assert ts.format(t2, "X") == r"~\math{X}~"
