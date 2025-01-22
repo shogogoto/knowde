@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import pytest
 
-from . import Template, Templates, get_template_signature
+from . import Template, Templates, get_template_signature2
 from .errors import (
     InvalidTemplateNameError,
     TemplateArgMismatchError,
@@ -86,6 +86,7 @@ def test_duplicate_templates() -> None:
 @pytest.mark.parametrize(
     ("line", "expected"),
     [
+        ("f<>", ["f", []]),
         ("f <x>", ["f", ["x"]]),
         (" g<x, y>", ["g", ["x", "y"]]),
         ("g<x,f<1, 2>>", ["g", ["x", ["f", ["1", "2"]]]]),
@@ -95,22 +96,37 @@ def test_duplicate_templates() -> None:
 )
 def test_nested_template_signature(line: str, expected: list) -> None:
     """文字列からテンプレの名前と引数の値を再帰的に返す."""
-    assert get_template_signature(line) == expected
+    assert get_template_signature2(line) == expected
 
 
-@pytest.mark.skip()
+def test_call_unadded_template() -> None:
+    """未登録のテンプレを使用."""
+    t1 = Template.parse("mul<x,y>: x * y")
+    t2 = Template.parse("add<x,y>: x + y")
+    t3 = Template.parse("undef<x>: x")
+    ts = Templates().add(t1, t2)
+    with pytest.raises(TemplateNotFoundError):
+        ts.format(t3)
+
+
+@pytest.mark.parametrize(
+    ("line", "tgt", "expected"),
+    [
+        ("f <x>: xx", "af<1>a", "a11a"),
+        ("f <x>: !x!", "f<1>f<2>", "!1!!2!"),
+    ],
+)
+def test_template_nesting_call(line: str, tgt: str, expected: str) -> None:
+    """テンプレートのformに含まれるテンプレート呼び出し."""
+    t = Template.parse(line)
+    assert t.apply(tgt, *t.embedded_args(tgt)) == expected
+
+
 def test_1nested_template() -> None:
     """出力に埋め込んだテンプレを呼び出す."""
-    t1 = Template.parse(r"f<x>: \\math{x}")
-    t2 = Template.parse("g<x>: ~`f<x>`~")
-    t3 = Template.parse("h<x, y>: y`g<f<x>>`y")
-    t4 = Template.parse("not found<x>: xxx")
-    assert not t1.is_nested
-    assert t2.is_nested
+    t1 = Template.parse(r"f<x, y>: math{x, y}")
+    t2 = Template.parse("g<x>: ~`f<x, x>`~")
+    t3 = Template.parse("h<x, y>: y`g<f<x, y>>`y")
     ts = Templates().add(t1, t2, t3)
-    with pytest.raises(TemplateNotFoundError):
-        ts.format(t4)
-    # assert ts.format(t2, "X") == r"~\math{X}~"
-    # print("#" * 30)
-
-    assert ts.format(t3, "1", "!") == r"!~\\math{1}~!"
+    assert ts.format(t2, "X") == r"~math{X, X}~"
+    assert ts.format(t3, "1", "2") == r"2~math{math{1, 2}, math{1, 2}}~2"

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from functools import cached_property
+from functools import cache, cached_property
 from typing import Final
 
 from pydantic import BaseModel
@@ -26,6 +26,13 @@ class Marker(BaseModel, frozen=True):
     def pattern(self) -> re.Pattern[str]:
         """非貪欲=最小マッチ."""
         return re.compile(rf"{self.m_open}(.+?){self.m_close}")
+
+    @cached_property
+    def recursive_pattern(self) -> regex.Pattern:
+        """再帰的マッチング."""
+        o = self.m_open
+        c = self.m_close
+        return regex.compile(rf"{o}((?:[^{o}{c}]++|(?R))*){c}")
 
     def pick(self, s: str) -> list[str]:
         """マークの値を取り出す."""
@@ -56,10 +63,26 @@ class Marker(BaseModel, frozen=True):
 
     def pick_nesting(self, s: str) -> list[str]:
         """マーク入れ子を許容して最も外側にマッチして返す."""
-        o = self.m_open
-        c = self.m_close
-        pattern = rf"{o}((?:[^{o}{c}]++|(?R))*){c}"
-        return regex.findall(pattern, s)
+        return self.recursive_pattern.findall(s)
+
+    def enclose(self, s: str) -> str:
+        """マークで囲む."""
+        return f"{self.m_open}{s}{self.m_close}"
+
+    def split(self, txt: str, delimiter: str) -> list[str]:
+        """mark内を無視して分割."""
+        p = split_pattern(self.m_open, self.m_close, delimiter)
+        return p.split(txt)
+
+
+@cache
+def split_pattern(m_open: str, m_close: str, delimiter: str) -> re.Pattern:
+    """囲われた部分を無視するデリミタ."""
+    o = m_open
+    c = m_close
+    s = f"{o}{c}"
+    pattern = rf"{delimiter}(?=(?:[^{s}]*\([^{s}]*\))*[^{s}]*$)"
+    return re.compile(pattern)
 
 
 PLACE_HOLDER: Final = "$@"

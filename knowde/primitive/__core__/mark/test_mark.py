@@ -66,11 +66,25 @@ def test_inject2placeholder() -> None:
         inject2placeholder(s2, ["d1", "d2", "d3"])
 
 
-def test_nesting_mark() -> None:
+def test_pick_nesting() -> None:
     """入れ子マーク."""
     m = Marker(m_open=r"\[", m_close=r"\]")
     s = "This is a [sample [nested] brace] str with [multiple [levels [of nesting]]]."
     assert m.pick_nesting(s) == [
         "sample [nested] brace",
         "multiple [levels [of nesting]]",
+    ]
+
+
+def test_marker_split() -> None:
+    """マーク内を無視した分割."""
+    # test_string = 'value1,"value2, still in quotes",value3,"another,value"'
+    test_string = "value1,(value2, still in parentheses),value3,(another,value)"
+    m = Marker(m_open="(", m_close=")")
+    result = m.split(test_string, ",")
+    assert result == [
+        "value1",
+        "(value2, still in parentheses)",
+        "value3",
+        "(another,value)",
     ]
