@@ -61,16 +61,17 @@ class SysNet(BaseModel, frozen=True):
         """テンプレートの集まり."""
         return Templates().add(*to_template(self.g.nodes))
 
-    def apply(self, n: SysNode) -> SysArg:
-        """テンプレを適用した最終的なビュー."""
+    def expand(self, n: SysNode) -> SysArg:
+        """テンプレを展開."""
         got = self.get(n)
+        ts = self._templates
         match got:
             case str():
-                return got
+                return ts.expand(got)
             case Duplicable():
-                return got
+                return ts.expand(str(n))
             case Def():
-                return got
+                return Def(term=got.term, sentence=ts.expand(str(got.sentence)))
             case _:
                 raise TypeError(n)
 

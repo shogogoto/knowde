@@ -184,11 +184,9 @@ def test_template() -> None:
     _s = r"""
         # h1
             f<a,b>: \diff{a, b}
-            g<a>: aaa
-            call g<a> -> _g<XXXX>_
+            g<a>: !a!
+            call g<a> -> _g<f<a, 1>>_
     """
-    # _sn = parse2net(_s)
-    # print(_sn.sentences)
-    # for s in _sn.sentences:
-    #     print(s)
-    # nxprint(_sn.g, True)
+    _sn = parse2net(_s)
+    ret = [_sn.expand(s) for s in _sn.sentences]
+    assert ret == [r"call g<a> -> !\diff{a, 1}!"]
