@@ -18,6 +18,20 @@ from .errors import (
 
 
 @pytest.mark.parametrize(
+    ("line"),
+    [
+        "A: aaa",
+        "B, B1: bbb",
+        "C: c{A}c",
+        r"D: c{A}c \\ multi",
+    ],
+)
+def test_template_disparsable(line: str) -> None:
+    """テンプレ文字列ではない."""
+    assert not Template.is_parsable(line)
+
+
+@pytest.mark.parametrize(
     ("line", "args", "output", "name"),
     [
         # n_arg 1
@@ -32,6 +46,7 @@ from .errors import (
 def test_template(line: str, args: list[str], output: str, name: str) -> None:
     """普通のテンプレ."""
     tmpl = Template.parse(line)
+    assert Template.is_parsable(line)
     assert tmpl.format(*args) == output
     assert tmpl.name == name
 

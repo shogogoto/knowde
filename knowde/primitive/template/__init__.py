@@ -64,6 +64,14 @@ class Template(BaseModel, frozen=True):
         return self
 
     @classmethod
+    def is_parsable(cls, line: str) -> bool:
+        """パース対象とな文字列か判定."""
+        if SEP_TMPL not in line:
+            return False
+        first, _ = line.split(SEP_TMPL, maxsplit=1)
+        return ANGLE_MARKER.contains(first) and ANGLE_MARKER.is_pickable(first)
+
+    @classmethod
     def parse(cls, line: str) -> Self:
         """文字列をパースしてTemplateを生成."""
         txt = line.strip()
