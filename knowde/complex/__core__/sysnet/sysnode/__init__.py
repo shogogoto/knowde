@@ -11,6 +11,7 @@ from typing_extensions import override
 
 from knowde.complex.__core__.sysnet.errors import DefSentenceConflictError
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
+from knowde.primitive.template import Template
 from knowde.primitive.term import Term
 
 if TYPE_CHECKING:
@@ -109,6 +110,6 @@ class DummySentence(Duplicable, frozen=True):
 
     n: str = DUMMY_SENTENCE
 
-
-SysNode: TypeAlias = Term | str | Duplicable
-SysArg: TypeAlias = SysNode | Def
+_SysElem: TypeAlias = str | Duplicable | Template # 共通型
+SysNode: TypeAlias = Term | _SysElem
+SysArg: TypeAlias = Def | _SysElem

@@ -9,8 +9,8 @@ from pydantic import BaseModel
 from knowde.primitive.__core__.nxutil import to_nested
 from knowde.primitive.__core__.types import NXGraph
 from knowde.primitive.term import MergedTerms, Term
+from knowde.primitive.term.const import BRACE_MARKER
 from knowde.primitive.term.errors import MarkUncontainedError
-from knowde.primitive.term.mark.domain import pick_marks
 from knowde.primitive.term.marklookup import to_lookup
 
 
@@ -37,7 +37,7 @@ class MarkResolver(BaseModel, frozen=True):
             {mark: {mark:{...:{}}}}
 
         """
-        marks = pick_marks(s)
+        marks = BRACE_MARKER.pick(s)
         for m in marks:
             if m not in self.g:
                 msg = f"'{m}'は用語として存在しません at '{s}'"

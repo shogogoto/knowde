@@ -61,7 +61,7 @@ class CtxScorables(BaseModel, frozen=True):
     def to_dict(self, sn: SysNet) -> dict:
         """To dict for tabulate view."""
         d = self.get()
-        d["sentence"] = sn.get(self.n)  # for display
+        d["sentence"] = sn.expand(self.n)  # for display
         return d
 
     def __len__(self) -> int:  # noqa: D105

@@ -2,13 +2,14 @@
 from __future__ import annotations
 
 from textwrap import dedent
+from typing import Final
 
-ALIAS_SEP = "|"
-DEF_SEP = ":"
-NAME_SEP = ","
+ALIAS_SEP: Final = "|"
+DEF_SEP: Final = ":"
+NAME_SEP: Final = ","
 
 
-# larkでのparseが思ったようにいかなかったからあきらめた
+# larkでのparseが思ったようにいかなかったから諦めてブサイクに実装
 #   aliasやname, sentenceで許容する文字列を思ったように設定できなかった
 def parse_line(line: str) -> tuple[str | None, list[str], str | None]:
     """行を解析."""

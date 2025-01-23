@@ -18,10 +18,16 @@ from knowde.complex.__core__.sysnet.sysnode import (
     SysNode,
 )
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
+from knowde.primitive.template import Template
 from knowde.primitive.term import Term
 
 if TYPE_CHECKING:
     import networkx as nx
+
+
+def to_template(vs: Iterable[Hashable]) -> list[Template]:
+    """テンプレートのみを取り出す."""
+    return [v for v in vs if isinstance(v, Template)]
 
 
 def to_term(vs: Iterable[Hashable]) -> list[Term]:
@@ -35,12 +41,14 @@ def to_quoterm(vs: Iterable[SysArg]) -> list[Token]:
     return [v for v in vs if isinstance(v, Token) and v.type == "QUOTERM"]
 
 
-def node2sentence(n: SysArg) -> str | DummySentence:
+def arg2sentence(n: SysArg) -> str | DummySentence:
     """関係のハブとなる文へ."""
     match n:
-        case Term():
-            d = Def.dummy(n)
-            return d.sentence
+        case Template():
+            return n
+        # case Term():
+        #     d = Def.dummy(n)
+        #     return d.sentence
         case str() | Duplicable():
             return n
         case Def():
