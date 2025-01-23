@@ -23,7 +23,7 @@ SEP_TMPL: Final = ":"
 ANGLE_MARKER: Final = Marker(m_open="<", m_close=">")  # 山括弧
 ARG_SEP_TMPL: Final = ","
 
-CALL_MARKER: Final = Marker(m_open="`", m_close="`")
+CALL_MARKER: Final = Marker(m_open="_", m_close="_")
 
 
 def valid_name(value: str) -> str:
@@ -85,19 +85,15 @@ class Template(BaseModel, frozen=True):
         return ret
 
     def __str__(self) -> str:  # noqa: D105
-        return f"{self.signature}: {self.form}"
+        a = ", ".join(self.args)
+        a = ANGLE_MARKER.enclose(a)
+        sig = f"{self.name}{a}"
+        return f"{sig}: {self.form}"
 
     @property
     def is_nested(self) -> bool:
         """formにテンプレートを含むか."""
         return CALL_MARKER.contains(self.form)
-
-    @property
-    def signature(self) -> str:
-        """名前と引数定義."""
-        a = ", ".join(self.args)
-        a = ANGLE_MARKER.enclose(a)
-        return f"{self.name}{a}"
 
     @cached_property
     def _pattern(self) -> regex.Pattern:
@@ -143,7 +139,7 @@ def _embedded_pattern() -> re.Pattern:
     return re.compile(pattern)
 
 
-def get_template_signature2(line: str) -> list:
+def get_template_signature(line: str) -> list:
     """テンプレート名と引数の入れ子を含む文字列を分解."""
     sig = []
     pre, _ = line.split(ANGLE_MARKER.m_open, maxsplit=1)
@@ -152,7 +148,7 @@ def get_template_signature2(line: str) -> list:
     for m in ANGLE_MARKER.pick_nesting(post):
         sp = [s.strip() for s in split_for_args(m) if s.strip() != ""]
         args = [
-            get_template_signature2(s) if ANGLE_MARKER.contains(s) else s for s in sp
+            get_template_signature(s) if ANGLE_MARKER.contains(s) else s for s in sp
         ]
         sig.extend([name, args])
     return sig
@@ -194,7 +190,7 @@ class Templates(BaseModel):
         s = t.format(*args)  # 対象のargを適用
         called = CALL_MARKER.pick_nesting(s)  # その中からcall部分を列挙
         for cl in called:
-            sig = get_template_signature2(cl)
+            sig = get_template_signature(cl)
             v = self.apply(cl, sig)
             old = CALL_MARKER.enclose(cl)
             s = s.replace(old, v)

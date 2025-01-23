@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import pytest
 
-from . import Template, Templates, get_template_signature2
+from . import Template, Templates, get_template_signature
 from .errors import (
     InvalidTemplateNameError,
     TemplateArgMismatchError,
@@ -96,7 +96,7 @@ def test_duplicate_templates() -> None:
 )
 def test_nested_template_signature(line: str, expected: list) -> None:
     """文字列からテンプレの名前と引数の値を再帰的に返す."""
-    assert get_template_signature2(line) == expected
+    assert get_template_signature(line) == expected
 
 
 def test_call_unadded_template() -> None:
@@ -125,8 +125,8 @@ def test_template_nesting_call(line: str, tgt: str, expected: str) -> None:
 def test_1nested_template() -> None:
     """出力に埋め込んだテンプレを呼び出す."""
     t1 = Template.parse(r"f<x, y>: math{x, y}")
-    t2 = Template.parse("g<x>: ~`f<x, x>`~")
-    t3 = Template.parse("h<x, y>: y`g<f<x, y>>`y")
+    t2 = Template.parse("g<x>: ~_f<x, x>_~")
+    t3 = Template.parse("h<x, y>: y_g<f<x, y>>_y")
     ts = Templates().add(t1, t2, t3)
     assert ts.format(t2, "X") == r"~math{X, X}~"
     assert ts.format(t3, "1", "2") == r"2~math{math{1, 2}, math{1, 2}}~2"
