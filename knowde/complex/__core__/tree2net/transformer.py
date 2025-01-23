@@ -6,6 +6,7 @@ from lark import Token, Transformer
 from knowde.complex.__core__.sysnet.sysnode import Def, Duplicable, SysArg
 from knowde.complex.__core__.tree2net.lineparse import parse_line
 from knowde.primitive.__core__.nxutil import EdgeType
+from knowde.primitive.template import Template
 from knowde.primitive.term import Term
 
 
@@ -42,6 +43,9 @@ class TSysArg(Transformer):
 
 
 def _parse2sysarg(v: str) -> SysArg:
+    if Template.is_parsable(v):
+        return Template.parse(v)
+
     alias, names, sentence = parse_line(v)
     if sentence is None:
         t = Term.create(*names, alias=alias)

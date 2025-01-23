@@ -7,7 +7,7 @@ from lark import Token  # noqa: TCH002
 from pydantic import BaseModel, Field
 
 from knowde.complex.__core__.sysnet.sysfn import (
-    node2sentence,
+    arg2sentence,
 )
 from knowde.complex.__core__.sysnet.sysnode import SysArg
 from knowde.primitive.__core__.nxutil.edge_type import Direction, EdgeType
@@ -60,4 +60,4 @@ class DirectedEdgeCollection(BaseModel):
     def add_edges(self, g: nx.DiGraph) -> None:
         """graphへ関係を追加."""
         for v in self.values:
-            v.add_edge(g, node2sentence)
+            v.add_edge(g, arg2sentence)

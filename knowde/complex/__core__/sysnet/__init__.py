@@ -10,11 +10,13 @@ from knowde.complex.__core__.sysnet.sysfn import (
     get_ifdef,
     get_ifquote,
     to_sentence,
+    to_template,
     to_term,
 )
 from knowde.primitive.__core__.nxutil import EdgeType, to_nested
 from knowde.primitive.__core__.types import NXGraph
 from knowde.primitive.heading import get_headings
+from knowde.primitive.template import Templates
 from knowde.primitive.term import Term
 
 from .errors import SysNetNotFoundError
@@ -53,6 +55,11 @@ class SysNet(BaseModel, frozen=True):
     def sentence_graph(self) -> nx.DiGraph:
         """文のみのGraph."""
         return nx.subgraph(self.g, [s for s in self.sentences if isinstance(s, str)])
+
+    @cached_property
+    def _templates(self) -> Templates:
+        """テンプレートの集まり."""
+        return Templates().add(*to_template(self.g.nodes))
 
     def match(self, pattern: str) -> list[str | Duplicable]:
         """部分一致したものを返す."""

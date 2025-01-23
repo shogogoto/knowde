@@ -40,19 +40,19 @@ def get_template_name(first: str) -> str:
     return valid_name(pre)  # argより先にチェック
 
 
-def get_template_args(first: str) -> list[str]:
+def get_template_args(first: str) -> tuple[str]:
     """区切り前半から引数."""
     args = []
     for m in ANGLE_MARKER.pick(first):
         args.extend([s.strip() for s in m.split(ARG_SEP_TMPL)])
-    return args
+    return tuple(args)
 
 
 class Template(BaseModel, frozen=True):
     """文字列から生成される文字列関数."""
 
     name: Annotated[str, Field(min_length=1), AfterValidator(valid_name)]
-    args: list[str]
+    args: tuple[str, ...]
     form: str
 
     @model_validator(mode="after")
@@ -97,6 +97,9 @@ class Template(BaseModel, frozen=True):
         a = ANGLE_MARKER.enclose(a)
         sig = f"{self.name}{a}"
         return f"{sig}: {self.form}"
+
+    def __repr__(self) -> str:  # noqa: D105
+        return str(self)
 
     @property
     def is_nested(self) -> bool:
@@ -181,7 +184,7 @@ def template_dup_checker() -> DuplicationChecker:
 class Templates(BaseModel):
     """テンプレートのあつまり."""
 
-    values: list[Template] = Field(default_factory=list)
+    _values: list[Template] = PrivateAttr(default_factory=list)
     _chk: DuplicationChecker = PrivateAttr(default_factory=template_dup_checker)
 
     def add(self, *ts: Template) -> Self:
@@ -189,7 +192,7 @@ class Templates(BaseModel):
         # 名前の重複を許さないためにvalues fieldを別途用意
         for t in ts:
             self._chk(t.name)
-            self.values.append(t)
+            self._values.append(t)
         return self
 
     def format(self, t: Template, *args: str) -> str:
@@ -224,7 +227,7 @@ class Templates(BaseModel):
 
     def get(self, name: str) -> Template:
         """Get template from name."""
-        ls = [t for t in self.values if t.name == name]
+        ls = [t for t in self._values if t.name == name]
         match len(ls):
             case 0:
                 msg = f"'{name}テンプレートは存在しません'"
@@ -236,6 +239,6 @@ class Templates(BaseModel):
                 raise TemplateConflictError(msg, ls)
 
     def _contains(self, t: Template) -> None:
-        if t not in self.values:
+        if t not in self._values:
             msg = f"'{t.name}テンプレートは存在しません'"
             raise TemplateNotFoundError(msg, t)
