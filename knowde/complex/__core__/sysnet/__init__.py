@@ -62,7 +62,7 @@ class SysNet(BaseModel, frozen=True):
         return Templates().add(*to_template(self.g.nodes))
 
     def expand(self, n: SysNode) -> SysArg:
-        """テンプレを展開."""
+        """テンプレを展開(viewのときにのみ使うことを想定)."""
         got = self.get(n)
         ts = self._templates
         match got:

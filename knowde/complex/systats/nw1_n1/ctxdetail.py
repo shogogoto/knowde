@@ -92,7 +92,7 @@ class Nw1N1Detail(BaseModel, frozen=True):
         for v in self.values:
             n_rec = self._get_n_rec(v.label)
             fn = recursively_nw1n1(v.fn, n_rec)
-            d[v.label.value] = apply_nest(fn(sn, n), lambda n: sn.get(n))
+            d[v.label.value] = apply_nest(fn(sn, n), lambda n: sn.expand(n))
         return d
 
     def _get_n_rec(self, lb: Nw1N1Label) -> int:
@@ -116,7 +116,7 @@ class Nw1N1Detail(BaseModel, frozen=True):
 
     def format(self, sn: SysNet, n: str | Duplicable) -> str:
         """整形文字列."""
-        txt = f"{sn.get(n)}\n"
+        txt = f"{sn.expand(n)}\n"
         d = self.ctx_dict(sn, n)
         for k, v in d.items():
             fmt = Nw1N1Ctx.from_label(k).format
