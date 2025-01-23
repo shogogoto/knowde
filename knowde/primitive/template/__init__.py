@@ -74,8 +74,7 @@ class Template(BaseModel, frozen=True):
     @classmethod
     def parse(cls, line: str) -> Self:
         """文字列をパースしてTemplateを生成."""
-        txt = line.strip()
-        first, second = txt.split(SEP_TMPL, maxsplit=1)
+        first, second = line.split(SEP_TMPL, maxsplit=1)
         return cls(
             name=get_template_name(first),
             args=get_template_args(first),
@@ -145,7 +144,7 @@ def _embedded_pattern() -> re.Pattern:
     return re.compile(pattern)
 
 
-def get_template_signature(line: str) -> list:
+def nested_tmpl_name_args(line: str) -> list:
     """テンプレート名と引数の入れ子を含む文字列を分解."""
     sig = []
     pre, _ = line.split(ANGLE_MARKER.m_open, maxsplit=1)
@@ -153,9 +152,7 @@ def get_template_signature(line: str) -> list:
     name = pre.strip()
     for m in ANGLE_MARKER.pick_nesting(post):
         sp = [s.strip() for s in split_for_args(m) if s.strip() != ""]
-        args = [
-            get_template_signature(s) if ANGLE_MARKER.contains(s) else s for s in sp
-        ]
+        args = [nested_tmpl_name_args(s) if ANGLE_MARKER.contains(s) else s for s in sp]
         sig.extend([name, args])
     return sig
 
@@ -184,36 +181,6 @@ class Templates(BaseModel):
             self._values.append(t)
         return self
 
-    def format(self, t: Template, *args: str) -> str:
-        """formにあるテンプレを展開する."""
-        self._contains(t)
-        s = t.format(*args)  # 対象のargを適用
-        called = CALL_MARKER.pick_nesting(s)  # その中からcall部分を列挙
-        for cl in called:
-            sig = get_template_signature(cl)
-            v = self.apply(cl, sig)
-            old = CALL_MARKER.enclose(cl)
-            s = s.replace(old, v)
-        return s.replace(CALL_MARKER.m_open, "")
-
-    def apply(self, txt: str, args: list) -> str:
-        """テンプレ名、引数リストを元にtxtにテンプレを適用."""
-        # [tmpl_name, [tmpl_name, [...,args]]]
-        if len(args) != 2:  # noqa: PLR2004
-            raise ValueError
-        t = self.get(args[0])
-        tmpl_args = args[1]
-        if len(tmpl_args) == 0:  # 引数なしはそのまま返す
-            return txt
-        match tmpl_args[0]:
-            case str():  # これ以上入れ子がない
-                return t.apply(txt, tmpl_args)
-            case list():
-                vs = [self.apply(m, tmpl_args[0]) for m in t.pick_marked(txt)]
-                return self.format(t, *vs)
-            case _:
-                raise ValueError
-
     def get(self, name: str) -> Template:
         """Get template from name."""
         ls = [t for t in self._values if t.name == name]
@@ -232,10 +199,32 @@ class Templates(BaseModel):
             msg = f"'{t.name}テンプレートは存在しません'"
             raise TemplateNotFoundError(msg, t)
 
+    def apply(self, args: list) -> str:
+        """名前、引数の入れ子からformat."""
+        if len(args) != 2:  # noqa: PLR2004
+            raise ValueError
+        t = self.get(args[0])
+        tmpl_args = args[1]
+        match tmpl_args[0]:
+            case str():  # これ以上入れ子がない
+                return t.format(*tmpl_args)
+            case list():
+                targs = [self.apply(ta) for ta in tmpl_args]
+                return t.format(*targs)
+            case _:
+                raise ValueError
+
     def expand(self, s: str) -> str:
         """文字列のテンプレを展開する."""
-        if not CALL_MARKER.contains(s):
-            return s
-        # x = [t.pick_nesting(s) for t in self._values]
-        # print(x)
-        return s
+        txt = s
+        called = CALL_MARKER.pick_nesting(s)
+        if len(called) == 0:
+            return txt
+        for cl in called:
+            sig = nested_tmpl_name_args(cl)
+            fmt = self.apply(sig)
+            if CALL_MARKER.contains(fmt):
+                fmt = self.expand(fmt)
+            old = CALL_MARKER.enclose(cl)
+            txt = txt.replace(old, fmt)
+        return txt

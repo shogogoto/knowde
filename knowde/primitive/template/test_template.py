@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import pytest
 
-from . import Template, Templates, get_template_signature
+from . import Template, Templates, nested_tmpl_name_args
 from .errors import (
     InvalidTemplateNameError,
     TemplateArgMismatchError,
@@ -111,17 +111,16 @@ def test_duplicate_templates() -> None:
 )
 def test_nested_template_signature(line: str, expected: list) -> None:
     """文字列からテンプレの名前と引数の値を再帰的に返す."""
-    assert get_template_signature(line) == expected
+    assert nested_tmpl_name_args(line) == expected
 
 
 def test_call_unadded_template() -> None:
     """未登録のテンプレを使用."""
     t1 = Template.parse("mul<x,y>: x * y")
     t2 = Template.parse("add<x,y>: x + y")
-    t3 = Template.parse("undef<x>: x")
     ts = Templates().add(t1, t2)
     with pytest.raises(TemplateNotFoundError):
-        ts.format(t3)
+        ts.expand("_undef<1>_")
 
 
 @pytest.mark.parametrize(
@@ -143,14 +142,14 @@ def test_1nested_template() -> None:
     t2 = Template.parse("g<x>: ~_f<x, x>_~")
     t3 = Template.parse("h<x, y>: y_g<f<x, y>>_y")
     ts = Templates().add(t1, t2, t3)
-    assert ts.format(t2, "X") == r"~math{X, X}~"
-    assert ts.format(t3, "1", "2") == r"2~math{math{1, 2}, math{1, 2}}~2"
+    assert ts.expand("_g<X>_") == r"~math{X, X}~"
+    assert ts.expand("_h<1,2>_") == r"2~math{math{1, 2}, math{1, 2}}~2"
 
 
 @pytest.mark.parametrize(
     ("line", "expected"),
     [
-        # ("any", "any"),
+        ("nocall", "nocall"),
         ("_i<A>_", "AA~#!A!#~AA"),
     ],
 )
