@@ -7,6 +7,8 @@ from knowde.complex.__core__.tree2net import parse2net
 from knowde.complex.systats.nw1_n1 import (
     get_conclusion,
     get_detail,
+    get_example,
+    get_general,
     get_parent_or_none,
     get_premise,
     get_refer,
@@ -113,6 +115,22 @@ def test_premise_conclusion() -> None:
     sn = parse2net(_s)
     assert get_premise(sn, "bbb") == ["aaa"]
     assert get_conclusion(sn, "bbb") == ["ddd"]
+
+
+def test_example_general() -> None:
+    """具体抽象."""
+    _s = r"""
+        # h1
+            aaa
+                ex. a1
+                ex. a2
+                    ex. a21
+                    ex. a22
+                    ex. a23
+    """
+    sn = parse2net(_s)
+    assert get_example(sn, "aaa") == ["a1", "a2"]
+    assert get_general(sn, "a22") == ["a2"]
 
 
 def test_recursively() -> None:

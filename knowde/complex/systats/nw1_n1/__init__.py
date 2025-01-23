@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 Nw1N1Fn: TypeAlias = Callable[[SysNet, SysNode], list[SysNode]]
 
 
-def get_detail(sn: SysNet, n: SysArg) -> list[SysNode]:
+def get_detail(sn: SysNet, n: SysNode) -> list[SysNode]:
     """詳細な記述."""
     vals = []
     sub = etype_subgraph(sn.g, EdgeType.SIBLING, EdgeType.BELOW)
@@ -75,6 +75,18 @@ def get_premise(sn: SysNet, n: SysNode) -> list[SysNode]:
 def get_conclusion(sn: SysNet, n: SysNode) -> list[SysNode]:
     """帰結."""
     vals = EdgeType.TO.succ(sn.g, n)
+    return list(vals)
+
+
+def get_example(sn: SysNet, n: SysNode) -> list[SysNode]:
+    """具体."""
+    vals = EdgeType.EXAMPLE.succ(sn.g, n)
+    return list(vals)
+
+
+def get_general(sn: SysNet, n: SysNode) -> list[SysNode]:
+    """抽象."""
+    vals = EdgeType.EXAMPLE.pred(sn.g, n)
     return list(vals)
 
 
