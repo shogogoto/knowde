@@ -34,13 +34,6 @@ class Marker(BaseModel, frozen=True):
         c = self.m_close
         return regex.compile(rf"{o}((?:[^{o}{c}]++|(?R))*){c}")
 
-    def is_pickable(self, s: str) -> bool:
-        """マーク内にマークがないか."""
-        if not self.contains(s):
-            return True
-        marks = self.pattern.findall(s)
-        return not any(map(self.contains, marks))
-
     def pick(self, s: str) -> list[str]:
         """マークの値を取り出す."""
         if not self.contains(s):

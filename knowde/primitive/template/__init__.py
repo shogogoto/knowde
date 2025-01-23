@@ -31,7 +31,11 @@ def valid_name(value: str) -> str:
     if ANGLE_MARKER.contains(value):
         msg = f"テンプレート名'{value}'にマークが含まれています"
         raise InvalidTemplateNameError(msg)
-    return value.strip()
+    name = value.strip()
+    if len(name) == 0:
+        msg = "テンプレート名が空です"
+        raise InvalidTemplateNameError(msg, value)
+    return name
 
 
 def get_template_name(first: str) -> str:
@@ -46,6 +50,12 @@ def get_template_args(first: str) -> tuple[str]:
     for m in ANGLE_MARKER.pick(first):
         args.extend([s.strip() for s in m.split(ARG_SEP_TMPL)])
     return tuple(args)
+
+
+@cache
+def _template_pattern() -> re.Pattern:
+    p = r"[^\<\>]+\<.*\>\s*:.+"
+    return re.compile(p)
 
 
 class Template(BaseModel, frozen=True):
@@ -66,10 +76,7 @@ class Template(BaseModel, frozen=True):
     @classmethod
     def is_parsable(cls, line: str) -> bool:
         """パース対象とな文字列か判定."""
-        if SEP_TMPL not in line:
-            return False
-        first, _ = line.split(SEP_TMPL, maxsplit=1)
-        return ANGLE_MARKER.contains(first) and ANGLE_MARKER.is_pickable(first)
+        return _template_pattern().match(line) is not None
 
     @classmethod
     def parse(cls, line: str) -> Self:

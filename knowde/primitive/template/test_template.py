@@ -24,6 +24,9 @@ from .errors import (
         "B, B1: bbb",
         "C: c{A}c",
         r"D: c{A}c \\ multi",
+        "<=> f<x>: x",
+        "<=> f<x>    :x",
+        "f<x>:",
     ],
 )
 def test_template_disparsable(line: str) -> None:
