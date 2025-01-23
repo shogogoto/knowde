@@ -101,11 +101,6 @@ class Template(BaseModel, frozen=True):
     def __repr__(self) -> str:  # noqa: D105
         return str(self)
 
-    @property
-    def is_nested(self) -> bool:
-        """formにテンプレートを含むか."""
-        return CALL_MARKER.contains(self.form)
-
     @cached_property
     def _pattern(self) -> regex.Pattern:
         """f<...>の...を抽出するパターン."""
@@ -163,12 +158,6 @@ def get_template_signature(line: str) -> list:
         ]
         sig.extend([name, args])
     return sig
-
-
-# formにテンプレがあるか
-#  あるならそれを展開する
-#  入れ子対応
-# atom templates is not nested から始めて
 
 
 def template_dup_checker() -> DuplicationChecker:
@@ -242,3 +231,11 @@ class Templates(BaseModel):
         if t not in self._values:
             msg = f"'{t.name}テンプレートは存在しません'"
             raise TemplateNotFoundError(msg, t)
+
+    def expand(self, s: str) -> str:
+        """文字列のテンプレを展開する."""
+        if not CALL_MARKER.contains(s):
+            return s
+        # x = [t.pick_nesting(s) for t in self._values]
+        # print(x)
+        return s

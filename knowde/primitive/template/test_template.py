@@ -145,3 +145,21 @@ def test_1nested_template() -> None:
     ts = Templates().add(t1, t2, t3)
     assert ts.format(t2, "X") == r"~math{X, X}~"
     assert ts.format(t3, "1", "2") == r"2~math{math{1, 2}, math{1, 2}}~2"
+
+
+@pytest.mark.parametrize(
+    ("line", "expected"),
+    [
+        # ("any", "any"),
+        ("_i<A>_", "AA~#!A!#~AA"),
+    ],
+)
+def test_expand_templates(line: str, expected: str) -> None:
+    """文字列に含まれたテンプレを展開."""
+    ts = Templates().add(
+        Template.parse("f<x>: !x!"),
+        Template.parse("g<x>: #x#"),
+        Template.parse("h<x>: ~_g<f<x>>_~"),
+        Template.parse("i<x>: xx_h<x>_xx"),
+    )
+    assert ts.expand(line) == expected

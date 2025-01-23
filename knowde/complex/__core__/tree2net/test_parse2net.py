@@ -181,11 +181,14 @@ def test_replace_quoterm() -> None:
 
 def test_template() -> None:
     """テンプレート."""
-    _s = """
+    _s = r"""
         # h1
-            _f(a,b)_: a + b
+            f<a,b>: \diff{a, b}
+            g<a>: aaa
+            call g<a> -> _g<XXXX>_
     """
-
-    _sn = parse2net(_s)
-
-    # nxprint(sn.g)
+    # _sn = parse2net(_s)
+    # print(_sn.sentences)
+    # for s in _sn.sentences:
+    #     print(s)
+    # nxprint(_sn.g, True)

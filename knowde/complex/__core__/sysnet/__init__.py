@@ -61,6 +61,19 @@ class SysNet(BaseModel, frozen=True):
         """テンプレートの集まり."""
         return Templates().add(*to_template(self.g.nodes))
 
+    def apply(self, n: SysNode) -> SysArg:
+        """テンプレを適用した最終的なビュー."""
+        got = self.get(n)
+        match got:
+            case str():
+                return got
+            case Duplicable():
+                return got
+            case Def():
+                return got
+            case _:
+                raise TypeError(n)
+
     def match(self, pattern: str) -> list[str | Duplicable]:
         """部分一致したものを返す."""
         gots = [self.get(n) for n in self.g.nodes if pattern in str(n)]
