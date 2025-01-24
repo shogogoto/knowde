@@ -35,3 +35,6 @@ vcli = typer.Typer()
 # @vcli.command("version")
 # def version_() -> None:
 #     typer.echo(f"knowde {__version__}")
+
+if __name__ == "__main__":
+    cli()
