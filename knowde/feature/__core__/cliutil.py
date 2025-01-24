@@ -21,7 +21,7 @@ class CLIUtil:
         return click.Choice(tuple(Nw1N1Label))
 
     @classmethod
-    def item_option(cls) -> Callable[[FC], FC]:
+    def Nw1N1Label_item_option(cls) -> Callable[[FC], FC]:  # noqa: N802
         """表示項目click option."""
         return click.option(
             "-i",

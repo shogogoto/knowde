@@ -6,7 +6,7 @@ from typing import IO
 
 import click
 
-from knowde.complex.systats.nw1_n0 import Systats, UnificationRatio
+from knowde.complex.systats.nw1_n0 import Nw1N0Label
 from knowde.complex.systats.nw1_n0.scorable import (
     LRWTpl,
     Nw1N1Label,
@@ -22,15 +22,21 @@ from knowde.feature.__core__.cliutil import CLIUtil, echo_table
 
 @click.command("stat")
 @click.argument("stdin", type=click.File("r"), default="-")
+@click.option("--heavy", is_flag=True, default=False, help="重い統計値も算出")
 @click.option("--table", is_flag=True, default=False, help="テーブル表示")
 def stat_cmd(
     stdin: IO,
+    heavy: bool,  # noqa: FBT001
     table: bool,  # noqa: FBT001
 ) -> None:
     """統計値."""
     txt = stdin.read()
     sn = try_parse2net(txt)
-    stat = Systats.to_dict(sn) | UnificationRatio.to_dictstr(sn)
+    labels = Nw1N0Label.standard()
+    if heavy:
+        labels += Nw1N0Label.heavy()
+
+    stat = Nw1N0Label.to_dict(sn, labels)
     if table:
         echo_table([stat])
     else:
@@ -47,7 +53,7 @@ def stat_cmd(
     help="表示行数数",
     show_default=True,
 )
-@CLIUtil.item_option()
+@CLIUtil.Nw1N1Label_item_option()
 @CLIUtil.ignore_option()
 @click.option(
     "-c",
@@ -73,7 +79,7 @@ def score_cmd(
 @click.command("detail")
 @click.option("--stdin", type=click.File("r"), default="-")
 @click.argument("pattern", type=click.STRING)
-@CLIUtil.item_option()
+@CLIUtil.Nw1N1Label_item_option()
 @CLIUtil.ignore_option()
 @click.option(
     "-c",

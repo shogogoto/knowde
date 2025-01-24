@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 import operator
-from enum import Enum
+from enum import Enum, StrEnum
 from functools import cache, reduce
-from typing import Callable, Hashable, TypeAlias
+from typing import Callable, Hashable, Self, TypeAlias
 
 import networkx as nx
 
@@ -22,18 +22,79 @@ NW1N0Fn: TypeAlias = Callable[[SysNet], int]
 NW1N0RatioFn: TypeAlias = Callable[[SysNet], float]
 
 
-class Systats(Enum):
+class Nw1N0Label(StrEnum):
+    """Nw1N0統計値ラベル."""
+
+    # number
+    EDGE = "edge"
+    TERM = "term"
+    SENTENCE = "sentence"
+    CHAR = "char"
+    ISOLATION = "isolation"
+    AXIOM = "axiom"
+    TERM_AXIOM = "term_axiom"
+    # nx number
+    DIAMETER = "diameter"
+    RADIUS = "radius"
+
+    # ratio
+    R_ISOLATION = "isoration_ratio"
+    R_AXIOM_TERM = "axiom_term_ratio"
+    R_AXIOM = "axiom_ratio"
+    # nx ratio
+    R_DENSITY = "density"
+
+    @classmethod
+    def create(cls, label: Nw1N0Label) -> Systat | UnificationRatio:
+        """Create from label."""
+        for e in Systat:
+            if e.label == label:
+                return e
+        for e in UnificationRatio:
+            if e.label == label:
+                return e
+        raise ValueError(label)
+
+    @classmethod
+    def heavy(cls) -> list[Nw1N0Label]:
+        """重いnetworkx処理."""
+        return [
+            cls.DIAMETER,
+            cls.RADIUS,
+            cls.R_DENSITY,
+        ]
+
+    @classmethod
+    def standard(cls) -> list[Nw1N0Label]:
+        """重くない統計値."""
+        return [r for r in cls if r not in cls.heavy()]
+
+    @classmethod
+    def to_dict(cls, sn: SysNet, labels: list[Self]) -> dict:
+        """全統計値."""
+        nws = [cls.create(lb) for lb in labels]
+        d = {}
+        for nw in nws:
+            dct = nw.to_dict(sn)
+            if nw in UnificationRatio:
+                dct = to_percent_values(dct)
+            d = d | dct
+        return d
+
+
+class Systat(Enum):
     """統計情報の構成要素."""
 
-    EDGE = ("edge", lambda sn: len(sn.g.edges))
-    TERM = ("term", lambda sn: len(sn.terms))
-    SENTENCE = ("sentence", lambda sn: len(sn.sentences))
-    CHAR = ("char", lambda sn: n_char(sn))
-    ISOLATION = ("isolation", lambda sn: len(get_isolation(sn)))
-    AXIOM = ("axiom", lambda sn: len(get_axiom_to(sn)))
-    TERM_AXIOM = ("term_axiom", lambda sn: len(get_axiom_resolved(sn)))
-    DIAMETER = ("diameter", lambda sn: nx.diameter(sn.g.to_undirected()))
-    RADIUS = ("radius", lambda sn: nx.radius(sn.g.to_undirected()))
+    EDGE = (Nw1N0Label.EDGE, lambda sn: len(sn.g.edges))
+    TERM = (Nw1N0Label.TERM, lambda sn: len(sn.terms))
+    SENTENCE = (Nw1N0Label.SENTENCE, lambda sn: len(sn.sentences))
+    CHAR = (Nw1N0Label.CHAR, lambda sn: n_char(sn))
+    ISOLATION = (Nw1N0Label.ISOLATION, lambda sn: len(get_isolation(sn)))
+    AXIOM = (Nw1N0Label.AXIOM, lambda sn: len(get_axiom_to(sn)))
+    TERM_AXIOM = (Nw1N0Label.TERM_AXIOM, lambda sn: len(get_axiom_resolved(sn)))
+    # heavy
+    DIAMETER = (Nw1N0Label.DIAMETER, lambda sn: nx.diameter(sn.g.to_undirected()))
+    RADIUS = (Nw1N0Label.RADIUS, lambda sn: nx.radius(sn.g.to_undirected()))
 
     label: str
     fn: NW1N0Fn
@@ -43,10 +104,9 @@ class Systats(Enum):
         self.label = label
         self.fn = fn
 
-    @classmethod
-    def to_dict(cls, sn: SysNet) -> dict[str, int]:
+    def to_dict(self, sn: SysNet) -> dict[str, int]:
         """For json etc."""
-        return {r.label: r.fn(sn) for r in cls}
+        return {self.label: self.fn(sn)}
 
 
 def ratio_fn(numerator: NW1N0Fn, denominator: NW1N0Fn) -> NW1N0RatioFn:
@@ -65,10 +125,14 @@ def ratio_fn(numerator: NW1N0Fn, denominator: NW1N0Fn) -> NW1N0RatioFn:
 class UnificationRatio(Enum):
     """1系の統合化(まとまり具体)指標."""
 
-    ISOLATION = ("isoration_ratio", ratio_fn(Systats.ISOLATION.fn, Systats.SENTENCE.fn))
-    TERM = ("axiom_term_ratio", ratio_fn(Systats.TERM_AXIOM.fn, Systats.TERM.fn))
-    AXIOM = ("axiom_ratio", ratio_fn(Systats.AXIOM.fn, Systats.SENTENCE.fn))
-    DENSITY = ("density", lambda sn: nx.density(sn.g))
+    ISOLATION = (
+        Nw1N0Label.R_ISOLATION,
+        ratio_fn(Systat.ISOLATION.fn, Systat.SENTENCE.fn),
+    )
+    TERM = (Nw1N0Label.R_AXIOM_TERM, ratio_fn(Systat.TERM_AXIOM.fn, Systat.TERM.fn))
+    AXIOM = (Nw1N0Label.R_AXIOM, ratio_fn(Systat.AXIOM.fn, Systat.SENTENCE.fn))
+    # heavy
+    DENSITY = (Nw1N0Label.R_DENSITY, lambda sn: nx.density(sn.g))
 
     label: str
     fn: NW1N0RatioFn
@@ -78,15 +142,14 @@ class UnificationRatio(Enum):
         self.label = label
         self.fn = lambda sn: round(fn(sn), 3)
 
-    @classmethod
-    def to_dict(cls, sn: SysNet) -> dict[str, float]:
+    def to_dict(self, sn: SysNet) -> dict[str, float]:
         """For json etc."""
-        return {r.label: r.fn(sn) for r in cls}
+        return {self.label: self.fn(sn)}
 
-    @classmethod
-    def to_dictstr(cls, sn: SysNet, n_digits: int = 2) -> dict[str, str]:
-        """For json etc."""
-        return {k: f"{v:.{n_digits}%}" for k, v in cls.to_dict(sn).items()}
+
+def to_percent_values(d: dict[str, float], n_digit: int = 2) -> dict[str, str]:
+    """パーセント表示."""
+    return {k: f"{v:.{n_digit}%}" for k, v in d.items()}
 
 
 def n_char(sn: SysNet) -> int:  # noqa: D103
