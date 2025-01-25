@@ -3,8 +3,6 @@ name: Upload Standalone Asset
 on:
   release:
     types:
-      - created
-      - prereleased
       - published
 
 permissions:
