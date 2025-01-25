@@ -2,7 +2,7 @@ name: Upload Standalone Asset
 
 on:
   release:
-    types: [created, published]
+    types: [created, edited, published]
 
 jobs:
   standalone:
