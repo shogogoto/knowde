@@ -4,9 +4,7 @@ on:
   release:
     types:
       - created
-      - edited
       - prereleased
-      - released
       - published
 
 permissions:
