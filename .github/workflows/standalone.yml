@@ -2,7 +2,11 @@ name: Upload Standalone Asset
 
 on:
   release:
-    types: [created, edited, published]
+    types:
+      - created
+      - edited
+      - prereleased
+      - published
   workflow_dispatch: # 手動実行
 
 jobs:
@@ -19,19 +23,23 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install poetry poetry-dynamic-versioning twine
+      # - name: Install dependencies
+      #   run: |
+      #     python -m pip install --upgrade pip
+      #     pip install poetry poetry-dynamic-versioning twine
       - name: Create standalone
         run: |
-          poetry install
-          poetry run task build
+          # poetry install
+          # poetry run task build
+          ls
+          mkdir standalone
           zip -r standalone.zip standalone
       - name: Upload a executable file to GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
           files: standalone.zip
-          tag_name: ${{github.event.release.tag_name}}
+          # tag_name: ${{ github.event.release.tag_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ github.ref_name }}
           draft: true
           prerelease: true
