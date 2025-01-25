@@ -78,7 +78,7 @@ class SysNet(BaseModel, frozen=True):
     def match(self, pattern: str) -> list[str | Duplicable]:
         """部分一致したものを返す."""
         gots = [self.get(n) for n in self.g.nodes if pattern in str(n)]
-        return [e.sentence if isinstance(e, Def) else e for e in gots]
+        return list({e.sentence if isinstance(e, Def) else e for e in gots})
 
     def check_contains(self, n: SysNode) -> None:
         """含なければエラー."""

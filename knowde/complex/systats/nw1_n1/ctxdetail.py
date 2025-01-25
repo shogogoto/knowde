@@ -13,6 +13,8 @@ from knowde.complex.systats.nw1_n1 import (
     Nw1N1Fn,
     get_conclusion,
     get_detail,
+    get_example,
+    get_general,
     get_premise,
     get_refer,
     get_referred,
@@ -28,6 +30,8 @@ class Nw1N1Label(StrEnum):
     REFERRED = "referred"
     PREMISE = "premise"
     CONCLUSION = "conclusion"
+    EXAMPLE = "example"
+    GENERAL = "general"
 
 
 class Nw1N1Ctx(Enum):
@@ -38,6 +42,8 @@ class Nw1N1Ctx(Enum):
     REFERRED = (Nw1N1Label.REFERRED, get_referred, "<<")
     PREMISE = (Nw1N1Label.PREMISE, get_premise, "<-")
     CONCLUSION = (Nw1N1Label.CONCLUSION, get_conclusion, "->")
+    EXAMPLE = (Nw1N1Label.EXAMPLE, get_example, "ex.")
+    GENERAL = (Nw1N1Label.GENERAL, get_general, "xe.")
 
     label: Nw1N1Label
     fn: Nw1N1Fn
