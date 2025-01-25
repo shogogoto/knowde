@@ -3,6 +3,7 @@ name: Upload Standalone Asset
 on:
   release:
     types: [created, edited, published]
+  workflow_dispatch: # 手動実行
 
 jobs:
   standalone:
