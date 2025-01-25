@@ -7,6 +7,7 @@ on:
       - edited
       - prereleased
       - published
+      - released
   push:
     tags:
       - 'v*'
@@ -36,8 +37,6 @@ jobs:
         run: |
           poetry install
           poetry run task build
-          # echo "VARS::: " ${{ github.ref_name }} ${{ github.event.release.tag_name }}
-          # mkdir standalone
           zip -r standalone.zip standalone
       - name: Upload a executable file to GitHub Releases
         uses: softprops/action-gh-release@v2
