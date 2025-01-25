@@ -8,9 +8,6 @@ on:
       - prereleased
       - released
       - published
-  push:
-    tags:
-      - 'v*'
 
 permissions:
   contents: write
