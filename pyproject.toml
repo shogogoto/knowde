@@ -64,7 +64,7 @@ pre-commit = "pre-commit install"
 dev        = "fastapi dev knowde/feature/api.py --reload --host 0.0.0.0"
 # serve      = "uvicorn knowde:api --reload --host 0.0.0.0 --port 8000"
 serve      = "fastapi run knowde/feature/api.py"
-build      = "pyinstaller --collect-all knowde --onefile --name kn knowde/feature/cli.py"
+build      = "pyinstaller --collect-all knowde --workpath ./standalone/build --specpath ./standalone --distpath ./standalone/dist  --onefile --name kn knowde/feature/cli.py"
 
 [tool.ruff]
 select = ["ALL"]
