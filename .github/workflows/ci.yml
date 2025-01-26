@@ -24,15 +24,16 @@ jobs:
           - 7687:7687
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: poetry
+          cache: "poetry"
       - run: |
-          poetry install
+          python -m pip install --upgrade pip
+          pip install poetry
 
       - name: Test
         run: poetry run task test
