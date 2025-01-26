@@ -30,18 +30,8 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
-
-      - name: Install poetry
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          echo "$HOME/.poetry/bin" >> $GITHUB_PATH
-
-      - name: Poetry version
-        run: |
-          poetry --version
-
-      - name: Install dependencies
-        run: |
+          cache: poetry-${{ matrix.python-version }}
+      - run: |
           poetry install
 
       - name: Test
