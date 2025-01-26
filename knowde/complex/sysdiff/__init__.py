@@ -2,15 +2,17 @@
 from __future__ import annotations
 
 from itertools import product
-from typing import Generic, Hashable, Iterable, Self, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, Generic, Hashable, Iterable, Self, TypeAlias, TypeVar
 
 import Levenshtein
 from pydantic import BaseModel
 
-from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.sysnet.sysnode import Def
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
-from knowde.primitive.term import Term
+
+if TYPE_CHECKING:
+    from knowde.complex.__core__.sysnet import SysNet
+    from knowde.primitive.term import Term
 
 # class TermDifference
 # diff

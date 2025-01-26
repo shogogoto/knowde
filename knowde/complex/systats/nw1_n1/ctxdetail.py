@@ -3,12 +3,10 @@ from __future__ import annotations
 
 import textwrap
 from enum import Enum, StrEnum
-from typing import Callable, Iterable, NamedTuple, Self
+from typing import TYPE_CHECKING, Callable, Iterable, NamedTuple, Self
 
 from pydantic import BaseModel
 
-from knowde.complex.__core__.sysnet import SysNet
-from knowde.complex.__core__.sysnet.sysnode import Duplicable, SysArg
 from knowde.complex.systats.nw1_n1 import (
     Nw1N1Fn,
     get_conclusion,
@@ -20,6 +18,10 @@ from knowde.complex.systats.nw1_n1 import (
     get_referred,
     recursively_nw1n1,
 )
+
+if TYPE_CHECKING:
+    from knowde.complex.__core__.sysnet import SysNet
+    from knowde.complex.__core__.sysnet.sysnode import Duplicable, SysArg
 
 
 class Nw1N1Label(StrEnum):

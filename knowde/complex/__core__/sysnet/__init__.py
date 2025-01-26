@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from functools import cached_property
+from typing import TYPE_CHECKING
 
 import networkx as nx
 from pydantic import BaseModel, Field
@@ -13,14 +14,17 @@ from knowde.complex.__core__.sysnet.sysfn import (
     to_template,
     to_term,
 )
-from knowde.primitive.__core__.nxutil import EdgeType, to_nested
-from knowde.primitive.__core__.types import NXGraph
+from knowde.primitive.__core__.nxutil import to_nested
+from knowde.primitive.__core__.nxutil.edge_type import EdgeType
+from knowde.primitive.__core__.types import NXGraph  # noqa: TCH001
 from knowde.primitive.heading import get_headings
 from knowde.primitive.template import Templates
-from knowde.primitive.term import Term
 
 from .errors import SysNetNotFoundError
 from .sysnode import Def, Duplicable, SysArg, SysNode
+
+if TYPE_CHECKING:
+    from knowde.primitive.term import Term
 
 
 class SysNet(BaseModel, frozen=True):

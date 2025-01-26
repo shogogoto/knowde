@@ -3,12 +3,13 @@ from __future__ import annotations
 
 from functools import cache
 from pprint import pp
-from typing import Any, Hashable
+from typing import TYPE_CHECKING, Any, Hashable
 
 import networkx as nx
 
-from .edge_type import Direction, EdgeType  # noqa: F401
-from .types import Accessor, Edges
+if TYPE_CHECKING:
+    from .edge_type import EdgeType
+    from .types import Accessor, Edges
 
 
 def nxprint(g: nx.DiGraph, detail: bool = False) -> None:  # noqa: FBT001 FBT002

@@ -1,4 +1,5 @@
 """pytest hooks."""
+
 import os
 
 from neomodel import clear_neo4j_database, config, db, install_all_labels

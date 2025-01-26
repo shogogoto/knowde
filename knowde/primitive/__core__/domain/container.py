@@ -1,13 +1,14 @@
 """コンテナ共通ドメイン."""
 from __future__ import annotations
 
-from typing import Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from pydantic import BaseModel, Field, RootModel
 
-from knowde.primitive.__core__.types import NXGraph
-
 from .domain import APIReturn, Entity
+
+if TYPE_CHECKING:
+    from knowde.primitive.__core__.types import NXGraph
 
 M = TypeVar("M", bound=Entity)
 

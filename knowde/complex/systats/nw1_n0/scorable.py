@@ -1,18 +1,17 @@
 """ネットワーク1 node1のview."""
 from __future__ import annotations
 
-from typing import Iterable, NamedTuple, Self, Sequence
+from typing import TYPE_CHECKING, Iterable, NamedTuple, Self, Sequence
 
 from more_itertools import collapse
 from pydantic import BaseModel, Field
 
-from knowde.complex.__core__.sysnet import SysNet
-from knowde.complex.__core__.sysnet.sysnode import (
-    SysArg,
-    SysNode,
-)
+from knowde.complex.__core__.sysnet.sysnode import SysArg, SysNode  # noqa: TCH001
 from knowde.complex.systats.nw1_n1 import recursively_nw1n1
 from knowde.complex.systats.nw1_n1.ctxdetail import Nw1N1Ctx, Nw1N1Label
+
+if TYPE_CHECKING:
+    from knowde.complex.__core__.sysnet import SysNet
 
 
 class LRWTpl(NamedTuple):

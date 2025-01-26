@@ -6,7 +6,8 @@ from typing import Hashable
 
 import networkx as nx
 
-from knowde.primitive.__core__.nxutil import EdgeType, to_nodes
+from knowde.primitive.__core__.nxutil import to_nodes
+from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 
 
 class HeadingNotFoundError(Exception):

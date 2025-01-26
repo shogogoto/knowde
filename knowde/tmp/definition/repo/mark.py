@@ -11,22 +11,22 @@ from neomodel import IntegerProperty
 from pydantic import BaseModel, Field
 
 from knowde.primitive.__core__ import RelBase, RelUtil
-from knowde.primitive.__core__.label_repo.label import Label
 from knowde.tmp.definition.domain.mark import (
     inject2placeholder,
 )
 from knowde.tmp.definition.repo.errors import UndefinedMarkedTermError
 from knowde.tmp.definition.sentence import LSentence, SentenceUtil
-from knowde.tmp.definition.sentence.domain import Sentence
 from knowde.tmp.definition.term import LTerm, TermUtil
 from knowde.tmp.definition.term.domain import Term
 
 if TYPE_CHECKING:
     from uuid import UUID
 
+    from knowde.primitive.__core__.label_repo.label import Label
     from knowde.tmp.definition.domain.description import (
         Description,
     )
+    from knowde.tmp.definition.sentence.domain import Sentence
 
 
 class RelMark(RelBase):
