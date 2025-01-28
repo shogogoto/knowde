@@ -8,12 +8,12 @@ import click
 
 from knowde.complex.systats.nw1_n0 import Nw1N0Label
 from knowde.complex.systats.nw1_n0.scorable import LRWTpl, SyScore
-from knowde.complex.systats.nw1_n1.ctxdetail import Nw1N1Detail, Nw1N1Recursive
+from knowde.complex.systats.nw1_n1.ctxdetail import Nw1N1Detail
 from knowde.feature.__core__ import try_parse2net
 from knowde.feature.__core__.cliutil import echo_table
 
 if TYPE_CHECKING:
-    from knowde.complex.systats.nw1_n1.ctxdetail import Nw1N1Label
+    from knowde.complex.systats.types import Nw1N1Label, Nw1N1Recursive
 
 
 def stat_proc(

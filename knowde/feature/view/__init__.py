@@ -5,12 +5,11 @@ from typing import IO, TYPE_CHECKING
 
 import click
 
-from knowde.complex.systats.nw1_n1.ctxdetail import Nw1N1Label, Nw1N1Recursive
-from knowde.feature.__core__.cliutil import CLIUtil
-from knowde.feature.view_proc import detail_proc
+from knowde.complex.systats.types import Nw1N1Label
 
 if TYPE_CHECKING:
     from knowde.complex.systats.nw1_n0.scorable import LRWTpl
+    from knowde.complex.systats.types import Nw1N1Recursive
 
 
 @click.command("stat")
@@ -23,9 +22,29 @@ def stat_cmd(
     table: bool,  # noqa: FBT001
 ) -> None:
     """統計値."""
-    from knowde.feature.view_proc import stat_proc
+    from .proc import stat_proc
 
     stat_proc(stdin, heavy, table)
+
+
+t_choice = click.Choice(tuple(Nw1N1Label))
+item_opt = click.option(
+    "-i",
+    "--item",
+    type=t_choice,
+    multiple=True,
+    default=tuple(Nw1N1Label),
+    show_default=True,
+    help="表示項目",
+)
+ignore_opt = click.option(
+    "-ig",
+    "--ignore",
+    type=t_choice,
+    multiple=True,
+    help="非表示項目",
+    show_default=True,
+)
 
 
 @click.command("score")
@@ -38,8 +57,8 @@ def stat_cmd(
     help="表示行数数",
     show_default=True,
 )
-@CLIUtil.Nw1N1Label_item_option()
-@CLIUtil.ignore_option()
+@item_opt
+@ignore_opt
 @click.option(
     "-c",
     "--config",
@@ -55,7 +74,7 @@ def score_cmd(
     config: tuple[LRWTpl],
 ) -> None:
     """ノードの文脈スコア順に表示."""
-    from knowde.feature.view_proc import score_proc
+    from .proc import score_proc
 
     score_proc(stdin, number, item, ignore, config)
 
@@ -63,8 +82,8 @@ def score_cmd(
 @click.command("detail")
 @click.option("--stdin", type=click.File("r"), default="-")
 @click.argument("pattern", type=click.STRING)
-@CLIUtil.Nw1N1Label_item_option()
-@CLIUtil.ignore_option()
+@item_opt
+@ignore_opt
 @click.option(
     "-c",
     "--config",
@@ -80,6 +99,8 @@ def detail_cmd(
     config: tuple[Nw1N1Recursive],
 ) -> None:
     """文字列にマッチするノードの詳細."""
+    from .proc import detail_proc
+
     detail_proc(stdin, pattern, item, ignore, config)
 
 

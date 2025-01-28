@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import click
-import typer
 
 from knowde.feature.view import detail_cmd, score_cmd, stat_cmd
 
@@ -28,7 +27,7 @@ cli.add_command(score_cmd)
 cli.add_command(detail_cmd)
 cli.add_command(stat_cmd)
 
-vcli = typer.Typer()
+# vcli = typer.Typer()
 # vcli.command("view")(view_vcmd)
 
 
