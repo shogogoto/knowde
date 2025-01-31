@@ -5,10 +5,16 @@ import re
 from enum import StrEnum
 from typing import Final, Self
 
+from edtf import EDTFObject, parse_edtf
 from pydantic import BaseModel
 
 TS_PT: Final = r"(^-?\d+)?(\/\d+)?(\/\d+)?(@.+)?"
 TS_RE: Final = re.compile(TS_PT)
+
+
+def parse_time(s: str) -> EDTFObject:
+    """型ヒント用."""
+    return parse_edtf(s)
 
 
 def align_yyyyMMdd(s: str) -> str:  # noqa: N802
@@ -25,15 +31,12 @@ def align_yyyyMMdd(s: str) -> str:  # noqa: N802
     match len(ymd):
         case 1:
             y = ymd[0]
-            if is_minus:
-                y = f"-{y}"
-            return y.zfill(4)
+            return f"-{y:0>4}" if is_minus else f"{y:0>4}"
         case 2:
             y, md = ymd
-            if is_minus:
-                y = f"-{y}"
+            y = f"-{y:0>4}" if is_minus else f"{y:0>4}"
             md = [e.zfill(2) for e in md.split("-")]
-            return "-".join([y.zfill(4), *md])
+            return "-".join([y, *md])
         case _:
             raise ValueError(s, ymd)
 

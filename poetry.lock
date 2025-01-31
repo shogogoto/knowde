@@ -471,6 +471,25 @@ files = [
 ]
 
 [[package]]
+name = "edtf"
+version = "5.0.0"
+description = "Python implementation of Library of Congress EDTF (Extended Date Time Format) specification"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "edtf-5.0.0-py3-none-any.whl", hash = "sha256:b38ca29fa166a5c628b899a76e73a9f4cc732da565b85e737af4c0e457775f5e"},
+    {file = "edtf-5.0.0.tar.gz", hash = "sha256:7393c570b4838c8cbc05b0687c6ea0578039ba007c8ce125206f44f18f2dea5d"},
+]
+
+[package.dependencies]
+pyparsing = "*"
+python-dateutil = "*"
+
+[package.extras]
+test = ["coverage", "django (>=4.2,<5.0)", "junitparser", "pre-commit", "pytest", "pytest-benchmark", "pytest-cov", "pytest-django", "ruff"]
+
+[[package]]
 name = "email-validator"
 version = "2.2.0"
 description = "A robust email address syntax and deliverability validation library."
@@ -1630,6 +1649,21 @@ files = [
 [package.dependencies]
 packaging = ">=22.0"
 setuptools = ">=42.0.0"
+
+[[package]]
+name = "pyparsing"
+version = "3.2.1"
+description = "pyparsing module - Classes and methods to define and execute parsing grammars"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "pyparsing-3.2.1-py3-none-any.whl", hash = "sha256:506ff4f4386c4cec0590ec19e6302d3aedb992fdc02c761e90416f158dacf8e1"},
+    {file = "pyparsing-3.2.1.tar.gz", hash = "sha256:61980854fd66de3a90028d679a954d5f2623e83144b5afe5ee86f43d762e5f0a"},
+]
+
+[package.extras]
+diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
 name = "pytest"
@@ -2895,4 +2929,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">3.11.0,<3.14"
-content-hash = "7aa092462ea4ae27e76259e07a22e5e6f415d32c50fdbcecf1456e33ef9a23a9"
+content-hash = "9a80cd7cfc9090ff033f0d0ab8b9b95bf4a2e64479f6e3fb331e2fbd61ca63ca"

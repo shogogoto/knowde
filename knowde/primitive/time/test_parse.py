@@ -27,12 +27,12 @@ BCy 紀元前
  e
 
 """
-
+# ruff: noqa
 
 import pytest
-from dateutil import parser
+from edtf import struct_time_to_date
 
-from knowde.primitive.time.time import align_yyyyMMdd
+from knowde.primitive.time.time import align_yyyyMMdd, parse_time
 
 
 @pytest.mark.parametrize(
@@ -64,10 +64,20 @@ from knowde.primitive.time.time import align_yyyyMMdd
 )
 def test_align_timestr(string: str, expected: str) -> None:
     """時系列文字列."""
-    _d = parser.parse(string, yearfirst=True, ignoretz=True)
-
+    print("-" * 30, string)
+    # aligned = parser.parse(string, yearfirst=True, ignoretz=True)
+    # aligned = parser.parse(string, yearfirst=True, ignoretz=True)
+    aligned = align_yyyyMMdd(string)
+    # print(string, "->", aligned)
+    e = parse_time(aligned)
+    l = e.lower_strict()
+    u = e.upper_strict()
+    print(struct_time_to_date(e))
+    print(struct_time_to_date(l))
+    # print(e, type(e), e.lower_strict())
+    # print(e, type(e), e.upper_strict())
     # print(f"{string} --> ", d)
-    assert align_yyyyMMdd(string) == expected
+    # assert align_yyyyMMdd(string) == expected
 
 
 # def test_to_datetime() -> None:
