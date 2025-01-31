@@ -1,9 +1,11 @@
 """時間util."""
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime
 
-TZ = timezone(timedelta(hours=9), "Asia/Tokyo")
+from zoneinfo import ZoneInfo
+
+TZ = ZoneInfo("Asia/Tokyo")
 
 
 def jst_now() -> datetime:  # noqa: D103
