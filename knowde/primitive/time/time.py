@@ -7,9 +7,13 @@ from typing import Final, Self
 
 from edtf import EDTFObject, parse_edtf
 from pydantic import BaseModel
+from pyparsing import Optional, Suppress, Word, nums
 
 TS_PT: Final = r"(^-?\d+)?(\/\d+)?(\/\d+)?(@.+)?"
 TS_RE: Final = re.compile(TS_PT)
+
+
+pnumber = Optional(Suppress("-")) + Word(nums)
 
 
 def parse_time(s: str) -> EDTFObject:
@@ -17,8 +21,8 @@ def parse_time(s: str) -> EDTFObject:
     return parse_edtf(s)
 
 
-def align_yyyyMMdd(s: str) -> str:  # noqa: N802
-    """文字列を日時に変換できるよう整形.
+def align4edtf(s: str) -> str:
+    """文字列をEDTF(Extended DateTime Format)に変換できるよう整形.
 
     区切り文字サポート [/-] e.g. yyyy[/MM[/dd]]
     """
