@@ -16,7 +16,6 @@ from knowde.complex.__core__.sysnet.sysfn.build_fn import (
     replace_quoterms,
 )
 from knowde.complex.__core__.sysnet.sysnode.merged_def import MergedDef
-from knowde.complex.__core__.tree2net.directed_edge import DirectedEdgeCollection
 from knowde.primitive.parser import get_leaves, parse2tree
 from knowde.primitive.parser.testing import treeprint
 from knowde.primitive.term import check_and_merge_term
@@ -27,6 +26,8 @@ from .transformer import TSysArg
 
 if TYPE_CHECKING:
     from lark import Tree
+
+    from knowde.complex.__core__.tree2net.directed_edge import DirectedEdgeCollection
 
 
 def parse2net(txt: str, do_print: bool = False) -> SysNet:  # noqa: FBT001 FBT002

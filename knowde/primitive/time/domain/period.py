@@ -1,20 +1,17 @@
 """期間."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Self
+from typing import Self
 
 from pydantic import BaseModel, model_validator
 
 from knowde.primitive.time.domain.const import SOCIETY_TIMELINE
-from knowde.primitive.time.domain.domain import TimeValue
+from knowde.primitive.time.domain.domain import Time, TimeValue  # noqa: TCH001
 from knowde.primitive.time.domain.errors import (
     EndBeforeStartError,
     NotEqualTimelineError,
 )
 from knowde.primitive.time.domain.timestr import TimeStr
-
-if TYPE_CHECKING:
-    from knowde.primitive.time.domain.domain import Time
 
 
 class Period(BaseModel, frozen=True):

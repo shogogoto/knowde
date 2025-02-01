@@ -3,13 +3,15 @@ from __future__ import annotations
 
 from enum import Enum, auto
 from functools import cache, cached_property, reduce
-from typing import Callable, Hashable, Self
+from typing import TYPE_CHECKING, Callable, Hashable, Self
 
 import networkx as nx
 
 from knowde.primitive.__core__.nxutil.errors import MultiEdgesError
-from knowde.primitive.__core__.nxutil.types import Accessor
 from knowde.primitive.__core__.nxutil.util import pred_attr, succ_attr
+
+if TYPE_CHECKING:
+    from knowde.primitive.__core__.nxutil.types import Accessor
 
 
 class Direction(Enum):

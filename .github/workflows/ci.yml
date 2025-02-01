@@ -19,30 +19,22 @@ jobs:
       db:
         image: neo4j:${{ matrix.neo4j-version }}
         env:
-          NEO4J_AUTH: neo4j/password
+          NEO4J_AUTH: neo4j/passwordneo
         ports:
           - 7687:7687
 
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup python
-        uses: actions/setup-python@v3
-        with:
-          python-version: ${{ matrix.python-version }}
-
+      - uses: actions/checkout@v4
       - name: Install poetry
         run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          echo "$HOME/.poetry/bin" >> $GITHUB_PATH
-
-      - name: Poetry version
-        run: |
-          poetry --version
-
-      - name: Install dependencies
-        run: |
-          poetry install
+          python -m pip install --upgrade pip
+          pip install poetry
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "poetry"
+      - run: poetry install
 
       - name: Test
         run: poetry run task test

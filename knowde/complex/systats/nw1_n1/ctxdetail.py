@@ -2,13 +2,11 @@
 from __future__ import annotations
 
 import textwrap
-from enum import Enum, StrEnum
-from typing import Callable, Iterable, NamedTuple, Self
+from enum import Enum
+from typing import TYPE_CHECKING, Callable, Iterable, Self
 
 from pydantic import BaseModel
 
-from knowde.complex.__core__.sysnet import SysNet
-from knowde.complex.__core__.sysnet.sysnode import Duplicable, SysArg
 from knowde.complex.systats.nw1_n1 import (
     Nw1N1Fn,
     get_conclusion,
@@ -20,18 +18,11 @@ from knowde.complex.systats.nw1_n1 import (
     get_referred,
     recursively_nw1n1,
 )
+from knowde.complex.systats.types import Nw1N1Label, Nw1N1Recursive
 
-
-class Nw1N1Label(StrEnum):
-    """文脈タイプ."""
-
-    DETAIL = "detail"
-    REFER = "refer"
-    REFERRED = "referred"
-    PREMISE = "premise"
-    CONCLUSION = "conclusion"
-    EXAMPLE = "example"
-    GENERAL = "general"
+if TYPE_CHECKING:
+    from knowde.complex.__core__.sysnet import SysNet
+    from knowde.complex.__core__.sysnet.sysnode import Duplicable, SysArg
 
 
 class Nw1N1Ctx(Enum):
@@ -66,13 +57,6 @@ class Nw1N1Ctx(Enum):
     def format(self, n: SysArg) -> str:
         """整形."""
         return f"{self.prefix} {n}"
-
-
-class Nw1N1Recursive(NamedTuple):
-    """どのlabelで何回再帰的に返すか."""
-
-    label: Nw1N1Label
-    n_rec: int
 
 
 def apply_nest(nest: list, func: Callable) -> list:

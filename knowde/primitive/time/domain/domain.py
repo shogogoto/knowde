@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field, model_validator
 from knowde.primitive.__core__.domain import Entity
 from knowde.primitive.__core__.domain.domain import APIReturn
 from knowde.primitive.__core__.errors.domain import NotExistsAccessError
-from knowde.primitive.__core__.types import NXGraph
+from knowde.primitive.__core__.types import NXGraph  # noqa: TCH001
 
 from .errors import InvalidTimeYMDError
 

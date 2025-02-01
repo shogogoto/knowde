@@ -1,3 +1,3 @@
 """src root."""
 # ruff: noqa
-from .feature import cli, vcli
+from .feature import cli

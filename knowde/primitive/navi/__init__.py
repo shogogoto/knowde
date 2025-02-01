@@ -6,7 +6,8 @@ from typing import TYPE_CHECKING, Hashable, OrderedDict, Self
 
 from pydantic import BaseModel
 
-from knowde.primitive.__core__.nxutil import EdgeType, axiom_paths, leaf_paths
+from knowde.primitive.__core__.nxutil import axiom_paths, leaf_paths
+from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 
 if TYPE_CHECKING:
     from networkx import DiGraph

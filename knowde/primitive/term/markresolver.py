@@ -1,17 +1,20 @@
 """mark解決器."""
 from __future__ import annotations
 
-from typing import Self
+from typing import TYPE_CHECKING, Self
 
 import networkx as nx
 from pydantic import BaseModel
 
 from knowde.primitive.__core__.nxutil import to_nested
-from knowde.primitive.__core__.types import NXGraph
-from knowde.primitive.term import MergedTerms, Term
+from knowde.primitive.__core__.types import NXGraph  # noqa: TCH001
+from knowde.primitive.term import Term  # noqa: TCH001
 from knowde.primitive.term.const import BRACE_MARKER
 from knowde.primitive.term.errors import MarkUncontainedError
 from knowde.primitive.term.marklookup import to_lookup
+
+if TYPE_CHECKING:
+    from knowde.primitive.term import MergedTerms
 
 
 class MarkResolver(BaseModel, frozen=True):

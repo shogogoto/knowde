@@ -1,9 +1,13 @@
 """pytest hooks."""
-from neomodel import clear_neo4j_database, db, install_all_labels
+
+import os
+
+from neomodel import clear_neo4j_database, config, db, install_all_labels
 
 
 def pytest_configure() -> None:
     """Pytest hook."""
+    config.DATABASE_URL = os.environ["NEO4J_URL"]
     install_all_labels()
 
 

@@ -6,15 +6,16 @@ from typing import TYPE_CHECKING, Final, Hashable
 from lark import Token, Tree
 from lark.visitors import Interpreter
 
-from knowde.complex.__core__.sysnet.sysnode import SysNode
 from knowde.complex.__core__.tree2net.directed_edge import (
     DirectedEdgeCollection,
 )
-from knowde.primitive.__core__.nxutil import Direction, EdgeType
+from knowde.primitive.__core__.nxutil.edge_type import Direction, EdgeType
 from knowde.primitive.__core__.util import parted
 
 if TYPE_CHECKING:
     from lark.tree import Branch
+
+    from knowde.complex.__core__.sysnet.sysnode import SysNode
 
 
 H_TYPES: Final = [f"H{i}" for i in range(2, 7)]

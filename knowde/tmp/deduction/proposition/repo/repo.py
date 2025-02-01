@@ -1,11 +1,13 @@
 """repository."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from uuid import UUID  # noqa: TCH003
 
-from knowde.tmp.deduction.proposition.domain import Proposition
-
 from .label import PropositionUtil
+
+if TYPE_CHECKING:
+    from knowde.tmp.deduction.proposition.domain import Proposition
 
 
 def add_proposition(text: str) -> Proposition:
