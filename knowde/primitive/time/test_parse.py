@@ -4,31 +4,6 @@ import pytest
 from knowde.primitive.time.time import parse_time, str2edtf
 
 
-def test_aaa() -> None:
-    """Test."""
-
-    # s = "2000-10-10"
-    # dt1 = datetime.fromisoformat(s)
-    # dt2 = parse_time(s)
-    # print(dt1)
-    # print(dt1.timestamp())
-    # print(dt2, type(dt2))
-    # st = dt2.lower_strict()
-    # print(struct_time_to_jd(st))
-    # print(struct_time_to_jd(st))
-    # print(datetime_to_jd(dt1))
-    # print(struct_time_to_jd(dt2))
-    # print(struct_time_to_jd(dt2))
-    # print(struct_time_to_jd(dt2))
-    # print(struct_time_to_jd(dt2))
-
-    # from dateutil import parser
-
-    # # 紀元前の日付を解析する
-    # date_str = "200 BC"
-    # date = parser.parse(date_str, yearfirst=True, ignoretz=True)
-
-
 @pytest.mark.parametrize(
     ("string", "expected"),
     [
@@ -67,10 +42,15 @@ def test_aaa() -> None:
         # 4桁以上
         ("-50000", "Y-50000"),
         ("50000", "Y50000"),
+        # 前半early/後半Late/半ばMid
+        ("19C EARLY", "1900-37"),
+        ("19C MID", "1900-38"),
+        ("19C LATE", "1900-39"),
     ],
 )
 def test_2edtf(string: str, expected: str) -> None:
     """EDTFへの通常パターン."""
+    # print("-" * 30)
     aligned = str2edtf(string)
     assert aligned == expected
     parse_time(aligned)  # not raise exception
@@ -79,7 +59,6 @@ def test_2edtf(string: str, expected: str) -> None:
 @pytest.mark.parametrize(
     ("string", "expected"),
     [
-        # 前半early/後半Late/半ばMid
         # 和暦
         # M3/10   明治  和暦対応 datetimejp
         # S50/11/11 昭和
@@ -91,10 +70,59 @@ def test_2edtf_try(string: str, expected: str) -> None:
     """独自のEDTF変換形式."""
     # print("-" * 30, string, expected)
     # print("-" * 30, string, expected)
-    # print("-" * 30, string, expected)
+    # s = str2edtf(string)
+    # print(f"{s =}")
     assert str2edtf(string) == expected
     # t = parse_time(expected)
     # print(t)
 
     # print(t.lower_strict())
     # print(t.upper_strict())
+
+
+# rf. https://www.loc.gov/standards/datetime/
+@pytest.mark.parametrize(
+    ("string"),
+    [
+        # Level0
+        "1985-04-12",
+        "1985-04",
+        "1985",
+        "1985-04-12T23:20:30",  # こんな形式は使わないだろうな
+        ## interval
+        "1964/2008",
+        "1985-04-12/..",
+        "1985-04/..",
+        "1985/..",
+        "../1985-04-12",
+        "../1985-04",
+        "../1985",
+        "-1111/1000",
+        "-1111/..",
+        "-1111-11/1000",
+        "-1111-11-11/1000",
+        "-1111/-1000",
+        "../-1000",
+        "-1111/-1000-10",
+        "-1111/-1000-10-10",
+        "-1111-11/-1000-10-10",
+        "-1111-11-11/-1000-10-10",
+        # Level1
+        "1984?",  # uncertain
+        "2004-06~",  # approximate
+        "2004-06-11%",  # both
+        "2004-02-01/2005-02-08",
+        "19XX",
+        "-19XX",
+        "Y50000",
+        "[1667,1668,1670..1672]",
+    ],
+)
+def test_already_edtf(string: str) -> None:
+    """既にEDTFのものはそのまま."""
+    s = str2edtf(string)
+    _t = parse_time(s)  # not raise exception
+    # print("-" * 10, string)
+    # print(t.lower_strict())
+    # print(t.upper_strict())
+    assert s == string
