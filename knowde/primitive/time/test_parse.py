@@ -1,8 +1,7 @@
 """test."""
-# ruff: noqa
 import pytest
 
-from knowde.primitive.time.time import align4edtf
+from knowde.primitive.time.time import parse_time, str2edtf
 
 
 def test_aaa() -> None:
@@ -55,59 +54,47 @@ def test_aaa() -> None:
         ("-50", "-0050"),
         ("-500", "-0500"),
         ("-9999", "-9999"),
-        # 4桁以上
-        # ("Y-5E4", "Y-5E4"),
-        # ("-50000", "Y-5E4"),
+        # 紀元前
+        ("BC200", "-0200"),
+        ("BC200/12", "-0200-12"),
+        ("BC200/12/12", "-0200-12-12"),
         # 世紀 yyC
-        # 前半early/後半Late/半ばMid
+        ("20C", "1901/2000"),
+        ("-20C", "-1999/-1900"),
+        ("-3C", "-0299/-0200"),
+        ("BC2C", "-0199/-0100"),
+        ("-2C", "-0199/-0100"),
+        # 4桁以上
+        ("-50000", "Y-50000"),
+        ("50000", "Y50000"),
     ],
 )
-def test_align_timestr(string: str, expected: str) -> None:
-    """時系列文字列."""
-    # value = ""123.456789
-    # print(f"{value:.2e}")  # 小数点以下2桁までの指数表記で表示します。
-    # t = parse_time(string)
-    # print(t.lower_strict())
-    # print(t.upper_strict())
-    aligned = align4edtf(string)
+def test_2edtf(string: str, expected: str) -> None:
+    """EDTFへの通常パターン."""
+    aligned = str2edtf(string)
     assert aligned == expected
+    parse_time(aligned)  # not raise exception
 
 
 @pytest.mark.parametrize(
     ("string", "expected"),
-    [],
+    [
+        # 前半early/後半Late/半ばMid
+        # 和暦
+        # M3/10   明治  和暦対応 datetimejp
+        # S50/11/11 昭和
+        # H20/12/12 平成
+        # R5/01/01 令和.
+    ],
 )
-def test_convert_yearstr(string: str, expected: str) -> None:
-    """年の様々な表現の変換.
+def test_2edtf_try(string: str, expected: str) -> None:
+    """独自のEDTF変換形式."""
+    # print("-" * 30, string, expected)
+    # print("-" * 30, string, expected)
+    # print("-" * 30, string, expected)
+    assert str2edtf(string) == expected
+    # t = parse_time(expected)
+    # print(t)
 
-    # 文字列変換 from str to date
-    BC200 紀元前
-    M3/10   明治  和暦対応 datetimejp
-    S50/11/11 昭和
-    H20/12/12 平成
-    R5/01/01 令和.
-
-    [BC|AD] [-]yyyy[/MM[/dd]]
-    or
-    100C [世紀として扱う]
-    16億年前 -16
-
-    yyyy/MM/dd
-    yyyy/MM
-    yyyy
-    yyy
-    yy
-    y
-    yC 世紀
-    BCy 紀元前
-    """
-
-
-# def test_to_datetime() -> None:
-#     pass
-
-
-# def test_span() -> None:
-#     """時間幅."""
-#     t = Time("-1000")
-#     print(t)
+    # print(t.lower_strict())
+    # print(t.upper_strict())

@@ -1,52 +1,16 @@
 """時系列."""
 
 
-import re
-from enum import StrEnum
+from enum import Enum, StrEnum
 from typing import Final, Self
 
 from edtf import EDTFObject, parse_edtf
 from pydantic import BaseModel
-from pyparsing import Optional, Suppress, Word, nums
-
-TS_PT: Final = r"(^-?\d+)?(\/\d+)?(\/\d+)?(@.+)?"
-TS_RE: Final = re.compile(TS_PT)
+from pyparsing import Char, Combine, Optional, Suppress, Word, nums
 
 
-pnumber = Optional(Suppress("-")) + Word(nums)
-
-
-def parse_time(s: str) -> EDTFObject:
-    """型ヒント用."""
-    return parse_edtf(s)
-
-
-def align4edtf(s: str) -> str:
-    """文字列をEDTF(Extended DateTime Format)に変換できるよう整形.
-
-    区切り文字サポート [/-] e.g. yyyy[/MM[/dd]]
-    """
-    is_minus = False
-    if s[0] == "-":  # マイナス年
-        is_minus = True
-        s = s[1:]
-
-    ymd = s.strip().replace("/", "-").split("-", maxsplit=1)
-    match len(ymd):
-        case 1:
-            y = ymd[0]
-            return f"-{y:0>4}" if is_minus else f"{y:0>4}"
-        case 2:
-            y, md = ymd
-            y = f"-{y:0>4}" if is_minus else f"{y:0>4}"
-            md = [e.zfill(2) for e in md.split("-")]
-            return "-".join([y, *md])
-        case _:
-            raise ValueError(s, ymd)
-
-
-class MagicTimeStr(StrEnum):
-    """特殊文字."""
+class MagicTime(StrEnum):
+    """特殊時間文字."""
 
     BC = "BC"  # 紀元前 マイナスのエイリアス
     CENTURY = "C"  # 世紀 20C -> 1901/1/1 ~ 2000/12/31
@@ -55,19 +19,80 @@ class MagicTimeStr(StrEnum):
     LATE = "L"  # 後半
 
 
-class Span(BaseModel):
-    """時間幅.
+class Season(Enum):
+    """季節."""
 
-    単一時刻はstart == endとする時刻の拡張
+    SPRING = ("SP", "21")
+    SUMMER = ("SU", "22")
+    AUTUMN = ("A", "23")
+    WINTER = ("W", "24")
+
+    rep: str  # 文字列表現
+    code: str  # EDTFコード
+
+    def __init__(self, rep: str, code: str) -> None:  # noqa: D107
+        self.rep = rep
+        self.code = code
+
+
+_pnumber: Final = Optional(Char("-")) + Word(nums)
+_pcentury: Final = Combine(_pnumber + Suppress(MagicTime.CENTURY))
+
+
+def str2edtf(s: str) -> str:
+    """文字列をEDTF(Extended DateTime Format)に変換.
+
+    区切り文字サポート [/-] e.g. yyyy[/MM[/dd]]
     """
+    s = s.strip()
+    if MagicTime.BC in s:
+        s = s.replace(MagicTime.BC, "")
+        s = f"-{s}"
 
-    # @classmethod
-    # def from_y(cls, year: int) -> Self:
-    #     """年."""
+    # 世紀 ex. 20C
+    # BCの処理の前にやらないと"B"だけ残ったりでおかしくなる
+    if _pcentury.matches(s):
+        n = _pcentury.parse_string(s)[0]
+        n = int(n)
+        if n > 0:
+            c0 = n * 100 - 99
+            c1 = n * 100
+            return f"{c0:04}/{c1:04}"
+        c0 = n * 100 + 1
+        c1 = n * 100 + 100
+        return f"{c0:05}/{c1:05}"
 
-    # @classmethod
-    # def from_ym(cls, year, int, month: int) -> Self:
-    #     """年月."""
+    if s[0] == "-":
+        ymd = s[1:].replace("/", "-").split("-", maxsplit=1)
+        ymd[0] = f"-{ymd[0]}"
+    else:
+        ymd = s.replace("/", "-").split("-", maxsplit=1)
+    match len(ymd):
+        case 1:
+            return to_year_edtf(ymd[0])
+        case 2:
+            y, md = ymd
+            y = to_year_edtf(y)
+            md = [e.zfill(2) for e in md.split("-")]
+            return "-".join([y, *md])
+        case _:
+            return s
+
+
+def to_year_edtf(s: str) -> str:
+    """年のEDTF形式変換."""
+    if _pnumber.matches(s):
+        y = int(s)
+        if abs(y) >= 10000:  # noqa: PLR2004
+            return f"Y{y}"
+        return f"{y:05}" if y < 0 else f"{y:04}"
+    msg = f"'{s}'は年のフォーマットと合わない"
+    raise ValueError(msg)
+
+
+def parse_time(s: str) -> EDTFObject:
+    """型ヒント用."""
+    return parse_edtf(s)
 
 
 class KnTime(BaseModel):
