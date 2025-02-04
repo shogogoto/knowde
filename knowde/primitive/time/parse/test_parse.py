@@ -1,7 +1,8 @@
 """test."""
+
 import pytest
 
-from knowde.primitive.time.time import parse_time, str2edtf
+from . import parse_time, str2edtf
 
 
 @pytest.mark.parametrize(
@@ -46,6 +47,16 @@ from knowde.primitive.time.time import parse_time, str2edtf
         ("19C EARLY", "1900-37"),
         ("19C MID", "1900-38"),
         ("19C LATE", "1900-39"),
+        # 和暦
+        ("M3", "1870"),  # 明治  和暦対応 datetimejp
+        ("M3/02", "1870-02"),  # 明治
+        ("M3/03/12", "1870-03-12"),
+        ("T5", "1916"),  # 大正
+        ("T5/4", "1916-04"),  # 大正
+        ("T5/5/2", "1916-05-02"),  # 大正
+        ("S54/6/1", "1979-06-01"),  # 昭和
+        ("H20/12/12", "2008-12-12"),  # 平成
+        ("R5", "2023"),  # 令和
     ],
 )
 def test_2edtf(string: str, expected: str) -> None:
@@ -53,31 +64,7 @@ def test_2edtf(string: str, expected: str) -> None:
     # print("-" * 30)
     aligned = str2edtf(string)
     assert aligned == expected
-    parse_time(aligned)  # not raise exception
-
-
-@pytest.mark.parametrize(
-    ("string", "expected"),
-    [
-        # 和暦
-        # M3/10   明治  和暦対応 datetimejp
-        # S50/11/11 昭和
-        # H20/12/12 平成
-        # R5/01/01 令和.
-    ],
-)
-def test_2edtf_try(string: str, expected: str) -> None:
-    """独自のEDTF変換形式."""
-    # print("-" * 30, string, expected)
-    # print("-" * 30, string, expected)
-    # s = str2edtf(string)
-    # print(f"{s =}")
-    assert str2edtf(string) == expected
-    # t = parse_time(expected)
-    # print(t)
-
-    # print(t.lower_strict())
-    # print(t.upper_strict())
+    parse_time(string)  # not raise exception
 
 
 # rf. https://www.loc.gov/standards/datetime/
@@ -122,7 +109,4 @@ def test_already_edtf(string: str) -> None:
     """既にEDTFのものはそのまま."""
     s = str2edtf(string)
     _t = parse_time(s)  # not raise exception
-    # print("-" * 10, string)
-    # print(t.lower_strict())
-    # print(t.upper_strict())
     assert s == string
