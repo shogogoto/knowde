@@ -2,7 +2,7 @@
 
 import pytest
 
-from . import parse_time, str2edtf
+from . import parse_extime, str2edtf
 
 
 @pytest.mark.parametrize(
@@ -64,7 +64,7 @@ def test_2edtf(string: str, expected: str) -> None:
     # print("-" * 30)
     aligned = str2edtf(string)
     assert aligned == expected
-    parse_time(string)  # not raise exception
+    parse_extime(string)  # not raise exception
 
 
 # rf. https://www.loc.gov/standards/datetime/
@@ -108,5 +108,5 @@ def test_2edtf(string: str, expected: str) -> None:
 def test_already_edtf(string: str) -> None:
     """既にEDTFのものはそのまま."""
     s = str2edtf(string)
-    _t = parse_time(s)  # not raise exception
+    _t = parse_extime(s)  # not raise exception
     assert s == string

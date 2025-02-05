@@ -1,12 +1,16 @@
 """時系列."""
-from typing import Self
 
 from edtf import EDTFObject, parse_edtf
 from japanera import EraDate
-from pydantic import BaseModel
 
 from knowde.primitive.time.parse.const import MagicTime, Season, p_century, p_number
 from knowde.primitive.time.parse.parsing import p_interval, p_jp
+
+
+def parse_extime(s: str) -> EDTFObject:
+    """EDTF独自拡張."""
+    formatted = str2edtf(s)
+    return parse_edtf(formatted)
 
 
 def jp2edtf(string: str) -> str:
@@ -21,7 +25,6 @@ def jp2edtf(string: str) -> str:
     s = string.strip().replace("/", "-").split("-")
     s = "/".join([e.zfill(2) for e in s])
     ls = res[0]
-    # era = None
     match len(ls):
         case 2:
             era = EraDate.strptime(s, "%-h%-y")[-1]
@@ -74,17 +77,17 @@ def str2edtf(string: str) -> str:
         ymd = s.replace("/", "-").split("-", maxsplit=1)
     match len(ymd):
         case 1:
-            return to_year_edtf(ymd[0])
+            return _to_year_edtf(ymd[0])
         case 2:
             y, md = ymd
-            y = to_year_edtf(y)
+            y = _to_year_edtf(y)
             md = [e.zfill(2) for e in md.split("-")]
             return "-".join([y, *md])
         case _:
             raise ValueError(string)
 
 
-def to_year_edtf(s: str) -> str:
+def _to_year_edtf(s: str) -> str:
     """年のEDTF形式変換."""
     if p_number.matches(s):
         y = int(s)
@@ -96,20 +99,3 @@ def to_year_edtf(s: str) -> str:
     #     msg = f"'{s}'は年のフォーマットと合わない"
     #     raise ValueError(msg)
     return s
-
-
-def parse_time(s: str) -> EDTFObject:
-    """型ヒント用."""
-    formatted = str2edtf(s)
-    return parse_edtf(formatted)
-
-
-class KnTime(BaseModel):
-    """時刻."""
-
-    val: str
-
-    @classmethod
-    def parse(cls, line: str) -> Self:
-        """From string to time."""
-        return cls(val=line)
