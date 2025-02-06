@@ -78,11 +78,11 @@ _t8 = """
 @pytest.mark.parametrize(
     ("txt", "expected"),
     [
-        pytest.param(_t4, 2, id="3l aaa"),
-        pytest.param(_t5, 2, id="4l aaa"),
-        pytest.param(_t6, 2, id="5l aaa"),
-        pytest.param(_t7, 3, id="5l bbb"),
-        pytest.param(_t8, 4, id="5l ccc"),
+        pytest.param(_t4, 2, id="3lines aaa"),
+        pytest.param(_t5, 2, id="4lines aaa"),
+        pytest.param(_t6, 2, id="5lines aaa"),
+        pytest.param(_t7, 3, id="5lines bbb"),
+        pytest.param(_t8, 4, id="5lines ccc"),
     ],
 )
 def test_detect_undent(txt: str, expected: int) -> None:

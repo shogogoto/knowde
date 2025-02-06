@@ -61,6 +61,7 @@ def parse2tree(
         lines = txt.splitlines()
         pivot, w = front_pivot(len(lines), len(lines))
         i = detect_undent(create_parser().parse, lines, pivot, w)
+        i = i - 1  # undentは後続に正常なindentが含まれる場合に生じるのでその手前が犯人
         msg = f"Undedent was detected at line {i}. Fix indent. \n" + lines[i]
         raise UndedentError(msg) from e
 
