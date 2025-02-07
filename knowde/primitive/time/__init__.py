@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import time
 from functools import cache
-from typing import TYPE_CHECKING, Final, Iterable, Self
+from typing import TYPE_CHECKING, Final, Hashable, Iterable, Self
 
 from intervaltree import Interval, IntervalTree
 from more_itertools import flatten
@@ -28,6 +28,7 @@ from pyparsing import (
     printables,
 )
 
+from knowde.primitive.time.errors import EndBeforeStartError
 from knowde.primitive.time.parse import parse_extime, str2edtf
 
 if TYPE_CHECKING:
@@ -72,37 +73,40 @@ def parse_when(string: str) -> EDTFObject:
             raise ValueError
 
 
-def edtf2interval(string: str) -> Interval:  # noqa: D103
-    s, e = _when2span(string)
-    return Interval(s, e, data=string)
-
-
-def to_intvtree(strings: Iterable[str]) -> IntervalTree:
-    """時間記述をIntervaltreeへ変換."""
-    return IntervalTree([edtf2interval(s) for s in strings])
-
-
 class Series(BaseModel, arbitrary_types_allowed=True):
     """時系列."""
 
     tree: IntervalTree
 
     @classmethod
-    def create(cls, whens: Iterable[str]) -> Self:
+    def create(cls, whens: Iterable[Hashable]) -> Self:
         """Create from strings."""
-        return cls(tree=to_intvtree(whens))
+        intvs = [Interval(*_when2span(str(s)), data=s) for s in whens]
+        try:
+            return cls(tree=IntervalTree(intvs))
+        except ValueError as e:
+            when = str(e).split(",")[-1].replace(")", "").strip()
+            msg = "期間の終了が開始よりも早くて不正"
+            raise EndBeforeStartError(msg, when) from e
 
-    def overlap(self, when: str) -> list[Interval]:
+    def overlap(self, when: str) -> list[Hashable]:
         """指定と重なる区間."""
-        t: IntervalTree = self.tree  # なぜか補間が聞かないself.treeの代わり
         s, e = _when2span(when)
-        return sorted(t.overlap(s, e))
+        intvs = sorted(self.tree.overlap(s, e))
+        return [intv.data for intv in intvs]
 
-    def envelop(self, when: str) -> list[Interval]:
+    def envelop(self, when: str) -> list[Hashable]:
         """指定に含まれる区間."""
-        t: IntervalTree = self.tree  # なぜか補間が聞かないself.treeの代わり
         s, e = _when2span(when)
-        return sorted(t.envelop(s, e))
+        intvs = sorted(self.tree.envelop(s, e))
+        return [intv.data for intv in intvs]
+
+    @property
+    def data(self) -> list[Hashable]:
+        """全ての期間."""
+        # t: IntervalTree = self.tree  # なぜか補間が聞かないself.treeの代わり
+        intvs = sorted(self.tree.all_intervals)
+        return [intv.data for intv in intvs]
 
 
 def _when2span(when: str) -> tuple[float, float]:
@@ -110,13 +114,13 @@ def _when2span(when: str) -> tuple[float, float]:
     s = obj.lower_strict()
     e = obj.upper_strict()
     if s == e:
-        e = _end_of_day(e)
+        e = _nudge_offset(e)
     fs = s if s == float("-inf") else time.mktime(s)
     fe = e if e == float("inf") else time.mktime(e)
     return fs, fe
 
 
-def _end_of_day(st: time.struct_time) -> time.struct_time:
+def _nudge_offset(st: time.struct_time) -> time.struct_time:
     """同日のものをIntervalに変換するとstart == endとなってValueErrorになるのを回避."""
     return time.struct_time(
         (

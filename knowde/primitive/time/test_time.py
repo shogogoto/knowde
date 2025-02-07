@@ -20,6 +20,10 @@
         特に期間の重なりチェックに特化
 """
 import pytest
+from pytest_unordered import unordered
+
+from knowde.primitive.__core__.types import Duplicable
+from knowde.primitive.time.errors import EndBeforeStartError
 
 from . import Series, parse_when
 
@@ -42,19 +46,40 @@ def test_interval(string: str, expected: str) -> None:
     assert when.upper_strict() == ex.upper_strict()
 
 
+def test_invalid_interval() -> None:
+    """不正な期間."""
+    with pytest.raises(EndBeforeStartError):
+        Series.create(["1831 ~ 79"])
+
+
 def test_series() -> None:
     """時系列のソート."""
+    dup1 = Duplicable(n="2004")
+    dup2 = Duplicable(n="2004")
     ser = Series.create(
         [
             "2000/1 ~ 2025",
             "2004/12",
+            "2004",
+            "2004/12",
+            dup1,
+            dup2,
+            "2001",
             "1950/7/7",
             "1945",
             "-02XX",
         ],
     )
-    assert ser.overlap("2002")[0].data == "2000/1 ~ 2025"
-    assert ser.overlap("1945/1/2")[0].data == "1945"
-    assert [i.data for i in ser.overlap("2004/12/1")] == ["2000/1 ~ 2025", "2004/12"]
-    assert [i.data for i in ser.envelop("2000 ~")] == ["2000/1 ~ 2025", "2004/12"]
-    assert [i.data for i in ser.envelop("~ 1949")] == ["-02XX", "1945"]
+    assert ser.overlap("2002 ~ 2005") == unordered(
+        [
+            "2000/1 ~ 2025",
+            dup1,
+            dup2,
+            "2004",
+            "2004/12",
+        ],
+    )
+    assert ser.overlap("2004/11") == unordered(["2000/1 ~ 2025", dup1, dup2, "2004"])
+    assert ser.overlap("2002") == ["2000/1 ~ 2025"]
+    assert ser.overlap("1945/1/2") == ["1945"]
+    assert ser.envelop("~ 1949") == ["-02XX", "1945"]
