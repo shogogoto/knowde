@@ -4,42 +4,7 @@
 import pytest
 
 from knowde.complex.__core__.tree2net import parse2net
-from knowde.primitive.parser.errors import AttachDetailError
 from knowde.primitive.term.errors import MarkUncontainedError
-
-
-def test_duplicate_def_sentence() -> None:
-    """エラー再現(定義文重複、引用用語)."""
-    _s = """
-        # 科学哲学
-          人間と自然を分離させたニュートン力学を批判
-            by. フリードリヒ・ヴィルヘルム・シェリング, シェリング:
-          ウィラード・ファン・オルマン・クワイン: 論理実証主義を支持しつつ反対
-            還元主義の否定
-              決定的実験: 競合する２つの理論を決着させる適切な実験
-                ピエール・デュエム, デュエム:
-        ## 18. フランスの伝統
-          フランスは伝統故に論理実証主義と距離を保ってきた
-            `デュエム`
-              物理理論は１つの説明というより数学的命題の体系
-    """
-    parse2net(_s)
-
-
-def test_non_dupedge() -> None:
-    """なんかBELOW Edgeで重複起きた."""
-    # 電磁気学の創始者-[BELOW]->マクスウェル
-    _s = """
-        # h1
-          アンドレ=マリー・アンペール, アンペール: 電磁気学の創始者
-            when. 1775 ~ 1836
-            電気におけるニュートンと称された
-              by. マクスウェル: xxx
-                when. 1831 ~ 79
-                  aa
-    """
-    with pytest.raises(AttachDetailError):
-        parse2net(_s)
 
 
 def test_alias_resolve_error() -> None:

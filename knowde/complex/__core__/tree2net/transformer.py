@@ -3,11 +3,17 @@
 
 from lark import Token, Transformer
 
-from knowde.complex.__core__.sysnet.sysnode import Def, Duplicable, SysArg
+from knowde.complex.__core__.sysnet.sysnode import Def, SysArg
 from knowde.complex.__core__.tree2net.lineparse import parse_line
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
+from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.template import Template
 from knowde.primitive.term import Term
+
+
+def _stoken(tok: Token) -> Token:
+    """Strip token."""
+    return Token(type=tok.type, value=tok.strip())
 
 
 class TSysArg(Transformer):
@@ -20,6 +26,7 @@ class TSysArg(Transformer):
 
     REF = lambda _, _tok: EdgeType.REF.forward  # noqa: E731
     WHEN = lambda _, _tok: EdgeType.WHEN.forward  # noqa: E731
+
     WHERE = lambda _, _tok: EdgeType.WHERE.forward  # noqa: E731
     BY = lambda _, _tok: EdgeType.BY.forward  # noqa: E731
 
@@ -27,8 +34,9 @@ class TSysArg(Transformer):
 
     ANTONYM = lambda _, _tok: EdgeType.ANTI.both  # noqa: E731
     SIMILAR = lambda _, _tok: EdgeType.SIMILAR.both  # noqa: E731
-    DUPLICABLE = lambda _, _tok: Duplicable(n=_tok.strip())  # noqa: E731
-    QUOTERM = lambda _, _tok: Token(type=_tok.type, value=_tok.strip())  # noqa: E731
+    DUPLICABLE = lambda _, _tok: Duplicable(n=_stoken(_tok))  # noqa: E731
+    QUOTERM = lambda _, _tok: _stoken(_tok)  # noqa: E731
+    TIME = lambda _, _tok: Duplicable(n=_stoken(_tok))  # noqa: E731
 
     def ONELINE(self, tok: Token) -> SysArg:  # noqa: N802 D102
         v = "".join(tok.split("   "))  # 適当な\nに対応する空白

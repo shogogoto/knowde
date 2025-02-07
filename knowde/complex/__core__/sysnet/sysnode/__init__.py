@@ -4,13 +4,13 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from functools import cache
 from typing import TYPE_CHECKING, Final, Self, TypeAlias
-from uuid import UUID, uuid4
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing_extensions import override
 
 from knowde.complex.__core__.sysnet.errors import DefSentenceConflictError
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
+from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.template import Template
 from knowde.primitive.term import Term
 
@@ -80,28 +80,6 @@ class Def(IDef, frozen=True):
         return isinstance(self.sentence, DummySentence)
 
 
-class Duplicable(BaseModel, frozen=True):
-    """コメントや区分け文字列.
-
-    区分け文字 みたいな区切りを作るためだけの無意味な文字列の扱いは?
-    同一文字列は重複して登録できない.
-    なので、uuidを付与する
-    """
-
-    n: str
-    uid: UUID = Field(default_factory=uuid4)
-
-    def __str__(self) -> str:  # noqa: D105
-        return str(self.n)
-
-    def __eq__(self, other: Self) -> bool:  # noqa: D105
-        return str(self) == str(other)
-
-    def __repr__(self) -> str:
-        """Class representation."""
-        return f"Dupl({self})"
-
-
 DUMMY_SENTENCE: Final = "<<<not defined>>>"
 
 
@@ -110,6 +88,7 @@ class DummySentence(Duplicable, frozen=True):
 
     n: str = DUMMY_SENTENCE
 
-_SysElem: TypeAlias = str | Duplicable | Template # 共通型
+
+_SysElem: TypeAlias = str | Duplicable | Template  # 共通型
 SysNode: TypeAlias = Term | _SysElem
 SysArg: TypeAlias = Def | _SysElem

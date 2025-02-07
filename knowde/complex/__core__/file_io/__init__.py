@@ -10,9 +10,9 @@ from pydantic import BaseModel
 from knowde.complex.__core__.sysnet.sysnode import (
     DUMMY_SENTENCE,
     DummySentence,
-    Duplicable,
 )
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
+from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.term import Term
 
 T_EDGE_KEY: Final = "type"
