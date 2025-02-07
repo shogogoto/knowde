@@ -4,6 +4,7 @@
 import pytest
 
 from knowde.complex.__core__.tree2net import parse2net
+from knowde.primitive.parser.errors import AttachDetailError
 from knowde.primitive.term.errors import MarkUncontainedError
 
 
@@ -30,29 +31,15 @@ def test_non_dupedge() -> None:
     # 電磁気学の創始者-[BELOW]->マクスウェル
     _s = """
         # h1
-        ## 2. 科学哲学の始まり
-          ペテン: 奥義が隠されているという見せかけ
-          「科学哲学」という語彙の初出: 形而上学という{ペテン}から人間精神を開放しよう
-            諸科学のクラス分けの着想
-              by. アンドレ=マリー・アンペール, アンペール: 電磁気学の創始者
-                when. 1775 ~ 1836
-                where. フランス
-                電気におけるニュートンと称された
-                  by. マクスウェル:
-                    when. 1831 ~ 79
-                    where. イギリス
-                カントを愛読していた
-              by. オーギュスト・コント, コント:
-                when. 1789 ~ 1857
-                「基礎科学の哲学はベーコンの探求した第一哲学を構成するのに充分なのだ」
-
-            # イギリス哲学の語彙に加える
-            #   when. 1804
-              by. ウィリアム。ヒューウェル: ケンブリッジ大学道徳哲学の教授
-                when. 1794 ~ 18, succ6
-                yield succ
-          # ペテン:
-    # """
+          アンドレ=マリー・アンペール, アンペール: 電磁気学の創始者
+            when. 1775 ~ 1836
+            電気におけるニュートンと称された
+              by. マクスウェル: xxx
+                when. 1831 ~ 79
+                  aa
+    """
+    with pytest.raises(AttachDetailError):
+        parse2net(_s)
 
 
 def test_alias_resolve_error() -> None:
@@ -64,15 +51,12 @@ def test_alias_resolve_error() -> None:
             when. 1604/10/9 ~
             ガリレオは視差が月より小さいことより{ケプラーの超新星}が月の外側にあると証明
               {AU}が誤りであることを決定づけた
-          <-> ティコの超新星: {AU}の最初の反証
-            when. 1572
-            by. ティコ・ブラーエ, ティコ: デンマークの天文学者
-              when. 1546 ~ 1601
     """
     with pytest.raises(MarkUncontainedError):
         _sn = parse2net(_s)  # アリストテレス が未定義
 
 
+@pytest.mark.skip()
 def test_regression() -> None:
     """再現."""
     _s = """

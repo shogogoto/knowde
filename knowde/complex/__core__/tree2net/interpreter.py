@@ -71,6 +71,14 @@ class SysNetInterpreter(Interpreter):
             parent = self.visit(parent)
         return parent, t, d
 
+    def attach(self, tree: Tree) -> tuple[Branch, EdgeType, Direction]:  # noqa: D102
+        cs = tree.children[0].children
+        t, d = cs[0]
+        p = cs[1]
+        return p, t, d
+
+    # return self.ctxline(tree)
+
     def __default__(self, tree: Tree) -> Branch:
         """Heading要素."""
         children = self.visit_children(tree)
