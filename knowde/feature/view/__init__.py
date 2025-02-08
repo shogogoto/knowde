@@ -104,6 +104,40 @@ def detail_cmd(
     detail_proc(stdin, pattern, item, ignore, config)
 
 
+@click.command("time")
+@click.option("--stdin", type=click.File("r"), default="-")
+@click.argument("dateformat", type=click.STRING)
+@click.option(
+    "-o",
+    "--overlap",
+    is_flag=True,
+    default=False,
+    help="指定期間と重なるかつはみ出るものも表示",
+)
+def time_cmd(stdin: IO, dateformat: str, overlap: bool) -> None:  # noqa: FBT001
+    """時系列から指定期間に含まれるものを列挙.
+
+    DATEFORM EDTF(Extended Date/Time Format)を独自拡張した日付.
+
+    Example:
+    -------
+    20C => 1901から2000までの範囲.
+    "1901 ~ 2000" =>  引数で囲うことでスペースを含めて1つの引数にできる.
+    BC100 => 紀元前100の1/1 ~ 12/31.
+    -100 => 紀元前、オプションと判定されるからBC表記推奨
+    BC2C => 紀元前２世紀(-0199/01/01 ~ 0100/12/31)
+    普通のEDTF 参考(https://www.loc.gov/standards/datetime/)
+        ex. 19XX => 1900 ~ 1999
+
+    """
+    from .proc import time_proc
+
+    if overlap:
+        time_proc(stdin, dateformat, "overlap")
+    else:
+        time_proc(stdin, dateformat, "envelop")
+
+
 # # typerのがいいかどうか... file inputの補完が効かないからclickを使うままにしておく
 # def view_vcmd(
 #     stdin: Annotated[typer.FileText, typer.Argument(mode="r")] = sys.stdin,

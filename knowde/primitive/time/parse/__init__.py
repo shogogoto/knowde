@@ -1,5 +1,7 @@
 """時系列."""
 
+from functools import cache
+
 from edtf import EDTFObject, parse_edtf
 from japanera import EraDate
 
@@ -39,6 +41,7 @@ def jp2edtf(string: str) -> str:
             raise ValueError(string)
 
 
+@cache
 def str2edtf(string: str) -> str:
     """文字列をEDTF(Extended DateTime Format)に変換.
 
@@ -49,8 +52,6 @@ def str2edtf(string: str) -> str:
         s = s.replace(MagicTime.BC, "")
         s = f"-{s}"
 
-    # 世紀 ex. 20C
-    # BCの処理の2前にやらないと"B"だけ残ったりでおかしくなる
     # 20C -> 1901/2000 が厳密だが、19XXでよくね?
     s = Season.replace(s)
     if p_century.matches(s):

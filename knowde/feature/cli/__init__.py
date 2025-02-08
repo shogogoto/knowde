@@ -3,23 +3,15 @@ from __future__ import annotations
 
 import click
 
-from knowde.feature.cli.completion import completion_callback
-from knowde.feature.view import detail_cmd, score_cmd, stat_cmd
+from knowde.feature.cli.completion import complete_option
+from knowde.feature.view import detail_cmd, score_cmd, stat_cmd, time_cmd
 
 __version__ = "0.0.0"
 
 
 @click.group()
 @click.version_option(version=__version__, prog_name="knowde")
-@click.option(
-    "--shell",
-    type=click.Choice(["bash", "zsh", "fish"]),
-    expose_value=False,
-    is_eager=True,
-    callback=completion_callback,
-    flag_value="bash",
-    help="CLI補完設定を.bashrcなどに追記する.",
-)
+@complete_option()
 def cli() -> None:
     """Knowde CLI."""
 
@@ -27,7 +19,7 @@ def cli() -> None:
 cli.add_command(score_cmd)
 cli.add_command(detail_cmd)
 cli.add_command(stat_cmd)
-
+cli.add_command(time_cmd)
 # vcli = typer.Typer()
 # vcli.command("view")(view_vcmd)
 
