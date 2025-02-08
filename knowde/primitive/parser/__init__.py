@@ -35,6 +35,7 @@ def create_parser(transformer: TransformerChain | Transformer | None = None) -> 
         parser="lalr",
         postlex=SampleIndenter(),
         transformer=transformer,
+        # keep_all_token=True,
     )
 
 
@@ -61,7 +62,10 @@ def parse2tree(
         lines = txt.splitlines()
         pivot, w = front_pivot(len(lines), len(lines))
         i = detect_undent(create_parser().parse, lines, pivot, w)
-        msg = f"Undedent was detected at line {i}. Fix indent. \n" + lines[i]
+        nums = range(i - 2, i + 2)
+        digit = max([len(str(n)) for n in nums])
+        arround = "\n".join([f"{n:>{digit}}: {lines[n]}" for n in nums])
+        msg = f"Invalid indent was detected at line {i}. \n" + arround
         raise UndedentError(msg) from e
 
 

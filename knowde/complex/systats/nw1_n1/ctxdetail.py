@@ -22,7 +22,8 @@ from knowde.complex.systats.types import Nw1N1Label, Nw1N1Recursive
 
 if TYPE_CHECKING:
     from knowde.complex.__core__.sysnet import SysNet
-    from knowde.complex.__core__.sysnet.sysnode import Duplicable, SysArg
+    from knowde.complex.__core__.sysnet.sysnode import SysArg
+    from knowde.primitive.__core__.types import Duplicable
 
 
 class Nw1N1Ctx(Enum):

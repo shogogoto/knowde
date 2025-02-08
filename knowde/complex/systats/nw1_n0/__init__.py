@@ -4,19 +4,22 @@ from __future__ import annotations
 import operator
 from enum import Enum, StrEnum
 from functools import cache, reduce
-from typing import Callable, Hashable, Self, TypeAlias
+from typing import TYPE_CHECKING, Callable, Hashable, Self, TypeAlias
 
 import networkx as nx
 
 from knowde.complex.__core__.sysnet import SysNet
-from knowde.complex.__core__.sysnet.sysnode import Duplicable, SysArg
 from knowde.complex.systats.nw1_n1 import (
     get_detail,
     get_parent_or_none,
     has_dependency,
 )
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType, etype_subgraph
+from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.term import Term
+
+if TYPE_CHECKING:
+    from knowde.complex.__core__.sysnet.sysnode import SysArg
 
 NW1N0Fn: TypeAlias = Callable[[SysNet], int]
 NW1N0RatioFn: TypeAlias = Callable[[SysNet], float]

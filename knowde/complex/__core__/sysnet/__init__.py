@@ -16,12 +16,13 @@ from knowde.complex.__core__.sysnet.sysfn import (
 )
 from knowde.primitive.__core__.nxutil import to_nested
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
-from knowde.primitive.__core__.types import NXGraph  # noqa: TCH001
+from knowde.primitive.__core__.types import Duplicable, NXGraph
 from knowde.primitive.heading import get_headings
 from knowde.primitive.template import Templates
+from knowde.primitive.time import Series
 
 from .errors import SysNetNotFoundError
-from .sysnode import Def, Duplicable, SysArg, SysNode
+from .sysnode import Def, SysArg, SysNode
 
 if TYPE_CHECKING:
     from knowde.primitive.term import Term
@@ -89,3 +90,12 @@ class SysNet(BaseModel, frozen=True):
         if n not in self.g:
             msg = f"{n} is not in system[{self.root}]."
             raise SysNetNotFoundError(msg)
+
+    @cached_property
+    def series(self) -> Series:
+        """時系列一覧."""
+        whens = []
+        for _u, v, d in self.g.edges(data=True):
+            if d["type"] == EdgeType.WHEN:
+                whens.append(v)
+        return Series.create(whens)

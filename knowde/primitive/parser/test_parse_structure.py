@@ -6,6 +6,7 @@ import pytest
 
 from knowde.primitive.parser import parse2tree
 from knowde.primitive.parser.errors import (
+    AttachDetailError,
     HeadingMismatchError,
     MissingIndentError,
     MissingTopHeadingError,
@@ -159,3 +160,69 @@ def test_parse_comment() -> None:
         ! g
     """
     _t = parse2tree(_s)
+
+
+@pytest.mark.parametrize(
+    ("txt"),
+    map(
+        dedent,
+        [
+            """
+        # 1
+          aaa
+            when. 100
+              bbb
+        """,
+            """
+
+        # 1
+        ## 2
+          aaa
+            when. 100
+              bbb
+            """,
+            """
+        # 1
+        ## 2
+        ### 3
+          aaa
+            when. 100
+              bbb
+            """,
+            """
+        # 1
+        ## 2
+        ### 3
+        #### 4
+          aaa
+            when. 100
+              bbb
+            """,
+            """
+        # 1
+        ## 2
+        ### 3
+        #### 4
+        ##### 5
+          aaa
+            when. 100
+              bbb
+            """,
+            """
+        # 1
+        ## 2
+        ### 3
+        #### 4
+        ##### 5
+        ###### 6
+          aaa
+            when. 100
+              bbb
+            """,
+        ],
+    ),
+)
+def test_attach_grammer_error(txt: str) -> None:
+    """Attach error."""
+    with pytest.raises(AttachDetailError):
+        parse2tree(txt)

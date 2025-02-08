@@ -5,15 +5,21 @@ import json
 from typing import IO, TYPE_CHECKING
 
 import click
+from tabulate import tabulate
 
 from knowde.complex.systats.nw1_n0 import Nw1N0Label
 from knowde.complex.systats.nw1_n0.scorable import LRWTpl, SyScore
 from knowde.complex.systats.nw1_n1.ctxdetail import Nw1N1Detail
 from knowde.feature.__core__ import try_parse2net
-from knowde.feature.__core__.cliutil import echo_table
+from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 
 if TYPE_CHECKING:
     from knowde.complex.systats.types import Nw1N1Label, Nw1N1Recursive
+
+
+def echo_table(ls: list[dict]) -> None:
+    """Echo by tabulate."""
+    click.echo(tabulate(ls, headers="keys"))
 
 
 def stat_proc(
@@ -71,3 +77,18 @@ def detail_proc(
     #         ensure_ascii=False,
     #     ),
     # )
+
+
+def time_proc(stdin: IO, dateformat: str, method_name: str) -> None:
+    """時系列表示."""
+    txt = stdin.read()
+    sn = try_parse2net(txt)
+    ls = [
+        {
+            "time": str(d),
+            "sentence": sn.get(EdgeType.WHEN.get_pred_or_none(sn.g, d)),
+        }
+        for d in getattr(sn.series, method_name)(dateformat)
+    ]
+
+    click.echo(tabulate(ls, headers="keys", showindex=True))

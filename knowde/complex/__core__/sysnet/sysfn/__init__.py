@@ -13,11 +13,11 @@ from knowde.complex.__core__.sysnet.errors import (
 from knowde.complex.__core__.sysnet.sysnode import (
     Def,
     DummySentence,
-    Duplicable,
     SysArg,
     SysNode,
 )
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
+from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.template import Template
 from knowde.primitive.term import Term
 

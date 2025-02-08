@@ -20,7 +20,7 @@ H4: "####" HEAD
 H5: "#####" HEAD
 H6: "######" HEAD
 
-?block: stmt [_INDENT (block)+ _DEDENT]
+?block: stmt [_INDENT (block|attach)+ _DEDENT]
 ?stmt:  (line|ctxline|COMMENT _NL)
 ?line: (ONELINE|MULTILINE|QUOTERM|DUPLICABLE) _NL
 ctxline: ctype block
@@ -35,7 +35,7 @@ QUOTERM: /[ \t]/* "`" ANY "`"
 DUPLICABLE: /[ \t]/* "+++" ANY "+++"
 
 // 文脈
-?ctype.2: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM|SIMILAR|BY|WHEN|WHERE)
+?ctype.2: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM|SIMILAR|BY|WHERE)
 THUS.2:    "->"   // 故に
 CAUSE.2:   "<-"   // なぜなら
 ANTONYM.2: "<->"  // 対義関係
@@ -45,8 +45,13 @@ REF.2:     "ref."     // 引用
 NUM.2:     /\d+\./    // 連番
 SIMILAR.2: "~="   // 類似
 BY.2:      "by."       // アクターは誰
-WHEN.2:    "when."   // いつ
 WHERE.2:   "where."
+
+// 入れ子ではない付加情報
+attach.3: (when) _NL
+WHEN.2: "when."
+TIME.2: ANY
+?when.3: WHEN TIME
 
 _NL: /(\r?\n[\t ]*)+/
 %declare _INDENT _DEDENT

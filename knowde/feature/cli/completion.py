@@ -1,8 +1,18 @@
 """シェル補間."""
 import os
 from pathlib import Path
+from typing import Callable, Final
 
 import click
+from click.decorators import FC
+
+VAR: Final = "_KN_COMPLETE"
+
+C_CONF: Final = {
+    "bash": (f'eval "$({VAR}=bash_source kn)"', ".bashrc"),
+    "zsh": (f'eval "$({VAR}=zsh_source kn)"', ".zshrc"),
+    "fish": (f"{VAR}=fish_source kn | source", ".config/fish/config.fish"),
+}
 
 
 def completion_callback(
@@ -14,37 +24,32 @@ def completion_callback(
     if not value or ctx.resilient_parsing:
         return
     shell = value or os.environ.get("SHELL", "")
-    var = "_KN_COMPLETE"
-    if "zsh" in shell:
-        shell = "zsh"
-    elif "fish" in shell:
-        shell = "fish"
-    elif "bash" in shell:
-        shell = "bash"
-    else:
+    shells = [sh for sh in C_CONF if sh in shell]
+    if len(shells) == 0:
         click.Abort("補完機能に対応しないシェルです", shell)
+    script, rc_name = C_CONF[shells[0]]
 
-    script, rc_path = {
-        "bash": (f'eval "$({var}=bash_source kn)"', ".bashrc"),
-        "zsh": (f'eval "$({var}=zsh_source kn)"', ".zshrc"),
-        "fish": (f"{var}=fish_source kn | source", ".config/fish/config.fish"),
-    }[shell]
+    rc = Path.home() / rc_name
+    rc.parent.mkdir(parents=True, exist_ok=True)
+    if rc.exists() and script in rc.read_text():
+        click.echo("Already setup knowde completion.")
+        ctx.exit()
 
-    script = f"{script} # knowde completion setting\n"
-    rc_path = Path.home() / rc_path
-    rc_path.parent.mkdir(parents=True, exist_ok=True)
-
-    # 既存の設定チェック
-    if rc_path.exists():
-        content = rc_path.read_text()
-        if script in content:
-            click.echo("Already setup knowde completion.")
-            ctx.exit()
-
-    # 設定の書き込み
-    with Path.open(rc_path, "a") as f:
-        f.write(script)
-
+    with Path.open(rc, "a") as f:
+        f.write(f"{script} # knowde completion setting\n")
     click.echo(f"Completion setup for {shell} completed!")
-    click.echo(f"Please restart your shell or run: source {rc_path}")
+    click.echo(f"Please restart your shell or run: source {rc}")
     ctx.exit()
+
+
+def complete_option() -> Callable[[FC], FC]:
+    """CLI補完."""
+    return click.option(
+        "--shell",
+        type=click.Choice(list(C_CONF.keys())),
+        expose_value=False,
+        is_eager=True,
+        callback=completion_callback,
+        flag_value="bash",
+        help="CLI補完設定を.bashrcなどに追記する.",
+    )

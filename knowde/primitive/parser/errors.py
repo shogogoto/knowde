@@ -41,6 +41,12 @@ class MissingIndentError(KnSyntaxError):
     label = "Missing Indent"
 
 
+class AttachDetailError(KnSyntaxError):
+    """付加情報(attach)の配下に文は置けない."""
+
+    label = "Invalid sentence placed under attach context"
+
+
 _head_lv = [
     """
     # h1
@@ -150,12 +156,67 @@ _indent = [
 """,
 ]
 
+_attach = [
+    """
+    # 1
+      aaa
+        when. 100
+          bbb
+    """,
+    """
+    # 1
+    ## 2
+      aaa
+        when. 100
+          bbb
+    """,
+    """
+    # 1
+    ## 2
+    ### 3
+      aaa
+        when. 100
+          bbb
+    """,
+    """
+        # 1
+        ## 2
+        ### 3
+        #### 4
+          aaa
+            when. 100
+              bbb
+            """,
+    """
+        # 1
+        ## 2
+        ### 3
+        #### 4
+        ##### 5
+          aaa
+            when. 100
+              bbb
+            """,
+    """
+        # 1
+        ## 2
+        ### 3
+        #### 4
+        ##### 5
+        ###### 6
+          aaa
+            when. 100
+              bbb
+            """,
+]
+
 
 # for match examples
 HEAD_ERR_EXS = {
     HeadingMismatchError: list(map(dedent, _head_lv)),
     MissingTopHeadingError: [dedent(_top)],
     MissingIndentError: list(map(dedent, _indent)),
+    AttachDetailError: list(map(dedent, _attach)),
 }
 
 

@@ -10,9 +10,10 @@ from knowde.complex.__core__.sysnet.errors import (
 )
 from knowde.complex.__core__.sysnet.sysfn import get_ifdef, to_sentence, to_term
 from knowde.complex.__core__.sysnet.sysfn.build_fn import add_resolved_edges
-from knowde.complex.__core__.sysnet.sysnode import Def, Duplicable
+from knowde.complex.__core__.sysnet.sysnode import Def
 from knowde.primitive.__core__.nxutil import to_nested
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
+from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.term import Term, check_and_merge_term
 from knowde.primitive.term.markresolver import MarkResolver
 
