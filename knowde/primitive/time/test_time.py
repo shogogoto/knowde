@@ -36,9 +36,13 @@ from . import Series, parse_when
         ("1000 ~ 1200", "1000/1200"),
         ("1200~", "1200~"),
         ("1200 ~ 1300/12/1", "1200/1300-12-01"),
+        ("17C ~ 18C", "1601/1800"),
+        ("1604/10/9 ~", "1604-10-09/.."),
+        ("BC1C", "-0099/0000"),
+        ("BC0C", "0001/0100"),
     ],
 )
-def test_interval(string: str, expected: str) -> None:
+def test_parse_when(string: str, expected: str) -> None:
     """EDTFではなく独自のInterval."""
     when = parse_when(string)
     ex = parse_when(expected)

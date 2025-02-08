@@ -17,6 +17,7 @@ import time
 from functools import cache
 from typing import TYPE_CHECKING, Final, Hashable, Iterable, Self
 
+import edtf
 from intervaltree import Interval, IntervalTree
 from more_itertools import flatten
 from pydantic import BaseModel
@@ -62,12 +63,20 @@ def parse_when(string: str) -> EDTFObject:
     i = ls.index(INTV_SEP)
     match (i, len(ls)):
         case (0, 2):  # ~ extime
-            return parse_extime(f"../{ls[1]}")
+            e = str2edtf(ls[1])
+            return parse_extime(f"../{e}")
         case (1, 2):  # ex1 ~
-            return parse_extime(f"{ls[0]}/..")
+            s = str2edtf(ls[0])
+            return parse_extime(f"{s}/..")
         case (1, 3):  # ex1 ~ ex2
             f1 = str2edtf(ls[0])
             f2 = str2edtf(ls[2])
+            e1 = parse_extime(f1)
+            e2 = parse_extime(f2)
+            if isinstance(e1, edtf.Interval):
+                f1 = str(e1).split("/")[0]
+            if isinstance(e2, edtf.Interval):
+                f2 = str(e2).split("/")[-1]
             return parse_extime(f"{f1}/{f2}")
         case _:
             raise ValueError

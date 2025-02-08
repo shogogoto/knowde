@@ -59,10 +59,10 @@ def str2edtf(string: str) -> str:
         if n > 0:
             c0 = n * 100 - 99
             c1 = n * 100
-            return f"{c0:04}/{c1:04}"
-        c0 = n * 100 + 1
-        c1 = n * 100 + 100
-        return f"{c0:05}/{c1:05}"
+        else:
+            c0 = n * 100 + 1
+            c1 = n * 100 + 100
+        return "/".join([f"{c:04}" if c >= 0 else f"{c:05}" for c in [c0, c1]])
 
     if p_interval().matches(s):
         return s
