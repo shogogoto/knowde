@@ -10,6 +10,8 @@ from knowde.primitive.__core__ import ErrorHandlingMiddleware
 from knowde.tmp import deduct_router, def_router
 from knowde.tmp.deduction.proposition import p_router
 
+from .auth import auth_router
+
 config.DATABASE_URL = os.environ["NEO4J_URL"]
 
 api = FastAPI()
@@ -18,3 +20,4 @@ api.add_middleware(ErrorHandlingMiddleware)
 api.include_router(def_router)
 api.include_router(p_router)
 api.include_router(deduct_router)
+api.include_router(auth_router)
