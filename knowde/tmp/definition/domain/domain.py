@@ -9,21 +9,19 @@
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Self
+from typing import Optional, Self
 from uuid import UUID  # noqa: TCH003
 
 import networkx as nx
 from pydantic import BaseModel, Field, field_validator
 
 from knowde.primitive.__core__.domain import Composite, Entity
+from knowde.primitive.__core__.label_repo.base import RelBase  # noqa: TCH001
+from knowde.primitive.__core__.types import NXGraph  # noqa: TCH001
 from knowde.tmp.definition.domain.description import PlaceHeldDescription
 from knowde.tmp.definition.repo.mark import RelMark
 from knowde.tmp.definition.sentence.domain import Sentence, SentenceParam
 from knowde.tmp.definition.term.domain import Term, TermParam
-
-if TYPE_CHECKING:
-    from knowde.primitive.__core__.label_repo.base import RelBase
-    from knowde.primitive.__core__.types import NXGraph
 
 
 class DefinitionParam(BaseModel, frozen=True):

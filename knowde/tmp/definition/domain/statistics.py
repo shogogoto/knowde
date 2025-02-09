@@ -1,14 +1,10 @@
 """依存統計."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from pydantic import BaseModel, Field
 
 from knowde.primitive.__core__.domain import APIReturn
-
-if TYPE_CHECKING:
-    from knowde.tmp.definition.domain.domain import Definition
+from knowde.tmp.definition.domain.domain import Definition  # noqa: TCH001
 
 
 class DepStatistics(BaseModel, frozen=True):
