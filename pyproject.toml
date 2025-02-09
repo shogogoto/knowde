@@ -35,6 +35,8 @@ japanera = "^2.1.2"
 intervaltree = "^3.1.0"
 edtf = "^5.0.0"
 python-multipart = "^0.0.20"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 [tool.poetry.group.dev.dependencies]
 pytest = "8.3.4"
 pre-commit = "^3.5.0"

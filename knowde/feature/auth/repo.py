@@ -1,7 +1,9 @@
 """DB."""
 from __future__ import annotations
 
-from knowde.feature.auth.domain import User
+from typing import Literal
+
+from knowde.feature.auth.domain import User, verify_password
 
 
 def fake_users_db() -> dict:
@@ -11,15 +13,8 @@ def fake_users_db() -> dict:
             "username": "johndoe",
             "full_name": "John Doe",
             "email": "johndoe@example.com",
-            "hashed_password": "fakehashedsecret",
+            "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",  # noqa: E501
             "disabled": False,
-        },
-        "alice": {
-            "username": "alice",
-            "full_name": "Alice Wonderson",
-            "email": "alice@example.com",
-            "hashed_password": "fakehashedsecret2",
-            "disabled": True,
         },
     }
 
@@ -30,7 +25,7 @@ class UserInDB(User):
     hashed_password: str
 
 
-def get_user(db: dict, username: str) -> User | None:
+def get_user(db: dict, username: str | None) -> UserInDB | None:
     """tutorial."""
     if username in db:
         user_dict = db[username]
@@ -39,5 +34,17 @@ def get_user(db: dict, username: str) -> User | None:
 
 
 def fake_decode_token(token: str) -> User | None:
-    """Check the next version."""
-    return get_user(fake_users_db, token)
+    """tutorial."""
+    return get_user(fake_users_db(), token)
+
+
+def authenticate_user(
+    db: dict,
+    username: str,
+    password: str,
+) -> Literal[False] | UserInDB:
+    """tutorial."""
+    user = get_user(db, username)
+    if user is None or not verify_password(password, user.hashed_password):
+        return False
+    return user
