@@ -16,6 +16,8 @@ def pytest_runtest_teardown() -> None:
     """Pytest hook."""
     if db.driver is not None:
         clear_neo4j_database(db)
+        s = Settings()
+        s.terdown_db()
 
 
 def pytest_sessionfinish() -> None:
