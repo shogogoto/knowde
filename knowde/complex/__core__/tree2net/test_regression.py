@@ -21,7 +21,6 @@ def test_alias_resolve_error() -> None:
         _sn = parse2net(_s)  # アリストテレス が未定義
 
 
-@pytest.mark.skip()
 def test_regression() -> None:
     """再現."""
     _s = """
