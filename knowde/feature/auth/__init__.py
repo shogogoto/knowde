@@ -5,10 +5,16 @@ from datetime import timedelta
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import RedirectResponse  # noqa: TCH002
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi_sso.sso.base import OpenID, SSOBase  # noqa: TCH002
+from fastapi_sso.sso.google import GoogleSSO
 from jose import JOSEError, jwt
+from starlette.requests import Request  # noqa: TCH002
 
-from knowde.feature.auth.domain import (
+from knowde.feature.__core__.config import Settings, response_queue
+
+from .domain import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
     ALGORITHM,
     SECRET_KEY,
@@ -17,7 +23,7 @@ from knowde.feature.auth.domain import (
     User,
     create_access_token,
 )
-from knowde.feature.auth.repo import (
+from .repo import (
     authenticate_user,
     fake_users_db,
     get_user,
@@ -103,3 +109,43 @@ async def read_own_items(
 ) -> list:
     """tutorial."""
     return [{"item_id": "Foo", "owner": current_user.username}]
+
+
+def google_sso() -> SSOBase:
+    """Return sso client."""
+    s = Settings()
+    port = s.PORT
+    return GoogleSSO(
+        s.GOOGLE_CLIENT_ID,
+        s.GOOGLE_CLIENT_SECRET,
+        f"http://localhost:{port}/google/callback",
+    )
+
+
+@auth_router.get("/google/login")
+async def google_login(
+    sso: Annotated[SSOBase, Depends(google_sso)],
+) -> RedirectResponse:
+    """Google login."""
+    async with sso:
+        return await sso.get_login_redirect()
+
+
+@auth_router.get("/google/callback")
+async def google_callback(
+    request: Request,
+    sso: Annotated[SSOBase, Depends(google_sso)],
+) -> OpenID | None:
+    """Google callback."""
+    async with sso:
+        user = await sso.verify_and_process(request)
+        response_queue().put(
+            {
+                "email": user.email,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "display_name": user.display_name,
+                "provider": user.provider,
+            },
+        )
+        return user

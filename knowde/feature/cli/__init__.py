@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import click
 
+from knowde.feature.auth.cli import login_cmd
 from knowde.feature.cli.completion import complete_option
 from knowde.feature.view import detail_cmd, score_cmd, stat_cmd, time_cmd
 
@@ -20,6 +21,7 @@ cli.add_command(score_cmd)
 cli.add_command(detail_cmd)
 cli.add_command(stat_cmd)
 cli.add_command(time_cmd)
+cli.add_command(login_cmd)
 # vcli = typer.Typer()
 # vcli.command("view")(view_vcmd)
 
