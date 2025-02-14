@@ -8,11 +8,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from knowde.feature.__core__.config import Settings
+from knowde.feature.auth.api import auth_router
 from knowde.primitive.__core__ import ErrorHandlingMiddleware
 from knowde.tmp import deduct_router, def_router
 from knowde.tmp.deduction.proposition import p_router
-
-from .auth import auth_router
 
 
 @asynccontextmanager
@@ -20,6 +19,7 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator:
     """Set up DB etc."""
     s = Settings()
     s.setup_db()
+
     yield
     s.terdown_db()
 

@@ -37,7 +37,7 @@ edtf = "^5.0.0"
 python-multipart = "^0.0.20"
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
-fastapi-users = {extras = ["oauth"], version = "^14.0.1"}
+fastapi-users = {extras = ["sqlalchemy"], version = "^14.0.1"}
 authlib = "^1.4.1"
 pydantic-settings = "^2.7.1"
 fastapi-sso = "^0.17.0"

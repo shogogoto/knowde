@@ -2,12 +2,9 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+from functools import cache
+from queue import Queue
 
-from fastapi_users.authentication import (
-    AuthenticationBackend,
-    BearerTransport,
-    JWTStrategy,
-)
 from jose import jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
@@ -67,14 +64,7 @@ class TokenData(BaseModel):
     username: str | None = None
 
 
-SECRET = "SECRET"  # noqa: S105
-
-
-backend = AuthenticationBackend(
-    name="jwt",
-    transport=BearerTransport(tokenUrl="auth/jwt/login"),
-    get_strategy=lambda _: JWTStrategy(secret=SECRET, lifetime_seconds=3600),
-)
-
-
-# FastAPIUsers[User, UUID]()
+@cache
+def response_queue() -> Queue:
+    """レスポンスを保存するためのグローバルキュー."""
+    return Queue()
