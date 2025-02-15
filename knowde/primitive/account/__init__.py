@@ -38,8 +38,8 @@ class Account(BaseModel):
     email: str
     hashed_password: str
     is_active: bool
-    is_superuser: bool
-    is_verified: bool
+    is_superuser: bool = False
+    is_verified: bool = False
 
     @property
     def id(self) -> UUID:  # noqa: D102

@@ -20,8 +20,8 @@ class LAccount(StructuredNode):
     email = EmailProperty()
     hashed_password = StringProperty()
     is_active = BooleanProperty(default=True)
-    is_verified = BooleanProperty()
-    is_superuser = BooleanProperty()
+    is_verified = BooleanProperty(default=False)
+    is_superuser = BooleanProperty(default=False)
     created = DateTimeProperty(default_now=True)
 
 

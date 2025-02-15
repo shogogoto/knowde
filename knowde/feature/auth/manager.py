@@ -35,7 +35,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[Account, uuid.UUID]):
         user: Account,
         request: Request | None = None,
     ) -> None:
-        print(f"User {user.id} has registered.")  # noqa: T201
+        print(f"User {user.id}[{user.email}] has registered.")  # noqa: T201
 
     @override
     async def on_after_forgot_password(
@@ -44,7 +44,10 @@ class UserManager(UUIDIDMixin, BaseUserManager[Account, uuid.UUID]):
         token: str,
         request: Request | None = None,
     ) -> None:
-        print(f"User {user.id} has forgot their password. Reset token: {token}")  # noqa: T201
+        print(  # noqa: T201
+            f"User {user.id}[{self.email}] has forgot their password. "
+            f"Reset token: {token}",
+        )
 
     @override
     async def on_after_request_verify(
@@ -53,7 +56,10 @@ class UserManager(UUIDIDMixin, BaseUserManager[Account, uuid.UUID]):
         token: str,
         request: Request | None = None,
     ) -> None:
-        print(f"Verification requested for user {user.id}. Verification token: {token}")  # noqa: T201
+        print(  # noqa: T201
+            f"Verification requested for user {user.id}[{self.email}]."
+            f"Verification token: {token}",
+        )
 
 
 async def get_user_manager() -> AsyncGenerator:
@@ -63,10 +69,14 @@ async def get_user_manager() -> AsyncGenerator:
 
 def auth_backend() -> AuthenticationBackend:
     """For fastapi-users."""
+    s = Settings()
     return AuthenticationBackend(
         name="jwt",
         transport=BearerTransport(tokenUrl="auth/jwt/login"),
-        get_strategy=lambda: JWTStrategy(secret=s.AUTH_SECRET, lifetime_seconds=3600),
+        get_strategy=lambda: JWTStrategy(
+            secret=s.AUTH_SECRET,
+            lifetime_seconds=s.JWT_LIFETIME_SEC,
+        ),
     )
 
 

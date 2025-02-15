@@ -1,4 +1,6 @@
 """googl sso router."""
+from functools import cache
+from queue import Queue
 from typing import Annotated, TypedDict
 
 from fastapi import APIRouter, Depends, Request, Response, status
@@ -8,7 +10,6 @@ from fastapi_sso.sso.google import GoogleSSO
 from pydantic_core import Url
 
 from knowde.feature.__core__.config import Settings
-from knowde.feature.auth.domain import response_queue
 from knowde.feature.auth.sso import Provider
 
 
@@ -67,6 +68,12 @@ def router_google_sso(port: int = 8000) -> APIRouter:
             )
 
     return router_sso
+
+
+@cache
+def response_queue() -> Queue:
+    """レスポンスを保存するためのグローバルキュー."""
+    return Queue()
 
 
 def _content(msg: str) -> str:

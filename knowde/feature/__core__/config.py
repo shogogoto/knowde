@@ -1,7 +1,7 @@
 """settings."""
 from __future__ import annotations
 
-from typing import Final
+from typing import Final, Optional
 from urllib.parse import urljoin
 
 import requests
@@ -24,10 +24,10 @@ class Settings(BaseSettings):
     NEO4J_URL: str
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
-    PORT: int = 8000
     SSO_PROT: int = 19419
-    KN_URL: str = "http://localhost"
+    KNOWDE_URL: str
     AUTH_SECRET: str = "SECRET"
+    JWT_LIFETIME_SEC: int = 60 * 60 * 24  # 1 day
 
     def setup_db(self) -> None:
         """DB設定."""
@@ -41,13 +41,15 @@ class Settings(BaseSettings):
 
     def url(self, relative: str) -> str:
         """Self server url."""
-        return urljoin(f"{self.KN_URL}:{self.PORT}", relative)
+        return urljoin(self.KNOWDE_URL, relative)
 
-    def get(
+    def get(  # noqa: PLR0913
         self,
         relative: str,
         params: dict | None = None,
         json: object = None,
+        data: object = None,
+        headers: Optional[dict] = None,
     ) -> requests.Response:
         """Get of RESTful API."""
         return requests.get(
@@ -55,13 +57,17 @@ class Settings(BaseSettings):
             timeout=TIMEOUT,
             params=params,
             json=json,
+            data=data,
+            headers=headers,
         )
 
-    def delete(
+    def delete(  # noqa: PLR0913
         self,
         relative: str,
         params: dict | None = None,
         json: object = None,
+        data: object = None,
+        headers: Optional[dict] = None,
     ) -> requests.Response:
         """Delete of Restful API."""
         return requests.delete(
@@ -69,13 +75,17 @@ class Settings(BaseSettings):
             timeout=TIMEOUT * 3,
             params=params,
             json=json,
+            data=data,
+            headers=headers,
         )
 
-    def post(
+    def post(  # noqa: PLR0913
         self,
         relative: str,
         params: dict | None = None,
         json: object = None,
+        data: object = None,
+        headers: Optional[dict] = None,
     ) -> requests.Response:
         """Post of Restful API."""
         return requests.post(
@@ -83,13 +93,17 @@ class Settings(BaseSettings):
             timeout=TIMEOUT * 3,
             params=params,
             json=json,
+            data=data,
+            headers=headers,
         )
 
-    def put(
+    def put(  # noqa: PLR0913
         self,
         relative: str,
         params: dict | None = None,
         json: object = None,
+        data: object = None,
+        headers: Optional[dict] = None,
     ) -> requests.Response:
         """Post of Restful API."""
         return requests.put(
@@ -97,4 +111,24 @@ class Settings(BaseSettings):
             timeout=TIMEOUT * 3,
             params=params,
             json=json,
+            data=data,
+            headers=headers,
+        )
+
+    def patch(  # noqa: PLR0913
+        self,
+        relative: str,
+        params: dict | None = None,
+        json: object = None,
+        data: object = None,
+        headers: Optional[dict] = None,
+    ) -> requests.Response:
+        """Patch of RESTful API."""
+        return requests.patch(
+            self.url(relative),
+            timeout=TIMEOUT,
+            params=params,
+            json=json,
+            data=data,
+            headers=headers,
         )

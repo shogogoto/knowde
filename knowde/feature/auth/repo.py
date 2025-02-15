@@ -18,36 +18,43 @@ class AccountDB(BaseUserDatabase[Account, UUID]):
 
     async def get(self, id: UUID) -> Account | None:  # noqa: A002
         """Get a single user by id."""
-        lb = LAccount.nodes.get_or_none(uid=id)
+        # print("---------get")
+        lb = LAccount.nodes.get_or_none(uid=id.hex)
         return None if lb is None else Account.from_lb(lb)
 
     async def get_by_email(self, email: str) -> Account | None:
         """Get a single user by email."""
+        # print("---------get by email")
         lb = LAccount.nodes.get_or_none(email=email)
-        if lb is None:
-            return None
-        return Account.from_lb(lb)
+        return None if lb is None else Account.from_lb(lb)
 
     async def get_by_oauth_account(self, oauth: str, account_id: str) -> Account | None:
         """Get a single user by OAuth account id."""
+        # print("---------get by oauth")
         lb = LAccount.nodes.get_or_none(oauth_name=oauth, account_id=account_id)
         return Account.from_lb(lb)
 
     async def create(self, create_dict: dict[str, Any]) -> Account:
         """Create a user."""
+        # print("------------ create")
         lb = LAccount(**create_dict).save()
         return Account.from_lb(lb)
 
     async def update(self, user: Account, update_dict: dict) -> Account:
         """Update a user."""
-        lb = user.tolabel()
+        # print("------------ update")
+        lb = LAccount.nodes.get(uid=user.id.hex)
         for key, value in update_dict.items():
+            if value is None:
+                continue
             setattr(lb, key, value)
         return Account.from_lb(lb.save())
 
     async def delete(self, user: Account) -> None:
         """Delete a user."""
-        LAccount.delete(uid=user.id)
+        # print("------------ delete")
+        lb = LAccount.nodes.get(uid=user.id.hex)
+        lb.delete()
 
     async def add_oauth_account(
         self: BaseUserDatabase,
@@ -55,6 +62,7 @@ class AccountDB(BaseUserDatabase[Account, UUID]):
         create_dict: dict[str, Any],
     ) -> UOAP:
         """Create an OAuth account and add it to the user."""
+        # print("------------ add oauth account")
 
     async def update_oauth_account(
         self: BaseUserDatabase,
@@ -63,3 +71,4 @@ class AccountDB(BaseUserDatabase[Account, UUID]):
         update_dict: dict[str, Any],
     ) -> UOAP:
         """Update an OAuth account on a user."""
+        # print("------------ update oauth account")
