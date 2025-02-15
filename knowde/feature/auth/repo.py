@@ -19,42 +19,43 @@ class AccountDB(BaseUserDatabase[Account, UUID]):
     async def get(self, id: UUID) -> Account | None:  # noqa: A002
         """Get a single user by id."""
         # print("---------get")
-        lb = LAccount.nodes.get_or_none(uid=id.hex)
+        lb = await LAccount.nodes.get_or_none(uid=id.hex)
         return None if lb is None else Account.from_lb(lb)
 
     async def get_by_email(self, email: str) -> Account | None:
         """Get a single user by email."""
         # print("---------get by email")
-        lb = LAccount.nodes.get_or_none(email=email)
+        lb = await LAccount.nodes.get_or_none(email=email)
         return None if lb is None else Account.from_lb(lb)
 
     async def get_by_oauth_account(self, oauth: str, account_id: str) -> Account | None:
         """Get a single user by OAuth account id."""
         # print("---------get by oauth")
-        lb = LAccount.nodes.get_or_none(oauth_name=oauth, account_id=account_id)
+        lb = await LAccount.nodes.get_or_none(oauth_name=oauth, account_id=account_id)
         return Account.from_lb(lb)
 
     async def create(self, create_dict: dict[str, Any]) -> Account:
         """Create a user."""
         # print("------------ create")
-        lb = LAccount(**create_dict).save()
+        lb = await LAccount(**create_dict).save()
         return Account.from_lb(lb)
 
     async def update(self, user: Account, update_dict: dict) -> Account:
         """Update a user."""
         # print("------------ update")
-        lb = LAccount.nodes.get(uid=user.id.hex)
+        lb = await LAccount.nodes.get(uid=user.id.hex)
         for key, value in update_dict.items():
             if value is None:
                 continue
             setattr(lb, key, value)
-        return Account.from_lb(lb.save())
+        lb = await lb.save()
+        return Account.from_lb(lb)
 
     async def delete(self, user: Account) -> None:
         """Delete a user."""
         # print("------------ delete")
-        lb = LAccount.nodes.get(uid=user.id.hex)
-        lb.delete()
+        lb = await LAccount.nodes.get(uid=user.id.hex)
+        await lb.delete()
 
     async def add_oauth_account(
         self: BaseUserDatabase,
