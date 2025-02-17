@@ -1,10 +1,10 @@
 """settings."""
 from __future__ import annotations
 
-from typing import Final, Optional
+from typing import Final, Optional, Protocol
 from urllib.parse import urljoin
 
-import requests
+import httpx
 from neomodel import config, db, install_all_labels
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -19,6 +19,7 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
         case_sensitive=True,  # 追加
+        # env_prefix=
     )
 
     NEO4J_URL: str
@@ -26,7 +27,7 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_SECRET: str
     SSO_PROT: int = 19419
     KNOWDE_URL: str
-    AUTH_SECRET: str = "SECRET"
+    KN_AUTH_SECRET: str = "SECRET"
     JWT_LIFETIME_SEC: int = 60 * 60 * 24  # 1 day
 
     def setup_db(self) -> None:
@@ -50,9 +51,9 @@ class Settings(BaseSettings):
         json: object = None,
         data: object = None,
         headers: Optional[dict] = None,
-    ) -> requests.Response:
+    ) -> httpx.Response:
         """Get of RESTful API."""
-        return requests.get(
+        return httpx.get(
             self.url(relative),
             timeout=TIMEOUT,
             params=params,
@@ -68,9 +69,9 @@ class Settings(BaseSettings):
         json: object = None,
         data: object = None,
         headers: Optional[dict] = None,
-    ) -> requests.Response:
+    ) -> httpx.Response:
         """Delete of Restful API."""
-        return requests.delete(
+        return httpx.delete(
             self.url(relative),
             timeout=TIMEOUT * 3,
             params=params,
@@ -86,9 +87,9 @@ class Settings(BaseSettings):
         json: object = None,
         data: object = None,
         headers: Optional[dict] = None,
-    ) -> requests.Response:
+    ) -> httpx.Response:
         """Post of Restful API."""
-        return requests.post(
+        return httpx.post(
             self.url(relative),
             timeout=TIMEOUT * 3,
             params=params,
@@ -104,9 +105,9 @@ class Settings(BaseSettings):
         json: object = None,
         data: object = None,
         headers: Optional[dict] = None,
-    ) -> requests.Response:
+    ) -> httpx.Response:
         """Post of Restful API."""
-        return requests.put(
+        return httpx.put(
             self.url(relative),
             timeout=TIMEOUT * 3,
             params=params,
@@ -122,9 +123,9 @@ class Settings(BaseSettings):
         json: object = None,
         data: object = None,
         headers: Optional[dict] = None,
-    ) -> requests.Response:
+    ) -> httpx.Response:
         """Patch of RESTful API."""
-        return requests.patch(
+        return httpx.patch(
             self.url(relative),
             timeout=TIMEOUT,
             params=params,
@@ -132,3 +133,18 @@ class Settings(BaseSettings):
             data=data,
             headers=headers,
         )
+
+
+class ReqProtocol(Protocol):
+    """APIメソッド."""
+
+    def __call__(  # noqa: PLR0913
+        self,
+        relative: str,
+        params: dict | None = None,
+        json: object = None,
+        data: object = None,
+        headers: Optional[dict] = None,
+    ) -> httpx.Response:
+        """Request."""
+        ...

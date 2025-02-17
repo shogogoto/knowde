@@ -19,7 +19,6 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator:
     """Set up DB etc."""
     s = Settings()
     s.setup_db()
-
     yield
     s.terdown_db()
 

@@ -892,6 +892,7 @@ files = [
 email-validator = ">=1.1.0,<2.3"
 fastapi = ">=0.65.2"
 fastapi-users-db-sqlalchemy = {version = ">=7.0.0", optional = true, markers = "extra == \"sqlalchemy\""}
+httpx-oauth = {version = ">=0.13", optional = true, markers = "extra == \"oauth\""}
 makefun = ">=1.11.2,<2.0.0"
 pwdlib = {version = "0.2.1", extras = ["argon2", "bcrypt"]}
 pyjwt = {version = "2.10.1", extras = ["crypto"]}
@@ -1240,6 +1241,21 @@ brotli = ["brotli", "brotlicffi"]
 cli = ["click (==8.*)", "pygments (==2.*)", "rich (>=10,<14)"]
 http2 = ["h2 (>=3,<5)"]
 socks = ["socksio (==1.*)"]
+
+[[package]]
+name = "httpx-oauth"
+version = "0.16.1"
+description = "Async OAuth client using HTTPX"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "httpx_oauth-0.16.1-py3-none-any.whl", hash = "sha256:2fcad82f80f28d0473a0fc4b4eda223dc952050af7e3a8c8781342d850f09fb5"},
+    {file = "httpx_oauth-0.16.1.tar.gz", hash = "sha256:7402f061f860abc092ea4f5c90acfc576a40bbb79633c1d2920f1ca282c296ee"},
+]
+
+[package.dependencies]
+httpx = ">=0.18"
 
 [[package]]
 name = "identify"
@@ -3882,4 +3898,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.1"
 python-versions = ">3.11.0,<3.14"
-content-hash = "73761c8a5331c784f4b76400ecb44faaa4e873380529f4c30f7c3a5362d6084b"
+content-hash = "f2dbe57a68a765521cf6721266c2355f3b71b69a459e903f78f021aeda7fc7ed"

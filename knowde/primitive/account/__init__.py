@@ -22,20 +22,38 @@ SysNetの所有者としてはOwnerと呼んだり
 """
 from __future__ import annotations
 
-from typing import Self
+from typing import Self, TypeVar
 from uuid import UUID  # noqa: TCH003
 
-from pydantic import BaseModel
+from neomodel import StructuredNode
+from pydantic import BaseModel, EmailStr
 
 from knowde.primitive.__core__.domain.domain import neolabel2model
 from knowde.primitive.account.repo import LAccount, LSSOAccount
 
+L = TypeVar("L", bound=StructuredNode)
 
-class Account(BaseModel):
+
+# class BaseMapper(BaseModel, Generic[L]):
+#     """Neomodel-pydantic mapper."""
+
+#     __label__: type[L]
+
+#     @classmethod
+#     def from_lb(cls, lb: L) -> Self:
+#         """Neomodel label to model."""
+#         return neolabel2model(cls, lb)
+
+#     def tolabel(self) -> L:
+#         """Model to neomodel label."""
+#         return self.__label__(**self.model_dump())
+
+
+class User(BaseModel):
     """UserProtocol[UUID]を満たす."""
 
     uid: UUID
-    email: str
+    email: EmailStr
     hashed_password: str
     is_active: bool
     is_superuser: bool = False
@@ -55,7 +73,7 @@ class Account(BaseModel):
         return LAccount(**self.model_dump())
 
 
-class SSOAccount(BaseModel):
+class Account(BaseModel):
     """OAuthAccountProtocol[UUID]を満たす."""
 
     uid: UUID
@@ -64,7 +82,7 @@ class SSOAccount(BaseModel):
     expires_at: int | None = None
     refresh_token: str | None = None
     account_id: str
-    account_email: str
+    account_email: EmailStr
 
     @property
     def id(self) -> UUID:  # noqa: D102
@@ -78,16 +96,16 @@ class SSOAccount(BaseModel):
         return LSSOAccount(**self.model_dump())
 
 
-class AccountWithSSO(BaseModel):
+class SSOUser(BaseModel):
     """User protocol including a list of OAuth accounts."""
 
     uid: UUID
-    email: str
+    email: EmailStr
     hashed_password: str
     is_active: bool
     is_superuser: bool
     is_verified: bool
-    oauth_accounts: list[SSOAccount]
+    oauth_accounts: list[Account]
 
     @property
     def id(self) -> UUID:  # noqa: D102

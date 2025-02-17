@@ -2,8 +2,9 @@
 from __future__ import annotations
 
 import uuid
-from typing import TYPE_CHECKING, AsyncGenerator
+from typing import AsyncGenerator
 
+from fastapi import Request  # noqa: TCH002
 from fastapi_users import BaseUserManager, FastAPIUsers, UUIDIDMixin
 from fastapi_users.authentication import (
     AuthenticationBackend,
@@ -14,25 +15,21 @@ from typing_extensions import override
 
 from knowde.feature.__core__.config import Settings
 from knowde.feature.auth.repo import AccountDB
-from knowde.primitive.account import Account
-
-if TYPE_CHECKING:
-    from fastapi import Request
-
+from knowde.primitive.account import User
 
 s = Settings()
 
 
-class UserManager(UUIDIDMixin, BaseUserManager[Account, uuid.UUID]):
+class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     """from fastapi-users."""
 
-    reset_password_token_secret = s.AUTH_SECRET
-    verification_token_secret = s.AUTH_SECRET
+    reset_password_token_secret = s.KN_AUTH_SECRET
+    verification_token_secret = s.KN_AUTH_SECRET
 
     @override
     async def on_after_register(
         self,
-        user: Account,
+        user: User,
         request: Request | None = None,
     ) -> None:
         print(f"User {user.id}[{user.email}] has registered.")  # noqa: T201
@@ -40,7 +37,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[Account, uuid.UUID]):
     @override
     async def on_after_forgot_password(
         self,
-        user: Account,
+        user: User,
         token: str,
         request: Request | None = None,
     ) -> None:
@@ -52,7 +49,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[Account, uuid.UUID]):
     @override
     async def on_after_request_verify(
         self,
-        user: Account,
+        user: User,
         token: str,
         request: Request | None = None,
     ) -> None:
@@ -74,7 +71,7 @@ def auth_backend() -> AuthenticationBackend:
         name="jwt",
         transport=BearerTransport(tokenUrl="auth/jwt/login"),
         get_strategy=lambda: JWTStrategy(
-            secret=s.AUTH_SECRET,
+            secret=s.KN_AUTH_SECRET,
             lifetime_seconds=s.JWT_LIFETIME_SEC,
         ),
     )
@@ -82,4 +79,4 @@ def auth_backend() -> AuthenticationBackend:
 
 def router_creator() -> FastAPIUsers:
     """Crreate users router creator."""
-    return FastAPIUsers[Account, uuid.UUID](get_user_manager, [auth_backend()])
+    return FastAPIUsers[User, uuid.UUID](get_user_manager, [auth_backend()])

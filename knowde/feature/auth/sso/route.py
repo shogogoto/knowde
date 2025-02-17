@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, Request, Response, status
 from fastapi.responses import RedirectResponse
 from fastapi_sso.sso.base import SSOBase
 from fastapi_sso.sso.google import GoogleSSO
+from httpx_oauth.clients.google import GoogleOAuth2
 from pydantic_core import Url
 
 from knowde.feature.__core__.config import Settings
@@ -84,3 +85,7 @@ def _content(msg: str) -> str:
             </body>
         </html>
     """
+
+
+s = Settings()
+GoogleOAuth2(s.GOOGLE_CLIENT_ID, s.GOOGLE_CLIENT_SECRET)

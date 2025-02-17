@@ -3,14 +3,13 @@ from __future__ import annotations
 
 import json
 import threading
-import webbrowser
 from typing import TYPE_CHECKING
 
 import click
 import uvicorn
 from fastapi import FastAPI
 
-from knowde.feature.__core__.config import Settings
+from knowde.feature.__core__.config import ReqProtocol, Settings
 from knowde.feature.auth.sso.route import (
     GoogleSSOResponse,
     response_queue,
@@ -22,68 +21,66 @@ if TYPE_CHECKING:
     from pathlib import Path
     from uuid import UUID
 
+    from httpx import Response
 
-def run_server(port: int) -> None:
-    """FastAPIサーバーを実行."""
-    app = FastAPI()
-    app.include_router(router_google_sso(port))
-    uvicorn.run(app, host="localhost", port=port)
+import webbrowser
+
+s = Settings()
 
 
 def browse_for_sso() -> GoogleSSOResponse:
     """ブラウザを開いてSSOアカウントのレスポンスを取得."""
-    port = Settings().SSO_PROT
+
+    def run_server(port: int) -> None:
+        """FastAPIサーバーを実行."""
+        app = FastAPI()
+        app.include_router(router_google_sso(port))
+        uvicorn.run(app, host="localhost", port=port)
+
+    port = s.SSO_PROT
     server_thread = threading.Thread(target=run_server, args=(port,), daemon=True)
     server_thread.start()
     webbrowser.open(f"http://localhost:{port}/google/login")
     return response_queue().get()
 
 
-def register_proc(email: str, password: str) -> None:
+def register_proc(
+    email: str,
+    password: str,
+    post: ReqProtocol = s.post,
+) -> Response:
     """アカウント登録."""
-    s = Settings()
-    res = s.post(
+    return post(
         "/auth/register",
         json={"email": email, "password": password},
     )
-    if res.ok:
-        click.echo("登録に成功しました")
-    else:
-        click.echo("登録に失敗しました")
-    click.echo(json.dumps(res.json(), indent=2))
 
 
-def login_proc(email: str, password: str) -> None:
+def login_proc(
+    email: str,
+    password: str,
+    post: ReqProtocol = s.post,
+) -> Response:
     """ログイン."""
-    s = Settings()
-    res = s.post(
+    res = post(
         "/auth/jwt/login",
         data={"username": email, "password": password},
     )
     p = auth_file()
-    if res.ok:
+    if res.is_success:
         p.write_text(json.dumps(res.json(), indent=2))
-        click.echo(f"'{p}'にトークンを保存しました.")
-    else:
-        click.echo(f"認証に失敗しました:{res.text}")
+    return res
 
 
-def logout_proc() -> None:
+def logout_proc(
+    post: ReqProtocol = s.post,
+) -> Response:
     """ログアウト."""
-    s = Settings()
-    res = s.post(
-        "/auth/jwt/logout",
-    )
     token = read_saved_token()
-    res = s.post(
+    return post(
         "/auth/jwt/logout",
         headers={"Authorization": f"Bearer {token}"},
     )
-    if res.ok:
-        click.echo("ログアウトしました.")
-    else:
-        click.echo("認証に失敗しました")
-    click.echo(res.text)
 
 
 def read_saved_token() -> str:
@@ -97,67 +94,55 @@ def read_saved_token() -> str:
 
 
 def change_me_proc(
-    email: str | None,
-    password: str | None,
-) -> None:
+    email: str | None = None,
+    password: str | None = None,
+    patch: ReqProtocol = s.patch,
+) -> Response:
     """トークンからユーザーを確認."""
-    s = Settings()
     change = {
         k: v for k, v in {"email": email, "password": password}.items() if v is not None
     }
 
     token = read_saved_token()
-    res = s.patch(
+    return patch(
         "/users/me",
         headers={"Authorization": f"Bearer {token}"},
         json=change,
     )
-    if res.ok:
-        click.echo(f"{list(change.keys())}を変更しました.")
-    else:
-        click.echo("変更に失敗しました.")
-        click.echo(res.text)
 
 
-def get_me_proc() -> None:
+def get_me_proc(
+    get: ReqProtocol = s.get,
+) -> Response:
     """ログインしたアカウント情報."""
     token = read_saved_token()
-    s = Settings()
-    res = s.get(
+    return get(
         "/users/me",
         headers={"Authorization": f"Bearer {token}"},
     )
-    if res.ok:
-        click.echo(json.dumps(res.json(), indent=2))
-    else:
-        click.echo("情報取得に失敗しました.")
-        click.echo(res.text)
 
 
-def get_user_proc(uid: UUID) -> None:
+def get_user_proc(
+    uid: UUID,
+    get: ReqProtocol = s.get,
+) -> Response:
     """ログインしたアカウント情報."""
     token = read_saved_token()
-    s = Settings()
-    res = s.get(
+    return get(
         f"/users/{uid}",
         headers={"Authorization": f"Bearer {token}"},
     )
-    if res.ok:
-        click.echo(json.dumps(res.json(), indent=2))
-    else:
-        click.echo("情報取得に失敗しました.")
-        click.echo(res.text)
 
 
-def change_user_proc(
+def change_user_proc(  # noqa: PLR0913
     uid: UUID,
     email: str | None,
     password: str | None,
     activate: bool | None,
     tobe_super: bool | None,
-) -> None:
+    patch: ReqProtocol = s.patch,
+) -> Response:
     """スーパーユーザーによるアカウント情報の変更."""
-    s = Settings()
     change = {
         k: v
         for k, v in {
@@ -170,31 +155,23 @@ def change_user_proc(
     }
 
     token = read_saved_token()
-    res = s.patch(
+    return patch(
         f"/users/{uid}",
         headers={"Authorization": f"Bearer {token}"},
         json=change,
     )
-    if res.ok:
-        click.echo(f"{list(change.keys())}を変更しました.")
-    else:
-        click.echo("変更に失敗しました.")
-        click.echo(res.text)
 
 
-def delete_user_proc(uid: UUID) -> None:
+def delete_user_proc(
+    uid: UUID,
+    delete: ReqProtocol = s.delete,
+) -> Response:
     """アカウント削除."""
-    s = Settings()
     token = read_saved_token()
-    res = s.delete(
+    return delete(
         f"/users/{uid}",
         headers={"Authorization": f"Bearer {token}"},
     )
-    if res.ok:
-        click.echo("アカウントを削除しました.")
-    else:
-        click.echo("削除に失敗しました.")
-    click.echo(res.text)
 
 
 def auth_file() -> Path:

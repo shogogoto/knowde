@@ -23,4 +23,5 @@ def pytest_runtest_teardown() -> None:
 def pytest_sessionfinish() -> None:
     """Pytest hook."""
     s = Settings()
+    clear_neo4j_database(db)
     s.terdown_db()
