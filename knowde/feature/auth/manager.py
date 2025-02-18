@@ -17,7 +17,7 @@ from typing_extensions import override
 
 from knowde.feature.__core__.config import Settings
 from knowde.feature.auth.repo import AccountDB
-from knowde.primitive.account import User
+from knowde.primitive.user import User
 
 s = Settings()
 

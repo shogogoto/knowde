@@ -3,14 +3,22 @@ from __future__ import annotations
 
 import json
 import webbrowser
+from enum import Enum
+from typing import TYPE_CHECKING, Final
+from uuid import UUID
 
 import click
 import httpx
+from fastapi_users import FastAPIUsers
+from httpx_oauth.clients.google import GoogleOAuth2
 
+from knowde.feature.__core__.config import Settings
 from knowde.feature.auth.cli.proc import auth_file
-from knowde.feature.auth.sso.route import (
-    GOOGLE_URL,
-)
+from knowde.feature.auth.manager import auth_backend, get_user_manager
+from knowde.primitive.user import User
+
+if TYPE_CHECKING:
+    from fastapi import APIRouter
 
 
 def browse_for_sso() -> None:
@@ -32,3 +40,26 @@ def browse_for_sso() -> None:
     p.write_text(js)
     click.echo(f"{p}を以下で上書きしました")
     click.echo(js)
+
+
+class Provider(Enum):
+    """Single Sign on provider."""
+
+    GOOGLE = "google"
+
+
+GOOGLE_URL: Final = "/google"
+
+
+def router_google_oauth() -> APIRouter:
+    """For fastapi-users."""
+    s = Settings()
+    rc = FastAPIUsers[User, UUID](get_user_manager, [auth_backend()])
+    return rc.get_oauth_router(
+        GoogleOAuth2(s.GOOGLE_CLIENT_ID, s.GOOGLE_CLIENT_SECRET),
+        auth_backend(),
+        s.KN_AUTH_SECRET,
+        # redirect_url="/google/callback",
+        # associate_by_email=True,
+        # is_verified_by_default=True,
+    )

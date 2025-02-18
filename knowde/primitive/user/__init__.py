@@ -29,7 +29,8 @@ from neomodel import StructuredNode
 from pydantic import BaseModel, EmailStr, Field
 
 from knowde.primitive.__core__.domain.domain import neolabel2model
-from knowde.primitive.account.repo import LAccount, LUser
+
+from .repo import LAccount, LUser
 
 L = TypeVar("L", bound=StructuredNode)
 

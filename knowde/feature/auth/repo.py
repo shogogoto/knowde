@@ -8,8 +8,8 @@ from fastapi_users.db import (
     BaseUserDatabase,
 )
 
-from knowde.primitive.account import Account, User
-from knowde.primitive.account.repo import LAccount, LUser
+from knowde.primitive.user import Account, User
+from knowde.primitive.user.repo import LAccount, LUser
 
 
 class AccountDB(BaseUserDatabase[User, UUID]):

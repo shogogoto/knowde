@@ -40,7 +40,6 @@ passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 fastapi-users = {extras = ["oauth", "sqlalchemy"], version = "^14.0.1"}
 authlib = "^1.4.1"
 pydantic-settings = "^2.7.1"
-fastapi-sso = "^0.17.0"
 aiohttp = "^3.11.12"
 [tool.poetry.group.dev.dependencies]
 pytest = "8.3.4"
