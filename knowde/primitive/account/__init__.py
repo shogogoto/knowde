@@ -22,61 +22,54 @@ SysNetの所有者としてはOwnerと呼んだり
 """
 from __future__ import annotations
 
-from typing import Self, TypeVar
+from typing import Generic, Self, TypeVar
 from uuid import UUID  # noqa: TCH003
 
 from neomodel import StructuredNode
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 from knowde.primitive.__core__.domain.domain import neolabel2model
-from knowde.primitive.account.repo import LAccount, LSSOAccount
+from knowde.primitive.account.repo import LAccount, LUser
 
 L = TypeVar("L", bound=StructuredNode)
 
 
-# class BaseMapper(BaseModel, Generic[L]):
-#     """Neomodel-pydantic mapper."""
+class BaseMapper(BaseModel, Generic[L]):
+    """Neomodel-pydantic mapper."""
 
-#     __label__: type[L]
+    __label__: type[L]
 
-#     @classmethod
-#     def from_lb(cls, lb: L) -> Self:
-#         """Neomodel label to model."""
-#         return neolabel2model(cls, lb)
+    @classmethod
+    def from_lb(cls, lb: L) -> Self:
+        """Neomodel label to model."""
+        return neolabel2model(cls, lb)
 
-#     def tolabel(self) -> L:
-#         """Model to neomodel label."""
-#         return self.__label__(**self.model_dump())
+    def tolabel(self) -> L:
+        """Model to neomodel label."""
+        return self.__label__(**self.model_dump())
 
 
-class User(BaseModel):
+class User(BaseMapper):
     """UserProtocol[UUID]を満たす."""
 
+    __label__ = LUser
     uid: UUID
     email: EmailStr
     hashed_password: str
     is_active: bool
     is_superuser: bool = False
     is_verified: bool = False
+    oauth_accounts: list[Account] = Field(default_factory=list)
 
     @property
     def id(self) -> UUID:  # noqa: D102
         return self.uid
 
-    @classmethod
-    def from_lb(cls, lb: LAccount) -> Self:
-        """Neomodel label to model."""
-        return neolabel2model(cls, lb)
 
-    def tolabel(self) -> LAccount:
-        """Model to neomodel label."""
-        return LAccount(**self.model_dump())
-
-
-class Account(BaseModel):
+class Account(BaseMapper):
     """OAuthAccountProtocol[UUID]を満たす."""
 
-    uid: UUID
+    __label__ = LAccount
     oauth_name: str
     access_token: str
     expires_at: int | None = None
@@ -85,28 +78,5 @@ class Account(BaseModel):
     account_email: EmailStr
 
     @property
-    def id(self) -> UUID:  # noqa: D102
-        return self.uid
-
-    @classmethod
-    def from_lb(cls, lb: LSSOAccount) -> Self:  # noqa: D102
-        return neolabel2model(cls, lb)
-
-    def tolabel(self) -> LSSOAccount:  # noqa: D102
-        return LSSOAccount(**self.model_dump())
-
-
-class SSOUser(BaseModel):
-    """User protocol including a list of OAuth accounts."""
-
-    uid: UUID
-    email: EmailStr
-    hashed_password: str
-    is_active: bool
-    is_superuser: bool
-    is_verified: bool
-    oauth_accounts: list[Account]
-
-    @property
-    def id(self) -> UUID:  # noqa: D102
-        return self.uid
+    def id(self) -> str:  # noqa: D102
+        return self.account_id

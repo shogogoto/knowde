@@ -1,17 +1,22 @@
 """googl sso router."""
-from functools import cache
-from queue import Queue
-from typing import Annotated, TypedDict
+from enum import Enum
+from typing import Final, TypedDict
+from uuid import UUID
 
-from fastapi import APIRouter, Depends, Request, Response, status
-from fastapi.responses import RedirectResponse
-from fastapi_sso.sso.base import SSOBase
-from fastapi_sso.sso.google import GoogleSSO
+from fastapi import APIRouter
+from fastapi_users import FastAPIUsers
 from httpx_oauth.clients.google import GoogleOAuth2
 from pydantic_core import Url
 
 from knowde.feature.__core__.config import Settings
-from knowde.feature.auth.sso import Provider
+from knowde.feature.auth.manager import auth_backend, get_user_manager
+from knowde.primitive.account import User
+
+
+class Provider(Enum):
+    """Single Sign on provider."""
+
+    GOOGLE = "google"
 
 
 class GoogleSSOResponse(TypedDict):
@@ -26,66 +31,18 @@ class GoogleSSOResponse(TypedDict):
     provider: Provider
 
 
-def router_google_sso(port: int = 8000) -> APIRouter:
-    """GoogleのSingle sign on用."""
-    router_sso = APIRouter(tags=["Google SSO"])
-    callurl = "/google/callback"
+GOOGLE_URL: Final = "/google"
+
+
+def router_google_oauth() -> APIRouter:
+    """For fastapi-users."""
     s = Settings()
-
-    def google_sso() -> GoogleSSO:
-        """For depends."""
-        return GoogleSSO(
-            s.GOOGLE_CLIENT_ID,
-            s.GOOGLE_CLIENT_SECRET,
-            f"http://localhost:{port}{callurl}",
-        )
-
-    @router_sso.get("/google/login")
-    async def google_login(
-        sso: Annotated[SSOBase, Depends(google_sso)],
-    ) -> RedirectResponse:
-        """Google login."""
-        async with sso:
-            return await sso.get_login_redirect()
-
-    @router_sso.get(callurl)
-    async def google_callback(
-        request: Request,
-        sso: Annotated[SSOBase, Depends(google_sso)],
-    ) -> Response:
-        """Google callback."""
-        async with sso:
-            user = await sso.verify_and_process(request)
-            if user is None:
-                return Response(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    content=_content("認証失敗orz"),
-                    media_type="text/html",
-                )
-            response_queue().put(user)
-            return Response(
-                content=_content("認証成功！"),  # noqa: RUF001
-                media_type="text/html",
-            )
-
-    return router_sso
-
-
-@cache
-def response_queue() -> Queue:
-    """レスポンスを保存するためのグローバルキュー."""
-    return Queue()
-
-
-def _content(msg: str) -> str:
-    return f"""
-        <html>
-            <body>
-                <h2>{msg}</h2>
-            </body>
-        </html>
-    """
-
-
-s = Settings()
-GoogleOAuth2(s.GOOGLE_CLIENT_ID, s.GOOGLE_CLIENT_SECRET)
+    rc = FastAPIUsers[User, UUID](get_user_manager, [auth_backend()])
+    return rc.get_oauth_router(
+        GoogleOAuth2(s.GOOGLE_CLIENT_ID, s.GOOGLE_CLIENT_SECRET),
+        auth_backend(),
+        s.KN_AUTH_SECRET,
+        # redirect_url="/google/callback",
+        # associate_by_email=True,
+        # is_verified_by_default=True,
+    )

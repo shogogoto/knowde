@@ -6,16 +6,19 @@ from neomodel import (
     DateTimeProperty,
     EmailProperty,
     IntegerProperty,
+    RelationshipFrom,
+    RelationshipTo,
     StringProperty,
     StructuredNode,
     UniqueIdProperty,
+    ZeroOrOne,
 )
 
 
-class LAccount(StructuredNode):
+class LUser(StructuredNode):
     """Neo4j label."""
 
-    __label__ = "Account"
+    __label__ = "User"
     uid = UniqueIdProperty()
     email = EmailProperty()
     hashed_password = StringProperty()
@@ -24,15 +27,18 @@ class LAccount(StructuredNode):
     is_superuser = BooleanProperty(default=False)
     created = DateTimeProperty(default_now=True)
 
+    accounts = RelationshipTo("LAccount", "OAUTH")
 
-class LSSOAccount(StructuredNode):
+
+class LAccount(StructuredNode):
     """Neo4j label."""
 
-    __label__ = "SSOAccount"
-    uid = UniqueIdProperty()
+    __label__ = "Account"
     oauth_name = StringProperty()
     access_token = StringProperty()
     expires_at = IntegerProperty()
     refresh_token = StringProperty()
     account_id = StringProperty()
     account_email = EmailProperty()
+
+    user = RelationshipFrom("LUser", "OAUTH", cardinality=ZeroOrOne)

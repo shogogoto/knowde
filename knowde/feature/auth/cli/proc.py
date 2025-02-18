@@ -2,19 +2,11 @@
 from __future__ import annotations
 
 import json
-import threading
 from typing import TYPE_CHECKING
 
 import click
-import uvicorn
-from fastapi import FastAPI
 
 from knowde.feature.__core__.config import ReqProtocol, Settings
-from knowde.feature.auth.sso.route import (
-    GoogleSSOResponse,
-    response_queue,
-    router_google_sso,
-)
 from knowde.primitive.fs import dir_path
 
 if TYPE_CHECKING:
@@ -23,25 +15,8 @@ if TYPE_CHECKING:
 
     from httpx import Response
 
-import webbrowser
 
 s = Settings()
-
-
-def browse_for_sso() -> GoogleSSOResponse:
-    """ブラウザを開いてSSOアカウントのレスポンスを取得."""
-
-    def run_server(port: int) -> None:
-        """FastAPIサーバーを実行."""
-        app = FastAPI()
-        app.include_router(router_google_sso(port))
-        uvicorn.run(app, host="localhost", port=port)
-
-    port = s.SSO_PROT
-    server_thread = threading.Thread(target=run_server, args=(port,), daemon=True)
-    server_thread.start()
-    webbrowser.open(f"http://localhost:{port}/google/login")
-    return response_queue().get()
 
 
 def register_proc(

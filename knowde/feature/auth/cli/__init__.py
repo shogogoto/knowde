@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING
 
 import click
 
+from knowde.feature.auth.cli.proc import get_me_proc
+
 if TYPE_CHECKING:
     from uuid import UUID
 
@@ -17,12 +19,14 @@ def user_cli() -> None:
     """ユーザー系."""
 
 
-@user_cli.command("sso")
-def ssologin_cmd() -> None:
-    """Login."""
-    from .proc import browse_for_sso
+@user_cli.command("google-sso")
+def sso_cmd() -> None:
+    """Googleによるシングルサインオン."""
+    from knowde.feature.auth.sso import browse_for_sso
 
-    _user = browse_for_sso()
+    browse_for_sso()
+    res = get_me_proc()
+    echo_response(res, "Googleによるアカウント作成とログイン")
 
 
 @user_cli.command("register")

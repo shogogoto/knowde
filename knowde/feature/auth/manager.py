@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import uuid
+from functools import cache
+from queue import Queue
 from typing import AsyncGenerator
 
 from fastapi import Request  # noqa: TCH002
@@ -20,11 +22,29 @@ from knowde.primitive.account import User
 s = Settings()
 
 
+@cache
+def response_queue() -> Queue:
+    """レスポンスを保存するためのグローバルキュー."""
+    return Queue()
+
+
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     """from fastapi-users."""
 
     reset_password_token_secret = s.KN_AUTH_SECRET
     verification_token_secret = s.KN_AUTH_SECRET
+
+    # @override
+    # async def on_after_login(
+    #     self,
+    #     user: User,
+    #     request: Request | None = None,
+    #     response: Response | None = None,
+    # ) -> None:
+    #     """SSOのブラウザからのレスポンスを取得."""
+    #     print("A" * 100)
+    #     if response is not None:
+    #         response_queue().put(response.body)
 
     @override
     async def on_after_register(

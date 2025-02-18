@@ -44,12 +44,10 @@ class Settings(BaseSettings):
         """Self server url."""
         return urljoin(self.KNOWDE_URL, relative)
 
-    def get(  # noqa: PLR0913
+    def get(
         self,
         relative: str,
         params: dict | None = None,
-        json: object = None,
-        data: object = None,
         headers: Optional[dict] = None,
     ) -> httpx.Response:
         """Get of RESTful API."""
@@ -57,8 +55,6 @@ class Settings(BaseSettings):
             self.url(relative),
             timeout=TIMEOUT,
             params=params,
-            json=json,
-            data=data,
             headers=headers,
         )
 
