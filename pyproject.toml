@@ -30,17 +30,12 @@ regex = "^2024.11.6"
 numpy = "^2.2.2"
 scipy = "^1.15.1"
 taskipy = "^1.14.1"
-python-dateutil = "^2.9.0.post0"
 japanera = "^2.1.2"
 intervaltree = "^3.1.0"
 edtf = "^5.0.0"
 python-multipart = "^0.0.20"
-python-jose = {extras = ["cryptography"], version = "^3.3.0"}
-passlib = {extras = ["bcrypt"], version = "^1.7.4"}
-fastapi-users = {extras = ["oauth", "sqlalchemy"], version = "^14.0.1"}
-authlib = "^1.4.1"
 pydantic-settings = "^2.7.1"
-aiohttp = "^3.11.12"
+fastapi-users = {extras = ["oauth"], version = "^14.0.1"}
 [tool.poetry.group.dev.dependencies]
 pytest = "8.3.4"
 pre-commit = "^3.5.0"
@@ -77,9 +72,9 @@ ptw        = "ptw -- --ff --testmon" # ispytest-watch
 lint       = "ruff check ."
 lintfix    = "ruff . --fix"
 pre-commit = "pre-commit install"
-dev        = "fastapi dev knowde/feature/api.py --reload"
+dev        = "fastapi dev knowde/feature/api/__init__.py --reload"
 # serve      = "uvicorn knowde:api --reload --host 0.0.0.0 --port 8000"
-serve      = "fastapi run knowde/feature/api.py"
+serve      = "fastapi run knowde/feature/api/__init__.py"
 build      = "pyinstaller --noupx --optimize 1 --collect-all knowde --workpath ./standalone/build --specpath ./standalone --distpath ./standalone/dist  --onefile --name kn knowde/feature/cli/__init__.py"
 compile    = "nuitka --standalone --follow-imports --onefile --product-name=kn knowde/feature/cli.py"
 
