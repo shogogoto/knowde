@@ -2,15 +2,12 @@
 from __future__ import annotations
 
 from textwrap import indent
-from typing import TYPE_CHECKING
 
 import click
 from pydantic import BaseModel, Field
 
 from knowde.primitive.__core__.domain import APIReturn, Composite
-
-if TYPE_CHECKING:
-    from knowde.tmp.definition.domain.domain import Definition
+from knowde.tmp.definition.domain.domain import Definition  # noqa: TCH001
 
 
 def view_detail(composite: Composite[Definition]) -> str:

@@ -2,14 +2,12 @@
 from __future__ import annotations
 
 from textwrap import indent
-from typing import TYPE_CHECKING, Self
+from typing import Self
 
 from pydantic import BaseModel, Field
 
 from knowde.primitive.__core__.domain import APIReturn, Entity
-
-if TYPE_CHECKING:
-    from knowde.tmp.deduction.proposition.domain import Proposition
+from knowde.tmp.deduction.proposition.domain import Proposition  # noqa: TCH001
 
 
 class Deduction(Entity, frozen=True):
