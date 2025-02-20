@@ -18,14 +18,12 @@ class AccountDB(BaseUserDatabase[User, UUID]):
     async def get(self, id: UUID) -> User | None:  # noqa: A002
         """Get a single user by id."""
         # print("---------get")
-        lb = LUser.nodes.get_or_none(uid=id.hex)
-        return None if lb is None else User.from_lb(lb)
+        return User.get_or_none(uid=id.hex)
 
     async def get_by_email(self, email: str) -> User | None:
         """Get a single user by email."""
         # print("---------get by email")
-        lb = LUser.nodes.get_or_none(email=email)
-        return None if lb is None else User.from_lb(lb)
+        return User.get_or_none(email=email)
 
     async def get_by_oauth_account(
         self,
@@ -74,7 +72,6 @@ class AccountDB(BaseUserDatabase[User, UUID]):
         account = Account.model_validate(create_dict)
         la = account.tolabel().save()
         lu = LUser.nodes.get(uid=user.id.hex)
-        lu.refresh()
         lu.accounts.connect(la)
         return user
 

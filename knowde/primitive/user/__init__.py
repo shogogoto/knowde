@@ -35,7 +35,7 @@ class User(BaseMapper):
     """UserProtocol[UUID]を満たす."""
 
     __label__ = LUser
-    uid: UUID
+    uid: UUID | None = None
     email: EmailStr
     hashed_password: str
     is_active: bool

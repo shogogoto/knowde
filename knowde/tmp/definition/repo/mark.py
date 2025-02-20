@@ -16,7 +16,7 @@ from knowde.tmp.definition.domain.mark import (
 )
 from knowde.tmp.definition.repo.errors import UndefinedMarkedTermError
 from knowde.tmp.definition.sentence import LSentence2, SentenceUtil
-from knowde.tmp.definition.term import LTerm, TermUtil
+from knowde.tmp.definition.term import LTerm2, TermUtil
 from knowde.tmp.definition.term.domain import Term
 
 if TYPE_CHECKING:
@@ -43,7 +43,7 @@ class RelMark(RelBase):
 
 RelMarkUtil = RelUtil(
     t_source=LSentence2,
-    t_target=LTerm,
+    t_target=LTerm2,
     name="MARK",
     t_rel=RelMark,
 )

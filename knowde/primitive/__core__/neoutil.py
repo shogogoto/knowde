@@ -8,24 +8,6 @@ from pydantic import BaseModel
 
 from knowde.primitive.__core__.domain.domain import neolabel2model
 
-T = TypeVar("T")
-
-
-class LabelClassNameError(Exception):
-    """neomodel labelクラスはLから名前を始めるべし."""
-
-
-def auto_label(cls: T) -> T:
-    """LClassNameからラベル名を設定."""
-    if cls.__name__.startswith("L"):
-        cls.__label__ = cls.__name__[1:]
-
-    else:
-        msg = "クラス名の先頭をLにしてください"
-        raise LabelClassNameError(msg, cls.__name__)
-    return cls
-
-
 L = TypeVar("L", bound=StructuredNode)
 
 
@@ -42,3 +24,9 @@ class BaseMapper(BaseModel, Generic[L]):
     def tolabel(self) -> L:
         """Model to neomodel label."""
         return self.__label__(**self.model_dump())
+
+    @classmethod
+    def get_or_none(cls, **kwargs: dict) -> Self | None:
+        """Shortcut."""
+        lb = cls.__label__.nodes.get_or_none(**kwargs)
+        return None if lb is None else cls.from_lb(lb)

@@ -14,13 +14,11 @@ from neomodel import (
     ZeroOrOne,
 )
 
-from knowde.primitive.__core__.neoutil import auto_label
 
-
-@auto_label
 class LUser(StructuredNode):
     """Neo4j label."""
 
+    __label__ = "User"
     uid = UniqueIdProperty()
     email = EmailProperty()
     hashed_password = StringProperty()
@@ -32,10 +30,10 @@ class LUser(StructuredNode):
     accounts = RelationshipTo("LAccount", "OAUTH")
 
 
-@auto_label
 class LAccount(StructuredNode):
     """Neo4j label."""
 
+    __label__ = "Account"
     oauth_name = StringProperty()
     access_token = StringProperty()
     expires_at = IntegerProperty()
