@@ -107,7 +107,7 @@ class EdgeType(Enum):
     @cached_property
     def arrow(self) -> str:
         """cypherの矢印表現."""
-        return f"-[{self.name}]->"
+        return f"-[:{self.name}]->"
 
 
 @cache
