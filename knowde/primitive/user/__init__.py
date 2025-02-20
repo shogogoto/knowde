@@ -22,32 +22,13 @@ SysNetの所有者としてはOwnerと呼んだり
 """
 from __future__ import annotations
 
-from typing import Generic, Self, TypeVar
 from uuid import UUID  # noqa: TCH003
 
-from neomodel import StructuredNode
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import EmailStr, Field
 
-from knowde.primitive.__core__.domain.domain import neolabel2model
+from knowde.primitive.__core__.neoutil import BaseMapper
 
 from .repo import LAccount, LUser
-
-L = TypeVar("L", bound=StructuredNode)
-
-
-class BaseMapper(BaseModel, Generic[L]):
-    """Neomodel-pydantic mapper."""
-
-    __label__: type[L]
-
-    @classmethod
-    def from_lb(cls, lb: L) -> Self:
-        """Neomodel label to model."""
-        return neolabel2model(cls, lb)
-
-    def tolabel(self) -> L:
-        """Model to neomodel label."""
-        return self.__label__(**self.model_dump())
 
 
 class User(BaseMapper):

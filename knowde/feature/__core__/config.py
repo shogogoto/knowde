@@ -5,7 +5,7 @@ from typing import Final, Optional, Protocol
 from urllib.parse import urljoin
 
 import httpx
-from neomodel import config, db, install_all_labels
+from neomodel import config, db
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 TIMEOUT: Final = 3.0
@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     def setup_db(self) -> None:
         """DB設定."""
         config.DATABASE_URL = self.NEO4J_URL
-        install_all_labels()
+        db.install_all_labels()
 
     def terdown_db(self) -> None:
         """DB切断."""
