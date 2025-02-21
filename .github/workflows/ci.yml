@@ -13,6 +13,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
+        neo4j-version: ["5.20"]
         include:
           - python-version: "3.11"
             wait_sec: 0 # データベースへの操作が衝突してたまにテスト失敗するのを防ぎたい
@@ -20,7 +21,6 @@ jobs:
             wait_sec: 1
           - python-version: "3.13"
             wait_sec: 2
-        neo4j-version: ["5.20"]
     services:
       db-${{ matrix.python-version }}:
         image: neo4j:${{ matrix.neo4j-version }}
