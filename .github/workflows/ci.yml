@@ -13,7 +13,13 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python-version: ["3.11", "3.12", "3.13"]
+        include:
+          - python-version: "3.11"
+            wait_sec: 0 # データベースへの操作が衝突してたまにテスト失敗するのを防ぎたい
+          - python-version: "3.12"
+            wait_sec: 1
+          - python-version: "3.13"
+            wait_sec: 2
         neo4j-version: ["5.20"]
     services:
       db-${{ matrix.python-version }}:
@@ -21,8 +27,7 @@ jobs:
         env:
           NEO4J_AUTH: neo4j/passwordneo
         ports:
-          - ${{ matrix.python-version == '3.11' && '7687:7687' || matrix.python-version == '3.12' && '7688:7687' || '7689:7687' }}
-          # - 7687:7687
+          - 7687:7687
 
     steps:
       - uses: actions/checkout@v4
@@ -48,14 +53,13 @@ jobs:
           pip install poetry
           poetry install
           echo "$HOME/.local/bin" >> $GITHUB_PATH
-      # - name: Install Dependencies
-      #   run: poetry install
 
       - name: Test
-        run: poetry run task test
+        run: |
+          sleep ${{ matrix.wait_sec }}
+          poetry run task test
         env:
-          NEO4J_URL: ${{ matrix.python-version == '3.11' && 'bolt://neo4j:passwordneo@localhost:7687' || matrix.python-version == '3.12' && 'bolt://neo4j:passwordneo@localhost:7688' || 'bolt://neo4j:passwordneo@localhost:7689' }}
-          # NEO4J_URL: bolt://neo4j:passwordneo@localhost:7687
+          NEO4J_URL: bolt://neo4j:passwordneo@localhost:7687
 
       - name: Run linter
         run: poetry run task lint
