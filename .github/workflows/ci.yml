@@ -15,17 +15,14 @@ jobs:
       matrix:
         include:
           - python-version: "3.11"
-            neo4j-version: "5.20"
             wait_sec: 0 # データベースへの操作が衝突してたまにテスト失敗するのを防ぎたい
           - python-version: "3.12"
-            neo4j-version: "5.20"
             wait_sec: 1
           - python-version: "3.13"
-            neo4j-version: "5.20"
             wait_sec: 2
     services:
       db-${{ matrix.python-version }}:
-        image: neo4j:${{ matrix.neo4j-version }}
+        image: neo4j:5.20
         env:
           NEO4J_AUTH: neo4j/passwordneo
         ports:
@@ -58,7 +55,7 @@ jobs:
 
       - name: Test
         run: |
-          sleep ${{ matrix.wait_sec }}
+          sleep ${{ matrix.wait_sec }} * 5
           poetry run task test
         env:
           NEO4J_URL: bolt://neo4j:passwordneo@localhost:7687
