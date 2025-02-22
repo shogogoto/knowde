@@ -4,6 +4,7 @@ from __future__ import annotations
 import time
 from datetime import date, datetime
 from functools import cache
+from itertools import pairwise
 from typing import TYPE_CHECKING, Any
 
 import networkx as nx
@@ -96,8 +97,8 @@ def node2q(n: SysNode, nvars: dict[SysNode, str]) -> str | list[str] | None:
         case Term():
             ret = []
             for i, name in enumerate(n.names):
-                var = f"{var}_{i}" if i > 0 else var
-                c = f"CREATE ({var}:{t2labels(LTerm)} {{val: '{name}'}})"
+                ivar = f"{var}_{i}" if i > 0 else var
+                c = f"CREATE ({ivar}:{t2labels(LTerm)} {{val: '{name}'}})"
                 ret.append(c)
             return ret
         case str() | Duplicable():
@@ -122,7 +123,7 @@ def reconnect_root_below(sn: SysNet, varnames: dict[SysNode, str]) -> str | None
         case 1:
             r = varnames[sn.root]
             b = varnames[belows[0]]
-            return f"CREATE ({r}) {EdgeType.BELOW.arrow} ({b})"
+            return f"CREATE ({r}) -[:{EdgeType.BELOW.arrow}]-> ({b})"
         case _:
             raise ValueError
 
@@ -130,11 +131,23 @@ def reconnect_root_below(sn: SysNet, varnames: dict[SysNode, str]) -> str | None
 def rel2q(
     edge: tuple[SysNode, SysNode, dict[str, EdgeType]],
     varnames: dict[SysNode, str],
-) -> str | list[str]:
+) -> str | list[str] | None:
     """edgeからcreate可能な文字列に変換."""
     u, v, d = edge
     t = d["type"]
-    return f"CREATE ({varnames[u]}) {t.arrow} ({varnames[v]})"
+    match t:
+        case EdgeType.DEF:
+            if not isinstance(u, Term):
+                raise TypeError
+            uv = varnames[u]
+            p = f"{{ alias: '{u.alias}' }}" if u.alias else ""
+            ret = [f"CREATE ({uv}) -[:{t.arrow} {p}]-> ({varnames[v]})"]
+            names = [f"{uv}_{i}" if i > 0 else uv for i, name in enumerate(u.names)]
+            ret += [f"CREATE ({x}) -[:TERM]-> ({y})" for x, y in pairwise(names)]
+            return ret
+        case _:
+            pass
+    return f"CREATE ({varnames[u]}) -[:{t.arrow}]-> ({varnames[v]})"
 
 
 def sysnet2cypher(sn: SysNet) -> str:
@@ -148,15 +161,11 @@ def sysnet2cypher(sn: SysNet) -> str:
 
     q_root = [f"CREATE ({root_var}:{t2labels(LResource)} {resource_props(sn)})"]
     q_create = q_root + [node2q(n, varnames) for n in nodes]
-    q_rel = []
     g = nx.subgraph_view(
         sn.g,
         filter_node=lambda n: n not in resource_info(sn),
     )
-    for u, v, d in g.edges.data():
-        t: EdgeType = d["type"]
-        q = f"CREATE ({varnames[u]}) {t.arrow} ({varnames[v]})"
-        q_rel.append(q)
+    q_rel = [rel2q(e, varnames) for e in g.edges.data()]
     q_rel.append(reconnect_root_below(sn, varnames))
     qs = collapse([*q_create, "", *q_rel])
     return "\n".join([q for q in qs if q is not None])

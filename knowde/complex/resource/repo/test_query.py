@@ -52,28 +52,32 @@ CLI find して ファイルパスの構造をそのままsync(永続化)
 """
 
 
+
 import pytest
 from neomodel import db
 
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.tree2net import parse2net
 from knowde.complex.resource.repo import sysnet2cypher
+from knowde.complex.resource.repo.labels import LResource
 
 
 @pytest.fixture()
 def sn() -> SysNet:  # noqa: D103
+    # b{A}b が自身にRESOLVED関係を持っていて謎
     _s = r"""
         # h1
             @author nanashi
             @author taro tanaka
             @published 1919
             A: df
-            P1 |B, Bbb: b{A}b
+            P1 |B: b{A}b
             C{B}: ccc
             D: d{CB}d
         ## h2
             P{D}: ppp
             Q: qqq
+            c{A}c
             X:
         ### h31
         ### h32
@@ -81,9 +85,9 @@ def sn() -> SysNet:  # noqa: D103
     return parse2net(_s)
 
 
-def test_save(sn: SysNet) -> None:
-    """永続化."""
+def test_save_and_restore(sn: SysNet) -> None:
+    """永続化して元に戻す."""
     q = sysnet2cypher(sn)
-    # print(q)
     db.cypher_query(q)
+    assert LResource.nodes.get(title="# h1")
     # sleep(10000)

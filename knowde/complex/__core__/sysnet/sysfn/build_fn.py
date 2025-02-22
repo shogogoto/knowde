@@ -45,5 +45,7 @@ def add_resolved_edges(g: nx.DiGraph, resolver: MarkResolver) -> None:
             termtree.update(t_resolved)
         for t in termtree:
             n = get_ifdef(g, t)
+            if s == n.sentence:  # 応急処置、何かがおかしい
+                continue
             if isinstance(n, Def):
                 EdgeType.RESOLVED.add_edge(g, s, n.sentence)
