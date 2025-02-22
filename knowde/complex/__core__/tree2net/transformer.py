@@ -1,5 +1,5 @@
 """tree変換."""
-
+from __future__ import annotations
 
 from lark import Token, Transformer
 
@@ -11,9 +11,12 @@ from knowde.primitive.template import Template
 from knowde.primitive.term import Term
 
 
-def _stoken(tok: Token) -> Token:
+def _stoken(tok: Token, erase: str | None = None) -> Token:
     """Strip token."""
-    return Token(type=tok.type, value=tok.strip())
+    v = tok
+    if erase:
+        v = v.replace(erase, "")
+    return Token(type=tok.type, value=v.strip())
 
 
 class TSysArg(Transformer):
@@ -37,6 +40,11 @@ class TSysArg(Transformer):
     DUPLICABLE = lambda _, _tok: Duplicable(n=_stoken(_tok))  # noqa: E731
     QUOTERM = lambda _, _tok: _stoken(_tok)  # noqa: E731
     TIME = lambda _, _tok: Duplicable(n=_stoken(_tok))  # noqa: E731
+
+    # Resources
+    AUTHOR = lambda _, _tok: _stoken(_tok, "@author")  # noqa: E731
+    PUBLISHED = lambda _, _tok: _stoken(_tok, "@published")  # noqa: E731
+    URL = lambda _, _tok: _stoken(_tok, "@url")  # noqa: E731
 
     def ONELINE(self, tok: Token) -> SysArg:  # noqa: N802 D102
         v = "".join(tok.split("   "))  # 適当な\nに対応する空白

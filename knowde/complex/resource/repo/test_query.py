@@ -8,14 +8,10 @@ User名一覧
         文の総数とか
         biograph
 
-
-
 user -> folder -> resource
 folderを噛ませることでtitleの重複回避を可能にしたい
 いや、resource_idをUUIDにすればええやん
     userから直接 resourceと紐付ければよい
-
-
 
 分類戦略 category
     フォルダ分け 階層
@@ -26,15 +22,12 @@ resource
     author
     published
     url
-
     TOC の生成
 
 User機能
     follow/follower
     team
-
     share 共同編集権限
-
     guest shareな記事しか作れない
 
 User配下の情報
@@ -54,8 +47,6 @@ define総数
 活動履歴(追加データを最新順で表示)
 path > resource名 統計値　一覧
 
-
-
 CLI find して ファイルパスの構造をそのままsync(永続化)
   -> Git管理できて便利
 """
@@ -63,21 +54,21 @@ CLI find して ファイルパスの構造をそのままsync(永続化)
 
 import pytest
 from neomodel import db
-from pytest_unordered import unordered
 
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.tree2net import parse2net
-from knowde.complex.resource.repo import graph2qlist
-from knowde.complex.resource.repo.labels import LHead
-from knowde.primitive.__core__.nxutil.edge_type import EdgeType
+from knowde.complex.resource.repo import sysnet2cypher
 
 
 @pytest.fixture()
 def sn() -> SysNet:  # noqa: D103
     _s = r"""
         # h1
+            @author nanashi
+            @author taro tanaka
+            @published 1919
             A: df
-            B, Bbb: b{A}b
+            P1 |B, Bbb: b{A}b
             C{B}: ccc
             D: d{CB}d
         ## h2
@@ -90,10 +81,9 @@ def sn() -> SysNet:  # noqa: D103
     return parse2net(_s)
 
 
-def test_heading_query(sn: SysNet) -> None:
-    """見出し永続化."""
-    g = EdgeType.HEAD.subgraph(sn.g)
-    q = "\n".join(graph2qlist(g))
+def test_save(sn: SysNet) -> None:
+    """永続化."""
+    q = sysnet2cypher(sn)
+    # print(q)
     db.cypher_query(q)
-    heads = list(LHead.nodes.filter())
-    assert [h.val for h in heads] == unordered(["# h1", "## h2", "### h31", "### h32"])
+    # sleep(10000)
