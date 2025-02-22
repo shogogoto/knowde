@@ -28,6 +28,7 @@ if TYPE_CHECKING:
     from knowde.primitive.term import Term
 
 
+# 様々なgetter機能を分離したいかも
 class SysNet(BaseModel, frozen=True):
     """系ネットワーク."""
 
@@ -46,6 +47,11 @@ class SysNet(BaseModel, frozen=True):
         stc = to_sentence(self.g.nodes)
         hs = get_headings(self.g, self.root)
         return [n for n in stc if n not in hs]
+
+    @cached_property
+    def heads(self) -> nx.DiGraph:
+        """見出し."""
+        return EdgeType.HEAD.subgraph(self.g)
 
     @cached_property
     def terms(self) -> list[Term]:

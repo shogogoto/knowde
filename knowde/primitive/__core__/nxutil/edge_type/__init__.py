@@ -104,6 +104,11 @@ class EdgeType(Enum):
         """同じタイプのエッジと繋がったノードを持つサブグラフ."""
         return _etype_subgraph(g, self)
 
+    @cached_property
+    def arrow(self) -> str:
+        """cypherの矢印表現."""
+        return f"{self.name}"
+
 
 @cache
 def etype_subgraph(g: nx.DiGraph, *ts: EdgeType) -> nx.DiGraph:

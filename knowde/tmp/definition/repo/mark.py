@@ -15,8 +15,8 @@ from knowde.tmp.definition.domain.mark import (
     inject2placeholder,
 )
 from knowde.tmp.definition.repo.errors import UndefinedMarkedTermError
-from knowde.tmp.definition.sentence import LSentence, SentenceUtil
-from knowde.tmp.definition.term import LTerm, TermUtil
+from knowde.tmp.definition.sentence import LSentence2, SentenceUtil
+from knowde.tmp.definition.term import LTerm2, TermUtil
 from knowde.tmp.definition.term.domain import Term
 
 if TYPE_CHECKING:
@@ -42,8 +42,8 @@ class RelMark(RelBase):
 
 
 RelMarkUtil = RelUtil(
-    t_source=LSentence,
-    t_target=LTerm,
+    t_source=LSentence2,
+    t_target=LTerm2,
     name="MARK",
     t_rel=RelMark,
 )
@@ -57,7 +57,7 @@ class ReturnMarkedDescription(
     """marked sentence with terms."""
 
     # Label[LSentence, Sentence]だとValidationErrorになる
-    label: LSentence
+    label: LSentence2
     model: Sentence
     terms: list[Term] = Field(default_factory=list)
 
@@ -94,7 +94,7 @@ def find_marked_terms(sentence_uid: UUID) -> list[Term]:
 
 def remove_marks(
     sentence_uid: UUID,
-) -> Label[LSentence, Sentence]:
+) -> Label[LSentence2, Sentence]:
     """文章のマークをすべて削除し、文字列をマーク前に戻す.
 
     markの変更はdelete insertで行うため、mark関係を一部残す

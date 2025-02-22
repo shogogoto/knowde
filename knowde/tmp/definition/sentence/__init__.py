@@ -2,4 +2,4 @@
 
 statementのがいい名前かも
 """
-from .label import LSentence, SentenceUtil  # noqa: F401
+from .label import LSentence2, SentenceUtil  # noqa: F401

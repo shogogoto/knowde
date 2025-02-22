@@ -27,13 +27,13 @@ from knowde.tmp.definition.repo.mark import (
     remark_sentence,
 )
 from knowde.tmp.definition.repo.statistics import statistics_query
-from knowde.tmp.definition.sentence import LSentence
+from knowde.tmp.definition.sentence import LSentence2
 from knowde.tmp.definition.sentence.domain import Sentence
-from knowde.tmp.definition.term import LTerm, TermUtil
+from knowde.tmp.definition.term import LTerm2, TermUtil
 
 RelDefUtil = RelUtil(
-    t_source=LTerm,
-    t_target=LSentence,
+    t_source=LTerm2,
+    t_target=LSentence2,
     name=REL_DEF_LABEL,
     t_rel=RelBase,
     cardinality=ZeroOrOne,
