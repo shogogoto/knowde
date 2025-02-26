@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from functools import cache
 from typing import TYPE_CHECKING, Final, Self, TypeAlias
 
+from lark import Token
 from pydantic import BaseModel
 from typing_extensions import override
 
@@ -57,7 +58,6 @@ class Def(IDef, frozen=True):
         return cls(term=t, sentence=DummySentence())
 
     @classmethod
-    @cache
     def dummy_from(cls, *names: str, alias: str | None = None) -> Self:
         """Create vacuous def."""
         t = Term.create(*names, alias=alias)
@@ -92,3 +92,11 @@ class DummySentence(Duplicable, frozen=True):
 _SysElem: TypeAlias = str | Duplicable | Template  # 共通型
 SysNode: TypeAlias = Term | _SysElem
 SysArg: TypeAlias = Def | _SysElem
+
+
+META_TYPES: Final = ["AUTHOR", "PUBLISHED", "URL"]
+
+
+def is_meta(v: SysNode) -> bool:
+    """sysnetのメタ情報 ex. 著者とか."""
+    return isinstance(v, Token) and v.type in META_TYPES

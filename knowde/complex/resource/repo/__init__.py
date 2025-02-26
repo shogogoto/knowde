@@ -1,8 +1,7 @@
 """sysnet repo."""
 from __future__ import annotations
 
-import time
-from datetime import date, datetime
+from datetime import date
 from functools import cache
 from itertools import pairwise
 from typing import TYPE_CHECKING, Any
@@ -13,23 +12,15 @@ from more_itertools import collapse
 
 from knowde.complex.resource.repo.labels import LHead, LResource, LSentence, LTerm
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
-from knowde.primitive.__core__.timeutil import TZ
 from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.term import Term
-from knowde.primitive.time import parse_when
+from knowde.primitive.time import parse2dt
 
 if TYPE_CHECKING:
     from neomodel import StructuredNode
 
     from knowde.complex.__core__.sysnet import SysNet
     from knowde.complex.__core__.sysnet.sysnode import SysNode
-
-
-def parse2dt(s: str) -> date:
-    """Convert from string to date."""
-    st = parse_when(s).lower_strict()
-    t = time.mktime(st)
-    return datetime.fromtimestamp(t, tz=TZ).date()
 
 
 def val2str(val: Any) -> str:  # noqa: ANN401

@@ -22,7 +22,7 @@ from knowde.primitive.template import Templates
 from knowde.primitive.time import Series
 
 from .errors import SysNetNotFoundError
-from .sysnode import Def, SysArg, SysNode
+from .sysnode import Def, SysArg, SysNode, is_meta
 
 if TYPE_CHECKING:
     from knowde.primitive.term import Term
@@ -46,7 +46,8 @@ class SysNet(BaseModel, frozen=True):
         """文."""
         stc = to_sentence(self.g.nodes)
         hs = get_headings(self.g, self.root)
-        return [n for n in stc if n not in hs]
+        stc = [n for n in stc if n not in hs]
+        return [s for s in stc if not is_meta(s)]
 
     @cached_property
     def heads(self) -> nx.DiGraph:

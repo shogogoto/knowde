@@ -39,9 +39,8 @@ class MergedDef(IDef, frozen=True):
         """Batch create."""
 
         def _will_merge(t: Term, d: Def) -> bool:
-            """自分自信を含める."""
             t_ = d.term
-            return t.allows_merge(t_) or eq_term(t, t_)
+            return t.allows_merge(t_) or eq_term(t, t_) or (t.has(*t_.names))
 
         merged = []
         std = []  # 普通のDef

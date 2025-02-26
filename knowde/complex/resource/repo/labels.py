@@ -9,7 +9,6 @@ from neomodel import (
     RelationshipTo,
     StringProperty,
     StructuredNode,
-    StructuredRel,
     UniqueIdProperty,
     ZeroOrOne,
 )
@@ -25,12 +24,7 @@ class LResource(StructuredNode):
     published = DateTimeFormatProperty(default=None)
     urls = ArrayProperty(StringProperty())
 
-
-# sentence -[:TERM {alias}]-> (:Term) -[:TERM]-> (:Term) -> ...
-class RTerm(StructuredRel):
-    """用語."""
-
-    alias = StringProperty(default=None)
+    heads = RelationshipTo("LHead", "HEAD")
 
 
 class LSentence(StructuredNode):
@@ -39,7 +33,7 @@ class LSentence(StructuredNode):
     __label__ = "Sentence"
     uid = UniqueIdProperty()
     val = StringProperty(index=True, required=True)  # , max_length=MAX_CHARS)
-    term = RelationshipTo("LTerm", "TERM", cardinality=ZeroOrOne, model=RTerm)
+    term = RelationshipTo("LTerm", "TERM", cardinality=ZeroOrOne)
 
 
 class LTerm(StructuredNode):

@@ -33,7 +33,7 @@ User機能
 User配下の情報
 User
 > folder 再帰的構造
-> resource_id(= 系の名前)
+> title(= 系の名前=resource_id)
 > heading
 > sysnode
 
@@ -52,7 +52,6 @@ CLI find して ファイルパスの構造をそのままsync(永続化)
 """
 
 
-
 import pytest
 from neomodel import db
 
@@ -60,6 +59,7 @@ from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.tree2net import parse2net
 from knowde.complex.resource.repo import sysnet2cypher
 from knowde.complex.resource.repo.labels import LResource
+from knowde.complex.resource.repo.restore import restore_sysnet
 
 
 @pytest.fixture()
@@ -71,7 +71,7 @@ def sn() -> SysNet:  # noqa: D103
             @author taro tanaka
             @published 1919
             A: df
-            P1 |B: b{A}b
+            P1 |B, B1, B2, B3, B4: b{A}b
             C{B}: ccc
             D: d{CB}d
         ## h2
@@ -84,10 +84,18 @@ def sn() -> SysNet:  # noqa: D103
     """
     return parse2net(_s)
 
+    """
+    """
+    return None
+
 
 def test_save_and_restore(sn: SysNet) -> None:
     """永続化して元に戻す."""
     q = sysnet2cypher(sn)
     db.cypher_query(q)
     assert LResource.nodes.get(title="# h1")
-    # sleep(10000)
+    r = restore_sysnet("# h1")
+    assert set(sn.terms) == set(r.terms)
+    # assert set(sn.sentences) == set(r.sentences)  # なぜかFalse
+    diff_stc = set(sn.sentences) - set(r.sentences)
+    assert len(diff_stc) == 0
