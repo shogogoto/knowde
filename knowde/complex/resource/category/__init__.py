@@ -1,4 +1,4 @@
-"""分類戦略.
+"""resourceの分類戦略.
 
 folder
 tag

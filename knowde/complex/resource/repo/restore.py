@@ -53,7 +53,7 @@ def restore_sysnet(title: str) -> SysNet:
     // いろいろ
     UNION
     OPTIONAL MATCH (top)-[:BELOW|SIBLING]->*(n1:Sentence)
-        <-[r2:BELOW|SIBLING|RESOLVED|DEF]-(n2:Sentence|Term)
+        <-[r2:BELOW|SIBLING|RESOLVED|DEF]-(n2:Sentence|Term|Head)
     return r2 as r, n2 as s, n1 as e
 
     // 複数名の用語がある場合

@@ -52,14 +52,17 @@ CLI find して ファイルパスの構造をそのままsync(永続化)
 """
 
 
+from time import sleep
+
 import pytest
 from neomodel import db
 
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.tree2net import parse2net
-from knowde.complex.resource.repo import sysnet2cypher
-from knowde.complex.resource.repo.labels import LResource
-from knowde.complex.resource.repo.restore import restore_sysnet
+
+from .labels import LResource
+from .restore import restore_sysnet
+from .save import sysnet2cypher
 
 
 @pytest.fixture()
@@ -72,21 +75,25 @@ def sn() -> SysNet:  # noqa: D103
             @published 1919
             A: df
             P1 |B, B1, B2, B3, B4: b{A}b
-            C{B}: ccc
+            C{B}: c
             D: d{CB}d
         ## h2
-            P{D}: ppp
-            Q: qqq
+            P{D}: pp
+            Q: qq
             c{A}c
             X:
         ### h31
+            abcdefg
         ### h32
+            aaa
+            bbb
+            ccc
+        #### h4
+            aaaa
+            bbbb
+            cccc
     """
     return parse2net(_s)
-
-    """
-    """
-    return None
 
 
 def test_save_and_restore(sn: SysNet) -> None:
@@ -99,3 +106,4 @@ def test_save_and_restore(sn: SysNet) -> None:
     # assert set(sn.sentences) == set(r.sentences)  # なぜかFalse
     diff_stc = set(sn.sentences) - set(r.sentences)
     assert len(diff_stc) == 0
+    sleep(10000)
