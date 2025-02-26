@@ -52,7 +52,6 @@ CLI find して ファイルパスの構造をそのままsync(永続化)
 """
 
 
-from time import sleep
 
 import pytest
 from neomodel import db
@@ -106,4 +105,3 @@ def test_save_and_restore(sn: SysNet) -> None:
     # assert set(sn.sentences) == set(r.sentences)  # なぜかFalse
     diff_stc = set(sn.sentences) - set(r.sentences)
     assert len(diff_stc) == 0
-    sleep(10000)
