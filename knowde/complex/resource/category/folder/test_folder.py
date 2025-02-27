@@ -1,19 +1,18 @@
 """test folder."""
-
-
-
 import pytest
 
-from knowde.complex.resource.category.folder.errors import (
+from knowde.primitive.user.repo import LUser
+
+from .errors import (
     FolderAlreadyExistsError,
     SubFolderCreateError,
 )
-from knowde.complex.resource.category.folder.repo import (
+from .repo import (
     create_root_folder,
     create_sub_folder,
+    fetch_folders,
     fetch_root_folders,
 )
-from knowde.primitive.user.repo import LUser
 
 
 @pytest.fixture()
@@ -40,23 +39,30 @@ def test_create_sub_unexist_parent(u: LUser) -> None:
         create_sub_folder(u.uid, "unexist", "f2")
 
 
+def test_create_sub_folders() -> None:
+    """同じ親に対してサブフォルダを複数作る."""
+
+
 def test_create_sub_folder(u: LUser) -> None:
     """サブフォルダ作成."""
-    f1 = create_root_folder(u.uid, "f1")
-    f2 = create_sub_folder(u.uid, "f1", "f2")
+    create_root_folder(u.uid, "f1")
+    create_sub_folder(u.uid, "f1", "f2")
     with pytest.raises(FolderAlreadyExistsError):
         create_sub_folder(u.uid, "f1", "f2")
 
-    f3 = create_sub_folder(u.uid, "f1", "f2", "f3")
-    f31 = create_sub_folder(u.uid, "f1", "f2", "f31")
-    f4 = create_sub_folder(u.uid, "f1", "f2", "f3", "f4")
+    create_sub_folder(u.uid, "f1", "f2", "f3")
+    create_sub_folder(u.uid, "f1", "f2", "f31")
+    create_sub_folder(u.uid, "f1", "f2", "f3", "f4")
     with pytest.raises(SubFolderCreateError):
         create_sub_folder(u.uid, "f1", "f2", "ffff", "f4")
 
-    assert f1.parent.all() == []
-    assert f2.parent.get(name="f1") == f1  # RelationshipManagerの使い方例
-    assert f3.parent.all() == f31.parent.all() == [f2]
-    assert f4.parent.all() == [f3]
+    fs = fetch_folders(u.uid)
+    assert fs.roots == ["f1"]
+    assert fs.children("f1") == ["f2"]
+    assert fs.children("f1", "f2") == ["f3", "f31"]
+    assert fs.children("f1", "f2", "f3") == ["f4"]
+    assert fs.children("f1", "f2", "f3", "f4") == []
+    assert fs.children("f1", "unexist") == []
 
 
 # def test_folder_name() -> None:
