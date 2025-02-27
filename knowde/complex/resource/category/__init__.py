@@ -1,5 +1,5 @@
 """resourceの分類戦略.
 
-folder
-tag
+フォルダ分け 階層
+タグ resourceのmeta dataとして扱う?
 """

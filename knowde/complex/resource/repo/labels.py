@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from neomodel import (
     ArrayProperty,
-    DateTimeFormatProperty,
+    DateTimeNeo4jFormatProperty,
     One,
     RelationshipFrom,
     RelationshipTo,
@@ -21,7 +21,7 @@ class LResource(StructuredNode):
     uid = UniqueIdProperty()
     title = StringProperty(index=True, required=True)
     authors = ArrayProperty(StringProperty())
-    published = DateTimeFormatProperty(default=None)
+    published = DateTimeNeo4jFormatProperty(default=None)
     urls = ArrayProperty(StringProperty())
 
     heads = RelationshipTo("LHead", "HEAD")

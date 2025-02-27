@@ -1,24 +1,6 @@
 """ユーザーがシステムにアクセスするための一連の認証情報や権限.
 
 アカウントは、ユーザーに特定の役割や権限を付与するために使用される
-
-
-Google で SSO
-普通にUserでSign up.
-
-
-User
-  name for display  SSOではemailの@の前にしとくか
-  email optional
-  uid
-  password optional passwordはuserではなく認証のドメイン
-  created
-
-だけあればいい
-認証で必要な情報を持つのはAccountと呼び分ける
-
-SysNetの所有者としてはOwnerと呼んだり
-
 """
 from __future__ import annotations
 

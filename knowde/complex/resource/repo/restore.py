@@ -41,25 +41,25 @@ def restore_sysnet(title: str) -> SysNet:
     """DBからSysNetを復元."""
     rsrc = LResource.nodes.get(title=title)
     q = """
-    MATCH (root:Resource {uid: $uid})
-    OPTIONAL MATCH (root)-[r1:HEAD|BELOW]->(top:Head|Sentence)
-    RETURN r1 as r, root as s, top as e
+        MATCH (root:Resource {uid: $uid})
+        OPTIONAL MATCH (root)-[r1:HEAD|BELOW]->(top:Head|Sentence)
+        RETURN r1 as r, root as s, top as e
 
-    // 見出し
-    UNION
-    OPTIONAL MATCH (top)-[:HEAD]->*(hs:Head)-[rh:HEAD]->(he:Head)
-    RETURN rh as r, hs as s, he as e
+        // 見出し
+        UNION
+        OPTIONAL MATCH (top)-[:HEAD]->*(hs:Head)-[rh:HEAD]->(he:Head)
+        RETURN rh as r, hs as s, he as e
 
-    // いろいろ
-    UNION
-    OPTIONAL MATCH (top)-[:BELOW|SIBLING]->*(n1:Sentence)
-        <-[r2:BELOW|SIBLING|RESOLVED|DEF]-(n2:Sentence|Term|Head)
-    return r2 as r, n2 as s, n1 as e
+        // いろいろ
+        UNION
+        OPTIONAL MATCH (top)-[:BELOW|SIBLING]->*(n1:Sentence)
+            <-[r2:BELOW|SIBLING|RESOLVED|DEF]-(n2:Sentence|Term|Head)
+        return r2 as r, n2 as s, n1 as e
 
-    // 複数名の用語がある場合
-    UNION
-    MATCH (n2)<-[r3:TERM]-(m:Term)
-    RETURN r3 as r, m as s, n2 as e
+        // 複数名の用語がある場合
+        UNION
+        MATCH (n2)<-[r3:TERM]-(m:Term)
+        RETURN r3 as r, m as s, n2 as e
     """
     res = db.cypher_query(q, params={"uid": rsrc.uid})
     col = DirectedEdgeCollection()

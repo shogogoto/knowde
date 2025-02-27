@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from neomodel import (
     BooleanProperty,
-    DateTimeProperty,
+    DateTimeNeo4jFormatProperty,
     EmailProperty,
     IntegerProperty,
     RelationshipFrom,
@@ -25,7 +25,7 @@ class LUser(StructuredNode):
     is_active = BooleanProperty(default=True)
     is_verified = BooleanProperty(default=False)
     is_superuser = BooleanProperty(default=False)
-    created = DateTimeProperty(default_now=True)
+    created = DateTimeNeo4jFormatProperty(default_now=True)
 
     accounts = RelationshipTo("LAccount", "OAUTH")
 
