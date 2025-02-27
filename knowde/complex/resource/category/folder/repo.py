@@ -6,8 +6,6 @@ from uuid import UUID
 
 import networkx as nx
 from neomodel import (
-    INCOMING,
-    Traversal,
     UniqueIdProperty,
     db,
 )
@@ -79,7 +77,7 @@ def create_sub_folder(user_id: UUIDy, *path: str) -> LFolder:
         params={"uid": uid.hex},
         resolve_objects=True,
     )[0]  # 1要素の2重リスト[[...]]のはず
-    if len(res) != 1:
+    if len(res) == 0:
         p = "/".join(path[:-1])
         msg = f"親フォルダ'/{p}'が見つからない"
         raise SubFolderCreateError(msg, res)
@@ -93,31 +91,28 @@ def create_sub_folder(user_id: UUIDy, *path: str) -> LFolder:
     return sub
 
 
-def fetch_root_folders(user_id: UUIDy) -> list[LFolder]:
-    """直下フォルダ."""
-    return Traversal(
-        LUser.nodes.get(uid=to_uuid(user_id).hex),
-        "Folder",
-        {"node_class": LFolder, "direction": INCOMING, "relation_type": "OWNED"},
-    ).all()
-
-
 def fetch_folders(user_id: UUIDy) -> FolderSpace:
-    """配下のフォルダ."""
+    """配下のサブフォルダ."""
     q = """
         MATCH (user:User {uid: $uid})
         OPTIONAL MATCH (user)<-[:OWNED]-(root:Folder)
+        RETURN root as f1, null as f2
+        UNION
         OPTIONAL MATCH (root)<-[:PARENT]-(sub:Folder)
-        RETURN root as f1, sub as f2, true as is_root
+        RETURN root as f1, sub as f2
         UNION
         OPTIONAL MATCH (sub)<-[:PARENT]-+(f1:Folder)<-[:PARENT]-(f2:Folder)
-        RETURN f1, f2, false as is_root
+        RETURN f1, f2
     """
     uid = to_uuid(user_id)
     res = db.cypher_query(q, params={"uid": uid.hex}, resolve_objects=True)
     g = nx.DiGraph()
-    roots = {f.name: MFolder.from_lb(f) for f, _, is_root in res[0] if is_root}
-    for f1, f2, _ in res[0]:
+    roots = {}
+    for f1, f2 in res[0]:
+        if f2 is None:
+            if f1 is not None:
+                roots[f1.name] = MFolder.from_lb(f1)
+            continue
         m1 = MFolder.from_lb(f1)
         m2 = MFolder.from_lb(f2)
         g.add_edge(m1, m2)
