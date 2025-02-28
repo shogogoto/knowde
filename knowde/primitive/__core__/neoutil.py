@@ -1,12 +1,22 @@
 """neomodel関連Utility."""
 from __future__ import annotations
 
-from typing import Generic, Self, TypeVar
+from typing import Generic, Self, TypeAlias, TypeVar
+from uuid import UUID
 
-from neomodel import StructuredNode
+from neomodel import StringProperty, StructuredNode, UniqueIdProperty
 from pydantic import BaseModel
 
 from knowde.primitive.__core__.domain.domain import neolabel2model
+
+UUIDy: TypeAlias = UUID | str | UniqueIdProperty  # Falsyみたいな
+STRy: TypeAlias = str | StringProperty
+
+
+def to_uuid(uidy: UUIDy) -> UUID:
+    """neomodelのuid propertyがstrを返すからUUIDに補正・統一して扱いたい."""
+    return UUID(uidy) if isinstance(uidy, (str, UniqueIdProperty)) else uidy
+
 
 L = TypeVar("L", bound=StructuredNode)
 

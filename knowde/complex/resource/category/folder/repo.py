@@ -1,31 +1,26 @@
 """floder DB."""
 from __future__ import annotations
 
-from typing import TypeAlias
-from uuid import UUID
+from typing import TYPE_CHECKING
 
 import networkx as nx
 from neomodel import (
-    UniqueIdProperty,
     db,
 )
 
 from knowde.complex.resource.category.folder import FolderSpace
 from knowde.complex.resource.category.folder.label import LFolder
 from knowde.complex.resource.category.folder.mapper import MFolder
+from knowde.primitive.__core__.neoutil import to_uuid
 from knowde.primitive.user.repo import LUser
 
 from .errors import (
     FolderAlreadyExistsError,
-    SubFolderCreateError,
+    FolderNotFoundError,
 )
 
-UUIDy: TypeAlias = UUID | str | UniqueIdProperty  # Falsyみたいな
-
-
-def to_uuid(uidy: UUIDy) -> UUID:
-    """neomodelのuid propertyがstrを返すからUUIDに補正・統一して扱いたい."""
-    return UUID(uidy) if isinstance(uidy, (str, UniqueIdProperty)) else uidy
+if TYPE_CHECKING:
+    from knowde.primitive.__core__.neoutil import UUIDy
 
 
 def create_folder(user_id: UUIDy, *names: str) -> LFolder:
@@ -35,7 +30,7 @@ def create_folder(user_id: UUIDy, *names: str) -> LFolder:
             msg = "フォルダ名を1つ以上指定して"
             raise ValueError(msg)
         case 1:
-            return create_folder(user_id, names[0])
+            return create_root_folder(user_id, names[0])
         case _:
             return create_sub_folder(user_id, *names)
 
@@ -51,47 +46,54 @@ def create_root_folder(user_id: UUIDy, name: str) -> LFolder:
     return f
 
 
-def create_sub_folder(user_id: UUIDy, *path: str) -> LFolder:
+def create_sub_folder(user_id: UUIDy, root: str, *path: str) -> LFolder:
     """サブフォルダ作成."""
-    n = len(path)
-    if n <= 1:
-        msg = "parent, subの2つ以上の文字列が必要"
-        raise ValueError(msg)
-    uid = to_uuid(user_id)
-    first = path[0]
+    if len(path) == 0:
+        raise ValueError
+    create_name = path[-1]
+    parent, subs = fetch_subfolders(user_id, root, *path[:-1])
+    if create_name in [s.name for s in subs if s is not None]:
+        p = "/".join([root, *path])
+        msg = f"/{p}'は既に存在しています"
+        raise FolderAlreadyExistsError(msg)
+    sub = LFolder(name=create_name).save()
+    sub.parent.connect(parent)
+    return sub
 
-    i_parent = n - 2
+
+def fetch_subfolders(
+    user_id: UUIDy,
+    root: str,
+    *path: str,
+) -> tuple[LFolder, tuple[LFolder]]:
+    """ネットワークを辿ってフォルダとそのサブフォルダを取得."""
+    n = len(path)
+    uid = to_uuid(user_id)
     qs = [
-        f"MATCH (:User {{uid: $uid}})<-[:OWNED]-(f0:Folder {{ name: '{first}' }})",
+        f"MATCH (:User {{uid: $uid}})<-[:OWNED]-(f0:Folder {{ name: '{root}' }})",
         *[
             f"<-[:PARENT]-(f{i+1}:Folder {{ name: '{name}' }})"
-            for i, name in enumerate(path[1:-1])
+            for i, name in enumerate(path)
         ],
-        f"OPTIONAL MATCH (f{i_parent})<-[:PARENT]-(sub:Folder)",
-        f"RETURN f{i_parent}, sub",
+        f"OPTIONAL MATCH (f{n})<-[:PARENT]-(sub:Folder)",
+        f"RETURN f{n}, sub",
     ]
     q = "\n".join(qs)
-
     res = db.cypher_query(
         q,
         params={"uid": uid.hex},
         resolve_objects=True,
     )[0]  # 1要素の2重リスト[[...]]のはず
     if len(res) == 0:
-        p = "/".join(path[:-1])
-        msg = f"親フォルダ'/{p}'が見つからない"
-        raise SubFolderCreateError(msg, res)
-    parent, sub = res[0]
-    if sub is not None and sub.name == path[-1]:
         p = "/".join(path)
-        msg = f"サブフォルダ'/{p}'が既に存在している"
-        raise FolderAlreadyExistsError(msg)
-    sub = LFolder(name=path[-1]).save()
-    sub.parent.connect(parent)
-    return sub
+        msg = f"フォルダ'/{p}'が見つからない"
+        raise FolderNotFoundError(msg, res)
+
+    targets, subs = zip(*res)
+    return targets[0], subs
 
 
-def fetch_folders(user_id: UUIDy) -> FolderSpace:
+def fetch_folderspace(user_id: UUIDy) -> FolderSpace:
     """配下のサブフォルダ."""
     q = """
         MATCH (user:User {uid: $uid})
@@ -117,3 +119,7 @@ def fetch_folders(user_id: UUIDy) -> FolderSpace:
         m2 = MFolder.from_lb(f2)
         g.add_edge(m1, m2)
     return FolderSpace(roots_=roots, g=g)
+
+
+# def move_folder(user_id: UUIDy) -> None:
+#     """フォルダの移動(配下ごと)."""

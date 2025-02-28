@@ -7,3 +7,7 @@ class SubFolderCreateError(Exception):
 
 class FolderAlreadyExistsError(Exception):
     """既にフォルダあるやんけ."""
+
+
+class FolderNotFoundError(Exception):
+    """フォルダが見つからない."""

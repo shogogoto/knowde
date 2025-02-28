@@ -5,12 +5,14 @@ from knowde.primitive.user.repo import LUser
 
 from .errors import (
     FolderAlreadyExistsError,
-    SubFolderCreateError,
+    FolderNotFoundError,
 )
 from .repo import (
+    create_folder,
     create_root_folder,
     create_sub_folder,
-    fetch_folders,
+    fetch_folderspace,
+    fetch_subfolders,
 )
 
 
@@ -22,7 +24,7 @@ def u() -> LUser:  # noqa: D103
 def test_create_root_folder(u: LUser) -> None:
     """User直下フォルダ."""
     create_root_folder(u.uid, "f1")
-    fs = fetch_folders(u.uid)
+    fs = fetch_folderspace(u.uid)
     assert fs.roots == ["f1"]
 
 
@@ -35,7 +37,7 @@ def test_create_duplicated_root_folder(u: LUser) -> None:
 
 def test_create_sub_unexist_parent(u: LUser) -> None:
     """存在しない親の下にフォルダ作ろうとしちゃった."""
-    with pytest.raises(SubFolderCreateError):
+    with pytest.raises(FolderNotFoundError):
         create_sub_folder(u.uid, "unexist", "f2")
 
 
@@ -47,8 +49,8 @@ def test_create_duplicated_sub_folder(u: LUser) -> None:
         create_sub_folder(u.uid, "f1", "f2")
 
 
-def test_fetch_folders(u: LUser) -> None:
-    """いろいろ追加したフォルダを取得."""
+def test_fetch_folderspace(u: LUser) -> None:
+    """ユーザー配下のフォルダ空間を一括取得."""
     create_root_folder(u.uid, "f1")
     create_sub_folder(u.uid, "f1", "f2")
     create_sub_folder(u.uid, "f1", "fff")
@@ -57,7 +59,7 @@ def test_fetch_folders(u: LUser) -> None:
     create_sub_folder(u.uid, "f1", "f2", "f31")
     create_sub_folder(u.uid, "f1", "f2", "f3", "f4")
 
-    fs = fetch_folders(u.uid)
+    fs = fetch_folderspace(u.uid)
     assert fs.roots == ["f1"]
     assert fs.children("f1") == ["f2", "fff", "ggg"]
     assert fs.children("f1", "f2") == ["f3", "f31"]
@@ -66,9 +68,21 @@ def test_fetch_folders(u: LUser) -> None:
     assert fs.children("f1", "unexist") == []
 
 
-# def test_folder_name() -> None:
-#     pass
+def test_fetch_subfolders(u: LUser) -> None:
+    """ネットワークを辿ってフォルダを取得."""
+    f1 = create_folder(u.uid, "f1")
+    f2 = create_folder(u.uid, "f1", "f2")
+    f21 = create_folder(u.uid, "f1", "f21")
+    f3 = create_folder(u.uid, "f1", "f2", "f3")
+    assert f1 == fetch_subfolders(u.uid, "f1")[0]
+    assert f2 == fetch_subfolders(u.uid, "f1", "f2")[0]
+    assert f21 == fetch_subfolders(u.uid, "f1", "f21")[0]
+    assert f3 == fetch_subfolders(u.uid, "f1", "f2", "f3")[0]
 
 
-# def test_folder_move() -> None:
-#     pass
+def test_folder_move() -> None:
+    """フォルダの移動(配下ごと)."""
+
+
+def test_remove_folder() -> None:
+    """フォルダの削除(配下ごと)."""
