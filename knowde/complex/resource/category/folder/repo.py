@@ -1,6 +1,7 @@
 """floder DB."""
 from __future__ import annotations
 
+from pathlib import PurePath
 from typing import TYPE_CHECKING
 
 import networkx as nx
@@ -46,14 +47,14 @@ def create_root_folder(user_id: UUIDy, name: str) -> LFolder:
     return f
 
 
-def create_sub_folder(user_id: UUIDy, root: str, *path: str) -> LFolder:
+def create_sub_folder(user_id: UUIDy, root: str, *names: str) -> LFolder:
     """サブフォルダ作成."""
-    if len(path) == 0:
+    if len(names) == 0:
         raise ValueError
-    create_name = path[-1]
-    parent, subs = fetch_subfolders(user_id, root, *path[:-1])
+    create_name = names[-1]
+    parent, subs = fetch_subfolders(user_id, root, *names[:-1])
     if create_name in [s.name for s in subs if s is not None]:
-        p = "/".join([root, *path])
+        p = "/".join([root, *names])
         msg = f"/{p}'は既に存在しています"
         raise FolderAlreadyExistsError(msg)
     sub = LFolder(name=create_name).save()
@@ -64,16 +65,16 @@ def create_sub_folder(user_id: UUIDy, root: str, *path: str) -> LFolder:
 def fetch_subfolders(
     user_id: UUIDy,
     root: str,
-    *path: str,
+    *names: str,
 ) -> tuple[LFolder, tuple[LFolder]]:
     """ネットワークを辿ってフォルダとそのサブフォルダを取得."""
-    n = len(path)
+    n = len(names)
     uid = to_uuid(user_id)
     qs = [
         f"MATCH (:User {{uid: $uid}})<-[:OWNED]-(f0:Folder {{ name: '{root}' }})",
         *[
             f"<-[:PARENT]-(f{i+1}:Folder {{ name: '{name}' }})"
-            for i, name in enumerate(path)
+            for i, name in enumerate(names)
         ],
         f"OPTIONAL MATCH (f{n})<-[:PARENT]-(sub:Folder)",
         f"RETURN f{n}, sub",
@@ -85,7 +86,7 @@ def fetch_subfolders(
         resolve_objects=True,
     )[0]  # 1要素の2重リスト[[...]]のはず
     if len(res) == 0:
-        p = "/".join(path)
+        p = "/".join(names)
         msg = f"フォルダ'/{p}'が見つからない"
         raise FolderNotFoundError(msg, res)
 
@@ -113,7 +114,9 @@ def fetch_folderspace(user_id: UUIDy) -> FolderSpace:
     for f1, f2 in res[0]:
         if f2 is None:
             if f1 is not None:
-                roots[f1.name] = MFolder.from_lb(f1)
+                root_lb = MFolder.from_lb(f1)
+                roots[f1.name] = root_lb
+                g.add_node(root_lb)
             continue
         m1 = MFolder.from_lb(f1)
         m2 = MFolder.from_lb(f2)
@@ -121,5 +124,22 @@ def fetch_folderspace(user_id: UUIDy) -> FolderSpace:
     return FolderSpace(roots_=roots, g=g)
 
 
-# def move_folder(user_id: UUIDy) -> None:
-#     """フォルダの移動(配下ごと)."""
+def move_folder(user_id: UUIDy, target: PurePath | str, to: PurePath | str) -> LFolder:
+    """フォルダの移動(配下ごと)."""
+    target = PurePath(target)  # PathはOSのファイルシステムを参照するらしく不適
+    to = PurePath(to)
+    if not (target.is_absolute() and to.is_absolute()):
+        msg = "絶対パスで指定して"
+        raise ValueError(msg, target, to)
+    fs = fetch_folderspace(user_id)
+    tgt = fs.get_as_label(*target.parts[1:])
+    tgt.parent.disconnect(tgt.parent.get())
+    to_names = to.parts[1:]
+    if len(to_names) == 0:  # rootへ
+        luser = LUser.nodes.get(uid=user_id)
+        tgt.owner.connect(luser)
+        return tgt
+    parent_to_move = fs.get_as_label(*to_names[:-1])
+    tgt.parent.connect(parent_to_move)
+    tgt.name = to_names[-1]
+    return tgt.save()

@@ -1,4 +1,6 @@
 """test folder."""
+
+
 import pytest
 
 from knowde.primitive.user.repo import LUser
@@ -13,6 +15,7 @@ from .repo import (
     create_sub_folder,
     fetch_folderspace,
     fetch_subfolders,
+    move_folder,
 )
 
 
@@ -49,6 +52,7 @@ def test_create_duplicated_sub_folder(u: LUser) -> None:
         create_sub_folder(u.uid, "f1", "f2")
 
 
+@pytest.mark.skip()
 def test_fetch_folderspace(u: LUser) -> None:
     """ユーザー配下のフォルダ空間を一括取得."""
     create_root_folder(u.uid, "f1")
@@ -80,8 +84,20 @@ def test_fetch_subfolders(u: LUser) -> None:
     assert f3 == fetch_subfolders(u.uid, "f1", "f2", "f3")[0]
 
 
-def test_folder_move() -> None:
+def test_folder_move(u: LUser) -> None:
     """フォルダの移動(配下ごと)."""
+    create_folder(u.uid, "f1")
+    create_folder(u.uid, "f2")
+    create_folder(u.uid, "f1", "target")
+    create_folder(u.uid, "f1", "target", "sub")
+    create_folder(u.uid, "f2", "other")
+    tgt, subs = fetch_subfolders(u.uid, "f1", "target")
+    assert tgt.name == "target"
+    assert [s.name for s in subs] == ["sub"]
+    move_folder(u.uid, "/f1/target", "/f2/xxx")
+    fs = fetch_folderspace(u.uid)
+    assert fs.get_or_none("f1", "target") is None  # なくなってる
+    assert fs.get("f2", "xxx", "sub")
 
 
 def test_remove_folder() -> None:

@@ -14,12 +14,12 @@ class MFolder(BaseModel, frozen=True):
     """LFolderのgraph用Mapper."""
 
     name: str
-    element_id: str | None = None
+    element_id_property: str | None = None
 
     @classmethod
     def from_lb(cls, lb: LFolder) -> Self:
         """Map label to hashable object."""
-        return _from_lb(name=lb.name, element_id=lb.element_id)
+        return _from_lb(lb.name, lb.element_id)
 
     def __str__(self) -> str:  # noqa: D105
         return self.name
@@ -33,5 +33,5 @@ class MFolder(BaseModel, frozen=True):
 
 
 @cache
-def _from_lb(name: str, element_id: str) -> MFolder:
-    return MFolder(name=name, element_id=element_id)
+def _from_lb(name: str, element_id_property: str) -> MFolder:
+    return MFolder(name=name, element_id_property=element_id_property)

@@ -1,5 +1,13 @@
 """neomodel label."""
-from neomodel import RelationshipTo, StringProperty, StructuredNode, ZeroOrOne
+from neomodel import (
+    RelationshipManager,
+    RelationshipTo,
+    StringProperty,
+    StructuredNode,
+    ZeroOrOne,
+)
+
+from knowde.primitive.user.repo import LUser
 
 
 class LFolder(StructuredNode):
@@ -8,5 +16,13 @@ class LFolder(StructuredNode):
     __label__ = "Folder"
     name = StringProperty(index=True)
 
-    parent = RelationshipTo("LFolder", "PARENT", cardinality=ZeroOrOne)
-    owner = RelationshipTo("LUser", "OWNED", cardinality=ZeroOrOne)
+    parent: RelationshipManager = RelationshipTo(
+        "LFolder",
+        "PARENT",
+        cardinality=ZeroOrOne,
+    )
+    owner: RelationshipManager = RelationshipTo(
+        LUser,
+        "OWNED",
+        cardinality=ZeroOrOne,
+    )
