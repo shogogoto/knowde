@@ -2,7 +2,6 @@
 
 
 from functools import cache
-from typing import TYPE_CHECKING
 
 import neo4j
 import networkx as nx
@@ -12,14 +11,11 @@ from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.sysnet.sysnode import DUMMY_SENTENCE, Def, KNode
 from knowde.complex.__core__.sysnet.sysnode.merged_def import MergedDef
 from knowde.complex.__core__.tree2net.directed_edge import DirectedEdgeCollection
+from knowde.complex.resource.nx2db import LResource
+from knowde.primitive.__core__.neoutil import UUIDy, to_uuid
 from knowde.primitive.__core__.nxutil.edge_type import Direction, EdgeType
 from knowde.primitive.__core__.types import Duplicable
-from knowde.primitive.term import Term, check_and_merge_term
-
-from . import LResource
-
-if TYPE_CHECKING:
-    from neo4j.graph import Relationship
+from knowde.primitive.term import Term
 
 
 @cache
@@ -38,11 +34,14 @@ def to_sysnode(n: neo4j.graph.Node) -> KNode:
             raise ValueError(props, lb_name)
 
 
-def restore_sysnet(title: str) -> SysNet:
+def restore_sysnet(resource_uid: UUIDy) -> SysNet:
     """DBからSysNetを復元."""
-    rsrc = LResource.nodes.get(title=title)
     q = """
         MATCH (root:Resource {uid: $uid})
+        RETURN null as r, root as s, null as e
+
+        // 直下
+        UNION
         OPTIONAL MATCH (root)-[r1:HEAD|BELOW]->(top:Head|Sentence)
         RETURN r1 as r, root as s, top as e
 
@@ -62,13 +61,16 @@ def restore_sysnet(title: str) -> SysNet:
         MATCH (n2)<-[r3:TERM]-(m:Term)
         RETURN r3 as r, m as s, n2 as e
     """
-    res = db.cypher_query(q, params={"uid": rsrc.uid})
+    res = db.cypher_query(q, params={"uid": to_uuid(resource_uid).hex})
     col = DirectedEdgeCollection()
     defs = []
-    for _rel, _, _ in res[0]:
-        r: Relationship = _rel
-        s = to_sysnode(_rel.start_node)
-        e = to_sysnode(_rel.end_node)
+    rsrc: LResource
+    for r, _s, _e in res[0]:
+        if r is None:  # resource
+            rsrc = LResource(**dict(_s))
+            continue
+        s = to_sysnode(_s)
+        e = to_sysnode(_e)
         match r.type:
             case "TERM" if isinstance(s, Term) and isinstance(e, Term):
                 term = Term(names=s.names + e.names)
@@ -84,9 +86,7 @@ def restore_sysnet(title: str) -> SysNet:
                 raise ValueError(r.type)
     g = nx.MultiDiGraph()
     col.add_edges(g)
-    terms = [d.term for d in defs]
-    mt = check_and_merge_term(terms)
-    mdefs, stddefs = MergedDef.create_and_parted(mt, defs)
+    mdefs, stddefs, _ = MergedDef.create_and_parted(defs)
     [md.add_edge(g) for md in mdefs]
     [d.add_edge(g) for d in stddefs]
-    return SysNet(root=title, g=g)
+    return SysNet(root=rsrc.title, g=g)

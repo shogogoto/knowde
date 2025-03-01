@@ -14,12 +14,13 @@ from knowde.primitive.user.repo import LUser
 
 from . import FolderSpace
 from .errors import (
-    FolderAlreadyExistsError,
-    FolderNotFoundError,
+    EntryAlreadyExistsError,
+    EntryNotFoundError,
 )
 from .label import LFolder
 
 if TYPE_CHECKING:
+
     from knowde.primitive.__core__.neoutil import UUIDy
 
 
@@ -38,12 +39,34 @@ def create_folder(user_id: UUIDy, *names: str) -> LFolder:
 def create_root_folder(user_id: UUIDy, name: str) -> LFolder:
     """直下フォルダ作成."""
     u: LUser = LUser.nodes.get(uid=to_uuid(user_id).hex)
+
     _f = LFolder.nodes.get_or_none(name=name)
     if _f is not None:
-        raise FolderAlreadyExistsError
+        raise EntryAlreadyExistsError
     f: LFolder = LFolder(name=name).save()
     f.owner.connect(u)
     return f
+
+
+# def create_root_resource(
+#     user_id: UUIDy,
+#     name: str,
+#     authors: list[str] | None = None,
+#     published: date | None = None,
+#     urls: list[str] | None = None,
+# ) -> None:
+#     """ユーザー直下のリソース."""
+#     u: LUser = LUser.nodes.get(uid=to_uuid(user_id).hex)
+#     d = {
+#         "name": name,
+#         "authors": authors,
+#         "published": published,
+#         "urls": urls,
+#     }
+#     r = LResource.nodes.get_or_none()
+#     if r is not None:
+#         raise EntryAlreadyExistsError
+#     r = LResource
 
 
 def create_sub_folder(user_id: UUIDy, root: str, *names: str) -> LFolder:
@@ -55,7 +78,7 @@ def create_sub_folder(user_id: UUIDy, root: str, *names: str) -> LFolder:
     if create_name in [s.name for s in subs if s is not None]:
         p = "/".join([root, *names])
         msg = f"/{p}'は既に存在しています"
-        raise FolderAlreadyExistsError(msg)
+        raise EntryAlreadyExistsError(msg)
     sub = LFolder(name=create_name).save()
     sub.parent.connect(parent)
     return sub
@@ -66,7 +89,7 @@ def fetch_subfolders(
     root: str,
     *names: str,
 ) -> tuple[LFolder, tuple[LFolder]]:
-    """ネットワークを辿ってフォルダとそのサブフォルダをピンポイントに取得."""
+    """ネットワークを辿ってフォルダとその配下をピンポイントに取得."""
     n = len(names)
     uid = to_uuid(user_id)
     qs = [
@@ -87,14 +110,14 @@ def fetch_subfolders(
     if len(res) == 0:
         p = "/".join(names)
         msg = f"フォルダ'/{p}'が見つからない"
-        raise FolderNotFoundError(msg, res)
+        raise EntryNotFoundError(msg, res)
 
     targets, subs = zip(*res)
     return targets[0], subs
 
 
-def fetch_folderspace(user_id: UUIDy) -> FolderSpace:
-    """配下のサブフォルダ."""
+def fetch_namespace(user_id: UUIDy) -> FolderSpace:
+    """ユーザー配下のサブフォルダ."""
     q = """
         MATCH (user:User {uid: $uid})
         OPTIONAL MATCH (user)<-[:OWNED]-(root:Folder)
@@ -132,7 +155,7 @@ def move_folder(user_id: UUIDy, target: PurePath | str, to: PurePath | str) -> L
     if not (target.is_absolute() and to.is_absolute()):
         msg = "絶対パスで指定して"
         raise ValueError(msg, target, to)
-    fs = fetch_folderspace(user_id)
+    fs = fetch_namespace(user_id)
     tgt = LFolder(**fs.get(*target.parts[1:]).model_dump())
     tgt.parent.disconnect(tgt.parent.get())
     to_names = to.parts[1:]

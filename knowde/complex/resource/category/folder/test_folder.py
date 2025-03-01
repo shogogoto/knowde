@@ -6,14 +6,14 @@ import pytest
 from knowde.primitive.user.repo import LUser
 
 from .errors import (
-    FolderAlreadyExistsError,
-    FolderNotFoundError,
+    EntryAlreadyExistsError,
+    EntryNotFoundError,
 )
 from .repo import (
     create_folder,
     create_root_folder,
     create_sub_folder,
-    fetch_folderspace,
+    fetch_namespace,
     fetch_subfolders,
     move_folder,
 )
@@ -27,20 +27,20 @@ def u() -> LUser:  # noqa: D103
 def test_create_root_folder(u: LUser) -> None:
     """User直下フォルダ."""
     create_root_folder(u.uid, "f1")
-    fs = fetch_folderspace(u.uid)
+    fs = fetch_namespace(u.uid)
     assert fs.roots == ["f1"]
 
 
 def test_create_duplicated_root_folder(u: LUser) -> None:
     """User直下の重複フォルダ."""
     create_root_folder(u.uid, "f1")
-    with pytest.raises(FolderAlreadyExistsError):
+    with pytest.raises(EntryAlreadyExistsError):
         create_root_folder(u.uid, "f1")
 
 
 def test_create_sub_unexist_parent(u: LUser) -> None:
     """存在しない親の下にフォルダ作ろうとしちゃった."""
-    with pytest.raises(FolderNotFoundError):
+    with pytest.raises(EntryNotFoundError):
         create_sub_folder(u.uid, "unexist", "f2")
 
 
@@ -48,7 +48,7 @@ def test_create_duplicated_sub_folder(u: LUser) -> None:
     """同じ親に対してサブフォルダを複数作る."""
     create_root_folder(u.uid, "f1")
     create_sub_folder(u.uid, "f1", "f2")
-    with pytest.raises(FolderAlreadyExistsError):
+    with pytest.raises(EntryAlreadyExistsError):
         create_sub_folder(u.uid, "f1", "f2")
 
 
@@ -63,7 +63,7 @@ def test_fetch_folderspace(u: LUser) -> None:
     create_sub_folder(u.uid, "f1", "f2", "f31")
     create_sub_folder(u.uid, "f1", "f2", "f3", "f4")
 
-    fs = fetch_folderspace(u.uid)
+    fs = fetch_namespace(u.uid)
     assert fs.roots == ["f1"]
     assert fs.children("f1") == ["f2", "fff", "ggg"]
     assert fs.children("f1", "f2") == ["f3", "f31"]
@@ -95,9 +95,15 @@ def test_folder_move(u: LUser) -> None:
     assert tgt.name == "target"
     assert [s.name for s in subs] == ["sub"]
     move_folder(u.uid, "/f1/target", "/f2/xxx")
-    fs = fetch_folderspace(u.uid)
+    fs = fetch_namespace(u.uid)
     assert fs.get_or_none("f1", "target") is None  # なくなってる
     assert fs.get("f2", "xxx", "sub")
+
+
+# def test_create_resource(u: LUser) -> None:
+#     """フォルダ(composite)とファイル(leaf)を両方扱えるように拡張."""
+#     create_folder(u.uid, "f1")
+#     create_root_resource(u.uid, "r1")
 
 
 def test_delete_folder() -> None:

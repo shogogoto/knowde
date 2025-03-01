@@ -47,8 +47,8 @@ def test_save_and_restore(sn: SysNet) -> None:
     """永続化して元に戻す."""
     q = sysnet2cypher(sn)
     db.cypher_query(q)
-    assert LResource.nodes.get(title="# h1")
-    r = restore_sysnet("# h1")
+    r = LResource.nodes.get(title="# h1")
+    r = restore_sysnet(r.uid)
     assert set(sn.terms) == set(r.terms)
     # assert set(sn.sentences) == set(r.sentences)  # なぜかFalse
     diff_stc = set(sn.sentences) - set(r.sentences)

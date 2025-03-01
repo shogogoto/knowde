@@ -60,4 +60,6 @@ class MResource(BaseMapper, frozen=True):
 
 
 class SysNode(BaseModel):
-    """系の構成要素."""
+    """系の構成要素. Head|Sentence|Term."""
+
+    name: str

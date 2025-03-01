@@ -1,13 +1,9 @@
 """folder errors."""
 
 
-class SubFolderCreateError(Exception):
-    """サブフォルダ作成エラー."""
+class EntryAlreadyExistsError(Exception):
+    """既にフォルダ or リソースあるやんけ."""
 
 
-class FolderAlreadyExistsError(Exception):
-    """既にフォルダあるやんけ."""
-
-
-class FolderNotFoundError(Exception):
+class EntryNotFoundError(Exception):
     """フォルダが見つからない."""

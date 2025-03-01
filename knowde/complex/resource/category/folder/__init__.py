@@ -12,14 +12,17 @@ userId/folder
 """
 from __future__ import annotations
 
-from functools import cache
+from typing import TYPE_CHECKING
 
 import networkx as nx
 from pydantic import BaseModel, Field
 
 from knowde.primitive.__core__.types import NXGraph  # noqa: TCH001
 
-from .errors import FolderNotFoundError
+from .errors import EntryNotFoundError
+
+if TYPE_CHECKING:
+    from uuid import UUID
 
 
 class FolderSpace(BaseModel):
@@ -56,18 +59,22 @@ class FolderSpace(BaseModel):
         """Noneの場合にエラー."""
         tgt = self.get_or_none(root, *names)
         if tgt is None:
-            raise FolderNotFoundError
+            raise EntryNotFoundError
         return tgt
 
 
-class MFolder(BaseModel, frozen=True):
-    """LFolderのgraph用Mapper."""
+class Entry(BaseModel, frozen=True):
+    """ResourceとFolderのcomposite."""
 
     name: str
     element_id_property: str
 
 
-@cache
-def to_frozen_cache(name: str, element_id_property: str) -> MFolder:
-    """ORMからfrozenへ変換."""
-    return MFolder(name=name, element_id_property=element_id_property)
+class MFolder(Entry, frozen=True):
+    """LFolderのgraph用Mapper."""
+
+
+class MResource(Entry, frozen=True):
+    """LResourceのOGM."""
+
+    uid: UUID

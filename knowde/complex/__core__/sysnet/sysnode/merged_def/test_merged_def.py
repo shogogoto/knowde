@@ -1,7 +1,6 @@
 """ツリーの重複チェックtest."""
 
 
-
 import networkx as nx
 import pytest
 from pytest_unordered import unordered
@@ -11,12 +10,11 @@ from knowde.complex.__core__.sysnet.errors import (
 )
 from knowde.complex.__core__.sysnet.sysfn import (
     to_def,
-    to_term,
 )
 from knowde.complex.__core__.sysnet.sysnode import Def
 from knowde.complex.__core__.tree2net.transformer import TSysArg
 from knowde.primitive.parser import get_leaves, parse2tree
-from knowde.primitive.term import Term, check_and_merge_term
+from knowde.primitive.term import Term
 
 from . import MergedDef
 
@@ -40,9 +38,8 @@ def test_merged_def() -> None:
     """
     _t = parse2tree(_s, TSysArg())
     leaves = get_leaves(_t)
-    mt = check_and_merge_term(to_term(leaves))
     defs = to_def(leaves)
-    mdefs, stds = MergedDef.create_and_parted(mt, defs)
+    mdefs, stds, _ = MergedDef.create_and_parted(defs)
     assert mdefs == unordered(
         [
             MergedDef.one(Term.create("A", "A1", "A2"), "aaa1", "aaa2", "aaa3"),

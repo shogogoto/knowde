@@ -6,6 +6,7 @@ permission指定できるよう拡張
 from __future__ import annotations
 
 from neomodel import (
+    AliasProperty,
     ArrayProperty,
     DateTimeNeo4jFormatProperty,
     One,
@@ -24,6 +25,7 @@ class LResource(StructuredNode):
     __label__ = "Resource"
     uid = UniqueIdProperty()
     title = StringProperty(index=True, required=True)
+    name = AliasProperty("title")
     authors = ArrayProperty(StringProperty())
     published = DateTimeNeo4jFormatProperty(default=None)
     urls = ArrayProperty(StringProperty())
