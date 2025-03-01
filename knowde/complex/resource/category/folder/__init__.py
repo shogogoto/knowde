@@ -2,35 +2,24 @@
 
 モチベは?
 userId/folder
-    CRUD
-
-    root folder user直下
-    folder は 配下ではnameが重複してはならない
-    rename
     remove 配下のフォルダとsysnetも全て削除
-    move parentを差し替える
 
-    folderのCRUD
-    folderとCLIのsync upload
+    CLIでfile sys と同期
         変更があったか否かを低コストでチェックできるとよい
             sysnet のhash値とか使える?
-
-        find コマンドとの連携を考えるか
-            自前で作らない方がいい
-
-    folder と CLI userのディレクトリの同期
-        CLI find して ファイルパスの構造をそのままsync(永続化)
-          -> Git管理できて便利
+        find コマンドとの連携を考えるか 自前で作らない方がいい
+        Git管理できて便利
 """
 from __future__ import annotations
+
+from functools import cache
 
 import networkx as nx
 from pydantic import BaseModel, Field
 
-from knowde.complex.resource.category.folder.errors import FolderNotFoundError
-from knowde.complex.resource.category.folder.label import LFolder
-from knowde.complex.resource.category.folder.mapper import MFolder  # noqa: TCH001
 from knowde.primitive.__core__.types import NXGraph  # noqa: TCH001
+
+from .errors import FolderNotFoundError
 
 
 class FolderSpace(BaseModel):
@@ -57,7 +46,7 @@ class FolderSpace(BaseModel):
         if current is None:
             return None
         for name in names:
-            succs = [n for n in self.g.successors(current) if str(n) == name]
+            succs = [n for n in self.g.successors(current) if n.name == name]
             if len(succs) != 1:  # 存在しないパスに対して空を返す
                 return None
             current = succs[0]
@@ -70,7 +59,15 @@ class FolderSpace(BaseModel):
             raise FolderNotFoundError
         return tgt
 
-    def get_as_label(self, root: str, *names: str) -> LFolder:
-        """Neomodel node として取得."""
-        tgt = self.get(root, *names)
-        return LFolder(**tgt.model_dump())
+
+class MFolder(BaseModel, frozen=True):
+    """LFolderのgraph用Mapper."""
+
+    name: str
+    element_id_property: str
+
+
+@cache
+def to_frozen_cache(name: str, element_id_property: str) -> MFolder:
+    """ORMからfrozenへ変換."""
+    return MFolder(name=name, element_id_property=element_id_property)

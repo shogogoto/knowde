@@ -7,6 +7,7 @@ from neomodel import (
     ZeroOrOne,
 )
 
+from knowde.complex.resource.category.folder import MFolder, to_frozen_cache
 from knowde.primitive.user.repo import LUser
 
 
@@ -26,3 +27,8 @@ class LFolder(StructuredNode):
         "OWNED",
         cardinality=ZeroOrOne,
     )
+
+    @property
+    def frozen(self) -> MFolder:
+        """hashableへ."""
+        return to_frozen_cache(self.name, self.element_id)

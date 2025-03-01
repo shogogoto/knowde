@@ -100,5 +100,5 @@ def test_folder_move(u: LUser) -> None:
     assert fs.get("f2", "xxx", "sub")
 
 
-def test_remove_folder() -> None:
+def test_delete_folder() -> None:
     """フォルダの削除(配下ごと)."""

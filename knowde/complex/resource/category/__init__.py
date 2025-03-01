@@ -3,3 +3,7 @@
 フォルダ分け 階層
 タグ resourceのmeta dataとして扱う?
 """
+
+
+class Entry:
+    """ResourceとFolderのcomposite."""

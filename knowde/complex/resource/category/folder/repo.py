@@ -9,16 +9,15 @@ from neomodel import (
     db,
 )
 
-from knowde.complex.resource.category.folder import FolderSpace
-from knowde.complex.resource.category.folder.label import LFolder
-from knowde.complex.resource.category.folder.mapper import MFolder
 from knowde.primitive.__core__.neoutil import to_uuid
 from knowde.primitive.user.repo import LUser
 
+from . import FolderSpace
 from .errors import (
     FolderAlreadyExistsError,
     FolderNotFoundError,
 )
+from .label import LFolder
 
 if TYPE_CHECKING:
     from knowde.primitive.__core__.neoutil import UUIDy
@@ -67,7 +66,7 @@ def fetch_subfolders(
     root: str,
     *names: str,
 ) -> tuple[LFolder, tuple[LFolder]]:
-    """ネットワークを辿ってフォルダとそのサブフォルダを取得."""
+    """ネットワークを辿ってフォルダとそのサブフォルダをピンポイントに取得."""
     n = len(names)
     uid = to_uuid(user_id)
     qs = [
@@ -114,12 +113,14 @@ def fetch_folderspace(user_id: UUIDy) -> FolderSpace:
     for f1, f2 in res[0]:
         if f2 is None:
             if f1 is not None:
-                root_lb = MFolder.from_lb(f1)
+                root_lb = f1.frozen
                 roots[f1.name] = root_lb
                 g.add_node(root_lb)
             continue
-        m1 = MFolder.from_lb(f1)
-        m2 = MFolder.from_lb(f2)
+        m1 = f1.frozen
+        m2 = f2.frozen
+        # m1 = MFolder.from_lb(f1)
+        # m2 = MFolder.from_lb(f2)
         g.add_edge(m1, m2)
     return FolderSpace(roots_=roots, g=g)
 
@@ -132,14 +133,30 @@ def move_folder(user_id: UUIDy, target: PurePath | str, to: PurePath | str) -> L
         msg = "絶対パスで指定して"
         raise ValueError(msg, target, to)
     fs = fetch_folderspace(user_id)
-    tgt = fs.get_as_label(*target.parts[1:])
+    tgt = LFolder(**fs.get(*target.parts[1:]).model_dump())
     tgt.parent.disconnect(tgt.parent.get())
     to_names = to.parts[1:]
     if len(to_names) == 0:  # rootへ
         luser = LUser.nodes.get(uid=user_id)
         tgt.owner.connect(luser)
         return tgt
-    parent_to_move = fs.get_as_label(*to_names[:-1])
+    parent_to_move = LFolder(**fs.get(*to_names[:-1]).model_dump())
     tgt.parent.connect(parent_to_move)
     tgt.name = to_names[-1]
     return tgt.save()
+
+
+# def delete_folder(user_id: UUIDy, *names: str) -> None:
+#     """配下ごとフォルダ削除."""
+#     q = """
+#         MATCH (user:User {uid: $uid})
+#         OPTIONAL MATCH (user)<-[:OWNED]-(root:Folder)
+#         RETURN root as f1, null as f2
+#         OPTIONAL MATCH (root)<-[:PARENT]-(sub:Folder)
+#         RETURN root as f1, sub as f2
+#         UNION
+#         OPTIONAL MATCH (sub)<-[:PARENT]-+(f1:Folder)<-[:PARENT]-(f2:Folder)
+#         RETURN f1, f2
+#     """
+#     uid = to_uuid(user_id)
+#     res = db.cypher_query(q, params={"uid": uid.hex}, resolve_objects=True)
