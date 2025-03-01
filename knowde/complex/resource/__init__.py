@@ -40,11 +40,24 @@ view
         文脈
             below parent
             premise... など
+
+FileSystem と DB の違いを意識させない仕組みがほしい
+    DB -> PurePath
+    FS -> Path
+    みたい
+
+    sysnet -> knet という命名に変更
 """
 
+
+from pydantic import BaseModel
 
 from knowde.primitive.__core__.neoutil import BaseMapper
 
 
-class Resource(BaseMapper):
+class MResource(BaseMapper, frozen=True):
     """sysnetの永続化."""
+
+
+class SysNode(BaseModel):
+    """系の構成要素."""

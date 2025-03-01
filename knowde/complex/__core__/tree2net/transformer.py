@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from lark import Token, Transformer
 
-from knowde.complex.__core__.sysnet.sysnode import Def, SysArg
+from knowde.complex.__core__.sysnet.sysnode import Def, KNArg
 from knowde.complex.__core__.tree2net.lineparse import parse_line
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.__core__.types import Duplicable
@@ -46,11 +46,11 @@ class TSysArg(Transformer):
     PUBLISHED = lambda _, _tok: _stoken(_tok, "@published")  # noqa: E731
     URL = lambda _, _tok: _stoken(_tok, "@url")  # noqa: E731
 
-    def ONELINE(self, tok: Token) -> SysArg:  # noqa: N802 D102
+    def ONELINE(self, tok: Token) -> KNArg:  # noqa: N802 D102
         v = "".join(tok.split("   "))  # 適当な\nに対応する空白
         return _parse2sysarg(v)
 
-    def MULTILINE(self, tok: Token) -> SysArg:  # noqa: N802 D102
+    def MULTILINE(self, tok: Token) -> KNArg:  # noqa: N802 D102
         sp = tok.split("\\\n")
         v = ""
         for s in sp:
@@ -58,7 +58,7 @@ class TSysArg(Transformer):
         return _parse2sysarg(v)
 
 
-def _parse2sysarg(v: str) -> SysArg:
+def _parse2sysarg(v: str) -> KNArg:
     if Template.is_parsable(v):
         return Template.parse(v)
 

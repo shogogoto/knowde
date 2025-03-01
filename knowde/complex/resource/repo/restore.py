@@ -9,20 +9,21 @@ import networkx as nx
 from neomodel import db
 
 from knowde.complex.__core__.sysnet import SysNet
-from knowde.complex.__core__.sysnet.sysnode import DUMMY_SENTENCE, Def, SysNode
+from knowde.complex.__core__.sysnet.sysnode import DUMMY_SENTENCE, Def, KNode
 from knowde.complex.__core__.sysnet.sysnode.merged_def import MergedDef
 from knowde.complex.__core__.tree2net.directed_edge import DirectedEdgeCollection
-from knowde.complex.resource.repo.labels import LResource
 from knowde.primitive.__core__.nxutil.edge_type import Direction, EdgeType
 from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.term import Term, check_and_merge_term
+
+from . import LResource
 
 if TYPE_CHECKING:
     from neo4j.graph import Relationship
 
 
 @cache
-def to_sysnode(n: neo4j.graph.Node) -> SysNode:
+def to_sysnode(n: neo4j.graph.Node) -> KNode:
     """neo4jから変換."""
     lb_name = next(iter(n.labels))
     match lb_name:

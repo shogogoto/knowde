@@ -89,14 +89,14 @@ class DummySentence(Duplicable, frozen=True):
     n: str = DUMMY_SENTENCE
 
 
-_SysElem: TypeAlias = str | Duplicable | Template  # 共通型
-SysNode: TypeAlias = Term | _SysElem
-SysArg: TypeAlias = Def | _SysElem
+_KNElem: TypeAlias = str | Duplicable | Template  # 共通型
+KNode: TypeAlias = Term | _KNElem
+KNArg: TypeAlias = Def | _KNElem
 
 
 META_TYPES: Final = ["AUTHOR", "PUBLISHED", "URL"]
 
 
-def is_meta(v: SysNode) -> bool:
+def is_meta(v: KNode) -> bool:
     """sysnetのメタ情報 ex. 著者とか."""
     return isinstance(v, Token) and v.type in META_TYPES

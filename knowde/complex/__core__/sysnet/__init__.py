@@ -22,7 +22,7 @@ from knowde.primitive.template import Templates
 from knowde.primitive.time import Series
 
 from .errors import SysNetNotFoundError
-from .sysnode import Def, SysArg, SysNode, is_meta
+from .sysnode import Def, KNArg, KNode, is_meta
 
 if TYPE_CHECKING:
     from knowde.primitive.term import Term
@@ -35,7 +35,7 @@ class SysNet(BaseModel, frozen=True):
     root: str
     g: NXGraph = Field(default_factory=nx.MultiDiGraph)
 
-    def get(self, n: SysNode) -> SysArg:
+    def get(self, n: KNode) -> KNArg:
         """文に紐づく用語があれば定義を返す."""
         self.check_contains(n)
         q = get_ifquote(self.g, n)
@@ -73,7 +73,7 @@ class SysNet(BaseModel, frozen=True):
         """テンプレートの集まり."""
         return Templates().add(*to_template(self.g.nodes))
 
-    def expand(self, n: SysNode) -> SysArg:
+    def expand(self, n: KNode) -> KNArg:
         """テンプレを展開(viewのときにのみ使うことを想定)."""
         got = self.get(n)
         ts = self._templates
@@ -92,7 +92,7 @@ class SysNet(BaseModel, frozen=True):
         gots = [self.get(n) for n in self.g.nodes if pattern in str(n)]
         return list({e.sentence if isinstance(e, Def) else e for e in gots})
 
-    def check_contains(self, n: SysNode) -> None:
+    def check_contains(self, n: KNode) -> None:
         """含なければエラー."""
         if n not in self.g:
             msg = f"{n} is not in system[{self.root}]."

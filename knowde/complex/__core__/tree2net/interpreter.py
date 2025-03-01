@@ -15,7 +15,7 @@ from knowde.primitive.__core__.util import parted
 if TYPE_CHECKING:
     from lark.tree import Branch
 
-    from knowde.complex.__core__.sysnet.sysnode import SysNode
+    from knowde.complex.__core__.sysnet.sysnode import KNode
 
 
 H_TYPES: Final = [f"H{i}" for i in range(2, 7)]
@@ -46,7 +46,7 @@ class SysNetInterpreter(Interpreter):
         for c in include_heading(children[1:]):
             self.col.append(EdgeType.HEAD, Direction.FORWARD, p, c)
 
-    def _add_indent(self, children: list[Branch], parent: SysNode) -> None:
+    def _add_indent(self, children: list[Branch], parent: KNode) -> None:
         """インデントを登録."""
         ex_heading = exclude_heading(children)
         if len(ex_heading) > 0:

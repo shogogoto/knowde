@@ -13,8 +13,8 @@ from knowde.complex.__core__.sysnet.errors import (
 from knowde.complex.__core__.sysnet.sysnode import (
     Def,
     DummySentence,
-    SysArg,
-    SysNode,
+    KNArg,
+    KNode,
 )
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.__core__.types import Duplicable
@@ -36,12 +36,12 @@ def to_term(vs: Iterable[Hashable]) -> list[Term]:
     return [*terms, *[v.term for v in vs if isinstance(v, Def)]]
 
 
-def to_quoterm(vs: Iterable[SysArg]) -> list[Token]:
+def to_quoterm(vs: Iterable[KNArg]) -> list[Token]:
     """termのみを取り出す."""
     return [v for v in vs if isinstance(v, Token) and v.type == "QUOTERM"]
 
 
-def arg2sentence(n: SysArg) -> str | DummySentence:
+def arg2sentence(n: KNArg) -> str | DummySentence:
     """関係のハブとなる文へ."""
     match n:
         case Template():
@@ -75,12 +75,12 @@ def check_duplicated_sentence(vs: Iterable[Hashable]) -> None:
         s_chk(s)
 
 
-def to_def(vs: Iterable[SysArg]) -> list[Def]:
+def to_def(vs: Iterable[KNArg]) -> list[Def]:
     """文のみを取り出す."""
     return [v for v in vs if isinstance(v, Def)]
 
 
-def get_ifdef(g: nx.DiGraph, n: SysNode) -> SysArg:
+def get_ifdef(g: nx.DiGraph, n: KNode) -> KNArg:
     """defがあれば返す."""
     if n not in g:
         msg = f"{n} is not in this graph."
@@ -108,7 +108,7 @@ def is_enclosed_in_backticks(s: str) -> bool:
     return bool(QUOTERM_PETTERN.match(s))
 
 
-def get_ifquote(g: nx.DiGraph, n: SysArg) -> SysArg:
+def get_ifquote(g: nx.DiGraph, n: KNArg) -> KNArg:
     """引用用語ならdefを返す."""
     if isinstance(n, str) and is_enclosed_in_backticks(n):
         succ = EdgeType.QUOTERM.get_succ_or_none(g, n)

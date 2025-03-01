@@ -10,17 +10,18 @@ import networkx as nx
 from lark import Token
 from more_itertools import collapse
 
-from knowde.complex.resource.repo.labels import LHead, LResource, LSentence, LTerm
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.term import Term
 from knowde.primitive.time import parse2dt
 
+from . import LHead, LResource, LSentence, LTerm
+
 if TYPE_CHECKING:
     from neomodel import StructuredNode
 
     from knowde.complex.__core__.sysnet import SysNet
-    from knowde.complex.__core__.sysnet.sysnode import SysNode
+    from knowde.complex.__core__.sysnet.sysnode import KNode
 
 
 def val2str(val: Any) -> str:  # noqa: ANN401
@@ -75,7 +76,7 @@ def t2labels(t: type[StructuredNode]) -> str:
     return ":".join(t.inherited_labels())
 
 
-def node2q(n: SysNode, nvars: dict[SysNode, str]) -> str | list[str] | None:
+def node2q(n: KNode, nvars: dict[KNode, str]) -> str | list[str] | None:
     """nodeからcreate可能な文字列に変換."""
     var = nvars.get(n, None)
     if var is None:
@@ -99,7 +100,7 @@ def node2q(n: SysNode, nvars: dict[SysNode, str]) -> str | list[str] | None:
     return None
 
 
-def reconnect_root_below(sn: SysNet, varnames: dict[SysNode, str]) -> str | None:
+def reconnect_root_below(sn: SysNet, varnames: dict[KNode, str]) -> str | None:
     """Resource infoを除外したときにbelowが途切れるのを防ぐ."""
     nodes = resource_info(sn)
     vs = set()
@@ -120,8 +121,8 @@ def reconnect_root_below(sn: SysNet, varnames: dict[SysNode, str]) -> str | None
 
 
 def rel2q(
-    edge: tuple[SysNode, SysNode, dict[str, EdgeType]],
-    varnames: dict[SysNode, str],
+    edge: tuple[KNode, KNode, dict[str, EdgeType]],
+    varnames: dict[KNode, str],
 ) -> str | list[str] | None:
     """edgeからcreate可能な文字列に変換."""
     u, v, d = edge
@@ -137,12 +138,11 @@ def rel2q(
             ret += [f"CREATE ({x}) -[:TERM]-> ({y})" for x, y in pairwise(names)]
             return ret
         case _:
-            pass
-    return f"CREATE ({varnames[u]}) -[:{t.arrow}]-> ({varnames[v]})"
+            return f"CREATE ({varnames[u]}) -[:{t.arrow}]-> ({varnames[v]})"
 
 
 def sysnet2cypher(sn: SysNet) -> str:
-    """sysnetからcreate文作成."""
+    """sysnetからnodeとrelのcreate文を順次作成."""
     q_root = resource_props(sn)
 
     nodes = sn.g.nodes - resource_info(sn)

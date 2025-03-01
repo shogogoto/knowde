@@ -19,7 +19,7 @@ from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.term import Term
 
 if TYPE_CHECKING:
-    from knowde.complex.__core__.sysnet.sysnode import SysArg
+    from knowde.complex.__core__.sysnet.sysnode import KNArg
 
 NW1N0Fn: TypeAlias = Callable[[SysNet], int]
 NW1N0RatioFn: TypeAlias = Callable[[SysNet], float]
@@ -212,7 +212,7 @@ def get_axiom_to(sn: SysNet) -> list[Hashable]:
 
 
 @cache
-def get_axiom_resolved(sn: SysNet) -> list[SysArg]:
+def get_axiom_resolved(sn: SysNet) -> list[KNArg]:
     """RESOLVEDの出発点."""
 
     def filter_axiom(n: Hashable) -> bool:

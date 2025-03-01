@@ -22,7 +22,7 @@ from knowde.complex.systats.types import Nw1N1Label, Nw1N1Recursive
 
 if TYPE_CHECKING:
     from knowde.complex.__core__.sysnet import SysNet
-    from knowde.complex.__core__.sysnet.sysnode import SysArg
+    from knowde.complex.__core__.sysnet.sysnode import KNArg
     from knowde.primitive.__core__.types import Duplicable
 
 
@@ -55,7 +55,7 @@ class Nw1N1Ctx(Enum):
                 return e
         raise ValueError(label)
 
-    def format(self, n: SysArg) -> str:
+    def format(self, n: KNArg) -> str:
         """整形."""
         return f"{self.prefix} {n}"
 
