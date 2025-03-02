@@ -52,12 +52,6 @@ FileSystem と DB の違いを意識させない仕組みがほしい
 
 from pydantic import BaseModel
 
-from knowde.primitive.__core__.neoutil import BaseMapper
-
-
-class MResource(BaseMapper, frozen=True):
-    """sysnetの永続化."""
-
 
 class SysNode(BaseModel):
     """系の構成要素. Head|Sentence|Term."""

@@ -27,7 +27,7 @@ def to_sysnode(n: neo4j.graph.Node) -> KNode:
             return n.get("val")
         case "Term":
             return Term.create(n.get("val"))
-        case "Resource":
+        case "Resource" | "Entry":
             return n.get("title")
         case _:
             props = n.items()

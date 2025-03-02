@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING
 
 import networkx as nx
 from neomodel import (
+    INCOMING,
+    Traversal,
     db,
 )
 
@@ -17,9 +19,10 @@ from .errors import (
     EntryAlreadyExistsError,
     EntryNotFoundError,
 )
-from .label import LFolder
+from .label import LEntry, LFolder, LResource
 
 if TYPE_CHECKING:
+    from datetime import date
 
     from knowde.primitive.__core__.neoutil import UUIDy
 
@@ -36,41 +39,47 @@ def create_folder(user_id: UUIDy, *names: str) -> LFolder:
             return create_sub_folder(user_id, *names)
 
 
+def check_already_root(lb: LUser, name: str) -> None:
+    """ユーザー直下でnameが既にあるか."""
+    trav = Traversal(lb, "OWNED", {"node_class": LEntry, "direction": INCOMING})
+    roots = trav.all()
+    if name in [r.name for r in roots]:
+        raise EntryAlreadyExistsError
+
+
 def create_root_folder(user_id: UUIDy, name: str) -> LFolder:
     """直下フォルダ作成."""
     u: LUser = LUser.nodes.get(uid=to_uuid(user_id).hex)
-
-    _f = LFolder.nodes.get_or_none(name=name)
-    if _f is not None:
-        raise EntryAlreadyExistsError
+    check_already_root(u, name)
     f: LFolder = LFolder(name=name).save()
     f.owner.connect(u)
     return f
 
 
-# def create_root_resource(
-#     user_id: UUIDy,
-#     name: str,
-#     authors: list[str] | None = None,
-#     published: date | None = None,
-#     urls: list[str] | None = None,
-# ) -> None:
-#     """ユーザー直下のリソース."""
-#     u: LUser = LUser.nodes.get(uid=to_uuid(user_id).hex)
-#     d = {
-#         "name": name,
-#         "authors": authors,
-#         "published": published,
-#         "urls": urls,
-#     }
-#     r = LResource.nodes.get_or_none()
-#     if r is not None:
-#         raise EntryAlreadyExistsError
-#     r = LResource
+def create_root_resource(
+    user_id: UUIDy,
+    name: str,
+    authors: list[str] | None = None,
+    published: date | None = None,
+    urls: list[str] | None = None,
+) -> LResource:
+    """ユーザー直下のリソース."""
+    u: LUser = LUser.nodes.get(uid=to_uuid(user_id).hex)
+    check_already_root(u, name)
+    d = {
+        "title": name,
+        "authors": authors,
+        "published": published,
+        "urls": urls,
+    }
+    r = LResource(**d)
+    r.save()
+    r.owner.connect(u)
+    return r
 
 
-def create_sub_folder(user_id: UUIDy, root: str, *names: str) -> LFolder:
-    """サブフォルダ作成."""
+def check_and_get_parent(user_id: UUIDy, root: str, *names: str) -> LFolder:
+    """配下に同名のentryがないことを確認して返す."""
     if len(names) == 0:
         raise ValueError
     create_name = names[-1]
@@ -79,9 +88,36 @@ def create_sub_folder(user_id: UUIDy, root: str, *names: str) -> LFolder:
         p = "/".join([root, *names])
         msg = f"/{p}'は既に存在しています"
         raise EntryAlreadyExistsError(msg)
-    sub = LFolder(name=create_name).save()
+    return parent
+
+
+def create_sub_folder(user_id: UUIDy, root: str, *names: str) -> LFolder:
+    """サブフォルダ作成(同配下に名前の重複がないことを確認)."""
+    parent = check_and_get_parent(user_id, root, *names)
+    sub = LFolder(name=names[-1]).save()
     sub.parent.connect(parent)
     return sub
+
+
+def create_sub_resource(
+    user_id: UUIDy,
+    root: str,
+    *names: str,
+    authors: list[str] | None = None,
+    published: date | None = None,
+    urls: list[str] | None = None,
+) -> LResource:
+    """フォルダ配下に作成."""
+    parent = check_and_get_parent(user_id, root, *names)
+    d = {
+        "name": names[-1],
+        "authors": authors,
+        "published": published,
+        "urls": urls,
+    }
+    r = LResource(**d).save()
+    r.parent.connect(parent)
+    return r
 
 
 def fetch_subfolders(
@@ -93,12 +129,12 @@ def fetch_subfolders(
     n = len(names)
     uid = to_uuid(user_id)
     qs = [
-        f"MATCH (:User {{uid: $uid}})<-[:OWNED]-(f0:Folder {{ name: '{root}' }})",
+        f"MATCH (:User {{uid: $uid}})<-[:OWNED]-(f0:Entry {{ name: '{root}' }})",
         *[
             f"<-[:PARENT]-(f{i+1}:Folder {{ name: '{name}' }})"
             for i, name in enumerate(names)
         ],
-        f"OPTIONAL MATCH (f{n})<-[:PARENT]-(sub:Folder)",
+        f"OPTIONAL MATCH (f{n})<-[:PARENT]-(sub:Entry)",
         f"RETURN f{n}, sub",
     ]
     q = "\n".join(qs)
@@ -120,13 +156,13 @@ def fetch_namespace(user_id: UUIDy) -> FolderSpace:
     """ユーザー配下のサブフォルダ."""
     q = """
         MATCH (user:User {uid: $uid})
-        OPTIONAL MATCH (user)<-[:OWNED]-(root:Folder)
+        OPTIONAL MATCH (user)<-[:OWNED]-(root:Entry)
         RETURN root as f1, null as f2
         UNION
-        OPTIONAL MATCH (root)<-[:PARENT]-(sub:Folder)
+        OPTIONAL MATCH (root)<-[:PARENT]-(sub:Entry)
         RETURN root as f1, sub as f2
         UNION
-        OPTIONAL MATCH (sub)<-[:PARENT]-+(f1:Folder)<-[:PARENT]-(f2:Folder)
+        OPTIONAL MATCH (sub)<-[:PARENT]-+(f1:Folder)<-[:PARENT]-(f2:Entry)
         RETURN f1, f2
     """
     uid = to_uuid(user_id)
@@ -142,8 +178,6 @@ def fetch_namespace(user_id: UUIDy) -> FolderSpace:
             continue
         m1 = f1.frozen
         m2 = f2.frozen
-        # m1 = MFolder.from_lb(f1)
-        # m2 = MFolder.from_lb(f2)
         g.add_edge(m1, m2)
     return FolderSpace(roots_=roots, g=g)
 

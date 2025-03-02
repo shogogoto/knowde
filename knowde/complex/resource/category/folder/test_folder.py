@@ -3,6 +3,7 @@
 
 import pytest
 
+from knowde.primitive.__core__.debug import pline
 from knowde.primitive.user.repo import LUser
 
 from .errors import (
@@ -12,7 +13,9 @@ from .errors import (
 from .repo import (
     create_folder,
     create_root_folder,
+    create_root_resource,
     create_sub_folder,
+    create_sub_resource,
     fetch_namespace,
     fetch_subfolders,
     move_folder,
@@ -34,6 +37,8 @@ def test_create_root_folder(u: LUser) -> None:
 def test_create_duplicated_root_folder(u: LUser) -> None:
     """User直下の重複フォルダ."""
     create_root_folder(u.uid, "f1")
+    create_root_folder(u.uid, "f2")
+    create_sub_folder(u.uid, "f2", "f1")
     with pytest.raises(EntryAlreadyExistsError):
         create_root_folder(u.uid, "f1")
 
@@ -100,10 +105,16 @@ def test_folder_move(u: LUser) -> None:
     assert fs.get("f2", "xxx", "sub")
 
 
-# def test_create_resource(u: LUser) -> None:
-#     """フォルダ(composite)とファイル(leaf)を両方扱えるように拡張."""
-#     create_folder(u.uid, "f1")
-#     create_root_resource(u.uid, "r1")
+def test_create_resource(u: LUser) -> None:
+    """フォルダ(composite)とファイル(leaf)を両方扱えるように拡張."""
+    create_folder(u.uid, "f1")
+    create_root_resource(u.uid, "r1")
+    create_sub_resource(u.uid, "f1", "r1")  # 階層が違えば同名でも登録できる
+    pline("-")
+    pline("-")
+    ns = fetch_namespace(u.uid)
+    assert ns.roots == ["f1", "r1"]
+    assert ns.children("f1") == ["r1"]
 
 
 def test_delete_folder() -> None:

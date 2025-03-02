@@ -12,24 +12,23 @@ userId/folder
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from datetime import date  # noqa: TCH003
+from uuid import UUID  # noqa: TCH003
 
 import networkx as nx
 from pydantic import BaseModel, Field
+from pydantic_core import Url  # noqa: TCH002
 
 from knowde.primitive.__core__.types import NXGraph  # noqa: TCH001
 
 from .errors import EntryNotFoundError
-
-if TYPE_CHECKING:
-    from uuid import UUID
 
 
 class FolderSpace(BaseModel):
     """リソースの分類."""
 
     g: NXGraph = Field(default_factory=nx.DiGraph)
-    roots_: dict[str, MFolder] = Field()
+    roots_: dict[str, Entry] = Field()
 
     def children(self, root: str, *names: str) -> list[str]:
         """element_idなしで文字列だけでアクセス."""
@@ -41,7 +40,7 @@ class FolderSpace(BaseModel):
     @property
     def roots(self) -> list[str]:
         """ユーザー直下のフォルダ一覧."""
-        return list(self.roots_.keys())
+        return sorted(self.roots_.keys())
 
     def get_or_none(self, root: str, *names: str) -> MFolder | None:
         """文字列でパス指定."""
@@ -68,13 +67,24 @@ class Entry(BaseModel, frozen=True):
 
     name: str
     element_id_property: str
+    uid: UUID
 
 
 class MFolder(Entry, frozen=True):
     """LFolderのgraph用Mapper."""
 
+    def __str__(self) -> str:
+        """Prefix / でフォルダであることを明示."""
+        return f"/{self.name}"
+
 
 class MResource(Entry, frozen=True):
     """LResourceのOGM."""
 
-    uid: UUID
+    authors: frozenset[str] | None = None
+    published: date | None = None
+    urls: frozenset[Url] | None = None
+
+    def __str__(self) -> str:
+        """For display."""
+        return self.name
