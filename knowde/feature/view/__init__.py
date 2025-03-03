@@ -1,4 +1,4 @@
-"""load-file."""
+"""単一ファイルの読み込み・表示."""
 from __future__ import annotations
 
 from typing import IO, TYPE_CHECKING
@@ -12,7 +12,12 @@ if TYPE_CHECKING:
     from knowde.complex.systats.types import Nw1N1Recursive
 
 
-@click.command("stat")
+@click.group("view")
+def view_cli() -> None:
+    """ファイル入力による表示機能群."""
+
+
+@view_cli.command("stat")
 @click.argument("stdin", type=click.File("r"), default="-")
 @click.option("--heavy", is_flag=True, default=False, help="重い統計値も算出")
 @click.option("--table", is_flag=True, default=False, help="テーブル表示")
@@ -47,7 +52,7 @@ ignore_opt = click.option(
 )
 
 
-@click.command("score")
+@view_cli.command("score")
 @click.argument("stdin", type=click.File("r"), default="-")
 @click.option(
     "-n",
@@ -79,7 +84,7 @@ def score_cmd(
     score_proc(stdin, number, item, ignore, config)
 
 
-@click.command("detail")
+@view_cli.command("detail")
 @click.option("--stdin", type=click.File("r"), default="-")
 @click.argument("pattern", type=click.STRING)
 @item_opt
@@ -104,7 +109,7 @@ def detail_cmd(
     detail_proc(stdin, pattern, item, ignore, config)
 
 
-@click.command("time")
+@view_cli.command("time")
 @click.option("--stdin", type=click.File("r"), default="-")
 @click.argument("dateformat", type=click.STRING)
 @click.option(

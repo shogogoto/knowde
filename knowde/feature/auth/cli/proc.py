@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import click
 
 from knowde.feature.__core__.config import ReqProtocol, Settings
-from knowde.primitive.fs import dir_path
+from knowde.primitive.config import dir_path
 
 if TYPE_CHECKING:
     from pathlib import Path
