@@ -15,9 +15,10 @@ from fastapi_users.authentication import (
 )
 from typing_extensions import override
 
-from knowde.feature.auth.repo import AccountDB
 from knowde.primitive.config.env import Settings
 from knowde.primitive.user import User
+
+from .repo import AccountDB
 
 s = Settings()
 

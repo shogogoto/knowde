@@ -4,8 +4,9 @@
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from knowde.feature.auth.api import auth_router
-from knowde.feature.auth.cli.proc import (
+from knowde.complex.auth.routers import auth_router
+
+from .proc import (
     change_me_proc,
     get_me_proc,
     login_proc,

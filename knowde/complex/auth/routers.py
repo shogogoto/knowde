@@ -6,11 +6,11 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from fastapi_users import FastAPIUsers
 
-from knowde.feature.auth.manager import auth_backend, get_user_manager
-from knowde.feature.auth.schema import UserCreate, UserRead, UserUpdate
 from knowde.primitive.config.env import Settings
 from knowde.primitive.user import User
 
+from .manager import auth_backend, get_user_manager
+from .schema import UserCreate, UserRead, UserUpdate
 from .sso import GOOGLE_URL, router_google_oauth
 
 auth_router = APIRouter()

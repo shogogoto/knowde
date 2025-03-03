@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import click
 
-from knowde.feature.auth.cli import user_cli
+from knowde.complex.auth.cli import user_cli
 from knowde.feature.cli.completion import complete_option
 from knowde.feature.cli.help_all import help_all_option
 from knowde.feature.fs import link_cmd

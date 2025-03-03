@@ -11,10 +11,11 @@ import requests
 from fastapi_users import FastAPIUsers
 from httpx_oauth.clients.google import GoogleOAuth2
 
-from knowde.feature.auth.manager import auth_backend, get_user_manager
 from knowde.primitive.config import LocalConfig
 from knowde.primitive.config.env import Settings
 from knowde.primitive.user import User
+
+from .manager import auth_backend, get_user_manager
 
 if TYPE_CHECKING:
     from fastapi import APIRouter

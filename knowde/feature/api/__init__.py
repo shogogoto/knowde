@@ -7,10 +7,10 @@ from typing import AsyncGenerator
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from knowde.feature.__core__.config import Settings
+from knowde.complex.auth.routers import auth_router
 from knowde.feature.api.middle import Neo4jTransactionMiddleware, neo4j_logger
-from knowde.feature.auth.api import auth_router
 from knowde.primitive.__core__ import ErrorHandlingMiddleware
+from knowde.primitive.config.env import Settings
 from knowde.tmp import deduct_router, def_router
 from knowde.tmp.deduction.proposition import p_router
 
