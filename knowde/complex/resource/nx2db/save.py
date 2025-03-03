@@ -10,12 +10,13 @@ import networkx as nx
 from lark import Token
 from more_itertools import collapse
 
+from knowde.complex.resource.category.folder.label import LResource
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.term import Term
 from knowde.primitive.time import parse2dt
 
-from . import LHead, LResource, LSentence, LTerm
+from . import LHead, LSentence, LTerm
 
 if TYPE_CHECKING:
     from neomodel import StructuredNode

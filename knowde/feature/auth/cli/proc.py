@@ -1,16 +1,14 @@
 """遅延importでCLI補間軽くするための分離."""
 from __future__ import annotations
 
-import json
 from typing import TYPE_CHECKING
 
 import click
 
-from knowde.feature.__core__.config import ReqProtocol, Settings
-from knowde.primitive.config import dir_path
+from knowde.primitive.config import LocalConfig
+from knowde.primitive.config.env import ReqProtocol, Settings
 
 if TYPE_CHECKING:
-    from pathlib import Path
     from uuid import UUID
 
     from httpx import Response
@@ -41,9 +39,10 @@ def login_proc(
         "/auth/jwt/login",
         data={"username": email, "password": password},
     )
-    p = auth_file()
     if res.is_success:
-        p.write_text(json.dumps(res.json(), indent=2))
+        c = LocalConfig.load()
+        c.CREDENTIALS = res.json()
+        c.save()
     return res
 
 
@@ -60,12 +59,11 @@ def logout_proc(
 
 def read_saved_token() -> str:
     """保存されたトークン."""
-    p = auth_file()
-    if not p.exists():
-        click.echo(f"{p}にトークンが取得されていません")
+    c = LocalConfig.load()
+    if not c.CREDENTIALS:
+        click.echo("トークンが取得されていません")
         click.Abort()
-    d = json.loads(p.read_text())
-    return d["access_token"]
+    return c.CREDENTIALS["access_token"]
 
 
 def change_me_proc(
@@ -109,6 +107,18 @@ def get_user_proc(
     )
 
 
+def delete_user_proc(
+    uid: UUID,
+    delete: ReqProtocol = s.delete,
+) -> Response:
+    """アカウント削除."""
+    token = read_saved_token()
+    return delete(
+        f"/users/{uid}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+
 def change_user_proc(  # noqa: PLR0913
     uid: UUID,
     email: str | None,
@@ -135,20 +145,3 @@ def change_user_proc(  # noqa: PLR0913
         headers={"Authorization": f"Bearer {token}"},
         json=change,
     )
-
-
-def delete_user_proc(
-    uid: UUID,
-    delete: ReqProtocol = s.delete,
-) -> Response:
-    """アカウント削除."""
-    token = read_saved_token()
-    return delete(
-        f"/users/{uid}",
-        headers={"Authorization": f"Bearer {token}"},
-    )
-
-
-def auth_file() -> Path:
-    """認証情報ファイルパス."""
-    return dir_path() / "auth.json"

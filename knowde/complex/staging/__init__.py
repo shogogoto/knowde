@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from knowde.complex.__core__.file_io import nxread, nxwrite
 from knowde.complex.__core__.sysnet import SysNet
-from knowde.primitive.fs import dir_path
+from knowde.primitive.config import dir_path
 
 """
 networkxのCRUD

@@ -3,49 +3,45 @@ from __future__ import annotations
 
 import json
 import webbrowser
-from enum import Enum
 from typing import TYPE_CHECKING, Final
 from uuid import UUID
 
 import click
-import httpx
+import requests
 from fastapi_users import FastAPIUsers
 from httpx_oauth.clients.google import GoogleOAuth2
 
-from knowde.feature.__core__.config import Settings
-from knowde.feature.auth.cli.proc import auth_file
 from knowde.feature.auth.manager import auth_backend, get_user_manager
+from knowde.primitive.config import LocalConfig
+from knowde.primitive.config.env import Settings
 from knowde.primitive.user import User
 
 if TYPE_CHECKING:
     from fastapi import APIRouter
 
 
-def browse_for_sso() -> None:
+def browse_for_sso() -> bool:
     """ブラウザを開いてSSOアカウントのレスポンスを取得."""
     port = 8000
 
     url = f"http://localhost:{port}{GOOGLE_URL}/authorize"
-    client = httpx.Client()
-    res = client.get(url)
+    try:
+        res = requests.get(url, timeout=3)
+    except requests.ConnectionError:
+        click.echo(f"認証URL'{url}'への接続に失敗しました")
+        return False
     auth_url = res.json().get("authorization_url")
     webbrowser.open(auth_url)
     click.echo(
         '{"access_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNWQ3NWViZi1mZmRlLTQ3OTQtYmFhYy0xY2VjYTc1NzFmYmEiLCJhdWQiOlsiZmFzdGFwaS11c2VyczphdXRoIl0sImV4cCI6MTczOTk1NzQ4NH0.YoEk4jsjKbHx041JHyweHcYIIDocK0x0K8qwbtbWD4Y","token_type":"bearer"}',
     )
     res_text = input("認証後ブラウザに上記のようなレスポンスを入力してください:")
-    p = auth_file()
-    js = json.loads(res_text)
-    js = json.dumps(js, indent=2)
-    p.write_text(js)
-    click.echo(f"{p}を以下で上書きしました")
-    click.echo(js)
-
-
-class Provider(Enum):
-    """Single Sign on provider."""
-
-    GOOGLE = "google"
+    c = LocalConfig.load()
+    c.CREDENTIALS = json.loads(res_text)
+    c.save()
+    click.echo("認証情報を保存しました")
+    click.echo(c.CREDENTIALS)
+    return True
 
 
 GOOGLE_URL: Final = "/google"

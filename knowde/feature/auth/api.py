@@ -6,9 +6,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from fastapi_users import FastAPIUsers
 
-from knowde.feature.__core__.config import Settings
 from knowde.feature.auth.manager import auth_backend, get_user_manager
 from knowde.feature.auth.schema import UserCreate, UserRead, UserUpdate
+from knowde.primitive.config.env import Settings
 from knowde.primitive.user import User
 
 from .sso import GOOGLE_URL, router_google_oauth
@@ -35,6 +35,7 @@ auth_router.include_router(
     prefix="/auth",
     tags=["auth"],
 )
+
 auth_router.include_router(
     rc.get_users_router(UserRead, UserUpdate),
     prefix="/users",
@@ -47,7 +48,6 @@ auth_router.include_router(
     prefix=GOOGLE_URL,
     tags=["auth"],
 )
-# auth_router.include_router(router_google_sso())
 
 
 @auth_router.get("/authenticated-route")

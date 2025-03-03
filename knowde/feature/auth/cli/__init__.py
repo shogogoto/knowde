@@ -23,9 +23,9 @@ def sso_cmd() -> None:
     from knowde.feature.auth.cli.proc import get_me_proc
     from knowde.feature.auth.sso import browse_for_sso
 
-    browse_for_sso()
-    res = get_me_proc()
-    echo_response(res, "Googleによるアカウント作成とログイン")
+    if browse_for_sso():
+        res = get_me_proc()
+        echo_response(res, "Googleによるアカウント作成とログイン")
 
 
 @user_cli.command("register")

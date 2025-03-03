@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 from functools import cache
 from pathlib import Path
-from typing import Annotated, Any, Callable, Final, Self, TypeAlias
+from typing import Annotated, Any, Callable, Final, Self, TypeAlias, TypedDict
 
 from pydantic import BaseModel, PlainSerializer
 from typing_extensions import override
@@ -22,6 +22,13 @@ def dir_path() -> Path:
 CONFIG_FILE: Final = dir_path() / "config.json"
 
 
+class Credential(TypedDict):
+    """認証情報."""
+
+    access_token: str
+    token_type: str
+
+
 class LocalConfig(BaseModel):
     """設定ファイル."""
 
@@ -30,9 +37,7 @@ class LocalConfig(BaseModel):
         PlainSerializer(lambda x: str(x), return_type=str, when_used="json"),
     ] = None
 
-    # @field_serializer("LINK")
-    # def serialize_path(self, path: Path) -> str:
-    #     return str(path)  # Pathオブジェクトを文字列に変換
+    CREDENTIALS: Credential | None = None
 
     @classmethod
     def load(cls) -> Self:
