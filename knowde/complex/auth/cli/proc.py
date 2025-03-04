@@ -1,18 +1,22 @@
 """遅延importでCLI補間軽くするための分離."""
 from __future__ import annotations
 
+import json
+import webbrowser
 from typing import TYPE_CHECKING
 
 import click
+import requests
 
 from knowde.primitive.config import LocalConfig
-from knowde.primitive.config.env import ReqProtocol, Settings
+from knowde.primitive.config.env import Settings
 
 if TYPE_CHECKING:
     from uuid import UUID
 
     from httpx import Response
 
+    from knowde.primitive.config.env import ReqProtocol
 
 s = Settings()
 
@@ -46,6 +50,15 @@ def login_proc(
     return res
 
 
+def read_saved_token() -> str:
+    """保存されたトークン."""
+    c = LocalConfig.load()
+    if not c.CREDENTIALS:
+        click.echo("トークンが取得されていません")
+        click.Abort()
+    return c.CREDENTIALS["access_token"]
+
+
 def logout_proc(
     post: ReqProtocol = s.post,
 ) -> Response:
@@ -55,15 +68,6 @@ def logout_proc(
         "/auth/jwt/logout",
         headers={"Authorization": f"Bearer {token}"},
     )
-
-
-def read_saved_token() -> str:
-    """保存されたトークン."""
-    c = LocalConfig.load()
-    if not c.CREDENTIALS:
-        click.echo("トークンが取得されていません")
-        click.Abort()
-    return c.CREDENTIALS["access_token"]
 
 
 def change_me_proc(
@@ -145,3 +149,27 @@ def change_user_proc(  # noqa: PLR0913
         headers={"Authorization": f"Bearer {token}"},
         json=change,
     )
+
+
+def browse_for_sso() -> bool:
+    """ブラウザを開いてSSOアカウントのレスポンスを取得."""
+    port = 8000
+
+    url = f"http://localhost:{port}/google/authorize"
+    try:
+        res = requests.get(url, timeout=3)
+    except requests.ConnectionError:
+        click.echo(f"認証URL'{url}'への接続に失敗しました")
+        return False
+    auth_url = res.json().get("authorization_url")
+    webbrowser.open(auth_url)
+    click.echo(
+        '{"access_token":"eyJh...","token_type":"bearer"}',
+    )
+    res_text = input("認証後ブラウザに上記のようなレスポンスを入力してください:")
+    c = LocalConfig.load()
+    c.CREDENTIALS = json.loads(res_text)
+    c.save()
+    click.echo("認証情報を保存しました")
+    click.echo(c.CREDENTIALS)
+    return True

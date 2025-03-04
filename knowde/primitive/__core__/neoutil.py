@@ -21,7 +21,7 @@ def to_uuid(uidy: UUIDy) -> UUID:
 L = TypeVar("L", bound=StructuredNode)
 
 
-class BaseMapper(BaseModel, Generic[L], frozen=True):
+class BaseMapper(BaseModel, Generic[L]):
     """Neomodel-pydantic mapper."""
 
     __label__: type[L]

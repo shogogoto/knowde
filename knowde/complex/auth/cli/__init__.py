@@ -20,8 +20,7 @@ def user_cli() -> None:
 @user_cli.command("google-sso")
 def sso_cmd() -> None:
     """Googleによるシングルサインオン."""
-    from knowde.feature.auth.cli.proc import get_me_proc
-    from knowde.feature.auth.sso import browse_for_sso
+    from .proc import browse_for_sso, get_me_proc
 
     if browse_for_sso():
         res = get_me_proc()
