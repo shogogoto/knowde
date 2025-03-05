@@ -25,10 +25,9 @@ class Settings(BaseSettings):
     NEO4J_URL: str
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
-    SSO_PROT: int = 19419
-    KNOWDE_URL: str
+    KNOWDE_URL: str = "https://knowde.onrender.com/"
     KN_AUTH_SECRET: str = "SECRET"
-    JWT_LIFETIME_SEC: int = 60 * 60 * 24  # 1 day
+    KN_TOKEN_LIFETIME_SEC: int = 60 * 60 * 24  # 1 day
 
     def setup_db(self) -> None:
         """DB設定."""

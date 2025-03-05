@@ -168,6 +168,6 @@ def auth_backend() -> AuthenticationBackend:
         transport=BearerTransport(tokenUrl="auth/jwt/login"),
         get_strategy=lambda: JWTStrategy(
             secret=s.KN_AUTH_SECRET,
-            lifetime_seconds=s.JWT_LIFETIME_SEC,
+            lifetime_seconds=s.KN_TOKEN_LIFETIME_SEC,
         ),
     )

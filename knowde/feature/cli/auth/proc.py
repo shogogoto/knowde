@@ -8,13 +8,13 @@ import click
 import requests
 
 from knowde.primitive.config import LocalConfig
+from knowde.primitive.config.env import Settings
 
 
 def browse_for_sso() -> bool:
     """ブラウザを開いてSSOアカウントのレスポンスを取得."""
-    port = 8000
-
-    url = f"http://localhost:{port}/google/authorize"
+    s = Settings()
+    url = s.url("/google/authorize")
     try:
         res = requests.get(url, timeout=3)
     except requests.ConnectionError:
@@ -22,10 +22,13 @@ def browse_for_sso() -> bool:
         return False
     auth_url = res.json().get("authorization_url")
     webbrowser.open(auth_url)
-    click.echo(
-        '{"access_token":"eyJh...","token_type":"bearer"}',
+    ex_res = '{"access_token":"eyJh...","token_type":"bearer"}'
+    res_text = input(
+        f"ブラウザ認証の次のようなレスポンス'{ex_res}'をコピペしてください:",
     )
-    res_text = input("認証後ブラウザに上記のようなレスポンスを入力してください:")
+    if not res_text:
+        click.echo("入力がありませんでした")
+        return False
     c = LocalConfig.load()
     c.CREDENTIALS = json.loads(res_text)
     c.save()

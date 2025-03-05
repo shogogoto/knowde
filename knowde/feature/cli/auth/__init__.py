@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 import click
 
 if TYPE_CHECKING:
-
     import httpx
 
 
@@ -19,10 +18,12 @@ def user_cli() -> None:
 @user_cli.command("google-sso")
 def sso_cmd() -> None:
     """Googleによるシングルサインオン."""
-    from .proc import browse_for_sso, get_me_proc
+    from knowde.complex.auth.repo import AuthGet
+
+    from .proc import browse_for_sso
 
     if browse_for_sso():
-        res = get_me_proc()
+        res = AuthGet().me()
         echo_response(res, "Googleによるアカウント作成とログイン")
 
 

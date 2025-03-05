@@ -111,18 +111,18 @@ def detail_cmd(
 
 @view_cli.command("time")
 @click.option("--stdin", type=click.File("r"), default="-")
-@click.argument("dateformat", type=click.STRING)
+@click.argument("timespan", type=click.STRING)
 @click.option(
     "-o",
     "--overlap",
     is_flag=True,
     default=False,
-    help="指定期間と重なるかつはみ出るものも表示",
+    help="指定期間と重なるものも表示",
 )
-def time_cmd(stdin: IO, dateformat: str, overlap: bool) -> None:  # noqa: FBT001
+def time_cmd(stdin: IO, timespan: str, overlap: bool) -> None:  # noqa: FBT001
     """時系列から指定期間に含まれるものを列挙.
 
-    DATEFORM EDTF(Extended Date/Time Format)を独自拡張した日付.
+    TIMESPAN EDTF(Extended Date/Time Format)を独自拡張した日付.
 
     Example:
     -------
@@ -138,9 +138,9 @@ def time_cmd(stdin: IO, dateformat: str, overlap: bool) -> None:  # noqa: FBT001
     from .proc import time_proc
 
     if overlap:
-        time_proc(stdin, dateformat, "overlap")
+        time_proc(stdin, timespan, "overlap")
     else:
-        time_proc(stdin, dateformat, "envelop")
+        time_proc(stdin, timespan, "envelop")
 
 
 # # typerのがいいかどうか... file inputの補完が効かないからclickを使うままにしておく

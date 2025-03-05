@@ -41,7 +41,7 @@ class Nw1N0Label(StrEnum):
     RADIUS = "radius"
 
     # ratio
-    R_ISOLATION = "isoration_ratio"
+    R_ISOLATION = "isolation_ratio"
     R_AXIOM_TERM = "axiom_term_ratio"
     R_AXIOM = "axiom_ratio"
     # nx ratio
