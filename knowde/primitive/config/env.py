@@ -53,7 +53,7 @@ class Settings(BaseSettings):
         """Get of RESTful API."""
         return httpx.get(
             self.url(relative),
-            timeout=TIMEOUT,
+            timeout=TIMEOUT * 3,
             params=params,
             headers=headers,
         )
@@ -123,7 +123,7 @@ class Settings(BaseSettings):
         """Patch of RESTful API."""
         return httpx.patch(
             self.url(relative),
-            timeout=TIMEOUT,
+            timeout=TIMEOUT * 3,
             params=params,
             json=json,
             data=data,

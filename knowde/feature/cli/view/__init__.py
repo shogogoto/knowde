@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 @click.group("view")
 def view_cli() -> None:
-    """ファイル入力による表示機能群."""
+    """ファイル入力に基づく表示."""
 
 
 @view_cli.command("stat")

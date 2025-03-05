@@ -3,11 +3,11 @@ from __future__ import annotations
 
 import click
 
-from knowde.complex.auth.cli import user_cli
-from knowde.feature.cli.completion import complete_option
-from knowde.feature.cli.help_all import help_all_option
-from knowde.feature.fs import link_cmd
-from knowde.feature.view import view_cli
+from .auth import user_cli
+from .completion import complete_option
+from .fs import link_cmd
+from .help_all import help_all_option
+from .view import view_cli
 
 __version__ = "0.0.0"
 

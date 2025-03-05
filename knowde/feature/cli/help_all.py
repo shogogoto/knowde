@@ -36,7 +36,7 @@ def help_all_option() -> Callable[[FC], FC]:
     return click.option(
         "--help-all",
         is_flag=True,
-        flag_value=False,
+        flag_value=True,
         expose_value=False,
         is_eager=True,
         callback=help_all_callback,
