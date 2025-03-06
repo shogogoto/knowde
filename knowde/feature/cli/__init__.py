@@ -4,9 +4,9 @@ from __future__ import annotations
 import click
 
 from .auth import user_cli
-from .completion import complete_option
 from .fs import link_cmd
-from .help_all import help_all_option
+from .options.completion import complete_option
+from .options.help_all import help_all_option
 from .view import view_cli
 
 __version__ = "0.0.0"
@@ -33,7 +33,6 @@ def config_cmd() -> None:
 cli.add_command(view_cli)
 cli.add_command(user_cli)
 cli.add_command(link_cmd)
-
 
 if __name__ == "__main__":
     cli()

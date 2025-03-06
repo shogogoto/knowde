@@ -45,7 +45,7 @@ def completion_callback(
 def complete_option() -> Callable[[FC], FC]:
     """CLI補完."""
     return click.option(
-        "--shell",
+        "--completion",
         type=click.Choice(list(C_CONF.keys())),
         expose_value=False,
         is_eager=True,
