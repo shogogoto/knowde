@@ -18,7 +18,7 @@ def user_cli() -> None:
 @user_cli.command("google-sso")
 def sso_cmd() -> None:
     """Googleによるシングルサインオン."""
-    from knowde.complex.auth.repo import AuthGet
+    from knowde.complex.auth.repo.client import AuthGet
 
     from .proc import browse_for_sso
 
@@ -32,7 +32,7 @@ def sso_cmd() -> None:
 @click.password_option()
 def register_cmd(email: str, password: str) -> None:
     """アカウント作成."""
-    from knowde.complex.auth.repo import AuthPost
+    from knowde.complex.auth.repo.client import AuthPost
 
     res = AuthPost().register({"email": email, "password": password})
     echo_response(res, "登録")
@@ -43,17 +43,17 @@ def register_cmd(email: str, password: str) -> None:
 @click.password_option(confirmation_prompt=False)
 def login_cmd(email: str, password: str) -> None:
     """ログイン."""
-    from knowde.complex.auth.repo import AuthPost, save_credentials
+    from knowde.complex.auth.repo.client import AuthPost, save_credential
 
     res = AuthPost().login({"email": email, "password": password})
-    save_credentials(res)
+    save_credential(res)
     echo_response(res, "ログイン")
 
 
 @user_cli.command("logout")
 def logout_cmd() -> None:
     """ログアウト."""
-    from knowde.complex.auth.repo import AuthPost
+    from knowde.complex.auth.repo.client import AuthPost
 
     res = AuthPost().logout()
     echo_response(res, "ログアウト")
@@ -67,7 +67,7 @@ def change_me_cmd(
     password: str | None,
 ) -> None:
     """ログインしているアカウント情報の変更."""
-    from knowde.complex.auth.repo import AuthPatch
+    from knowde.complex.auth.repo.client import AuthPatch
 
     res = AuthPatch().change_me({"email": email, "password": password})
     echo_response(res, "アカウント情報の変更")
@@ -76,7 +76,7 @@ def change_me_cmd(
 @user_cli.command("me")
 def me_cmd() -> None:
     """ログインしているアカウント情報の取得."""
-    from knowde.complex.auth.repo import AuthGet
+    from knowde.complex.auth.repo.client import AuthGet
 
     res = AuthGet().me()
     echo_response(res, "ログインアカウント情報の取得")

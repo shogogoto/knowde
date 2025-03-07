@@ -57,3 +57,9 @@ class SysNode(BaseModel):
     """系の構成要素. Head|Sentence|Term."""
 
     name: str
+
+
+class Resource(BaseModel, frozen=True):
+    """リソース."""
+
+    name: str

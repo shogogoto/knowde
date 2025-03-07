@@ -32,7 +32,7 @@ class Credential(TypedDict):
 class LocalConfig(BaseModel):
     """設定ファイル."""
 
-    LINK: Annotated[
+    ANCHOR: Annotated[
         Path | None,
         PlainSerializer(lambda x: str(x), return_type=str, when_used="json"),
     ] = None

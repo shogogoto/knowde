@@ -1,21 +1,9 @@
-"""sysnetの永続化.
-
-CLI commandとして欲しい機能
-
-
-userとしてログインの有無で影響される
-
-一端guestで
-
-
-folder crud
-sysnet crud
-"""
+"""sysnetの永続化."""
 import click
 
 
-@click.command("link")
-def link_cmd() -> None:
+@click.command("anchor")
+def anchor_cmd() -> None:
     """カレントディレクトリをDBと同期するファイルパスとして設定."""
     # いちいちcurrent directoryで同期するのは間違いの元なので
     #   link path を予め設定させる
@@ -25,5 +13,10 @@ def link_cmd() -> None:
 
 
 @click.command("sync")
-def sync_cmd() -> None:
+@click.option("-g", "--glob", default="**/*.kn", show_default=True, help="検索パターン")
+@click.option("-s", "--show-error", is_flag=True, help="パースエラーを表示")
+def sync_cmd(glob: str, show_error: bool) -> None:  # noqa: FBT001
     """ファイルシステムと同期."""
+    from .proc import sync_proc
+
+    sync_proc(glob, show_error)

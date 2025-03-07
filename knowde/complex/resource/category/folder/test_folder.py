@@ -3,7 +3,6 @@
 
 import pytest
 
-from knowde.primitive.__core__.debug import pline
 from knowde.primitive.user.repo import LUser
 
 from .errors import (
@@ -110,12 +109,18 @@ def test_create_resource(u: LUser) -> None:
     create_folder(u.uid, "f1")
     create_root_resource(u.uid, "r1")
     create_sub_resource(u.uid, "f1", "r1")  # 階層が違えば同名でも登録できる
-    pline("-")
-    pline("-")
     ns = fetch_namespace(u.uid)
     assert ns.roots == ["f1", "r1"]
     assert ns.children("f1") == ["r1"]
 
 
-def test_delete_folder() -> None:
-    """フォルダの削除(配下ごと)."""
+# def test_delete_folder(u: LUser) -> None:
+#     """フォルダの削除(配下ごと)."""
+#     create_folder(u.uid, "f1")
+#     create_resource(u.uid, "r1")
+#     create_resource(u.uid, "r2")
+#     create_resource(u.uid, "f1", "r21")
+
+#     ns = fetch_namespace(u.uid)
+
+#     nxprint(ns.g)

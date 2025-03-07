@@ -1,6 +1,7 @@
 """parse tree to sysnet."""
 from __future__ import annotations
 
+from functools import cache
 from typing import TYPE_CHECKING
 
 import networkx as nx
@@ -28,6 +29,7 @@ if TYPE_CHECKING:
     from knowde.complex.__core__.tree2net.directed_edge import DirectedEdgeCollection
 
 
+@cache
 def parse2net(txt: str, do_print: bool = False) -> SysNet:  # noqa: FBT001 FBT002
     """文からsysnetへ."""
     _t = parse2tree(txt, TSysArg())

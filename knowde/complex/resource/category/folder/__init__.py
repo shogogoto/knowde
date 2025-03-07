@@ -66,7 +66,7 @@ class Entry(BaseModel, frozen=True):
     """ResourceとFolderのcomposite."""
 
     name: str
-    element_id_property: str
+    element_id_property: str | None = None
     uid: UUID
 
 

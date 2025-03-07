@@ -6,6 +6,7 @@ from typing import AsyncGenerator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from neomodel import db
 
 from knowde.complex.auth.routers import auth_router, user_router
 from knowde.feature.api.middle import Neo4jTransactionMiddleware, neo4j_logger
@@ -20,6 +21,7 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator:
     """Set up DB etc."""
     s = Settings()
     s.setup_db()
+    db.install_all_labels()
     yield
     s.terdown_db()
 

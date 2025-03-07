@@ -11,6 +11,7 @@ from neomodel import (
     db,
 )
 
+from knowde.complex.resource.label import LEntry, LFolder, LResource
 from knowde.primitive.__core__.neoutil import to_uuid
 from knowde.primitive.user.repo import LUser
 
@@ -19,7 +20,6 @@ from .errors import (
     EntryAlreadyExistsError,
     EntryNotFoundError,
 )
-from .label import LEntry, LFolder, LResource
 
 if TYPE_CHECKING:
     from datetime import date
@@ -37,6 +37,25 @@ def create_folder(user_id: UUIDy, *names: str) -> LFolder:
             return create_root_folder(user_id, names[0])
         case _:
             return create_sub_folder(user_id, *names)
+
+
+def create_resource(
+    user_id: UUIDy,
+    *names: str,
+    authors: list[str] | None = None,
+    published: date | None = None,
+    urls: list[str] | None = None,
+) -> LResource:
+    """リソース作成."""
+    d = {"authors": authors, "published": published, "urls": urls}
+    match len(names):
+        case 0:
+            msg = "フォルダ名を1つ以上指定して"
+            raise ValueError(msg)
+        case 1:
+            return create_root_resource(user_id, names[0], **d)
+        case _:
+            return create_sub_resource(user_id, *names, **d)
 
 
 def check_already_root(lb: LUser, name: str) -> None:
@@ -144,7 +163,7 @@ def fetch_subfolders(
         resolve_objects=True,
     )[0]  # 1要素の2重リスト[[...]]のはず
     if len(res) == 0:
-        p = "/".join(names)
+        p = "/".join([root, *names])
         msg = f"フォルダ'/{p}'が見つからない"
         raise EntryNotFoundError(msg, res)
 
@@ -203,8 +222,11 @@ def move_folder(user_id: UUIDy, target: PurePath | str, to: PurePath | str) -> L
     return tgt.save()
 
 
-# def delete_folder(user_id: UUIDy, *names: str) -> None:
-#     """配下ごとフォルダ削除."""
+# def delete_entry(user_id: UUIDy, *names: str) -> None:
+#     """配下ごと削除."""
+#     # entry特定
+#     # resource => 削除 & sysnode削除
+#     # folder => 削除 & resource 再帰的削除
 #     q = """
 #         MATCH (user:User {uid: $uid})
 #         OPTIONAL MATCH (user)<-[:OWNED]-(root:Folder)

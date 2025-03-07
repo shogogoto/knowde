@@ -29,6 +29,8 @@ class User(BaseMapper):
 
     @property
     def id(self) -> UUID:  # noqa: D102
+        if self.uid is None:
+            raise
         return self.uid
 
 

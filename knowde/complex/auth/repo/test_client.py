@@ -4,14 +4,15 @@
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from knowde.complex.auth.repo import (
+from knowde.complex.auth.routers import auth_router, user_router
+
+from .client import (
     AuthArgs,
     AuthGet,
     AuthPatch,
     AuthPost,
-    save_credentials,
+    save_credential,
 )
-from knowde.complex.auth.routers import auth_router, user_router
 
 
 def _api_client() -> TestClient:
@@ -33,7 +34,7 @@ def test_crud_user() -> None:
     assert res.is_success
     login_res = p.login(info)
     assert login_res.is_success
-    save_credentials(login_res)
+    save_credential(login_res)
 
     g = AuthGet(client=client.get)
     res = g.me()
