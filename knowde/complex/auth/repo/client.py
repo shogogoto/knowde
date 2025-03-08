@@ -57,8 +57,6 @@ def save_credential(login_res: httpx.Response) -> None:
         c = LocalConfig.load()
         c.CREDENTIALS = login_res.json()
         c.save()
-        return
-    raise
 
 
 class AuthGet(BaseModel):

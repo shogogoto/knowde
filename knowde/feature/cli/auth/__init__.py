@@ -36,6 +36,7 @@ def register_cmd(email: str, password: str) -> None:
 
     res = AuthPost().register({"email": email, "password": password})
     echo_response(res, "登録")
+    click.echo("ログインしてください")
 
 
 @user_cli.command("login")

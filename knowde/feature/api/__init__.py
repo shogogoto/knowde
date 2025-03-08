@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from neomodel import db
 
 from knowde.complex.auth.routers import auth_router, user_router
+from knowde.complex.resource.router import entry_router
 from knowde.feature.api.middle import Neo4jTransactionMiddleware, neo4j_logger
 from knowde.primitive.__core__ import ErrorHandlingMiddleware
 from knowde.primitive.config.env import Settings
@@ -47,6 +48,7 @@ api.include_router(p_router)
 api.include_router(deduct_router)
 api.include_router(auth_router)
 api.include_router(user_router)
+api.include_router(entry_router)
 
 
 @api.get("/health")

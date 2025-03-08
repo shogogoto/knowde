@@ -13,7 +13,6 @@ userId/folder
 from __future__ import annotations
 
 from datetime import date  # noqa: TCH003
-from uuid import UUID  # noqa: TCH003
 
 import networkx as nx
 from pydantic import BaseModel, Field
@@ -24,7 +23,7 @@ from knowde.primitive.__core__.types import NXGraph  # noqa: TCH001
 from .errors import EntryNotFoundError
 
 
-class FolderSpace(BaseModel):
+class NameSpace(BaseModel):
     """リソースの分類."""
 
     g: NXGraph = Field(default_factory=nx.DiGraph)
@@ -67,7 +66,7 @@ class Entry(BaseModel, frozen=True):
 
     name: str
     element_id_property: str | None = None
-    uid: UUID
+    # uid: UUID
 
 
 class MFolder(Entry, frozen=True):

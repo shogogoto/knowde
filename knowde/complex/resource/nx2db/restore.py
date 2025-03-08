@@ -11,7 +11,7 @@ from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.sysnet.sysnode import DUMMY_SENTENCE, Def, KNode
 from knowde.complex.__core__.sysnet.sysnode.merged_def import MergedDef
 from knowde.complex.__core__.tree2net.directed_edge import DirectedEdgeCollection
-from knowde.complex.resource.category.folder.label import LResource
+from knowde.complex.resource.label import LResource
 from knowde.primitive.__core__.neoutil import UUIDy, to_uuid
 from knowde.primitive.__core__.nxutil.edge_type import Direction, EdgeType
 from knowde.primitive.__core__.types import Duplicable

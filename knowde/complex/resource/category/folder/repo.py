@@ -15,7 +15,7 @@ from knowde.complex.resource.label import LEntry, LFolder, LResource
 from knowde.primitive.__core__.neoutil import to_uuid
 from knowde.primitive.user.repo import LUser
 
-from . import FolderSpace
+from . import NameSpace
 from .errors import (
     EntryAlreadyExistsError,
     EntryNotFoundError,
@@ -171,7 +171,7 @@ def fetch_subfolders(
     return targets[0], subs
 
 
-def fetch_namespace(user_id: UUIDy) -> FolderSpace:
+def fetch_namespace(user_id: UUIDy) -> NameSpace:
     """ユーザー配下のサブフォルダ."""
     q = """
         MATCH (user:User {uid: $uid})
@@ -198,7 +198,7 @@ def fetch_namespace(user_id: UUIDy) -> FolderSpace:
         m1 = f1.frozen
         m2 = f2.frozen
         g.add_edge(m1, m2)
-    return FolderSpace(roots_=roots, g=g)
+    return NameSpace(roots_=roots, g=g)
 
 
 def move_folder(user_id: UUIDy, target: PurePath | str, to: PurePath | str) -> LFolder:

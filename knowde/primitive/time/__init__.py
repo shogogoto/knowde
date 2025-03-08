@@ -150,6 +150,6 @@ def _nudge_offset(st: time.struct_time) -> time.struct_time:
 
 def parse2dt(s: str) -> date:
     """Convert from string to date."""
-    st = parse_when(s).lower_strict()
+    st = parse_when(s.strip()).lower_strict()
     t = time.mktime(st)
     return datetime.fromtimestamp(t, tz=TZ).date()

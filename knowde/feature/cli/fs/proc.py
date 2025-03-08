@@ -5,8 +5,11 @@ from pathlib import Path
 
 import click
 
-from knowde.complex.__core__.tree2net import parse2net
+from knowde.complex.auth.repo.client import auth_header
+from knowde.complex.resource.router import SyncFilesData
+from knowde.feature.cli.fs.sync import can_parse, read_meta
 from knowde.primitive.config import LocalConfig
+from knowde.primitive.config.env import Settings
 
 
 def link_proc() -> None:
@@ -22,54 +25,54 @@ class LinkNotExistsError(Exception):
     """リンク設定してない."""
 
 
-def can_parse(s: str, show_error: bool) -> bool:  # noqa: FBT001
-    """エラーなくパースできるか."""
-    try:
-        parse2net(s)
-    except Exception as e:  # noqa: BLE001
-        if show_error:
-            print("    ", e)  # noqa: T201
-        return False
-    return True
-
-
 def sync_proc(glob: str, show_error: bool = True) -> None:  # noqa: FBT001 FBT002
     """ファイルシステムと同期.
 
     ログイン(認証&user_id特定可能)
     anchorの設定 (そのpathの配下とDBPathがリンク)
-    find 配下から再帰的にファイルパスリストを取得
+    anchor配下から再帰的にファイルパスリストを取得
     request data を作成
         parse check
             ng: continue
             ok:
                 folder: folder名
                 file: title, authors, published, url
-        move前後を同定
+    差分変更箇所チェック api へ送る
+        req 内容をそれぞれ判定
+            reqとdb のentryを対応づける
+                変更あり/なし テキストhashの変更あり/なし
+                削除
+                新規
+                (移動) move前後を同定
+                    削除 と 新規 のリスト
+                      ファイル名の変更は影響しない なぜなら # title が entry名.
+        {"req path": {
+            "db_path": ~,
+            ""
+        }}
 
-    user_idからnamespaceを取得してそれとの差分を確認
-        current にあってnsにない場合
-            upload
-        current になくてnsにある場合
-            download
-                git で管理してもらう前提だから不要
-                -> だったら、syncではなくupload のが良い名前かも
+        response アップロードすべきファイルを指示
 
+    batch_upload api
+        user_idからnamespaceを取得してそれとの差分を確認
+            current にあってnsにない場合
+                upload
+            current になくてnsにある場合
+                download
+                    git で管理してもらう前提だから不要
+                    -> だったら、syncではなくupload のが良い名前かも
     """
     c = LocalConfig.load()
     if c.ANCHOR is None:
         click.echo("同期するディレクトリをlinkコマンドで設定してください")
         return
-    # fs = {}
+    headers = auth_header()  # ユーザーを待たせないためにparse前に失敗したい
+    data = SyncFilesData(root=[])
     for p in c.ANCHOR.rglob(glob):
-        rp = p.relative_to(c.ANCHOR)
-        s = p.read_text()
-        if not can_parse(s, show_error):
-            click.echo(f"{rp}のパースに失敗しました")
+        if not can_parse(p, show_error):
             continue
-    #     sn = parse2net(s)
-    #     print(sn.root)
-    #     st = p.stat().st_mtime  # 最終更新日時
-    #     t = datetime.fromtimestamp(st, tz=TZ)
-    #     # txt_hash = hash(s)  # ファイルに変更があったかをhash値で判断
-    #     # print(t)
+        meta = read_meta(p)
+        meta.path = p.relative_to(c.ANCHOR).parts
+        data.root.append(meta)
+    s = Settings()
+    _res = s.post("namespace", json=data.model_dump(mode="json"), headers=headers)

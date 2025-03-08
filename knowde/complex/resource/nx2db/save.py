@@ -1,7 +1,7 @@
 """save sysnet."""
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 from functools import cache
 from itertools import pairwise
 from typing import TYPE_CHECKING, Any
@@ -9,8 +9,9 @@ from typing import TYPE_CHECKING, Any
 import networkx as nx
 from lark import Token
 from more_itertools import collapse
+from pydantic import BaseModel
 
-from knowde.complex.resource.category.folder.label import LResource
+from knowde.complex.resource.label import LResource
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.term import Term
@@ -53,8 +54,22 @@ def resource_info(sn: SysNet) -> set[Token]:  # noqa: D103
     }
 
 
-def resource_props(sn: SysNet) -> str:
-    """resource(heading root)の永続化."""
+class ResourceMeta(BaseModel):
+    """リソースメタ情報."""
+
+    title: str
+    authors: list[str]
+    published: date | None = None
+    urls: list[str]
+
+    # ファイル由来
+    path: tuple[str, ...] | None = None
+    updated: datetime | None = None
+    txt_hash: int | None = None
+
+
+def resource_meta(sn: SysNet) -> ResourceMeta:
+    """Resource meta info from sysnet."""
     tokens = resource_info(sn)
     authors = [str(n) for n in tokens if n.type == "AUTHOR"]
     urls = [str(n) for n in tokens if n.type == "URL"]
@@ -63,12 +78,18 @@ def resource_props(sn: SysNet) -> str:
         msg = "公開日(@published)は１つまで"
         raise ValueError(msg, pubs)
     pub = None if len(pubs) == 0 else parse2dt(pubs[0])
-    lb = LResource(
+    return ResourceMeta(
         authors=authors,
         published=pub,
         urls=urls,
         title=sn.root,
     )
+
+
+def resource_props(sn: SysNet) -> str:
+    """resource(heading root)の永続化."""
+    meta = resource_meta(sn)
+    lb = LResource(**meta.model_dump())
     return label2propstr(lb)
 
 
@@ -144,8 +165,6 @@ def rel2q(
 
 def sysnet2cypher(sn: SysNet) -> str:
     """sysnetからnodeとrelのcreate文を順次作成."""
-    q_root = resource_props(sn)
-
     nodes = sn.g.nodes - resource_info(sn)
     varnames = {n: f"n{i}" for i, n in enumerate(nodes)}
     root_var = "root"
