@@ -45,6 +45,7 @@ class LResource(LEntry):
     authors = ArrayProperty(StringProperty())
     published = DateTimeNeo4jFormatProperty(default=None)
     urls = ArrayProperty(StringProperty())
+    # txthash
 
     @property
     def frozen(self) -> MResource:

@@ -4,7 +4,7 @@ from __future__ import annotations
 from functools import cache
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from fastapi_users import FastAPIUsers
 from httpx_oauth.clients.google import GoogleOAuth2
 
@@ -47,11 +47,3 @@ auth_router.include_router(
     prefix="/google",
     tags=["auth"],
 )
-
-
-@auth_router.get("/authenticated-route")
-async def authenticated_route(
-    user: User = Depends(ac.current_user(active=True)),
-) -> dict:
-    """ナンジャコリャ."""
-    return {"message": f"Hello {user.email}!"}

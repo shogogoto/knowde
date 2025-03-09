@@ -12,7 +12,7 @@ userId/folder
 """
 from __future__ import annotations
 
-from datetime import date  # noqa: TCH003
+from datetime import date, datetime  # noqa: TCH003
 
 import networkx as nx
 from pydantic import BaseModel, Field
@@ -41,7 +41,7 @@ class NameSpace(BaseModel):
         """ユーザー直下のフォルダ一覧."""
         return sorted(self.roots_.keys())
 
-    def get_or_none(self, root: str, *names: str) -> MFolder | None:
+    def get_or_none(self, root: str, *names: str) -> Entry | None:
         """文字列でパス指定."""
         current = self.roots_.get(root, None)
         if current is None:
@@ -53,7 +53,7 @@ class NameSpace(BaseModel):
             current = succs[0]
         return current
 
-    def get(self, root: str, *names: str) -> MFolder:
+    def get(self, root: str, *names: str) -> Entry:
         """Noneの場合にエラー."""
         tgt = self.get_or_none(root, *names)
         if tgt is None:
@@ -64,7 +64,7 @@ class NameSpace(BaseModel):
 class Entry(BaseModel, frozen=True):
     """ResourceとFolderのcomposite."""
 
-    name: str
+    name: str  # = Field(alias="title")
     element_id_property: str | None = None
     # uid: UUID
 
@@ -78,11 +78,16 @@ class MFolder(Entry, frozen=True):
 
 
 class MResource(Entry, frozen=True):
-    """LResourceのOGM."""
+    """LResourceのOGM, リソースのメタ情報."""
 
     authors: frozenset[str] | None = None
     published: date | None = None
     urls: frozenset[Url] | None = None
+
+    # ファイル由来
+    path: tuple[str, ...] | None = None
+    updated: datetime | None = None
+    txt_hash: int | None = None
 
     def __str__(self) -> str:
         """For display."""

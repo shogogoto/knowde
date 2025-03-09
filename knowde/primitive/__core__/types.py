@@ -32,6 +32,8 @@ NeoModel = Annotated[
 
 
 def _validate_graph(v: Any, info: ValidationInfo) -> nx.DiGraph:  # noqa: ARG001 ANN401
+    if isinstance(v, dict):
+        return nx.node_link_graph(v)
     if isinstance(v, nx.DiGraph):
         return v
     raise TypeError

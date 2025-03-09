@@ -1,7 +1,7 @@
 """save sysnet."""
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date
 from functools import cache
 from itertools import pairwise
 from typing import TYPE_CHECKING, Any
@@ -9,8 +9,8 @@ from typing import TYPE_CHECKING, Any
 import networkx as nx
 from lark import Token
 from more_itertools import collapse
-from pydantic import BaseModel
 
+from knowde.complex.resource import ResourceMeta
 from knowde.complex.resource.label import LResource
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.__core__.types import Duplicable
@@ -52,20 +52,6 @@ def resource_info(sn: SysNet) -> set[Token]:  # noqa: D103
         for n in sn.g.nodes
         if isinstance(n, Token) and n.type in ["AUTHOR", "URL", "PUBLISHED"]
     }
-
-
-class ResourceMeta(BaseModel):
-    """リソースメタ情報."""
-
-    title: str
-    authors: list[str]
-    published: date | None = None
-    urls: list[str]
-
-    # ファイル由来
-    path: tuple[str, ...] | None = None
-    updated: datetime | None = None
-    txt_hash: int | None = None
 
 
 def resource_meta(sn: SysNet) -> ResourceMeta:

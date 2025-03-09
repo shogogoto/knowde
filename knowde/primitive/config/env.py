@@ -1,7 +1,7 @@
 """settings."""
 from __future__ import annotations
 
-from typing import Final, Optional, Protocol
+from typing import Callable, Final, Optional, Protocol
 from urllib.parse import urljoin
 
 import httpx
@@ -47,9 +47,10 @@ class Settings(BaseSettings):
         relative: str,
         params: dict | None = None,
         headers: Optional[dict] = None,
+        client: Callable[..., httpx.Response] = httpx.get,
     ) -> httpx.Response:
         """Get of RESTful API."""
-        return httpx.get(
+        return client(
             self.url(relative),
             timeout=TIMEOUT * 3,
             params=params,
@@ -63,9 +64,10 @@ class Settings(BaseSettings):
         json: object = None,
         data: object = None,
         headers: Optional[dict] = None,
+        client: Callable[..., httpx.Response] = httpx.delete,
     ) -> httpx.Response:
         """Delete of Restful API."""
-        return httpx.delete(
+        return client(
             self.url(relative),
             timeout=TIMEOUT * 3,
             params=params,
@@ -81,9 +83,10 @@ class Settings(BaseSettings):
         json: object = None,
         data: object = None,
         headers: Optional[dict] = None,
+        client: Callable[..., httpx.Response] = httpx.post,
     ) -> httpx.Response:
         """Post of Restful API."""
-        return httpx.post(
+        return client(
             self.url(relative),
             timeout=TIMEOUT * 3,
             params=params,
@@ -99,9 +102,10 @@ class Settings(BaseSettings):
         json: object = None,
         data: object = None,
         headers: Optional[dict] = None,
+        client: Callable[..., httpx.Response] = httpx.put,
     ) -> httpx.Response:
         """Post of Restful API."""
-        return httpx.put(
+        return client(
             self.url(relative),
             timeout=TIMEOUT * 3,
             params=params,
@@ -117,9 +121,10 @@ class Settings(BaseSettings):
         json: object = None,
         data: object = None,
         headers: Optional[dict] = None,
+        client: Callable[..., httpx.Response] = httpx.patch,
     ) -> httpx.Response:
         """Patch of RESTful API."""
-        return httpx.patch(
+        return client(
             self.url(relative),
             timeout=TIMEOUT * 3,
             params=params,

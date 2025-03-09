@@ -6,8 +6,7 @@ from pathlib import Path
 import click
 
 from knowde.complex.auth.repo.client import auth_header
-from knowde.complex.resource.router import SyncFilesData
-from knowde.feature.cli.fs.sync import can_parse, read_meta
+from knowde.feature.cli.fs.sync import path2meta
 from knowde.primitive.config import LocalConfig
 from knowde.primitive.config.env import Settings
 
@@ -28,15 +27,6 @@ class LinkNotExistsError(Exception):
 def sync_proc(glob: str, show_error: bool = True) -> None:  # noqa: FBT001 FBT002
     """ファイルシステムと同期.
 
-    ログイン(認証&user_id特定可能)
-    anchorの設定 (そのpathの配下とDBPathがリンク)
-    anchor配下から再帰的にファイルパスリストを取得
-    request data を作成
-        parse check
-            ng: continue
-            ok:
-                folder: folder名
-                file: title, authors, published, url
     差分変更箇所チェック api へ送る
         req 内容をそれぞれ判定
             reqとdb のentryを対応づける
@@ -66,13 +56,8 @@ def sync_proc(glob: str, show_error: bool = True) -> None:  # noqa: FBT001 FBT00
     if c.ANCHOR is None:
         click.echo("同期するディレクトリをlinkコマンドで設定してください")
         return
+    a = c.ANCHOR
     headers = auth_header()  # ユーザーを待たせないためにparse前に失敗したい
-    data = SyncFilesData(root=[])
-    for p in c.ANCHOR.rglob(glob):
-        if not can_parse(p, show_error):
-            continue
-        meta = read_meta(p)
-        meta.path = p.relative_to(c.ANCHOR).parts
-        data.root.append(meta)
+    data = path2meta(a, a.rglob(glob), show_error)
     s = Settings()
     _res = s.post("namespace", json=data.model_dump(mode="json"), headers=headers)

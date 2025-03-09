@@ -48,9 +48,11 @@ FileSystem と DB の違いを意識させない仕組みがほしい
 
     sysnet -> knet という命名に変更
 """
+from __future__ import annotations
 
+from datetime import date, datetime  # noqa: TCH003
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class SysNode(BaseModel):
@@ -59,7 +61,15 @@ class SysNode(BaseModel):
     name: str
 
 
-class Resource(BaseModel, frozen=True):
-    """リソース."""
+class ResourceMeta(BaseModel):
+    """リソースメタ情報."""
 
-    name: str
+    title: str
+    authors: list[str] = Field(default_factory=list)
+    published: date | None = None
+    urls: list[str] = Field(default_factory=list)
+
+    # ファイル由来
+    path: tuple[str, ...] | None = None
+    updated: datetime | None = None
+    txt_hash: int | None = None

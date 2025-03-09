@@ -2,23 +2,19 @@
 
 
 from fastapi import APIRouter, Depends
-from pydantic import RootModel
 
 from knowde.complex.auth.routers import auth_component
+from knowde.complex.resource.category.folder import NameSpace
 from knowde.complex.resource.category.folder.repo import fetch_namespace
-from knowde.complex.resource.nx2db.save import ResourceMeta
+from knowde.complex.resource.repo import SyncResourceMeta
 from knowde.primitive.user import User
 
 entry_router = APIRouter(tags=["entry"])
 
 
-class SyncFilesData(RootModel[list[ResourceMeta]]):
-    """リクエスト用."""
-
-
 @entry_router.post("/namespace")
 async def sync_fs(
-    sync_data: SyncFilesData,
+    sync_data: SyncResourceMeta,
     user: User = Depends(auth_component().current_user(active=True)),
 ) -> dict:
     """ファイルシステムと同期."""
@@ -30,3 +26,11 @@ async def sync_fs(
         if got is None:  # 新規作成
             pass
     return {}
+
+
+@entry_router.get("/namespace")
+async def get_namaspace(
+    user: User = Depends(auth_component().current_user(active=True)),
+) -> NameSpace:
+    """ユーザーの名前空間."""
+    return fetch_namespace(user.id)
