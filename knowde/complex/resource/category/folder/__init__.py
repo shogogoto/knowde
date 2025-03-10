@@ -28,7 +28,7 @@ class NameSpace(BaseModel):
     """リソースの分類."""
 
     g: NXGraph = Field(default_factory=nx.DiGraph)
-    roots_: dict[str, Entry] = Field()
+    roots_: dict[str, Entry]
     user_id: UUID
 
     def children(self, root: str, *names: str) -> list[str]:

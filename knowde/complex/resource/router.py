@@ -13,7 +13,7 @@ entry_router = APIRouter(tags=["entry"])
 
 
 @entry_router.post("/namespace")
-async def sync_fs(
+async def sync_paths(
     sync_data: ResourceMetas,
     user: User = Depends(auth_component().current_user(active=True)),
 ) -> dict:

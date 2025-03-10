@@ -21,6 +21,9 @@ class ResourceMetas(RootModel[list[ResourceMeta]]):
         return [r.title for r in self.root]
 
 
+UpdateFileMap: TypeAlias = dict[tuple[str, ...], UUID]  # Path と resource id
+
+
 def fill_parents(ns: NameSpace, *names: str) -> LFolder | None:
     """フォルダをDB上で繋げてtailを返す."""
     if len(names) == 0:
@@ -81,9 +84,6 @@ def save_or_move_resource(m: ResourceMeta, ns: NameSpace) -> LResource | None:
     old.parent.disconnect(old.parent.get())
     old.parent.connect(new)
     return old
-
-
-UpdateFileMap: TypeAlias = dict[tuple[str, ...], UUID]  # Path と resource id
 
 
 def sync_namespace(metas: ResourceMetas, ns: NameSpace) -> UpdateFileMap:

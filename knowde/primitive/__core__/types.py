@@ -39,10 +39,30 @@ def _validate_graph(v: Any, info: ValidationInfo) -> nx.DiGraph:  # noqa: ARG001
     raise TypeError
 
 
+class EdgeData(BaseModel):
+    """for fastapi schema."""
+
+    source: str
+    target: str
+
+
+class GraphData(BaseModel):
+    """for fastapi schema."""
+
+    directed: bool
+    edges: list[EdgeData]
+    graph: dict
+    multigraph: bool
+    nodes: list[dict[str, str]]
+
+
 NXGraph = Annotated[
     nx.DiGraph,
     PlainValidator(_validate_graph),
-    PlainSerializer(lambda x: nx.node_link_data(x)),
+    PlainSerializer(
+        lambda x: nx.node_link_data(x, edges="edges"),
+        return_type=GraphData,
+    ),
 ]
 
 
