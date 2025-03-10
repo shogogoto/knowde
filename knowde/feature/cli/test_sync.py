@@ -11,8 +11,8 @@ from knowde.complex.auth.repo.client import (
     AuthArgs,
     AuthPost,
 )
+from knowde.complex.resource.repo.sync import path2meta
 from knowde.feature.api import api
-from knowde.feature.cli.fs.sync import path2meta
 from knowde.primitive.config.env import Settings
 
 if TYPE_CHECKING:

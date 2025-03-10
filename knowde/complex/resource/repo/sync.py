@@ -22,8 +22,8 @@ def can_parse(p: Path, show_error: bool) -> bool:  # noqa: FBT001
     try:
         parse2net(p.read_text())
     except Exception as e:  # noqa: BLE001
-        print(f"'{p}'のパースに失敗")  # noqa: T201
         if show_error:
+            print(f"'{p}'のパースに失敗")  # noqa: T201
             print("    ", e)  # noqa: T201
         return False
     return True
@@ -48,7 +48,7 @@ def read_meta(p: Path, anchor: Path) -> ResourceMeta:
     """ファイルのメタ情報を取得."""
     s = p.read_text()
     st = p.stat().st_mtime  # 最終更新日時
-    t = datetime.fromtimestamp(st, tz=TZ)
+    t = datetime.fromtimestamp(st, tz=TZ)  # JST が neo4jに対応してないみたいでエラー
     sn = parse2net(s)
     meta = resource_meta(sn)
     meta.updated = t

@@ -70,6 +70,17 @@ class ResourceMeta(BaseModel):
     urls: list[str] = Field(default_factory=list)
 
     # ファイル由来
-    path: tuple[str, ...] | None = None
+    path: tuple[str, ...] | None = Field(default=None, min_length=1)
     updated: datetime | None = None
     txt_hash: int | None = None
+
+    @property
+    def names(self) -> tuple[str, ...]:
+        """文字列へ."""
+        if self.path is None:
+            return ()
+        if len(self.path) == 0:
+            return ()
+        ret = list(self.path)
+        ret[-1] = self.title
+        return tuple(ret)

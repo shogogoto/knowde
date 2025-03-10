@@ -53,6 +53,11 @@ class NameSpace(BaseModel):
             current = succs[0]
         return current
 
+    def get_path(self, *names: str) -> list[Entry | None]:
+        """対応するEntry、しないならNoneを返す."""
+        n = len(names) + 1
+        return [self.get_or_none(*names[:i]) for i in range(1, n)]
+
     def get(self, root: str, *names: str) -> Entry:
         """Noneの場合にエラー."""
         tgt = self.get_or_none(root, *names)
@@ -62,7 +67,7 @@ class NameSpace(BaseModel):
 
 
 class Entry(BaseModel, frozen=True):
-    """ResourceとFolderのcomposite."""
+    """namespace用のhashableな表現."""
 
     name: str  # = Field(alias="title")
     element_id_property: str | None = None

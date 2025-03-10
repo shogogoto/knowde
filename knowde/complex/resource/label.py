@@ -1,9 +1,14 @@
 """neomodel label."""
 
+
+from abc import abstractproperty
+
 from neomodel import (
     AliasProperty,
     ArrayProperty,
+    DateProperty,
     DateTimeNeo4jFormatProperty,
+    IntegerProperty,
     RelationshipManager,
     RelationshipTo,
     StringProperty,
@@ -12,7 +17,7 @@ from neomodel import (
     ZeroOrOne,
 )
 
-from knowde.complex.resource.category.folder import MFolder, MResource
+from knowde.complex.resource.category.folder import Entry, MFolder, MResource
 from knowde.primitive.user.repo import LUser
 
 
@@ -35,6 +40,11 @@ class LEntry(StructuredNode):
         cardinality=ZeroOrOne,
     )
 
+    @abstractproperty
+    def frozen(self) -> Entry:
+        """namespace用hashable."""
+        raise NotImplementedError
+
 
 class LResource(LEntry):
     """情報源 rootの見出し(H1)."""
@@ -43,9 +53,12 @@ class LResource(LEntry):
     title = StringProperty(index=True, required=True)
     name = AliasProperty("title")
     authors = ArrayProperty(StringProperty())
-    published = DateTimeNeo4jFormatProperty(default=None)
+    published = DateProperty()
     urls = ArrayProperty(StringProperty())
-    # txthash
+
+    # file由来
+    txt_hash = IntegerProperty()
+    updated = DateTimeNeo4jFormatProperty()
 
     @property
     def frozen(self) -> MResource:
@@ -57,6 +70,8 @@ class LResource(LEntry):
             authors=self.authors,
             published=self.published,
             urls=self.urls,
+            txt_hash=self.txt_hash,
+            updated=self.updated,
         )
 
 
