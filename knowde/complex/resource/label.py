@@ -26,7 +26,7 @@ class LEntry(StructuredNode):
 
     __abstract_node__ = True
     __label__ = "Entry"
-    uid = UniqueIdProperty()
+    uid = UniqueIdProperty()  # parents辿る手間を避けるため
 
     owner: RelationshipManager = RelationshipTo(
         LUser,
@@ -50,7 +50,7 @@ class LResource(LEntry):
     """情報源 rootの見出し(H1)."""
 
     __label__ = "Resource"
-    title = StringProperty(index=True, required=True)
+    title = StringProperty(index=True, required=True)  # userの中でユニーク
     name = AliasProperty("title")
     authors = ArrayProperty(StringProperty())
     published = DateProperty()

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from textwrap import dedent
+from typing import TypeAlias
 
 import pytest
 
@@ -10,7 +11,10 @@ from knowde.complex.resource.category.folder import NameSpace
 from knowde.complex.resource.category.folder.repo import (
     fetch_namespace,
 )
-from knowde.complex.resource.repo import save_resource
+from knowde.complex.resource.repo import (
+    save_resource,
+    sync_namespace,
+)
 from knowde.complex.resource.repo.sync import path2meta
 from knowde.primitive.user.repo import LUser
 
@@ -76,7 +80,7 @@ def u() -> LUser:  # noqa: D103
     return LUser().save()
 
 
-Fixture = tuple[LUser, Path, list[Path], NameSpace]
+Fixture: TypeAlias = tuple[LUser, Path, list[Path], NameSpace]
 
 
 @pytest.fixture()
@@ -84,7 +88,7 @@ def setup(u: LUser, files: tuple[Path, list[Path]]) -> Fixture:  # noqa: D103
     meta = path2meta(*files)
     ns = fetch_namespace(u.uid)
     for m in meta.root:
-        save_resource(m, ns, u)
+        save_resource(m, ns)
     ns = fetch_namespace(u.uid)
     anchor, paths = files
     return u, anchor, paths, ns
@@ -120,7 +124,7 @@ def test_save_halfway_exists_folder(setup: Fixture) -> None:
     meta = path2meta(anchor, [*paths, new])
     ns = fetch_namespace(u.uid)
     for m in meta.root:
-        save_resource(m, ns, u)
+        save_resource(m, ns)
     ns = fetch_namespace(u.uid)
     assert ns.get_or_none("sub1")
     assert ns.get_or_none("sub1", "sub11")
@@ -149,14 +153,21 @@ def test_save_update_exists(setup: Fixture) -> None:
     paths[0] = tgt
     meta = path2meta(anchor, paths)
     for m in meta.root:
-        save_resource(m, ns, u)
+        save_resource(m, ns)
     ns = fetch_namespace(u.uid)
     assert ns.get("sub1", "sub11", "# title1").txt_hash == hash(tgt.read_text())
 
 
-def test_sync_move() -> None:
+def test_sync_move(setup: Fixture) -> None:
     """移動したResourceを検知."""
-    # ファイルパス, title
-    # 変更, 不変
-    # 不変, 変更
-    # 不変, 不変
+    u, anchor, paths, ns = setup
+    tgt = paths[0]
+    paths[0] = tgt.rename(tgt.parent.parent / tgt.name)
+    meta = path2meta(anchor, paths)
+    assert ns.get_or_none("sub1", "sub11", "# title1")
+    d = sync_namespace(meta, ns)
+
+    ns = fetch_namespace(u.uid)
+    assert not ns.get_or_none("sub1", "sub11", "# title1")
+    assert ns.get_or_none("sub1", "# title1")
+    assert list(d.keys()) == [("sub1", "# title1")]

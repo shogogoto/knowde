@@ -13,6 +13,7 @@ userId/folder
 from __future__ import annotations
 
 from datetime import date, datetime  # noqa: TCH003
+from uuid import UUID  # noqa: TCH003
 
 import networkx as nx
 from pydantic import BaseModel, Field
@@ -28,6 +29,7 @@ class NameSpace(BaseModel):
 
     g: NXGraph = Field(default_factory=nx.DiGraph)
     roots_: dict[str, Entry] = Field()
+    user_id: UUID
 
     def children(self, root: str, *names: str) -> list[str]:
         """element_idなしで文字列だけでアクセス."""
@@ -64,6 +66,11 @@ class NameSpace(BaseModel):
         if tgt is None:
             raise EntryNotFoundError
         return tgt
+
+    @property
+    def resources(self) -> list[MResource]:
+        """resourceを返す."""
+        return [n for n in self.g if isinstance(n, MResource)]
 
 
 class Entry(BaseModel, frozen=True):

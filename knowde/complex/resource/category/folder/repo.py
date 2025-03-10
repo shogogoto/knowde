@@ -198,7 +198,7 @@ def fetch_namespace(user_id: UUIDy) -> NameSpace:
         m1 = f1.frozen
         m2 = f2.frozen
         g.add_edge(m1, m2)
-    return NameSpace(roots_=roots, g=g)
+    return NameSpace(roots_=roots, g=g, user_id=uid)
 
 
 def move_folder(user_id: UUIDy, target: PurePath | str, to: PurePath | str) -> LFolder:
