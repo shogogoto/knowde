@@ -34,7 +34,6 @@ def create_test_files(base_path: Path) -> tuple[Path, list[Path]]:
     [s.mkdir(parents=True) for s in subs]
     sub11, sub12, sub2 = subs
 
-    # print(sub11, sub12, sub2)
     title1 = write_text(
         sub11 / "title1.txt",
         """
@@ -48,6 +47,16 @@ def create_test_files(base_path: Path) -> tuple[Path, list[Path]]:
         """,
     )
 
+    title2 = write_text(
+        sub11 / "title2.txt",
+        """
+        # title2
+            @author hanako
+            @published S20/11/1
+        ## abc
+            janne da arc
+        """,
+    )
     direct = write_text(
         base_path / "direct.txt",
         """
@@ -67,7 +76,7 @@ def create_test_files(base_path: Path) -> tuple[Path, list[Path]]:
         """,
     )
 
-    return base_path, [title1, direct, fail]
+    return base_path, [title1, title2, direct, fail]
 
 
 @pytest.fixture()
@@ -100,6 +109,7 @@ def test_save_new(setup: Fixture) -> None:
     assert ns.get_or_none("sub1")
     assert ns.get_or_none("sub1", "sub11")
     assert ns.get_or_none("sub1", "sub11", "# title1")
+    assert ns.get_or_none("sub1", "sub11", "# title2")
     assert ns.get_or_none("# direct")
 
 

@@ -31,12 +31,15 @@ def fill_parents(ns: NameSpace, *names: str) -> LFolder | None:
     path = ns.get_path(*names)
     tail = next((p for p in reversed(path) if p is not None), None)
     match tail:
-        case None:  # 新規作成
+        case None:  # 新規作成 = tail なし = 既存親なし
             u = LUser.nodes.get(uid=ns.user_id.hex)
             folders = LFolder.create(*[{"name": name} for name in names])
-            folders[0].owner.connect(u)
+            head = folders[0]
+            head.owner.connect(u)
+            ns.add_root(head.frozen)
             for f1, f2 in pairwise(folders):
                 f2.parent.connect(f1)
+                ns.g.add_edge(f1.frozen, f2.frozen)
             return folders[-1]
         case MFolder():  # フォルダが途中まで既存
             i = path.index(tail) + 1  # not none の最初の位置
@@ -44,6 +47,7 @@ def fill_parents(ns: NameSpace, *names: str) -> LFolder | None:
             folders = [LFolder(**tail.model_dump()), *folders]
             for f1, f2 in pairwise(folders):
                 f2.parent.connect(f1)
+                ns.g.add_edge(f1.frozen, f2.frozen)
             return folders[-1]
         case _:
             raise ValueError

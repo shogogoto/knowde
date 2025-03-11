@@ -187,18 +187,14 @@ def fetch_namespace(user_id: UUIDy) -> NameSpace:
     uid = to_uuid(user_id)
     res = db.cypher_query(q, params={"uid": uid.hex}, resolve_objects=True)
     g = nx.DiGraph()
-    roots = {}
+    ns = NameSpace(roots_={}, g=g, user_id=uid)
     for f1, f2 in res[0]:
         if f2 is None:
             if f1 is not None:
-                root_lb = f1.frozen
-                roots[f1.name] = root_lb
-                g.add_node(root_lb)
+                ns.add_root(f1.frozen)
             continue
-        m1 = f1.frozen
-        m2 = f2.frozen
-        g.add_edge(m1, m2)
-    return NameSpace(roots_=roots, g=g, user_id=uid)
+        ns.g.add_edge(f1.frozen, f2.frozen)
+    return ns
 
 
 def move_folder(user_id: UUIDy, target: PurePath | str, to: PurePath | str) -> LFolder:

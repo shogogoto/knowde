@@ -31,6 +31,11 @@ class NameSpace(BaseModel):
     roots_: dict[str, Entry]
     user_id: UUID
 
+    def add_root(self, e: Entry) -> None:
+        """user直下."""
+        self.roots_[e.name] = e
+        self.g.add_node(e)
+
     def children(self, root: str, *names: str) -> list[str]:
         """element_idなしで文字列だけでアクセス."""
         tgt = self.get_or_none(root, *names)
@@ -78,7 +83,7 @@ class Entry(BaseModel, frozen=True):
 
     name: str  # = Field(alias="title")
     element_id_property: str | None = None
-    # uid: UUID
+    uid: UUID
 
 
 class MFolder(Entry, frozen=True):
