@@ -13,7 +13,6 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
-
 def can_parse(p: Path, show_error: bool) -> bool:  # noqa: FBT001
     """エラーなくパースできるか."""
     if not p.is_file():
@@ -31,12 +30,14 @@ def can_parse(p: Path, show_error: bool) -> bool:  # noqa: FBT001
 def path2meta(
     anchor: Path,
     paths: Iterable[Path],
-    show_error: bool = False,  # noqa: FBT001 FBT002
+    show_message: bool = False,  # noqa: FBT001 FBT002
 ) -> ResourceMetas:
     """ファイルをメタ情報へ変換."""
     data = ResourceMetas(root=[])
     for p in paths:
-        if not can_parse(p, show_error):
+        if show_message:
+            print(p)  # noqa: T201
+        if not can_parse(p, show_message):
             continue
         meta = read_meta(p, anchor)
         data.root.append(meta)

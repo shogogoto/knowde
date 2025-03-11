@@ -175,9 +175,9 @@ def test_sync_move(setup: Fixture) -> None:
     paths[0] = tgt.rename(tgt.parent.parent / tgt.name)
     meta = path2meta(anchor, paths)
     assert ns.get_or_none("sub1", "sub11", "# title1")
-    d = sync_namespace(meta, ns)
+    uplist = sync_namespace(meta, ns)
 
     ns = fetch_namespace(u.uid)
     assert ns.get_or_none("sub1", "sub11", "# title1") is None  # たまに失敗
     assert ns.get_or_none("sub1", "# title1")
-    assert list(d.keys()) == [("sub1", "# title1")]
+    assert [anchor / p for p in uplist] == [paths[0]]

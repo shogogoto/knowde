@@ -36,6 +36,7 @@ edtf = "^5.0.0"
 python-multipart = "^0.0.20"
 pydantic-settings = "^2.7.1"
 fastapi-users = {extras = ["oauth"], version = "^14.0.1"}
+chardet = "^5.2.0"
 [tool.poetry.group.dev.dependencies]
 pytest = "8.3.4"
 pre-commit = "^3.5.0"

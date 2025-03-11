@@ -1,20 +1,20 @@
 """系の永続化."""
 
 
+
 import pytest
-from neomodel import db
 
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.tree2net import parse2net
+from knowde.complex.entry import ResourceMeta
 from knowde.complex.entry.label import LResource
 
 from .restore import restore_sysnet
-from .save import sysnet2cypher
+from .save import sn2db
 
 
 @pytest.fixture()
 def sn() -> SysNet:  # noqa: D103
-    # b{A}b が自身にRESOLVED関係を持っていて謎
     _s = r"""
         # h1
             @author nanashi
@@ -45,9 +45,9 @@ def sn() -> SysNet:  # noqa: D103
 
 def test_save_and_restore(sn: SysNet) -> None:
     """永続化して元に戻す."""
-    q = sysnet2cypher(sn)
-    db.cypher_query(q)
-    r = LResource.nodes.get(title="# h1")
+    m = ResourceMeta.of(sn)
+    r = LResource(**m.model_dump()).save()
+    sn2db(sn, r.uid)
     r = restore_sysnet(r.uid)
     assert set(sn.terms) == set(r.terms)
     # assert set(sn.sentences) == set(r.sentences)  # なぜかFalse

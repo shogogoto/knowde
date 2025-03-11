@@ -77,8 +77,12 @@ class NameSpace(BaseModel):
 
     @property
     def resources(self) -> list[MResource]:
-        """resourceを返す."""
+        """resource一覧."""
         return [n for n in self.g if isinstance(n, MResource)]
+
+    def get_resource_or_none(self, title: str) -> MResource | None:
+        """titleでリソースを指定."""
+        return next((r for r in self.resources if r.name == title), None)
 
 
 class Entry(BaseModel, frozen=True):

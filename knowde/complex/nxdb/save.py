@@ -8,9 +8,10 @@ from typing import TYPE_CHECKING, Any
 import networkx as nx
 from lark import Token
 from more_itertools import collapse
+from neomodel import db
 
-from knowde.complex.entry import ResourceMeta
 from knowde.complex.entry.label import LResource
+from knowde.primitive.__core__.neoutil import to_uuid
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.term import Term
@@ -22,6 +23,7 @@ if TYPE_CHECKING:
 
     from knowde.complex.__core__.sysnet import SysNet
     from knowde.complex.__core__.sysnet.sysnode import KNode
+    from knowde.primitive.__core__.neoutil import UUIDy
 
 
 def val2str(val: Any) -> str:  # noqa: ANN401
@@ -41,13 +43,6 @@ def label2propstr(lb: StructuredNode) -> str:
     kvs = [f"{k}: {val2str(v)}" for k, v in lb.__properties__.items() if v]
     s = ", ".join(kvs)
     return f"{{ {s} }}"
-
-
-def resource_props(sn: SysNet) -> str:
-    """resource(heading root)の永続化."""
-    meta = ResourceMeta.of(sn)
-    lb = LResource(**meta.model_dump())
-    return label2propstr(lb)
 
 
 def t2labels(t: type[StructuredNode]) -> str:
@@ -127,7 +122,7 @@ def sysnet2cypher(sn: SysNet) -> str:
     root_var = "root"
     varnames[sn.root] = root_var
 
-    q_root = [f"CREATE ({root_var}:{t2labels(LResource)} {resource_props(sn)})"]
+    q_root = [f"MATCH ({root_var}:{t2labels(LResource)} {{uid: $uid}})"]
     q_create = q_root + [node2q(n, varnames) for n in nodes]
     g = nx.subgraph_view(
         sn.g,
@@ -135,5 +130,13 @@ def sysnet2cypher(sn: SysNet) -> str:
     )
     q_rel = [rel2q(e, varnames) for e in g.edges.data()]
     q_rel.append(reconnect_root_below(sn, varnames))
-    qs = collapse([*q_create, "", *q_rel])
+    qs = collapse([*q_create, *q_rel])
     return "\n".join([q for q in qs if q is not None])
+
+
+def sn2db(sn: SysNet, resource_id: UUIDy) -> None:
+    """新規登録."""
+    q = sysnet2cypher(sn)
+    if len(q.splitlines()) <= 1:  # create対象なし
+        return
+    db.cypher_query(q, params={"uid": to_uuid(resource_id).hex})

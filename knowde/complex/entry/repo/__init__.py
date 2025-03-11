@@ -2,8 +2,7 @@
 from __future__ import annotations
 
 from itertools import pairwise
-from typing import TypeAlias
-from uuid import UUID
+from pathlib import Path
 
 from pydantic import RootModel
 
@@ -19,9 +18,6 @@ class ResourceMetas(RootModel[list[ResourceMeta]]):
     @property
     def titles(self) -> list[str]:  # noqa: D102
         return [r.title for r in self.root]
-
-
-UpdateFileMap: TypeAlias = dict[tuple[str, ...], UUID]  # Path と resource id
 
 
 def fill_parents(ns: NameSpace, *names: str) -> LFolder | None:
@@ -90,12 +86,12 @@ def save_or_move_resource(m: ResourceMeta, ns: NameSpace) -> LResource | None:
     return old
 
 
-def sync_namespace(metas: ResourceMetas, ns: NameSpace) -> UpdateFileMap:
-    """変更や移動されたファイルパスとDB上のリソースの対応づける."""
-    d = {}
+def sync_namespace(metas: ResourceMetas, ns: NameSpace) -> list[Path]:
+    """変更や移動されたファイルパスをDBに反映して返す."""
+    ls = []
     for m in metas.root:
         e = ns.get_or_none(*m.names)
         lb = save_or_move_resource(m, ns) if e is None else save_resource(m, ns)
         if lb is not None:
-            d[m.names] = lb.uid
-    return d
+            ls.append(Path().joinpath(*m.path))
+    return ls

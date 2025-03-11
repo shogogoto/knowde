@@ -86,16 +86,14 @@ class ResourceMeta(BaseModel):
     def of(cls, sn: SysNet) -> Self:
         """Resource meta info from sysnet."""
         tokens = sn.meta
-        authors = [str(n) for n in tokens if n.type == "AUTHOR"]
-        urls = [str(n) for n in tokens if n.type == "URL"]
         pubs = [n for n in tokens if n.type == "PUBLISHED"]
         if len(pubs) > 1:
             msg = "公開日(@published)は１つまで"
             raise ValueError(msg, pubs)
         pub = None if len(pubs) == 0 else parse2dt(pubs[0])
         return cls(
-            authors=authors,
+            authors=[str(n) for n in tokens if n.type == "AUTHOR"],
+            urls=[str(n) for n in tokens if n.type == "URL"],
             published=pub,
-            urls=urls,
             title=sn.root,
         )
