@@ -5,14 +5,13 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Iterable
 
 from knowde.complex.__core__.tree2net import parse2net
-from knowde.complex.entry.nx2db.save import resource_meta
+from knowde.complex.entry import ResourceMeta
 from knowde.complex.entry.router import ResourceMetas
 from knowde.primitive.__core__.timeutil import TZ
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from knowde.complex.entry import ResourceMeta
 
 
 def can_parse(p: Path, show_error: bool) -> bool:  # noqa: FBT001
@@ -50,7 +49,7 @@ def read_meta(p: Path, anchor: Path) -> ResourceMeta:
     st = p.stat().st_mtime  # 最終更新日時
     t = datetime.fromtimestamp(st, tz=TZ)  # JST が neo4jに対応してないみたいでエラー
     sn = parse2net(s)
-    meta = resource_meta(sn)
+    meta = ResourceMeta.of(sn)
     meta.updated = t
     meta.txt_hash = hash(s)  # ファイルに変更があったかをhash値で判断
     meta.path = p.relative_to(anchor).parts

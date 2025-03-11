@@ -1,5 +1,9 @@
 """userに所有されたsysnet.
 
+category
+    フォルダ分け 階層
+    タグ resourceのmeta dataとして扱う?
+
 permission アクセス権限 MVPには不要
     Owner機能 SysNetの所有者
         <-> Guest機能
@@ -40,25 +44,18 @@ view
         文脈
             below parent
             premise... など
-
-FileSystem と DB の違いを意識させない仕組みがほしい
-    DB -> PurePath
-    FS -> Path
-    みたい
-
-    sysnet -> knet という命名に変更
 """
 from __future__ import annotations
 
 from datetime import date, datetime  # noqa: TCH003
+from typing import TYPE_CHECKING, Self
 
 from pydantic import BaseModel, Field
 
+from knowde.primitive.time import parse2dt
 
-class SysNode(BaseModel):
-    """系の構成要素. Head|Sentence|Term."""
-
-    name: str
+if TYPE_CHECKING:
+    from knowde.complex.__core__.sysnet import SysNet
 
 
 class ResourceMeta(BaseModel):
@@ -84,3 +81,21 @@ class ResourceMeta(BaseModel):
         ret = list(self.path)
         ret[-1] = self.title
         return tuple(ret)
+
+    @classmethod
+    def of(cls, sn: SysNet) -> Self:
+        """Resource meta info from sysnet."""
+        tokens = sn.meta
+        authors = [str(n) for n in tokens if n.type == "AUTHOR"]
+        urls = [str(n) for n in tokens if n.type == "URL"]
+        pubs = [n for n in tokens if n.type == "PUBLISHED"]
+        if len(pubs) > 1:
+            msg = "公開日(@published)は１つまで"
+            raise ValueError(msg, pubs)
+        pub = None if len(pubs) == 0 else parse2dt(pubs[0])
+        return cls(
+            authors=authors,
+            published=pub,
+            urls=urls,
+            title=sn.root,
+        )

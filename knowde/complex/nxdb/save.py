@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from datetime import date
-from functools import cache
 from itertools import pairwise
 from typing import TYPE_CHECKING, Any
 
@@ -15,7 +14,6 @@ from knowde.complex.entry.label import LResource
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.term import Term
-from knowde.primitive.time import parse2dt
 
 from . import LHead, LSentence, LTerm
 
@@ -45,36 +43,9 @@ def label2propstr(lb: StructuredNode) -> str:
     return f"{{ {s} }}"
 
 
-@cache
-def resource_info(sn: SysNet) -> set[Token]:  # noqa: D103
-    return {  # resource_info 除外
-        n
-        for n in sn.g.nodes
-        if isinstance(n, Token) and n.type in ["AUTHOR", "URL", "PUBLISHED"]
-    }
-
-
-def resource_meta(sn: SysNet) -> ResourceMeta:
-    """Resource meta info from sysnet."""
-    tokens = resource_info(sn)
-    authors = [str(n) for n in tokens if n.type == "AUTHOR"]
-    urls = [str(n) for n in tokens if n.type == "URL"]
-    pubs = [n for n in tokens if n.type == "PUBLISHED"]
-    if len(pubs) > 1:
-        msg = "公開日(@published)は１つまで"
-        raise ValueError(msg, pubs)
-    pub = None if len(pubs) == 0 else parse2dt(pubs[0])
-    return ResourceMeta(
-        authors=authors,
-        published=pub,
-        urls=urls,
-        title=sn.root,
-    )
-
-
 def resource_props(sn: SysNet) -> str:
     """resource(heading root)の永続化."""
-    meta = resource_meta(sn)
+    meta = ResourceMeta.of(sn)
     lb = LResource(**meta.model_dump())
     return label2propstr(lb)
 
@@ -110,7 +81,7 @@ def node2q(n: KNode, nvars: dict[KNode, str]) -> str | list[str] | None:
 
 def reconnect_root_below(sn: SysNet, varnames: dict[KNode, str]) -> str | None:
     """Resource infoを除外したときにbelowが途切れるのを防ぐ."""
-    nodes = resource_info(sn)
+    nodes = set(sn.meta)
     vs = set()
     for n in nodes:
         uvs = sn.g.edges(n)
@@ -151,7 +122,7 @@ def rel2q(
 
 def sysnet2cypher(sn: SysNet) -> str:
     """sysnetからnodeとrelのcreate文を順次作成."""
-    nodes = sn.g.nodes - resource_info(sn)
+    nodes = sn.g.nodes - set(sn.meta)
     varnames = {n: f"n{i}" for i, n in enumerate(nodes)}
     root_var = "root"
     varnames[sn.root] = root_var
@@ -160,7 +131,7 @@ def sysnet2cypher(sn: SysNet) -> str:
     q_create = q_root + [node2q(n, varnames) for n in nodes]
     g = nx.subgraph_view(
         sn.g,
-        filter_node=lambda n: n not in resource_info(sn),
+        filter_node=lambda n: n not in sn.meta,
     )
     q_rel = [rel2q(e, varnames) for e in g.edges.data()]
     q_rel.append(reconnect_root_below(sn, varnames))

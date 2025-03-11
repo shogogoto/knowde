@@ -5,6 +5,7 @@ from functools import cached_property
 from typing import TYPE_CHECKING
 
 import networkx as nx
+from lark import Token
 from pydantic import BaseModel, Field
 
 from knowde.complex.__core__.sysnet.sysfn import (
@@ -48,11 +49,6 @@ class SysNet(BaseModel, frozen=True):
         hs = get_headings(self.g, self.root)
         stc = [n for n in stc if n not in hs]
         return [s for s in stc if not is_meta(s)]
-
-    @cached_property
-    def heads(self) -> nx.DiGraph:
-        """見出し."""
-        return EdgeType.HEAD.subgraph(self.g)
 
     @cached_property
     def terms(self) -> list[Term]:
@@ -106,3 +102,12 @@ class SysNet(BaseModel, frozen=True):
             if d["type"] == EdgeType.WHEN:
                 whens.append(v)
         return Series.create(whens)
+
+    @cached_property
+    def meta(self) -> list[Token]:
+        """メタ情報."""
+        return [
+            n
+            for n in self.g.nodes
+            if isinstance(n, Token) and n.type in ["AUTHOR", "URL", "PUBLISHED"]
+        ]
