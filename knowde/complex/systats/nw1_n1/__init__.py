@@ -5,7 +5,7 @@ from functools import cache
 from typing import TYPE_CHECKING, Callable, Final, Iterable, TypeAlias
 
 from knowde.complex.__core__.sysnet import SysNet
-from knowde.complex.__core__.sysnet.sysnode import SysArg, SysNode
+from knowde.complex.__core__.sysnet.sysnode import KNArg, KNode
 from knowde.primitive.__core__.nxutil import (
     filter_edge_attr,
     to_axioms,
@@ -16,10 +16,10 @@ from knowde.primitive.__core__.nxutil.edge_type import EdgeType, etype_subgraph
 if TYPE_CHECKING:
     import networkx as nx
 
-Nw1N1Fn: TypeAlias = Callable[[SysNet, SysNode], list[SysNode]]
+Nw1N1Fn: TypeAlias = Callable[[SysNet, KNode], list[KNode]]
 
 
-def get_detail(sn: SysNet, n: SysNode) -> list[SysNode]:
+def get_detail(sn: SysNet, n: KNode) -> list[KNode]:
     """詳細な記述."""
     vals = []
     sub = etype_subgraph(sn.g, EdgeType.SIBLING, EdgeType.BELOW)
@@ -48,43 +48,43 @@ def parent_lookup(g: nx.DiGraph) -> dict:
     return lookup
 
 
-def get_parent_or_none(sn: SysNet, n: SysNode) -> SysNode | None:
+def get_parent_or_none(sn: SysNet, n: KNode) -> KNode | None:
     """兄弟を辿ったらBELOW.predが存在するか."""
     lookup = parent_lookup(sn.sentence_graph)
     return lookup.get(n)
 
 
-def get_refer(sn: SysNet, n: SysNode) -> list[SysNode]:
+def get_refer(sn: SysNet, n: KNode) -> list[KNode]:
     """引用・利用する側."""
     vals = EdgeType.RESOLVED.pred(sn.g, n)
     return list(vals)
 
 
-def get_referred(sn: SysNet, n: SysNode) -> list[SysNode]:
+def get_referred(sn: SysNet, n: KNode) -> list[KNode]:
     """引用される依存元."""
     vals = EdgeType.RESOLVED.succ(sn.g, n)
     return list(vals)
 
 
-def get_premise(sn: SysNet, n: SysNode) -> list[SysNode]:
+def get_premise(sn: SysNet, n: KNode) -> list[KNode]:
     """前提."""
     vals = EdgeType.TO.pred(sn.g, n)
     return list(vals)
 
 
-def get_conclusion(sn: SysNet, n: SysNode) -> list[SysNode]:
+def get_conclusion(sn: SysNet, n: KNode) -> list[KNode]:
     """帰結."""
     vals = EdgeType.TO.succ(sn.g, n)
     return list(vals)
 
 
-def get_example(sn: SysNet, n: SysNode) -> list[SysNode]:
+def get_example(sn: SysNet, n: KNode) -> list[KNode]:
     """具体."""
     vals = EdgeType.EXAMPLE.succ(sn.g, n)
     return list(vals)
 
 
-def get_general(sn: SysNet, n: SysNode) -> list[SysNode]:
+def get_general(sn: SysNet, n: KNode) -> list[KNode]:
     """抽象."""
     vals = EdgeType.EXAMPLE.pred(sn.g, n)
     return list(vals)
@@ -102,7 +102,7 @@ def recursively_nw1n1(fn: Nw1N1Fn, count: int) -> Nw1N1Fn:
             return ns
         return [e if isinstance(e, list) else [e, _f(sn, fn(sn, e), i - 1)] for e in ns]
 
-    def _g(sn: SysNet, n: SysNode) -> list:
+    def _g(sn: SysNet, n: KNode) -> list:
         ret = fn(sn, n)
         return list(_f(sn, ret, count - 1))
 
@@ -122,7 +122,7 @@ DEP_EDGE_TYPES: Final = [
 
 
 @cache
-def has_dependency(sn: SysNet, n: SysArg) -> bool:
+def has_dependency(sn: SysNet, n: KNArg) -> bool:
     """意味的に重要なエッジを持つ."""
     _in = sn.g.in_edges(n, data=True)
     for _u, _, attr in _in:

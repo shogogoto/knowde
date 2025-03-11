@@ -9,7 +9,7 @@ repository = "https://github/com/shogogoto/knowde"
 [tool.poetry.dependencies]
 python = ">3.11.0,<3.14"
 fastapi = {extras = ["standard"], version = "^0.115.6"}
-neomodel = "^5.4.2"
+neomodel = "5.4.4"
 uvicorn = "^0.24.0.post1"
 uuid6 = "^2023.5.2"
 requests = "^2.31.0"
@@ -36,6 +36,7 @@ edtf = "^5.0.0"
 python-multipart = "^0.0.20"
 pydantic-settings = "^2.7.1"
 fastapi-users = {extras = ["oauth"], version = "^14.0.1"}
+chardet = "^5.2.0"
 [tool.poetry.group.dev.dependencies]
 pytest = "8.3.4"
 pre-commit = "^3.5.0"

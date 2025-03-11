@@ -3,7 +3,7 @@
 
 from neomodel import clear_neo4j_database, db
 
-from knowde.feature.__core__.config import Settings
+from knowde.primitive.config.env import Settings
 
 
 def pytest_configure() -> None:

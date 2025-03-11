@@ -9,14 +9,14 @@ from pydantic import BaseModel, Field
 from knowde.complex.__core__.sysnet.sysfn import (
     arg2sentence,
 )
-from knowde.complex.__core__.sysnet.sysnode import SysArg
+from knowde.complex.__core__.sysnet.sysnode import KNArg
 from knowde.primitive.__core__.nxutil.edge_type import Direction, EdgeType
 
 if TYPE_CHECKING:
     import networkx as nx
 
 
-Converter: TypeAlias = Callable[[SysArg], Any]
+Converter: TypeAlias = Callable[[KNArg], Any]
 
 
 class DirectedEdge(BaseModel, frozen=True, arbitrary_types_allowed=True):
@@ -24,7 +24,7 @@ class DirectedEdge(BaseModel, frozen=True, arbitrary_types_allowed=True):
 
     t: EdgeType
     d: Direction
-    nodes: list[SysArg | Token]  # Tokenを指定しないとstrに型変換される
+    nodes: list[KNArg | Token]  # Tokenを指定しないとstrに型変換される
 
     def add_edge(self, g: nx.DiGraph, cvt: Converter) -> None:
         """方向付き追加."""

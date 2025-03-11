@@ -1,11 +1,11 @@
 """settings."""
 from __future__ import annotations
 
-from typing import Final, Optional, Protocol
+from typing import Callable, Final, Optional, Protocol
 from urllib.parse import urljoin
 
 import httpx
-from neomodel import config, db, install_all_labels
+from neomodel import config, db
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 TIMEOUT: Final = 3.0
@@ -25,15 +25,13 @@ class Settings(BaseSettings):
     NEO4J_URL: str
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
-    SSO_PROT: int = 19419
-    KNOWDE_URL: str
+    KNOWDE_URL: str = "https://knowde.onrender.com/"
     KN_AUTH_SECRET: str = "SECRET"
-    JWT_LIFETIME_SEC: int = 60 * 60 * 24  # 1 day
+    KN_TOKEN_LIFETIME_SEC: int = 60 * 60 * 24  # 1 day
 
     def setup_db(self) -> None:
         """DB設定."""
         config.DATABASE_URL = self.NEO4J_URL
-        install_all_labels()
 
     def terdown_db(self) -> None:
         """DB切断."""
@@ -49,11 +47,12 @@ class Settings(BaseSettings):
         relative: str,
         params: dict | None = None,
         headers: Optional[dict] = None,
+        client: Callable[..., httpx.Response] = httpx.get,
     ) -> httpx.Response:
         """Get of RESTful API."""
-        return httpx.get(
+        return client(
             self.url(relative),
-            timeout=TIMEOUT,
+            timeout=TIMEOUT * 3,
             params=params,
             headers=headers,
         )
@@ -65,9 +64,10 @@ class Settings(BaseSettings):
         json: object = None,
         data: object = None,
         headers: Optional[dict] = None,
+        client: Callable[..., httpx.Response] = httpx.delete,
     ) -> httpx.Response:
         """Delete of Restful API."""
-        return httpx.delete(
+        return client(
             self.url(relative),
             timeout=TIMEOUT * 3,
             params=params,
@@ -83,9 +83,10 @@ class Settings(BaseSettings):
         json: object = None,
         data: object = None,
         headers: Optional[dict] = None,
+        client: Callable[..., httpx.Response] = httpx.post,
     ) -> httpx.Response:
         """Post of Restful API."""
-        return httpx.post(
+        return client(
             self.url(relative),
             timeout=TIMEOUT * 3,
             params=params,
@@ -101,9 +102,10 @@ class Settings(BaseSettings):
         json: object = None,
         data: object = None,
         headers: Optional[dict] = None,
+        client: Callable[..., httpx.Response] = httpx.put,
     ) -> httpx.Response:
         """Post of Restful API."""
-        return httpx.put(
+        return client(
             self.url(relative),
             timeout=TIMEOUT * 3,
             params=params,
@@ -119,11 +121,12 @@ class Settings(BaseSettings):
         json: object = None,
         data: object = None,
         headers: Optional[dict] = None,
+        client: Callable[..., httpx.Response] = httpx.patch,
     ) -> httpx.Response:
         """Patch of RESTful API."""
-        return httpx.patch(
+        return client(
             self.url(relative),
-            timeout=TIMEOUT,
+            timeout=TIMEOUT * 3,
             params=params,
             json=json,
             data=data,

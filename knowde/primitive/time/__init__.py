@@ -14,6 +14,7 @@
 from __future__ import annotations
 
 import time
+from datetime import date, datetime
 from functools import cache
 from typing import TYPE_CHECKING, Final, Hashable, Iterable, Self
 
@@ -29,6 +30,7 @@ from pyparsing import (
     printables,
 )
 
+from knowde.primitive.__core__.timeutil import TZ
 from knowde.primitive.time.errors import EndBeforeStartError
 from knowde.primitive.time.parse import parse_extime, str2edtf
 
@@ -144,3 +146,10 @@ def _nudge_offset(st: time.struct_time) -> time.struct_time:
             st.tm_isdst,
         ),
     )
+
+
+def parse2dt(s: str) -> date:
+    """Convert from string to date."""
+    st = parse_when(s.strip()).lower_strict()
+    t = time.mktime(st)
+    return datetime.fromtimestamp(t, tz=TZ).date()

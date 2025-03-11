@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Iterable, NamedTuple, Self, Sequence
 from more_itertools import collapse
 from pydantic import BaseModel, Field
 
-from knowde.complex.__core__.sysnet.sysnode import SysArg, SysNode  # noqa: TCH001
+from knowde.complex.__core__.sysnet.sysnode import KNArg, KNode  # noqa: TCH001
 from knowde.complex.systats.nw1_n1 import recursively_nw1n1
 from knowde.complex.systats.nw1_n1.ctxdetail import Nw1N1Ctx, Nw1N1Label
 
@@ -40,7 +40,7 @@ class CtxScorable(BaseModel, frozen=True):
         return self.count * self.weight
 
     @classmethod
-    def create(cls, sn: SysNet, n: SysNode, rw: LRWTpl) -> Self:
+    def create(cls, sn: SysNet, n: KNode, rw: LRWTpl) -> Self:
         """Instantiate."""
         sn.check_contains(n)
         ctx = Nw1N1Ctx.from_label(rw.label)
@@ -51,7 +51,7 @@ class CtxScorable(BaseModel, frozen=True):
 class CtxScorables(BaseModel, frozen=True):
     """CtxScorebleのまとめ."""
 
-    n: SysArg
+    n: KNArg
     rets: list[CtxScorable]
 
     def __lt__(self, other: Self) -> bool:  # noqa: D105
@@ -89,7 +89,7 @@ class CtxConfig(BaseModel, frozen=True):
                 return c
         return LRWTpl(v, 1, 1)
 
-    def get(self, sn: SysNet, n: SysNode, ctxs: list[Nw1N1Ctx]) -> CtxScorables:
+    def get(self, sn: SysNet, n: KNode, ctxs: list[Nw1N1Ctx]) -> CtxScorables:
         """再帰重み付き."""
         return CtxScorables(
             n=n,  # collapse scoreに影響
@@ -116,7 +116,7 @@ class SyScore(BaseModel, frozen=True):
             config=CtxConfig(configs=config),
         )
 
-    def sort(self, sn: SysNet, ns: Sequence[SysNode] = []) -> list[CtxScorables]:
+    def sort(self, sn: SysNet, ns: Sequence[KNode] = []) -> list[CtxScorables]:
         """コレクションをまとめて適用して返す."""
         if len(ns) == 0:
             ns = sn.sentences
@@ -129,7 +129,7 @@ class SyScore(BaseModel, frozen=True):
     def to_json(
         self,
         sn: SysNet,
-        ns: Sequence[SysNode] = [],
+        ns: Sequence[KNode] = [],
         num: int = 50,
     ) -> list[dict]:
         """Table or json表示用."""

@@ -1,21 +1,53 @@
 """file system."""
 from __future__ import annotations
 
+import json
 from functools import cache
 from pathlib import Path
-from typing import Any, Callable, TypeAlias
+from typing import Annotated, Any, Callable, Final, Self, TypeAlias, TypedDict
 
-from pydantic import BaseModel
+from pydantic import BaseModel, PlainSerializer
 from typing_extensions import override
 
-_DIR_PATH = Path.home() / ".config" / "knowde"
+CONFIG_PATH: Final = Path.home() / ".config" / "knowde"
 
 
 @cache
 def dir_path() -> Path:
     """ファイル保管用ディレクトリ."""
-    _DIR_PATH.mkdir(parents=True, exist_ok=True)
-    return _DIR_PATH
+    CONFIG_PATH.mkdir(parents=True, exist_ok=True)
+    return CONFIG_PATH
+
+
+CONFIG_FILE: Final = dir_path() / "config.json"
+
+
+class Credential(TypedDict):
+    """認証情報."""
+
+    access_token: str
+    token_type: str
+
+
+class LocalConfig(BaseModel):
+    """設定ファイル."""
+
+    ANCHOR: Annotated[
+        Path | None,
+        PlainSerializer(lambda x: str(x), return_type=str, when_used="json"),
+    ] = None
+
+    CREDENTIALS: Credential | None = None
+
+    @classmethod
+    def load(cls) -> Self:
+        """読み取り."""
+        data = json.loads(CONFIG_FILE.read_text()) if CONFIG_FILE.exists() else {}
+        return cls.model_validate(data)
+
+    def save(self) -> None:
+        """書き込み."""
+        CONFIG_FILE.write_text(self.model_dump_json(indent=2))
 
 
 # 変更があればTrue

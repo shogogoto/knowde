@@ -9,7 +9,7 @@ from typing_extensions import override
 from knowde.complex.__core__.sysnet.sysnode import Def, IDef
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.__core__.util import parted
-from knowde.primitive.term import MergedTerms, Term, eq_term
+from knowde.primitive.term import MergedTerms, Term, check_and_merge_term, eq_term
 
 if TYPE_CHECKING:
     import networkx as nx
@@ -33,15 +33,14 @@ class MergedDef(IDef, frozen=True):
     @classmethod
     def create_and_parted(
         cls,
-        mt: MergedTerms,
         defs: list[Def],
-    ) -> tuple[list[Self], list[Def]]:
+    ) -> tuple[list[Self], list[Def], MergedTerms]:
         """Batch create."""
+        mt = check_and_merge_term([d.term for d in defs])
 
         def _will_merge(t: Term, d: Def) -> bool:
-            """自分自信を含める."""
             t_ = d.term
-            return t.allows_merge(t_) or eq_term(t, t_)
+            return t.allows_merge(t_) or eq_term(t, t_) or (t.has(*t_.names))
 
         merged = []
         std = []  # 普通のDef
@@ -53,7 +52,7 @@ class MergedDef(IDef, frozen=True):
                 continue
             stcs = [d.sentence for d in tgt if not d.is_dummy]
             merged.append(cls.one(t, *stcs))
-        return merged, std
+        return merged, std, mt
 
     @override
     def add_edge(self, g: nx.DiGraph) -> None:

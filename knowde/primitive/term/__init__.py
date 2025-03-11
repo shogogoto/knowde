@@ -142,6 +142,9 @@ class Term(BaseModel, frozen=True):
         """Flatten marks."""
         return list(flatten([BRACE_MARKER.pick(n) for n in self.names]))
 
+    def __lt__(self, other: Term) -> bool:  # noqa: D105
+        return self.names < other.names
+
 
 def term_dup_checker() -> DuplicationChecker:
     """用語重複チェッカー."""
@@ -188,7 +191,7 @@ class MergedTerms(BaseModel, frozen=True):
                 return ls[0]
             case _:
                 msg = "重複によってマージできませんでした"
-                raise TermConflictError(msg, ls)
+                raise TermConflictError(msg, ls, t)
 
     @cached_property
     def frozen(self) -> frozenset[Term]:
@@ -198,4 +201,4 @@ class MergedTerms(BaseModel, frozen=True):
 
 def check_and_merge_term(terms: Iterable[Term]) -> MergedTerms:
     """重複チェック."""
-    return MergedTerms().add(*terms)
+    return MergedTerms().add(*sorted(terms))

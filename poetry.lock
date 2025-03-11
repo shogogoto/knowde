@@ -294,6 +294,18 @@ files = [
 ]
 
 [[package]]
+name = "chardet"
+version = "5.2.0"
+description = "Universal encoding detector for Python 3"
+optional = false
+python-versions = ">=3.7"
+groups = ["main"]
+files = [
+    {file = "chardet-5.2.0-py3-none-any.whl", hash = "sha256:e1cf59446890a00105fe7b7912492ea04b6e6f06d4b742b2c788469e34c82970"},
+    {file = "chardet-5.2.0.tar.gz", hash = "sha256:1b3b6ff479a8c414bc3fa2c0852995695c4a026dcd6d0633b2dd092ca39c1cf7"},
+]
+
+[[package]]
 name = "charset-normalizer"
 version = "3.4.1"
 description = "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet."
@@ -1283,14 +1295,14 @@ files = [
 
 [[package]]
 name = "neo4j"
-version = "5.27.0"
+version = "5.28.1"
 description = "Neo4j Bolt driver for Python"
 optional = false
 python-versions = ">=3.7"
 groups = ["main"]
 files = [
-    {file = "neo4j-5.27.0-py3-none-any.whl", hash = "sha256:929c14b9e5341267324eca170b39d1798b032bffacc26a0529eacaf678ae483f"},
-    {file = "neo4j-5.27.0.tar.gz", hash = "sha256:f82ee807cd15b178898d83f41a66372e11719a25dd487fd7bea48fd4b7323765"},
+    {file = "neo4j-5.28.1-py3-none-any.whl", hash = "sha256:6755ef9e5f4e14b403aef1138fb6315b120631a0075c138b5ddb2a06b87b09fd"},
+    {file = "neo4j-5.28.1.tar.gz", hash = "sha256:ae8e37a1d895099062c75bc359b2cce62099baac7be768d0eba7180c1298e214"},
 ]
 
 [package.dependencies]
@@ -1303,25 +1315,25 @@ pyarrow = ["pyarrow (>=1.0.0)"]
 
 [[package]]
 name = "neomodel"
-version = "5.4.2"
+version = "5.4.4"
 description = "An object mapper for the neo4j graph database."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "neomodel-5.4.2-py3-none-any.whl", hash = "sha256:2909cb2c8efb0cc402d40a7a2575c576041218d824d875c2848a6e7335576e63"},
-    {file = "neomodel-5.4.2.tar.gz", hash = "sha256:2d1b09ed6f22142ef745eb90c00345f6df1bf7b97d1534ee2ce31d39fdce0ca9"},
+    {file = "neomodel-5.4.4-py3-none-any.whl", hash = "sha256:de1474675b091b9f718e0554192e25696fefb1949dea6a1b78d372f14946f0a8"},
+    {file = "neomodel-5.4.4.tar.gz", hash = "sha256:ce2e017d8f242af4df7148d862eba3bb662e614c1f88a1295f6fd858cbd860ff"},
 ]
 
 [package.dependencies]
-neo4j = ">=5.27.0,<5.28.0"
+neo4j = ">=5.28.1,<5.29.0"
 
 [package.extras]
 dev = ["black", "isort", "mypy", "pandas-stubs", "pre-commit", "pytest (>=7.1)", "pytest-asyncio", "pytest-cov (>=4.0)", "pytest-mock", "types-pytz", "types-shapely", "unasync"]
 extras = ["numpy", "pandas", "shapely"]
 numpy = ["numpy"]
 pandas = ["pandas"]
-rust-driver-ext = ["neo4j-rust-ext (==5.27.0.0)"]
+rust-driver-ext = ["neo4j-rust-ext (==5.28.1.0)"]
 shapely = ["Shapely (>=2.0.0)"]
 
 [[package]]
@@ -3034,4 +3046,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">3.11.0,<3.14"
-content-hash = "ec398c00460036382fbd1c7e0f45c2bb5d2311b6d180f7dc8ac5de99b51d862e"
+content-hash = "ed697c8635fbab4cbfd9367ed5373a77c5af72a2b78b2df6bf72de8ae62a1941"

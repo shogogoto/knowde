@@ -2,59 +2,24 @@
 
 アカウントは、ユーザーに特定の役割や権限を付与するために使用される
 
-
-Google で SSO
-普通にUserでSign up.
-
-
-User
-  name for display  SSOではemailの@の前にしとくか
-  email optional
-  uid
-  password optional passwordはuserではなく認証のドメイン
-  created
-
-だけあればいい
-認証で必要な情報を持つのはAccountと呼び分ける
-
-SysNetの所有者としてはOwnerと呼んだり
-
+follow機能
 """
 from __future__ import annotations
 
-from typing import Generic, Self, TypeVar
 from uuid import UUID  # noqa: TCH003
 
-from neomodel import StructuredNode
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import EmailStr, Field
 
-from knowde.primitive.__core__.domain.domain import neolabel2model
+from knowde.primitive.__core__.neoutil import BaseMapper
 
 from .repo import LAccount, LUser
-
-L = TypeVar("L", bound=StructuredNode)
-
-
-class BaseMapper(BaseModel, Generic[L]):
-    """Neomodel-pydantic mapper."""
-
-    __label__: type[L]
-
-    @classmethod
-    def from_lb(cls, lb: L) -> Self:
-        """Neomodel label to model."""
-        return neolabel2model(cls, lb)
-
-    def tolabel(self) -> L:
-        """Model to neomodel label."""
-        return self.__label__(**self.model_dump())
 
 
 class User(BaseMapper):
     """UserProtocol[UUID]を満たす."""
 
     __label__ = LUser
-    uid: UUID
+    uid: UUID | None = None
     email: EmailStr
     hashed_password: str
     is_active: bool
@@ -64,6 +29,8 @@ class User(BaseMapper):
 
     @property
     def id(self) -> UUID:  # noqa: D102
+        if self.uid is None:
+            raise
         return self.uid
 
 

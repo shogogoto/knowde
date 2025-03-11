@@ -79,7 +79,7 @@ def detail_proc(
     # )
 
 
-def time_proc(stdin: IO, dateformat: str, method_name: str) -> None:
+def time_proc(stdin: IO, timespan: str, method_name: str) -> None:
     """時系列表示."""
     txt = stdin.read()
     sn = try_parse2net(txt)
@@ -88,7 +88,7 @@ def time_proc(stdin: IO, dateformat: str, method_name: str) -> None:
             "time": str(d),
             "sentence": sn.get(EdgeType.WHEN.get_pred_or_none(sn.g, d)),
         }
-        for d in getattr(sn.series, method_name)(dateformat)
+        for d in getattr(sn.series, method_name)(timespan)
     ]
 
     click.echo(tabulate(ls, headers="keys", showindex=True))

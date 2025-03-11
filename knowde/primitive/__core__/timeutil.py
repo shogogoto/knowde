@@ -3,9 +3,9 @@ from __future__ import annotations
 
 from datetime import date, datetime
 
-from zoneinfo import ZoneInfo
+import pytz
 
-TZ = ZoneInfo("Asia/Tokyo")
+TZ = pytz.timezone("Asia/Tokyo")  # pytz じゃないとneo4j driverには対応していないっぽい
 
 
 def jst_now() -> datetime:  # noqa: D103

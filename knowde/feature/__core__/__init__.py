@@ -1,5 +1,6 @@
 """common."""
 import sys
+import time
 from contextlib import contextmanager
 from cProfile import Profile
 from typing import Generator
@@ -39,3 +40,12 @@ def profile() -> Generator:
     finally:
         pr.disable()
         pr.print_stats(sort="cumtime")
+
+
+@contextmanager
+def elapsed_time(name: str) -> Generator:
+    """時間測定."""
+    start = time.time()
+    yield
+    end = time.time()
+    print(f"{name}: {end - start:.3f}秒")  # noqa: T201

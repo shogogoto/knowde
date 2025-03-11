@@ -1,6 +1,7 @@
 """parse tree to sysnet."""
 from __future__ import annotations
 
+from functools import cache
 from typing import TYPE_CHECKING
 
 import networkx as nx
@@ -9,7 +10,6 @@ from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.sysnet.sysfn import (
     check_duplicated_sentence,
     to_def,
-    to_term,
 )
 from knowde.complex.__core__.sysnet.sysfn.build_fn import (
     add_resolved_edges,
@@ -18,7 +18,6 @@ from knowde.complex.__core__.sysnet.sysfn.build_fn import (
 from knowde.complex.__core__.sysnet.sysnode.merged_def import MergedDef
 from knowde.primitive.parser import get_leaves, parse2tree
 from knowde.primitive.parser.testing import treeprint
-from knowde.primitive.term import check_and_merge_term
 from knowde.primitive.term.markresolver import MarkResolver
 
 from .interpreter import SysNetInterpreter
@@ -30,6 +29,7 @@ if TYPE_CHECKING:
     from knowde.complex.__core__.tree2net.directed_edge import DirectedEdgeCollection
 
 
+@cache
 def parse2net(txt: str, do_print: bool = False) -> SysNet:  # noqa: FBT001 FBT002
     """文からsysnetへ."""
     _t = parse2tree(txt, TSysArg())
@@ -52,9 +52,8 @@ def _build_graph(tree: Tree, col: DirectedEdgeCollection) -> nx.MultiDiGraph:
 def _extract_leaves(tree: Tree) -> tuple[nx.MultiDiGraph, MarkResolver]:
     """transformedなASTを処理."""
     leaves = get_leaves(tree)
-    mt = check_and_merge_term(to_term(leaves))
     check_duplicated_sentence(leaves)
-    mdefs, stddefs = MergedDef.create_and_parted(mt, to_def(leaves))
+    mdefs, stddefs, mt = MergedDef.create_and_parted(to_def(leaves))
     g = nx.MultiDiGraph()
     [md.add_edge(g) for md in mdefs]
     [d.add_edge(g) for d in stddefs]

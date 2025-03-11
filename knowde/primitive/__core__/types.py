@@ -32,15 +32,37 @@ NeoModel = Annotated[
 
 
 def _validate_graph(v: Any, info: ValidationInfo) -> nx.DiGraph:  # noqa: ARG001 ANN401
+    if isinstance(v, dict):
+        return nx.node_link_graph(v)
     if isinstance(v, nx.DiGraph):
         return v
     raise TypeError
 
 
+class EdgeData(BaseModel):
+    """for fastapi schema."""
+
+    source: str
+    target: str
+
+
+class GraphData(BaseModel):
+    """for fastapi schema."""
+
+    directed: bool
+    edges: list[EdgeData]
+    graph: dict
+    multigraph: bool
+    nodes: list[dict[str, str]]
+
+
 NXGraph = Annotated[
-    nx.MultiDiGraph,
+    nx.DiGraph,
     PlainValidator(_validate_graph),
-    PlainSerializer(lambda x: nx.node_link_data(x)),
+    PlainSerializer(
+        lambda x: nx.node_link_data(x, edges="edges"),
+        return_type=GraphData,
+    ),
 ]
 
 
