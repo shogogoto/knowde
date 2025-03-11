@@ -10,8 +10,8 @@ import networkx as nx
 from lark import Token
 from more_itertools import collapse
 
-from knowde.complex.resource import ResourceMeta
-from knowde.complex.resource.label import LResource
+from knowde.complex.entry import ResourceMeta
+from knowde.complex.entry.label import LResource
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.term import Term

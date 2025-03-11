@@ -99,9 +99,9 @@ def test_folder_move(u: LUser) -> None:
     assert tgt.name == "target"
     assert [s.name for s in subs] == ["sub"]
     move_folder(u.uid, "/f1/target", "/f2/xxx")
-    fs = fetch_namespace(u.uid)
-    assert fs.get_or_none("f1", "target") is None  # なくなってる
-    assert fs.get("f2", "xxx", "sub")
+    ns = fetch_namespace(u.uid)
+    assert ns.get_or_none("f1", "target") is None  # なくなってる
+    assert ns.get("f2", "xxx", "sub")
 
 
 def test_create_resource(u: LUser) -> None:
@@ -109,6 +109,7 @@ def test_create_resource(u: LUser) -> None:
     create_folder(u.uid, "f1")
     create_root_resource(u.uid, "r1")
     create_sub_resource(u.uid, "f1", "r1")  # 階層が違えば同名でも登録できる
+    # -> 登録できないように変更
     ns = fetch_namespace(u.uid)
     assert ns.roots == ["f1", "r1"]
     assert ns.children("f1") == ["r1"]

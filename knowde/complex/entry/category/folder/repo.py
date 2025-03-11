@@ -11,7 +11,7 @@ from neomodel import (
     db,
 )
 
-from knowde.complex.resource.label import LEntry, LFolder, LResource
+from knowde.complex.entry.label import LEntry, LFolder, LResource
 from knowde.primitive.__core__.neoutil import to_uuid
 from knowde.primitive.user.repo import LUser
 

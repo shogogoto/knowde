@@ -33,6 +33,9 @@ class NameSpace(BaseModel):
 
     def add_root(self, e: Entry) -> None:
         """user直下."""
+        if e.name in self.roots:
+            msg = f"{e.name}は登録済み"
+            raise ValueError(msg)
         self.roots_[e.name] = e
         self.g.add_node(e)
 

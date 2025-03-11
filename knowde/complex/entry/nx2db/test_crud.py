@@ -6,7 +6,7 @@ from neomodel import db
 
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.tree2net import parse2net
-from knowde.complex.resource.label import LResource
+from knowde.complex.entry.label import LResource
 
 from .restore import restore_sysnet
 from .save import sysnet2cypher

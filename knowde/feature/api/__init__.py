@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from neomodel import db
 
 from knowde.complex.auth.routers import auth_router, user_router
-from knowde.complex.resource.router import entry_router
+from knowde.complex.entry.router import entry_router
 from knowde.feature.api.middle import Neo4jTransactionMiddleware, neo4j_logger
 from knowde.primitive.__core__ import ErrorHandlingMiddleware
 from knowde.primitive.config.env import Settings

@@ -7,15 +7,15 @@ from typing import TypeAlias
 
 import pytest
 
-from knowde.complex.resource.category.folder import NameSpace
-from knowde.complex.resource.category.folder.repo import (
+from knowde.complex.entry.category.folder import NameSpace
+from knowde.complex.entry.category.folder.repo import (
     fetch_namespace,
 )
-from knowde.complex.resource.repo import (
+from knowde.complex.entry.repo import (
     save_resource,
     sync_namespace,
 )
-from knowde.complex.resource.repo.sync import path2meta
+from knowde.complex.entry.repo.sync import path2meta
 from knowde.primitive.user.repo import LUser
 
 

@@ -7,9 +7,9 @@ from uuid import UUID
 
 from pydantic import RootModel
 
-from knowde.complex.resource import ResourceMeta
-from knowde.complex.resource.category.folder import MFolder, MResource, NameSpace
-from knowde.complex.resource.label import LFolder, LResource
+from knowde.complex.entry import ResourceMeta
+from knowde.complex.entry.category.folder import MFolder, MResource, NameSpace
+from knowde.complex.entry.label import LFolder, LResource
 from knowde.primitive.user.repo import LUser
 
 

@@ -6,7 +6,7 @@ from pathlib import Path
 import click
 
 from knowde.complex.auth.repo.client import auth_header
-from knowde.feature.cli.fs.sync import path2meta
+from knowde.complex.entry.repo.sync import path2meta
 from knowde.primitive.config import LocalConfig
 from knowde.primitive.config.env import Settings
 
@@ -25,33 +25,7 @@ class LinkNotExistsError(Exception):
 
 
 def sync_proc(glob: str, show_error: bool = True) -> None:  # noqa: FBT001 FBT002
-    """ファイルシステムと同期.
-
-    差分変更箇所チェック api へ送る
-        req 内容をそれぞれ判定
-            reqとdb のentryを対応づける
-                変更あり/なし テキストhashの変更あり/なし
-                削除
-                新規
-                (移動) move前後を同定
-                    削除 と 新規 のリスト
-                      ファイル名の変更は影響しない なぜなら # title が entry名.
-        {"req path": {
-            "db_path": ~,
-            ""
-        }}
-
-        response アップロードすべきファイルを指示
-
-    batch_upload api
-        user_idからnamespaceを取得してそれとの差分を確認
-            current にあってnsにない場合
-                upload
-            current になくてnsにある場合
-                download
-                    git で管理してもらう前提だから不要
-                    -> だったら、syncではなくupload のが良い名前かも
-    """
+    """CLI環境のファイルシステムとDBを同期."""
     c = LocalConfig.load()
     if c.ANCHOR is None:
         click.echo("同期するディレクトリをlinkコマンドで設定してください")

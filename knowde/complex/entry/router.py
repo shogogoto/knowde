@@ -4,9 +4,9 @@
 from fastapi import APIRouter, Depends
 
 from knowde.complex.auth.routers import auth_component
-from knowde.complex.resource.category.folder import NameSpace
-from knowde.complex.resource.category.folder.repo import fetch_namespace
-from knowde.complex.resource.repo import ResourceMetas, UpdateFileMap, sync_namespace
+from knowde.complex.entry.category.folder import NameSpace
+from knowde.complex.entry.category.folder.repo import fetch_namespace
+from knowde.complex.entry.repo import ResourceMetas, UpdateFileMap, sync_namespace
 from knowde.primitive.user import User
 
 entry_router = APIRouter(tags=["entry"])

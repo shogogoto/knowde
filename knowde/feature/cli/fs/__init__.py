@@ -14,9 +14,15 @@ def anchor_cmd() -> None:
 
 @click.command("sync")
 @click.option("-g", "--glob", default="**/*.kn", show_default=True, help="検索パターン")
-@click.option("-s", "--show-error", is_flag=True, help="パースエラーを表示")
-def sync_cmd(glob: str, show_error: bool) -> None:  # noqa: FBT001
+@click.option(
+    "-h",
+    "--hide-error",
+    is_flag=True,
+    default=False,
+    help="パースエラーを表示",
+)
+def sync_cmd(glob: str, hide_error: bool) -> None:  # noqa: FBT001
     """ファイルシステムと同期."""
     from .proc import sync_proc
 
-    sync_proc(glob, show_error)
+    sync_proc(glob, not hide_error)
