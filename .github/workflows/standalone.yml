@@ -36,6 +36,7 @@ jobs:
           pip install poetry-dynamic-versioning twine
       - name: Create standalone
         run: |
+          poetry dynamic-versioning
           poetry run task build
       - name: Upload a executable file to GitHub Releases
         uses: softprops/action-gh-release@v2
@@ -67,6 +68,7 @@ jobs:
           poetry install --without dev
       - name: Create standalone
         run: |
+          poetry dynamic-versioning
           poetry run task build
           # Compress-Archive -Path standalone  -DestinationPath win.zip
       - name: Upload a executable file to GitHub Releases
