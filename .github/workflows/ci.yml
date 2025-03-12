@@ -56,8 +56,7 @@ jobs:
       - name: Test
         run: |
           sleep $((${{ matrix.wait_sec }} * 5))
-          echo hello
-          # poetry run task test
+          poetry run task test
         env:
           NEO4J_URL: bolt://neo4j:passwordneo@localhost:7687
 
