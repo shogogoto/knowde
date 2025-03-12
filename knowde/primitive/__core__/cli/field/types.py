@@ -1,9 +1,10 @@
 """CLI field types."""
 from __future__ import annotations
 
-from typing import Any, TypedDict
+from typing import Any
 
 from pydantic import BaseModel, Field
+from typing_extensions import TypedDict
 
 
 class ClickParamAttrs(TypedDict):

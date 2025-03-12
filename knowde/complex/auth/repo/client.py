@@ -1,11 +1,11 @@
 """DB."""
 
-
-from typing import Callable, TypedDict
+from typing import Callable
 from uuid import UUID
 
 import httpx
 from pydantic import BaseModel
+from typing_extensions import TypedDict
 
 from knowde.complex.auth.errors import TokenUnsavedError
 from knowde.primitive.config import LocalConfig
