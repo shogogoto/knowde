@@ -1,7 +1,7 @@
 """application service."""
 from __future__ import annotations
 
-from uuid import UUID  # noqa: TCH003
+from uuid import UUID
 
 from knowde.tmp.definition.dto import DetailView
 from knowde.tmp.definition.repo.deep_search import find_recursively

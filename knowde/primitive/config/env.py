@@ -57,7 +57,7 @@ class Settings(BaseSettings):
             headers=headers,
         )
 
-    def delete(  # noqa: PLR0913
+    def delete(
         self,
         relative: str,
         params: dict | None = None,
@@ -76,7 +76,7 @@ class Settings(BaseSettings):
             headers=headers,
         )
 
-    def post(  # noqa: PLR0913
+    def post(
         self,
         relative: str,
         params: dict | None = None,
@@ -95,7 +95,7 @@ class Settings(BaseSettings):
             headers=headers,
         )
 
-    def put(  # noqa: PLR0913
+    def put(
         self,
         relative: str,
         params: dict | None = None,
@@ -114,7 +114,7 @@ class Settings(BaseSettings):
             headers=headers,
         )
 
-    def patch(  # noqa: PLR0913
+    def patch(
         self,
         relative: str,
         params: dict | None = None,
@@ -137,7 +137,7 @@ class Settings(BaseSettings):
 class ReqProtocol(Protocol):
     """APIメソッド."""
 
-    def __call__(  # noqa: PLR0913
+    def __call__(
         self,
         relative: str,
         params: dict | None = None,

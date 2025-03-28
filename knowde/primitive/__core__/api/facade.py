@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, Generic, Optional, TypeVar
 
-from fastapi import APIRouter  # noqa: TCH002
+from fastapi import APIRouter
 from pydantic import BaseModel
 
 from knowde.primitive.__core__.api.endpoint import (
@@ -36,7 +36,7 @@ class ClientFactory(
     router: APIRouter
     rettype: type[T]
 
-    def get(  # noqa: PLR0913
+    def get(
         self,
         p: BaseAPIPath,
         f: Callable,
@@ -55,7 +55,7 @@ class ClientFactory(
             check_responses=check_responses,
         )
 
-    def gets(  # noqa: PLR0913
+    def gets(
         self,
         p: BaseAPIPath,
         f: Callable,
@@ -74,7 +74,7 @@ class ClientFactory(
             check_responses=check_responses,
         )
 
-    def post(  # noqa: PLR0913
+    def post(
         self,
         p: BaseAPIPath,
         f: Callable,
@@ -93,7 +93,7 @@ class ClientFactory(
             check_responses=check_responses,
         )
 
-    def put(  # noqa: PLR0913
+    def put(
         self,
         p: BaseAPIPath,
         f: Callable,
@@ -112,7 +112,7 @@ class ClientFactory(
             check_responses=check_responses,
         )
 
-    def delete(  # noqa: PLR0913
+    def delete(
         self,
         p: BaseAPIPath,
         f: Callable,

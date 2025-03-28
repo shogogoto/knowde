@@ -1,12 +1,13 @@
 """ネットワーク1 node1のview."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Iterable, NamedTuple, Self, Sequence
+from collections.abc import Iterable, Sequence
+from typing import TYPE_CHECKING, NamedTuple, Self
 
 from more_itertools import collapse
 from pydantic import BaseModel, Field
 
-from knowde.complex.__core__.sysnet.sysnode import KNArg, KNode  # noqa: TCH001
+from knowde.complex.__core__.sysnet.sysnode import KNArg, KNode
 from knowde.complex.systats.nw1_n1 import recursively_nw1n1
 from knowde.complex.systats.nw1_n1.ctxdetail import Nw1N1Ctx, Nw1N1Label
 
@@ -110,7 +111,7 @@ class SyScore(BaseModel, frozen=True):
         ignores: Iterable[Nw1N1Label] = [],
         config: Iterable[LRWTpl] = [],
     ) -> Self:
-        """instantiate."""
+        """Instantiate."""
         return cls(
             values=[Nw1N1Ctx.from_label(i) for i in targets if i not in ignores],
             config=CtxConfig(configs=config),

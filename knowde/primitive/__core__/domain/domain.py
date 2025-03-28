@@ -1,9 +1,9 @@
 """共通のモデル."""
 from __future__ import annotations
 
-from datetime import datetime  # noqa: TCH003
+from datetime import datetime
 from typing import TYPE_CHECKING, Optional, Self, TypeVar
-from uuid import UUID  # noqa: TCH003
+from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator
 

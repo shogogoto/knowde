@@ -16,7 +16,7 @@ models = [OneModel(p1=str(i), p2="xxx") for i in range(3)]
 @click.argument("arg", nargs=1)
 @click.option("--op", type=click.INT, default=None)
 @view_options
-def command(arg: str, op: int | None) -> list[OneModel]:  # noqa: ARG001
+def command(arg: str, op: int | None) -> list[OneModel]:
     """With dummy arg and option."""
     return models
 

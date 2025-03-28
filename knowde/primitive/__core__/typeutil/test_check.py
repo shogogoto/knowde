@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from typing import Optional
-from uuid import UUID  # noqa: TCH003
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 from pydantic_partial.partial import create_partial_model

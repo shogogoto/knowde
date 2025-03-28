@@ -1,8 +1,10 @@
 """ナビ 任意sysnodeの位置を把握する羅針盤."""
 from __future__ import annotations
 
+from collections import OrderedDict
+from collections.abc import Hashable
 from itertools import zip_longest
-from typing import TYPE_CHECKING, Hashable, OrderedDict, Self
+from typing import TYPE_CHECKING, Self
 
 from pydantic import BaseModel
 

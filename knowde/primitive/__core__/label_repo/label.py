@@ -1,7 +1,8 @@
 """neomodel labelとmodelを対応付ける."""
 from __future__ import annotations
 
-from typing import Any, Generic, Iterator, TypeVar
+from collections.abc import Iterator
+from typing import Any, Generic, TypeVar
 
 from pydantic import (
     BaseModel,
@@ -46,5 +47,5 @@ class Labels(BaseModel, Generic[L, M], frozen=True):
         return [self.model.to_model(lb) for lb in self]
 
     @model_serializer
-    def _serialize(self) -> Any:  # noqa: ANN401
+    def _serialize(self) -> Any:
         return [m.model_dump() for m in self.to_model()]

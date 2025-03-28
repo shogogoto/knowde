@@ -1,8 +1,9 @@
 """cypherによる自由度の高いクエリ."""
 from __future__ import annotations
 
+from collections.abc import Iterable
 from textwrap import dedent
-from typing import Any, Callable, Iterable, Optional, TypeVar
+from typing import Any, Callable, Optional, TypeVar
 
 from more_itertools import collapse
 from neomodel import db

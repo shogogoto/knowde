@@ -1,7 +1,8 @@
 """重複チェック."""
 from __future__ import annotations
 
-from typing import Callable, Generic, Hashable, NoReturn, TypeVar
+from collections.abc import Hashable
+from typing import Callable, Generic, NoReturn, TypeVar
 
 from pydantic import BaseModel, Field
 

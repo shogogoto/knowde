@@ -53,7 +53,7 @@ def to_paramfunc(
     check_map_fields2params(t, params)
 
     @db.transaction
-    def _f(*args, **kwargs) -> Any:  # noqa: ANN401, ANN003, ANN002
+    def _f(*args, **kwargs) -> Any:
         p, newargs, newkw = extract_type_arg(t, args, kwargs)
         out = f(*newargs, **p.model_dump(), **newkw)
         return convert(out)
@@ -65,7 +65,7 @@ def to_paramfunc(
     )
 
 
-def to_bodyfunc(  # noqa: PLR0913
+def to_bodyfunc(
     f: Callable,
     t_param: type[BaseModel],
     t_out: type | None = None,
@@ -96,7 +96,7 @@ def to_queryfunc(
 
     @functools.wraps(f)
     @db.transaction
-    def _f(*args, **kwargs) -> Any:  # noqa: ANN401, ANN003, ANN002
+    def _f(*args, **kwargs) -> Any:
         out = f(*args, **kwargs)
         return convert(out)
 

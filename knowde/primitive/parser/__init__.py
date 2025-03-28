@@ -1,10 +1,11 @@
 """テキストから構文木作成."""
 from __future__ import annotations
 
+from collections.abc import Hashable
 from functools import cache
 from pathlib import Path
 from textwrap import dedent
-from typing import TYPE_CHECKING, Hashable
+from typing import TYPE_CHECKING
 
 from lark import Lark, Transformer, Tree, UnexpectedInput
 from lark.indenter import DedentError, Indenter

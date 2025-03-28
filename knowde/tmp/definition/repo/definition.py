@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from operator import itemgetter
-from uuid import UUID  # noqa: TCH003
+from uuid import UUID
 
 from neomodel import ZeroOrOne
 

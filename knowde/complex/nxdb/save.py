@@ -26,7 +26,7 @@ if TYPE_CHECKING:
     from knowde.primitive.__core__.neoutil import UUIDy
 
 
-def val2str(val: Any) -> str:  # noqa: ANN401
+def val2str(val: Any) -> str:
     """値をcypher用文字列へ."""
     match val:
         case list():
@@ -52,7 +52,7 @@ def t2labels(t: type[StructuredNode]) -> str:
 
 def node2q(n: KNode, nvars: dict[KNode, str]) -> str | list[str] | None:
     """nodeからcreate可能な文字列に変換."""
-    var = nvars.get(n, None)
+    var = nvars.get(n)
     if var is None:
         raise ValueError
     match n:

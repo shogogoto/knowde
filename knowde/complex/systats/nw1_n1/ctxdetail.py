@@ -2,8 +2,9 @@
 from __future__ import annotations
 
 import textwrap
+from collections.abc import Iterable
 from enum import Enum
-from typing import TYPE_CHECKING, Callable, Iterable, Self
+from typing import TYPE_CHECKING, Callable, Self
 
 from pydantic import BaseModel
 
@@ -99,7 +100,7 @@ class Nw1N1Detail(BaseModel, frozen=True):
         ignores: Iterable[Nw1N1Label] = [],
         recs: Iterable[Nw1N1Recursive] = [],
     ) -> Self:
-        """instantiate."""
+        """Instantiate."""
         return cls(
             values=[Nw1N1Ctx.from_label(i) for i in targets if i not in ignores],
             recs=recs,

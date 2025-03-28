@@ -95,7 +95,7 @@ class RelUtil(
             model=self.t_rel,  # StructuredRel
         ).build_manager(target, name="")  # nameが何に使われているのか不明
 
-    def connect(self, s: S, t: T, **kwargs) -> R:  # noqa: ANN003
+    def connect(self, s: S, t: T, **kwargs) -> R:
         """関係元、関係先の順で永続化."""
         rel = self.to(s).connect(t, properties=kwargs)
         for k, v in kwargs.items():

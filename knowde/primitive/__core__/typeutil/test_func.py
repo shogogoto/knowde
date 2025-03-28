@@ -26,8 +26,8 @@ def test_rename_argument() -> None:
     def func(
         a: str,
         b: int,
-        *args,  # noqa: ARG001, ANN002
-        **kwargs,  # noqa: ARG001, ANN003
+        *args,
+        **kwargs,
     ) -> tuple[str, int]:
         return a, b
 
@@ -66,16 +66,16 @@ def test_eq_fieldparam_type() -> None:
         p8: InnerParam
         p9: list[UUID]
 
-    def f(  # noqa: PLR0913
-        p1: str,  # noqa: ARG001
-        p2: bool,  # noqa: ARG001 FBT001
-        p3: int,  # noqa: ARG001
-        p4: float,  # noqa: ARG001
-        p5: date,  # noqa: ARG001
-        p6: datetime,  # noqa: ARG001
-        p7: UUID,  # noqa: ARG001
-        p8: InnerParam,  # noqa: ARG001
-        p9: list[UUID],  # noqa: ARG001
+    def f(
+        p1: str,
+        p2: bool,  # noqa: FBT001
+        p3: int,
+        p4: float,
+        p5: date,
+        p6: datetime,
+        p7: UUID,
+        p8: InnerParam,
+        p9: list[UUID],
     ) -> None:
         pass
 
@@ -92,13 +92,13 @@ def test_extra_map() -> None:
         p1: str
         p2: int
 
-    def f1(p1: str) -> None:  # noqa: ARG001
+    def f1(p1: str) -> None:
         pass
 
     with pytest.raises(MappingField2ArgumentError):
         check_map_fields2params(OneParam, signature(f1).parameters)
 
-    def f2(p1: str, p2: int, p3: float) -> None:  # noqa: ARG001
+    def f2(p1: str, p2: int, p3: float) -> None:
         pass
 
     with pytest.raises(MappingField2ArgumentError):
@@ -112,7 +112,7 @@ def test_filedarg_diff_type() -> None:
         p1: str
         p2: int
 
-    def f1(p1: str, p2: float) -> None:  # noqa: ARG001
+    def f1(p1: str, p2: float) -> None:
         pass
 
     with pytest.raises(MappingField2ArgumentError):
@@ -126,7 +126,7 @@ def test_fieldarg_default() -> None:
         p1: str = "xxx"
         p2: int = 0
 
-    def f1(p1: str = "xxx", p2: int = 1) -> None:  # noqa: ARG001
+    def f1(p1: str = "xxx", p2: int = 1) -> None:
         pass
 
     with pytest.raises(MappingField2ArgumentError):

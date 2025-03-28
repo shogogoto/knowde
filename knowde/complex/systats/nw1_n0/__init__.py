@@ -2,9 +2,10 @@
 from __future__ import annotations
 
 import operator
+from collections.abc import Hashable
 from enum import Enum, StrEnum
 from functools import cache, reduce
-from typing import TYPE_CHECKING, Callable, Hashable, Self, TypeAlias
+from typing import TYPE_CHECKING, Callable, Self, TypeAlias
 
 import networkx as nx
 

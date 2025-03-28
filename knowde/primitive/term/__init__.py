@@ -2,8 +2,9 @@
 from __future__ import annotations
 
 from collections import Counter
+from collections.abc import Iterable
 from functools import cached_property
-from typing import Iterable, NoReturn, Self
+from typing import NoReturn, Self
 
 import networkx as nx
 from more_itertools import flatten

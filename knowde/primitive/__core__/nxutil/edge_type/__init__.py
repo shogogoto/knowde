@@ -1,9 +1,10 @@
 """エッジの種類."""
 from __future__ import annotations
 
+from collections.abc import Hashable
 from enum import Enum, auto
 from functools import cache, cached_property, reduce
-from typing import TYPE_CHECKING, Callable, Hashable, Self
+from typing import TYPE_CHECKING, Callable, Self
 
 import networkx as nx
 

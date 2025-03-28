@@ -1,7 +1,8 @@
 """非pydanticデータ型を対応させる."""
 from __future__ import annotations
 
-from typing import Annotated, Any, Hashable
+from collections.abc import Hashable
+from typing import Annotated, Any
 from uuid import UUID, uuid4
 
 import networkx as nx
@@ -16,8 +17,8 @@ from pydantic import (
 
 
 def _validate_neomodel(
-    v: Any,  # noqa: ANN401
-    info: ValidationInfo,  # noqa: ARG001
+    v: Any,
+    info: ValidationInfo,
 ) -> StructuredNode:
     if isinstance(v, StructuredNode):
         return v
@@ -31,7 +32,7 @@ NeoModel = Annotated[
 ]
 
 
-def _validate_graph(v: Any, info: ValidationInfo) -> nx.DiGraph:  # noqa: ARG001 ANN401
+def _validate_graph(v: Any, info: ValidationInfo) -> nx.DiGraph:
     if isinstance(v, dict):
         return nx.node_link_graph(v)
     if isinstance(v, nx.DiGraph):
