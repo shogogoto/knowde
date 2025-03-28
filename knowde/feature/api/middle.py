@@ -51,7 +51,7 @@ class Neo4jTransactionMiddleware(BaseHTTPMiddleware):
                 )
         except Exception:
             db.rollback()
-            logging.exception("Transaction rolled back due to error")
+            logging.exception("Transaction rolled back due to error")  # noqa: LOG015
             raise
         return res
 

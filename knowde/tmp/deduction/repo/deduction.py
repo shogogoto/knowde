@@ -163,7 +163,7 @@ def list_deductions() -> StatsDeductions:
             d[lb.uid]["rels"].append(rel)
         else:
             d[lb.uid]["rels"] = [rel]
-        cnt += 1
+        cnt += 1  # noqa: SIM113
 
     retvals = []
     for uid in d:

@@ -101,6 +101,7 @@ ignore = [
   "ARG001",  # unused argument
   "PGH004",  # ruff: noqa
   "PT001",   # pytest.fixture の()の有無がformatの度にスイッチする
+  "DOC201",  # docstringのreturnがない
 ]
 unfixable = [
   "T201", # print

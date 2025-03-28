@@ -2,6 +2,7 @@
 
 RelationshipPropertyでは型を明示できない
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar
@@ -63,7 +64,7 @@ class RelUtil(
     cardinality: type[RelationshipManager] = ZeroOrMore  # source to target cardinality
 
     @override
-    def model_post_init(self, __context: Any) -> None:
+    def model_post_init(self, __context: Any, /) -> None:
         # for add register to db._NODE_CLASS_REGISTRY
         RelationshipTo(
             cls_name=self.t_target,

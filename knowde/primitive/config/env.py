@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
     KNOWDE_URL: str = "https://knowde.onrender.com/"
-    KN_AUTH_SECRET: str = "SECRET"
+    KN_AUTH_SECRET: str = "SECRET"  # noqa: S105
     KN_TOKEN_LIFETIME_SEC: int = 60 * 60 * 24  # 1 day
 
     def setup_db(self) -> None:
