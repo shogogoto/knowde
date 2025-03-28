@@ -1,9 +1,10 @@
 """errorの基礎."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from fastapi import status
+from fastapi import HTTPException, status
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
@@ -21,17 +22,21 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
         call_next: RequestResponseEndpoint,
     ) -> Response:
         try:
-            res: Response = await call_next(request)
-        except DomainError as e:
+            return await call_next(request)
+        except HTTPException as e:
+            if await request.is_disconnected():
+                return JSONResponse(
+                    status_code=e.status_code,
+                    content=e.detail,
+                )
             return JSONResponse(
                 status_code=e.status_code,
                 content=e.detail,
+                headers=e.headers,
             )
 
-        return res
 
-
-class DomainError(Exception):
+class DomainError(HTTPException):
     """ドメイン関連エラー."""
 
     status_code: int = status.HTTP_400_BAD_REQUEST
@@ -42,10 +47,8 @@ class DomainError(Exception):
     def detail(self) -> dict[str, Any]:
         """詳細."""
         return {
-            "detail": {
-                "code": self.status_code,
-                "message": self.msg,
-            },
+            "code": self.status_code,
+            "message": self.msg,
         }
 
     def __init__(  # noqa: D107

@@ -1,8 +1,9 @@
 """同期."""
 from __future__ import annotations
 
+from collections.abc import Iterable
 from datetime import datetime
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING
 
 from knowde.complex.__core__.tree2net import parse2net
 from knowde.complex.entry import ResourceMeta

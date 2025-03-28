@@ -21,7 +21,7 @@ class DateType(ParamType):
     name = "date"
     _format = "%Y-%m-%d"
 
-    def _try_to_convert(self, value: Any) -> Optional[date]:  # noqa: ANN401
+    def _try_to_convert(self, value: Any) -> Optional[date]:
         try:
             return datetime.strptime(value, self._format).astimezone(TZ).date()
         except ValueError:
@@ -29,7 +29,7 @@ class DateType(ParamType):
 
     def convert(
         self,
-        value: Any,  # noqa: ANN401
+        value: Any,
         param: Optional[Parameter],
         ctx: Optional[Context],
     ) -> date:
@@ -84,5 +84,5 @@ class ClickDecorator(BaseModel, frozen=True):
     params: list[ClickParam]
 
     def __call__(self, f: FC) -> FC:
-        """implimentation."""
+        """Implimentation."""
         return click_decorate(self.params)(f)

@@ -1,9 +1,9 @@
 """common."""
 import sys
 import time
+from collections.abc import Generator
 from contextlib import contextmanager
 from cProfile import Profile
-from typing import Generator
 
 from lark import LarkError
 

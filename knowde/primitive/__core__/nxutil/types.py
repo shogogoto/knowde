@@ -1,7 +1,8 @@
 """nxutil types."""
 from __future__ import annotations
 
-from typing import Callable, Hashable, Iterable, TypeAlias
+from collections.abc import Hashable, Iterable
+from typing import Callable, TypeAlias
 
 import networkx as nx
 

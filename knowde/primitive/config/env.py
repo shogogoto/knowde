@@ -1,4 +1,5 @@
 """settings."""
+
 from __future__ import annotations
 
 from typing import Callable, Final, Optional, Protocol
@@ -26,14 +27,15 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
     KNOWDE_URL: str = "https://knowde.onrender.com/"
-    KN_AUTH_SECRET: str = "SECRET"
+    KN_AUTH_SECRET: str = "SECRET"  # noqa: S105
     KN_TOKEN_LIFETIME_SEC: int = 60 * 60 * 24  # 1 day
 
     def setup_db(self) -> None:
         """DB設定."""
         config.DATABASE_URL = self.NEO4J_URL
 
-    def terdown_db(self) -> None:
+    @staticmethod
+    def terdown_db() -> None:
         """DB切断."""
         if db.driver is not None:
             db.close_connection()
@@ -57,7 +59,7 @@ class Settings(BaseSettings):
             headers=headers,
         )
 
-    def delete(  # noqa: PLR0913
+    def delete(
         self,
         relative: str,
         params: dict | None = None,
@@ -76,7 +78,7 @@ class Settings(BaseSettings):
             headers=headers,
         )
 
-    def post(  # noqa: PLR0913
+    def post(
         self,
         relative: str,
         params: dict | None = None,
@@ -95,7 +97,7 @@ class Settings(BaseSettings):
             headers=headers,
         )
 
-    def put(  # noqa: PLR0913
+    def put(
         self,
         relative: str,
         params: dict | None = None,
@@ -114,7 +116,7 @@ class Settings(BaseSettings):
             headers=headers,
         )
 
-    def patch(  # noqa: PLR0913
+    def patch(
         self,
         relative: str,
         params: dict | None = None,
@@ -137,7 +139,7 @@ class Settings(BaseSettings):
 class ReqProtocol(Protocol):
     """APIメソッド."""
 
-    def __call__(  # noqa: PLR0913
+    def __call__(
         self,
         relative: str,
         params: dict | None = None,

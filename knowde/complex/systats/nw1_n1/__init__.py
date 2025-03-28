@@ -1,8 +1,9 @@
 """1network 1nodeを引数にする関数."""
 from __future__ import annotations
 
+from collections.abc import Iterable
 from functools import cache
-from typing import TYPE_CHECKING, Callable, Final, Iterable, TypeAlias
+from typing import TYPE_CHECKING, Callable, Final, TypeAlias
 
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.sysnet.sysnode import KNArg, KNode

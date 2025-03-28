@@ -41,13 +41,13 @@ def test_get_fparams() -> None:
     NestOp = create_partial_model(Nest)  # noqa: N806
 
     def f(
-        uid: UUID,  # noqa: ARG001
+        uid: UUID,
         _uid: UUID | None = None,
         __uid: Optional[UUID] = None,
-        field: str | None = Field(description="help", default="default"),  # noqa: ARG001
-        nest: Nest = Field(),  # noqa: ARG001
+        field: str | None = Field(description="help", default="default"),
+        nest: Nest = Field(),
         _nest: NestOp = Field(),
-        default2: str | None = "default2",  # noqa: ARG001
+        default2: str | None = "default2",
     ) -> None:
         pass
 

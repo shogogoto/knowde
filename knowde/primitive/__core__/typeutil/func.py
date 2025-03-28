@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 from inspect import Parameter, Signature, signature
 from types import GenericAlias
 from typing import (
@@ -10,7 +11,6 @@ from typing import (
     Callable,
     Concatenate,
     ForwardRef,
-    Mapping,
     Optional,
     ParamSpec,
 )

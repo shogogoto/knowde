@@ -1,9 +1,10 @@
 """networkx関連."""
 from __future__ import annotations
 
+from collections.abc import Hashable
 from functools import cache
 from pprint import pp
-from typing import TYPE_CHECKING, Any, Hashable
+from typing import TYPE_CHECKING, Any
 
 import networkx as nx
 
@@ -14,7 +15,7 @@ if TYPE_CHECKING:
 
 def nxprint(g: nx.DiGraph, detail: bool = False) -> None:  # noqa: FBT001 FBT002
     """確認用."""
-    print("")  # noqa: T201
+    print()  # noqa: T201
     nx.write_network_text(g)
     if detail:
         pp(nx.to_dict_of_dicts(g))
@@ -48,7 +49,7 @@ def to_nodes(g: nx.DiGraph, start: Hashable, f: Accessor) -> list[Hashable]:
 
 
 @cache
-def filter_edge_attr(g: nx.DiGraph, name: str, *values: Any) -> nx.DiGraph:  # noqa: ANN401
+def filter_edge_attr(g: nx.DiGraph, name: str, *values: Any) -> nx.DiGraph:
     """ある属性のエッジのみを抽出する関数を返す."""
 
     def _f(u: Hashable, v: Hashable, attr: dict) -> bool:
@@ -69,27 +70,27 @@ def _to_paths(g: nx.DiGraph, pairs: Edges) -> list[list[Hashable]]:
 
 
 @cache
-def to_leaves(g: nx.DiGraph, *ts: Any) -> list[Hashable]:  # noqa: ANN401
+def to_leaves(g: nx.DiGraph, *ts: Any) -> list[Hashable]:
     """最先端を取得."""
     sub = filter_edge_attr(g, "type", *ts)
     return [n for n in sub.nodes if sub.out_degree(n) == 0 and sub.in_degree(n) != 0]
 
 
 @cache
-def to_axioms(g: nx.DiGraph, *ts: Any) -> list[Hashable]:  # noqa: ANN401
+def to_axioms(g: nx.DiGraph, *ts: Any) -> list[Hashable]:
     """根を取得."""
     sub = filter_edge_attr(g, "type", *ts)
     return [n for n in sub.nodes if sub.in_degree(n) == 0 and sub.out_degree(n) != 0]
 
 
-def leaf_paths(g: nx.DiGraph, tgt: Hashable, t: Any) -> list[list[Hashable]]:  # noqa: ANN401
+def leaf_paths(g: nx.DiGraph, tgt: Hashable, t: Any) -> list[list[Hashable]]:
     """入力ノードから特定の関係を遡って依存先がないノードまでのパスを返す."""
     sub = filter_edge_attr(g, "type", t)
     pairs = [(tgt, lv) for lv in to_leaves(g, t)]
     return _to_paths(sub, pairs)
 
 
-def axiom_paths(g: nx.DiGraph, tgt: Hashable, t: Any) -> list[list[Hashable]]:  # noqa: ANN401
+def axiom_paths(g: nx.DiGraph, tgt: Hashable, t: Any) -> list[list[Hashable]]:
     """入力ノードから特定の関係を遡って依存元がないノードまでのパスを返す."""
     sub = filter_edge_attr(g, "type", t)
     pairs = [(n, tgt) for n in to_axioms(g, t)]
@@ -115,7 +116,7 @@ def copy_old_edges(
         g.add_edge(new, succ, **data)
 
 
-def get_axioms(g: nx.MultiDiGraph, *types: Any) -> list[Hashable]:  # noqa: ANN401
+def get_axioms(g: nx.MultiDiGraph, *types: Any) -> list[Hashable]:
     """出発点を取得."""
 
     def _f(u: Hashable, v: Hashable, attr: dict) -> bool:

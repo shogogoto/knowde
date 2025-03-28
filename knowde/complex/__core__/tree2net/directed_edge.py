@@ -1,9 +1,10 @@
 """マージされて同じTermを持つDef同士を、マージ."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Hashable, TypeAlias
+from collections.abc import Hashable
+from typing import TYPE_CHECKING, Any, Callable, TypeAlias
 
-from lark import Token  # noqa: TCH002
+from lark import Token
 from pydantic import BaseModel, Field
 
 from knowde.complex.__core__.sysnet.sysfn import (

@@ -2,12 +2,13 @@
 from __future__ import annotations
 
 import uuid
+from collections.abc import AsyncGenerator
 from functools import cache
 from queue import Queue
-from typing import Any, AsyncGenerator
+from typing import Any
 from uuid import UUID
 
-from fastapi import Request  # noqa: TCH002
+from fastapi import Request
 from fastapi_users import BaseUserManager, UUIDIDMixin
 from fastapi_users.authentication import (
     AuthenticationBackend,

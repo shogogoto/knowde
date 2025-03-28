@@ -14,9 +14,10 @@
 from __future__ import annotations
 
 import time
+from collections.abc import Hashable, Iterable
 from datetime import date, datetime
 from functools import cache
-from typing import TYPE_CHECKING, Final, Hashable, Iterable, Self
+from typing import TYPE_CHECKING, Final, Self
 
 import edtf
 from intervaltree import Interval, IntervalTree

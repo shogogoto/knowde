@@ -1,6 +1,5 @@
 """test folder."""
 
-
 import pytest
 
 from knowde.primitive.user.repo import LUser
@@ -21,7 +20,7 @@ from .repo import (
 )
 
 
-@pytest.fixture()
+@pytest.fixture
 def u() -> LUser:  # noqa: D103
     return LUser(email="one@gmail.com").save()
 
@@ -56,7 +55,7 @@ def test_create_duplicated_sub_folder(u: LUser) -> None:
         create_sub_folder(u.uid, "f1", "f2")
 
 
-@pytest.mark.skip()
+@pytest.mark.skip
 def test_fetch_folderspace(u: LUser) -> None:
     """ユーザー配下のフォルダ空間を一括取得."""
     create_root_folder(u.uid, "f1")

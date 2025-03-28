@@ -1,8 +1,9 @@
 """用語の参照関係."""
+
 from __future__ import annotations
 
 from functools import cache
-from typing import AbstractSet, TypeAlias
+from typing import TypeAlias
 
 from knowde.primitive.term import Term
 from knowde.primitive.term.const import BRACE_MARKER
@@ -10,7 +11,7 @@ from knowde.primitive.term.errors import MarkUncontainedError
 
 
 def get_refer_terms(
-    targets: AbstractSet[Term],
+    targets: set[Term],
     referred: frozenset[Term],
 ) -> frozenset[Term]:
     """referredを参照するmarktermのみを返す."""
@@ -42,7 +43,7 @@ def get_lookup(terms: frozenset[Term]) -> Lookup:
     return d
 
 
-def to_lookup(terms: AbstractSet[Term]) -> Lookup:
+def to_lookup(terms: set[Term]) -> Lookup:
     """markの依存関係グラフ."""
     referred = frozenset({t for t in terms if not t.has_mark()})
     lookup = get_lookup(referred)

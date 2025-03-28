@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from typing import Generic, TypeVar
-from uuid import UUID  # noqa: TCH003
+from uuid import UUID
 
 from neomodel import DoesNotExist
 from pydantic import BaseModel
@@ -58,7 +58,7 @@ class LBaseUtil(NodeUtil[L], frozen=True):
         # Label.to_model()が失敗するため用途が限定されるのを避ける
         self.find_by_id(uid).delete()
 
-    def change(self, uid: UUID, **kwargs) -> L:  # noqa: ANN003 D102
+    def change(self, uid: UUID, **kwargs) -> L:  # noqa: D102
         lb = self.find_by_id(uid)
         for k, v in kwargs.items():
             if v is not None:
@@ -102,16 +102,16 @@ class LabelUtil(BaseModel, Generic[L, M], frozen=True):
         lb = self.util.find_by_id(uid)
         return self.to_label(lb)
 
-    def find(self, **kwargs) -> Labels[L, M]:  # noqa: ANN003
+    def find(self, **kwargs) -> Labels[L, M]:
         """TODO:pagingが未実装."""
         return self.to_labels(self.util.find(**kwargs))
 
-    def find_one(self, **kwargs) -> Label[L, M]:  # noqa: ANN003
+    def find_one(self, **kwargs) -> Label[L, M]:
         """Noneを許容しない."""
         lb = self.util.find_one(**kwargs)
         return self.to_label(lb)
 
-    def find_one_or_none(self, **kwargs) -> Label[L, M] | None:  # noqa: ANN003
+    def find_one_or_none(self, **kwargs) -> Label[L, M] | None:
         """Noneを許容する."""
         lb = self.util.find_one_or_none(**kwargs)
         if lb is None:
@@ -121,15 +121,15 @@ class LabelUtil(BaseModel, Generic[L, M], frozen=True):
     def delete(self, uid: UUID) -> None:  # noqa: D102
         self.find_by_id(uid).label.delete()
 
-    def create(self, **kwargs) -> Label[L, M]:  # noqa: ANN003 D102
+    def create(self, **kwargs) -> Label[L, M]:  # noqa: D102
         saved = self.util.create(**kwargs)
         return self.to_label(saved)
 
-    def change(self, uid: UUID, **kwargs) -> Label[L, M]:  # noqa: ANN003 D102
+    def change(self, uid: UUID, **kwargs) -> Label[L, M]:  # noqa: D102
         lb = self.util.change(uid, **kwargs)
         return self.to_label(lb)
 
-    def new(self, **kwargs) -> Label[L, M]:  # noqa: ANN003
+    def new(self, **kwargs) -> Label[L, M]:
         """新しく作成."""
         lb = self.find_one_or_none(**kwargs)
         if lb is not None:
@@ -137,7 +137,7 @@ class LabelUtil(BaseModel, Generic[L, M], frozen=True):
             raise AlreadyExistsError(msg)
         return self.create(**kwargs)
 
-    def fetch(self, **kwargs) -> Label[L, M]:  # noqa: ANN003
+    def fetch(self, **kwargs) -> Label[L, M]:
         """１つだけ作成。既存があればそれを返す."""
         lb = self.find_one_or_none(**kwargs)
         if lb is not None:

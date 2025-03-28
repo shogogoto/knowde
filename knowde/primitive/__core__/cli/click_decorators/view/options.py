@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 import functools
-from typing import Callable, ParamSpec, Sequence, TypeVar
+from collections.abc import Sequence
+from typing import Callable, ParamSpec, TypeVar
 
 import click
 from pydantic import BaseModel

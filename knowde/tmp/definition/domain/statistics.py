@@ -4,7 +4,7 @@ from __future__ import annotations
 from pydantic import BaseModel, Field
 
 from knowde.primitive.__core__.domain import APIReturn
-from knowde.tmp.definition.domain.domain import Definition  # noqa: TCH001
+from knowde.tmp.definition.domain.domain import Definition
 
 
 class DepStatistics(BaseModel, frozen=True):

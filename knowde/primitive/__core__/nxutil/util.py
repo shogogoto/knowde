@@ -1,12 +1,13 @@
 """networkxのユーティリティ."""
-from typing import Any, Hashable, Iterable
+from collections.abc import Hashable, Iterable
+from typing import Any
 
 import networkx as nx
 
 from .types import Accessor
 
 
-def succ_attr(attr_name: str, value: Any) -> Accessor:  # noqa: ANN401
+def succ_attr(attr_name: str, value: Any) -> Accessor:
     """次を関係の属性から辿る."""
 
     def _f(g: nx.DiGraph, start: Hashable) -> Iterable[Hashable]:
@@ -18,7 +19,7 @@ def succ_attr(attr_name: str, value: Any) -> Accessor:  # noqa: ANN401
     return _f
 
 
-def pred_attr(attr_name: str, value: Any) -> Accessor:  # noqa: ANN401
+def pred_attr(attr_name: str, value: Any) -> Accessor:
     """前を関係の属性から辿る."""
 
     def _f(g: nx.DiGraph, start: Hashable) -> Iterable[Hashable]:

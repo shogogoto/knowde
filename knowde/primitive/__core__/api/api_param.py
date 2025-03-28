@@ -33,7 +33,7 @@ class APIParam(ABC):
     """APIパラメータインターフェース."""
 
     @abstractmethod
-    def getvalue(self, kwargs: dict) -> Any:  # noqa: ANN401
+    def getvalue(self, kwargs: dict) -> Any:
         """requestに必要なパラメータ値を取得."""
         raise NotImplementedError
 
@@ -41,7 +41,7 @@ class APIParam(ABC):
 class NullParam(BaseModel, APIParam):
     """空を返す."""
 
-    def getvalue(self, kwargs: dict) -> Any:  # noqa: ANN401 ARG002
+    def getvalue(self, kwargs: dict) -> Any:  # noqa: ARG002
         """値を取得."""
         return {}
 
@@ -58,7 +58,7 @@ class BaseAPIPath(BaseModel, APIParam, frozen=True):
         """パスを返す."""
         raise NotImplementedError
 
-    def to_request(  # noqa: PLR0913
+    def to_request(
         self,
         router: APIRouter,
         r2epm: Router2EndpointMethod,
@@ -73,7 +73,7 @@ class BaseAPIPath(BaseModel, APIParam, frozen=True):
 
         apibody = NullParam() if t_body is None else APIBody(annotation=t_body)
 
-        def _request(**kwargs) -> requests.Response:  # noqa: ANN003
+        def _request(**kwargs) -> requests.Response:
             return epm(
                 relative=self.getvalue(kwargs),
                 params=query.getvalue(kwargs),
@@ -82,7 +82,7 @@ class BaseAPIPath(BaseModel, APIParam, frozen=True):
 
         return _request
 
-    def to_client(  # noqa: PLR0913
+    def to_client(
         self,
         router: APIRouter,
         r2epm: Router2EndpointMethod,
@@ -97,7 +97,7 @@ class BaseAPIPath(BaseModel, APIParam, frozen=True):
             check_responses = []
         req = self.to_request(router, r2epm, f, query=query, t_body=t_body)
 
-        def _client(**kwargs) -> T:  # noqa: ANN003
+        def _client(**kwargs) -> T:
             res = req(**kwargs)
             for c in [check_default(r2epm), *check_responses]:
                 c(res)

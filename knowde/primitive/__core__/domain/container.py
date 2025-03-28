@@ -20,7 +20,7 @@ class ModelList(RootModel[list[M]], frozen=True):
         """属性のみのリスト."""
         return [getattr(m, key) for m in self.root]
 
-    def first(self, key: str, value: Any) -> M:  # noqa: ANN401
+    def first(self, key: str, value: Any) -> M:
         """最初の要素."""
         return next(
             filter(

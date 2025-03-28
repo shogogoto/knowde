@@ -2,6 +2,7 @@
 
 RelationshipPropertyでは型を明示できない
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar
@@ -63,7 +64,7 @@ class RelUtil(
     cardinality: type[RelationshipManager] = ZeroOrMore  # source to target cardinality
 
     @override
-    def model_post_init(self, __context: Any) -> None:
+    def model_post_init(self, __context: Any, /) -> None:
         # for add register to db._NODE_CLASS_REGISTRY
         RelationshipTo(
             cls_name=self.t_target,
@@ -95,7 +96,7 @@ class RelUtil(
             model=self.t_rel,  # StructuredRel
         ).build_manager(target, name="")  # nameが何に使われているのか不明
 
-    def connect(self, s: S, t: T, **kwargs) -> R:  # noqa: ANN003
+    def connect(self, s: S, t: T, **kwargs) -> R:
         """関係元、関係先の順で永続化."""
         rel = self.to(s).connect(t, properties=kwargs)
         for k, v in kwargs.items():

@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, Hashable, Iterable
+from collections.abc import Hashable, Iterable
+from typing import TYPE_CHECKING
 
 from lark import Token
 

@@ -1,4 +1,5 @@
 """test."""
+
 from __future__ import annotations
 
 from typing import Optional
@@ -17,10 +18,10 @@ class AModel(BaseModel):  # noqa: D101
 
 
 def test_extract_type() -> None:  # noqa: D103
-    assert extract_type(str) == str
-    assert extract_type(str | None) == str
-    assert extract_type(Optional[str]) == str
-    assert extract_type(Optional[AModel]) == AModel
+    assert extract_type(str) is str
+    assert extract_type(str | None) is str
+    assert extract_type(Optional[str]) is str
+    assert extract_type(Optional[AModel]) is AModel
 
 
 def test_extract_alias() -> None:  # noqa: D103

@@ -1,8 +1,9 @@
 """ネットワーク2 node0 系の差分."""
 from __future__ import annotations
 
+from collections.abc import Hashable, Iterable
 from itertools import product
-from typing import TYPE_CHECKING, Generic, Hashable, Iterable, Self, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, Generic, Self, TypeAlias, TypeVar
 
 import Levenshtein
 from pydantic import BaseModel

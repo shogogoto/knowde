@@ -66,7 +66,7 @@ def def_cli() -> None:
 
 @def_cli.command("add")
 @model2decorator(DefinitionParam)
-def add(**kwargs) -> None:  # noqa: ANN003
+def add(**kwargs) -> None:
     """定義の追加."""
     d: Definition = add_client(**kwargs)
     click.echo("以下を作成しました")

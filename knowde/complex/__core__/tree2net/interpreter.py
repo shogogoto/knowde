@@ -1,7 +1,8 @@
 """parse treeを再帰的に解析."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Final, Hashable
+from collections.abc import Hashable
+from typing import TYPE_CHECKING, Final
 
 from lark import Token, Tree
 from lark.visitors import Interpreter

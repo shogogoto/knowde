@@ -1,8 +1,8 @@
 """見出し操作."""
 from __future__ import annotations
 
+from collections.abc import Hashable
 from functools import cache
-from typing import Hashable
 
 import networkx as nx
 

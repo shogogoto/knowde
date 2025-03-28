@@ -1,7 +1,7 @@
 """DTO for proposition."""
 from __future__ import annotations
 
-from uuid import UUID  # noqa: TCH003
+from uuid import UUID
 
 from pydantic import BaseModel
 

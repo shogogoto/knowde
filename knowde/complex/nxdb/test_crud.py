@@ -13,7 +13,7 @@ from .restore import restore_sysnet
 from .save import sn2db
 
 
-@pytest.fixture()
+@pytest.fixture
 def sn() -> SysNet:  # noqa: D103
     _s = r"""
         # h1

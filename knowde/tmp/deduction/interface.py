@@ -82,7 +82,7 @@ def deduct_cli() -> None:
 
 @deduct_cli.command("add")
 @model2decorator(DeductionAddCLIParam)
-def _add(**kwargs) -> None:  # noqa: ANN003
+def _add(**kwargs) -> None:
     """追加."""
     premises = [
         complete_proposition_client(pref_uid=pref_uid)
