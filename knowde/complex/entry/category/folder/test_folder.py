@@ -1,6 +1,5 @@
 """test folder."""
 
-
 import pytest
 
 from knowde.primitive.user.repo import LUser
@@ -21,7 +20,7 @@ from .repo import (
 )
 
 
-@pytest.fixture()
+@pytest.fixture
 def u() -> LUser:  # noqa: D103
     return LUser(email="one@gmail.com").save()
 

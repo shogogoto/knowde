@@ -79,12 +79,12 @@ def create_test_files(base_path: Path) -> tuple[Path, list[Path]]:
     return base_path, [title1, title2, direct, fail]
 
 
-@pytest.fixture()
+@pytest.fixture
 def files(tmp_path: Path) -> tuple[Path, list[Path]]:  # noqa: D103
     return create_test_files(tmp_path)
 
 
-@pytest.fixture()
+@pytest.fixture
 def u() -> LUser:  # noqa: D103
     return LUser().save()
 
@@ -92,7 +92,7 @@ def u() -> LUser:  # noqa: D103
 Fixture: TypeAlias = tuple[LUser, Path, list[Path], NameSpace]
 
 
-@pytest.fixture()
+@pytest.fixture
 def setup(u: LUser, files: tuple[Path, list[Path]]) -> Fixture:  # noqa: D103
     meta = path2meta(*files)
     ns = fetch_namespace(u.uid)
