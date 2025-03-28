@@ -1,10 +1,12 @@
 """file system."""
+
 from __future__ import annotations
 
 import json
+import operator
 from functools import cache
 from pathlib import Path
-from typing import Annotated, Any, Callable, Final, Self, TypeAlias
+from typing import Annotated, Any, Callable, Final, Self
 
 from pydantic import BaseModel, PlainSerializer
 from typing_extensions import TypedDict, override
@@ -34,7 +36,7 @@ class LocalConfig(BaseModel):
 
     ANCHOR: Annotated[
         Path | None,
-        PlainSerializer(lambda x: str(x), return_type=str, when_used="json"),
+        PlainSerializer(str, return_type=str, when_used="json"),
     ] = None
 
     CREDENTIALS: Credential | None = None
@@ -50,27 +52,19 @@ class LocalConfig(BaseModel):
         CONFIG_FILE.write_text(self.model_dump_json(indent=2))
 
 
-# 変更があればTrue
-DiffDiscriminator: TypeAlias = Callable[[str, str], bool]
-
-
-def _dis(s1: str, s2: str) -> bool:
-    return s1 != s2
-
-
 class Versioning(BaseModel):
     """ファイルのバージョン."""
 
     name: str  # id
     root_dir: Path
-    dis: DiffDiscriminator = _dis
+    dis: Callable[[str, str], bool] = operator.ne  # 変更があればTrue
 
     @property
     def _path(self) -> Path:
         return self.root_dir / self.name
 
     @override
-    def model_post_init(self, __context: Any) -> None:
+    def model_post_init(self, __context: Any, /) -> None:
         """同一対象を収める用のディレクトリを作成."""
         self._path.mkdir(parents=True, exist_ok=True)
 

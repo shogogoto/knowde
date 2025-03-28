@@ -1,4 +1,5 @@
 """settings."""
+
 from __future__ import annotations
 
 from typing import Callable, Final, Optional, Protocol
@@ -33,7 +34,8 @@ class Settings(BaseSettings):
         """DB設定."""
         config.DATABASE_URL = self.NEO4J_URL
 
-    def terdown_db(self) -> None:
+    @staticmethod
+    def terdown_db() -> None:
         """DB切断."""
         if db.driver is not None:
             db.close_connection()

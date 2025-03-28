@@ -1,4 +1,5 @@
 """test."""
+
 import pytest
 
 from knowde.primitive.term import MergedTerms, Term

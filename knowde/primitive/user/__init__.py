@@ -4,6 +4,7 @@
 
 follow機能
 """
+
 from __future__ import annotations
 
 from uuid import UUID
@@ -30,7 +31,8 @@ class User(BaseMapper):
     @property
     def id(self) -> UUID:  # noqa: D102
         if self.uid is None:
-            raise
+            msg = "uid is None"
+            raise ValueError(msg)
         return self.uid
 
 

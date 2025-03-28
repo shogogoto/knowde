@@ -1,4 +1,5 @@
 """custom middleware."""
+
 from __future__ import annotations
 
 import logging
@@ -60,9 +61,9 @@ class Neo4jTransactionMiddleware(BaseHTTPMiddleware):
         if any(path.startswith(exclude_path) for exclude_path in self.exclude_paths):
             return True
         # パスが指定されている場合、該当するパスのみ処理
-        if self.paths and not any(path.startswith(route) for route in self.paths):
-            return True
-        return False
+        return bool(
+            self.paths and not any(path.startswith(route) for route in self.paths),
+        )
 
 
 def neo4j_logger() -> logging.Logger:
