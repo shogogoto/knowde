@@ -90,15 +90,17 @@ ignore = [
   "A003",   # Class attribute `help` is shadowing a Python builtin
   "PD011",  # pandas-use-of-dot-values
   # "TCH001", # type-checking block
-  "PD901", # avoid using DataFrame varname
+  "PD901",  # avoid using DataFrame varname
   "D211",
   "D213",
   "D203",
+  "ANN101",
 ]
 unfixable = [
   "T201", # print
   "F841", # unused local variable
 ]
+# fixable = ["F401"]
 # unsafe-fixes = true
 
 [tool.poetry.scripts]
