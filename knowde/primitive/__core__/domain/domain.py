@@ -1,8 +1,9 @@
 """共通のモデル."""
+
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING, Optional, Self, TypeVar
+from typing import TYPE_CHECKING, Self, TypeVar
 from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator
@@ -34,7 +35,11 @@ class APIReturn(BaseModel, frozen=True):
 T = TypeVar("T", bound=BaseModel)
 
 
-def neolabel2model(t: type[T], lb: NeoModel, attrs: Optional[dict] = None) -> T:
+def neolabel2model[T: BaseModel](
+    t: type[T],
+    lb: NeoModel,
+    attrs: dict | None = None,
+) -> T:
     """nemodelのlabelからモデルへ変換."""
     if attrs is None:
         attrs = {}
@@ -66,7 +71,7 @@ class Entity(APIReturn, frozen=True):
         return self.uid
 
     @classmethod
-    def to_model(cls, lb: NeoModel, attrs: Optional[dict] = None) -> Self:
+    def to_model(cls, lb: NeoModel, attrs: dict | None = None) -> Self:
         """neomodelから変換."""
         return neolabel2model(cls, lb, attrs)
 

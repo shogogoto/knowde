@@ -1,8 +1,9 @@
 """neomodel labelとmodelを対応付ける."""
+
 from __future__ import annotations
 
 from collections.abc import Iterator
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
 
 from pydantic import (
     BaseModel,
@@ -16,7 +17,7 @@ L = TypeVar("L", bound=NeoModel)
 M = TypeVar("M", bound=Entity)
 
 
-class Label(BaseModel, Generic[L, M], frozen=True):
+class Label[L, M](BaseModel, frozen=True):
     """neomodel labelとmodelの変換."""
 
     label: L
@@ -27,7 +28,7 @@ class Label(BaseModel, Generic[L, M], frozen=True):
         return self.model.to_model(self.label)
 
 
-class Labels(BaseModel, Generic[L, M], frozen=True):
+class Labels[L, M](BaseModel, frozen=True):
     """複数neomodel labelと複数modelの変換."""
 
     root: list[L]

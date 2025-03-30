@@ -1,6 +1,5 @@
 """test."""
 
-
 from pytest_unordered import unordered
 
 from knowde.complex.__core__.tree2net import parse2net
@@ -14,7 +13,7 @@ from . import (
 
 def test_get_isolation() -> None:
     """孤立したノード."""
-    _s = r"""
+    s = r"""
         # h1
             aaa
             B: bbb
@@ -29,10 +28,10 @@ def test_get_isolation() -> None:
             fff
             G{B}: ggg
     """
-    _sn = parse2net(_s)
-    assert get_isolation(_sn) == unordered(["aaa", "fff"])
+    sn_ = parse2net(s)
+    assert get_isolation(sn_) == unordered(["aaa", "fff"])
 
-    _s = r"""
+    s = r"""
         # h1
             A: aaa
             B: bbb{A}
@@ -41,14 +40,14 @@ def test_get_isolation() -> None:
             fff
             G{B}: ggg
     """
-    sn = parse2net(_s)
+    sn = parse2net(s)
     assert sn.get_resolved("ggg") == {"bbb{A}": {"aaa": {}}}
     assert get_isolation(sn) == ["fff"]
 
 
 def test_get_axioms() -> None:
     """axiom取得."""
-    _s = r"""
+    s = r"""
         # h1
             A: aaa
             B: bbb{A}
@@ -66,6 +65,6 @@ def test_get_axioms() -> None:
             eee{B}
             fff
     """
-    sn = parse2net(_s)
+    sn = parse2net(s)
     assert get_axiom_to(sn) == unordered(["bbb2", "abc"])
     assert get_axiom_resolved(sn) == ["aaa"]

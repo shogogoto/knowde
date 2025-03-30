@@ -1,4 +1,5 @@
 """行変換."""
+
 from __future__ import annotations
 
 from textwrap import dedent

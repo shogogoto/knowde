@@ -1,4 +1,5 @@
 """floder DB."""
+
 from __future__ import annotations
 
 from pathlib import PurePath
@@ -150,7 +151,7 @@ def fetch_subfolders(
     qs = [
         f"MATCH (:User {{uid: $uid}})<-[:OWNED]-(f0:Entry {{ name: '{root}' }})",
         *[
-            f"<-[:PARENT]-(f{i+1}:Folder {{ name: '{name}' }})"
+            f"<-[:PARENT]-(f{i + 1}:Folder {{ name: '{name}' }})"
             for i, name in enumerate(names)
         ],
         f"OPTIONAL MATCH (f{n})<-[:PARENT]-(sub:Entry)",
@@ -167,7 +168,7 @@ def fetch_subfolders(
         msg = f"フォルダ'/{p}'が見つからない"
         raise EntryNotFoundError(msg, res)
 
-    targets, subs = zip(*res)
+    targets, subs = zip(*res, strict=False)
     return targets[0], subs
 
 

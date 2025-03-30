@@ -1,10 +1,11 @@
 """エッジの種類."""
+
 from __future__ import annotations
 
-from collections.abc import Hashable
+from collections.abc import Callable, Hashable
 from enum import Enum, auto
 from functools import cache, cached_property, reduce
-from typing import TYPE_CHECKING, Callable, Self
+from typing import TYPE_CHECKING, Self
 
 import networkx as nx
 
@@ -93,11 +94,11 @@ class EdgeType(Enum):
         """エッジを遡って前を取得."""
         return pred_attr("type", self)
 
-    def get_succ_or_none(self, g: nx.DiGraph, n: Hashable) -> None | Hashable:
+    def get_succ_or_none(self, g: nx.DiGraph, n: Hashable) -> Hashable | None:
         """1つの先を返す."""
         return _get_one_or_none(list(self.succ(g, n)), self, n)
 
-    def get_pred_or_none(self, g: nx.DiGraph, n: Hashable) -> None | Hashable:
+    def get_pred_or_none(self, g: nx.DiGraph, n: Hashable) -> Hashable | None:
         """1つの前を返す."""
         return _get_one_or_none(list(self.pred(g, n)), self, n)
 
@@ -128,7 +129,7 @@ def _etype_subgraph(g: nx.DiGraph, t: EdgeType) -> nx.DiGraph:
     return nx.subgraph(g, nodes)
 
 
-def _get_one_or_none(ls: list[Hashable], t: EdgeType, src: Hashable) -> None | Hashable:
+def _get_one_or_none(ls: list[Hashable], t: EdgeType, src: Hashable) -> Hashable | None:
     """1つまたはなしを取得."""
     match len(ls):
         case 0:

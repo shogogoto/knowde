@@ -1,4 +1,5 @@
 """test."""
+
 from __future__ import annotations
 
 from inspect import signature
@@ -66,7 +67,7 @@ def test_eq_fieldparam_type() -> None:
         p8: InnerParam
         p9: list[UUID]
 
-    def f(
+    def f(  # noqa: PLR0917
         p1: str,
         p2: bool,  # noqa: FBT001
         p3: int,

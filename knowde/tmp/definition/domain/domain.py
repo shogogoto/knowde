@@ -7,9 +7,10 @@
         return Sentence(value=v).value
 
 """
+
 from __future__ import annotations
 
-from typing import Optional, Self
+from typing import Self
 from uuid import UUID
 
 import networkx as nx
@@ -68,7 +69,7 @@ class Definition(Entity, frozen=True):
     def from_rel(
         cls,
         rel: RelBase,
-        deps: Optional[list[Term]] = None,
+        deps: list[Term] | None = None,
     ) -> Self:
         """Create from Relationship."""
         if deps is None:

@@ -1,4 +1,5 @@
 """auth cli."""
+
 from __future__ import annotations
 
 import json
@@ -18,9 +19,9 @@ def user_cli() -> None:
 @user_cli.command("google-sso")
 def sso_cmd() -> None:
     """Googleによるシングルサインオン."""
-    from knowde.complex.auth.repo.client import AuthGet
+    from knowde.complex.auth.repo.client import AuthGet  # noqa: PLC0415
 
-    from .proc import browse_for_sso
+    from .proc import browse_for_sso  # noqa: PLC0415
 
     if browse_for_sso():
         res = AuthGet().me()
@@ -32,7 +33,7 @@ def sso_cmd() -> None:
 @click.password_option()
 def register_cmd(email: str, password: str) -> None:
     """アカウント作成."""
-    from knowde.complex.auth.repo.client import AuthPost
+    from knowde.complex.auth.repo.client import AuthPost  # noqa: PLC0415
 
     res = AuthPost().register({"email": email, "password": password})
     echo_response(res, "登録")
@@ -44,7 +45,10 @@ def register_cmd(email: str, password: str) -> None:
 @click.password_option(confirmation_prompt=False)
 def login_cmd(email: str, password: str) -> None:
     """ログイン."""
-    from knowde.complex.auth.repo.client import AuthPost, save_credential
+    from knowde.complex.auth.repo.client import (  # noqa: PLC0415
+        AuthPost,
+        save_credential,
+    )
 
     res = AuthPost().login({"email": email, "password": password})
     save_credential(res)
@@ -54,7 +58,7 @@ def login_cmd(email: str, password: str) -> None:
 @user_cli.command("logout")
 def logout_cmd() -> None:
     """ログアウト."""
-    from knowde.complex.auth.repo.client import AuthPost
+    from knowde.complex.auth.repo.client import AuthPost  # noqa: PLC0415
 
     res = AuthPost().logout()
     echo_response(res, "ログアウト")
@@ -68,7 +72,7 @@ def change_me_cmd(
     password: str | None,
 ) -> None:
     """ログインしているアカウント情報の変更."""
-    from knowde.complex.auth.repo.client import AuthPatch
+    from knowde.complex.auth.repo.client import AuthPatch  # noqa: PLC0415
 
     res = AuthPatch().change_me({"email": email, "password": password})
     echo_response(res, "アカウント情報の変更")
@@ -77,7 +81,7 @@ def change_me_cmd(
 @user_cli.command("me")
 def me_cmd() -> None:
     """ログインしているアカウント情報の取得."""
-    from knowde.complex.auth.repo.client import AuthGet
+    from knowde.complex.auth.repo.client import AuthGet  # noqa: PLC0415
 
     res = AuthGet().me()
     echo_response(res, "ログインアカウント情報の取得")

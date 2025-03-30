@@ -1,4 +1,5 @@
 """save sysnet."""
+
 from __future__ import annotations
 
 from datetime import date
@@ -80,8 +81,7 @@ def reconnect_root_below(sn: SysNet, varnames: dict[KNode, str]) -> str | None:
     vs = set()
     for n in nodes:
         uvs = sn.g.edges(n)
-        for uv in uvs:
-            vs.add(uv[1])
+        vs.update(uv[1] for uv in uvs)
     belows = list(vs - nodes)
     match len(belows):
         case 0:

@@ -1,7 +1,8 @@
 """neomodel関連Utility."""
+
 from __future__ import annotations
 
-from typing import Generic, Self, TypeAlias, TypeVar
+from typing import Self, TypeVar
 from uuid import UUID
 
 from neomodel import StringProperty, StructuredNode, UniqueIdProperty
@@ -9,8 +10,8 @@ from pydantic import BaseModel
 
 from knowde.primitive.__core__.domain.domain import neolabel2model
 
-UUIDy: TypeAlias = UUID | str | UniqueIdProperty  # Falsyみたいな
-STRy: TypeAlias = str | StringProperty
+type UUIDy = UUID | str | UniqueIdProperty  # Falsyみたいな
+type STRy = str | StringProperty
 
 
 def to_uuid(uidy: UUIDy) -> UUID:
@@ -21,7 +22,7 @@ def to_uuid(uidy: UUIDy) -> UUID:
 L = TypeVar("L", bound=StructuredNode)
 
 
-class BaseMapper(BaseModel, Generic[L]):
+class BaseMapper[L: StructuredNode](BaseModel):
     """Neomodel-pydantic mapper."""
 
     __label__: type[L]

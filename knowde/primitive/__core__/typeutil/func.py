@@ -1,17 +1,16 @@
 """関数関連の型."""
+
 from __future__ import annotations
 
 import re
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from inspect import Parameter, Signature, signature
 from types import GenericAlias
 from typing import (
     TYPE_CHECKING,
     Any,
-    Callable,
     Concatenate,
     ForwardRef,
-    Optional,
     ParamSpec,
 )
 
@@ -63,7 +62,7 @@ def inject_signature(
     f: Callable,
     t_in: list[type],
     t_out: type | None = None,
-    name: Optional[str] = None,
+    name: str | None = None,
 ) -> Callable:
     """API定義時に型情報が喪失する場合があるので、それを補う."""
     if name is None:

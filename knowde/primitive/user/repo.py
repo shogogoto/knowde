@@ -1,4 +1,5 @@
 """user repository."""
+
 from __future__ import annotations
 
 from neomodel import (

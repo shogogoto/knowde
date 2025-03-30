@@ -1,13 +1,13 @@
 """系ネットワークのノード."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from functools import cache
-from typing import TYPE_CHECKING, Final, Self, TypeAlias
+from typing import TYPE_CHECKING, Final, Self, override
 
 from lark import Token
 from pydantic import BaseModel
-from typing_extensions import override
 
 from knowde.complex.__core__.sysnet.errors import DefSentenceConflictError
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
@@ -89,9 +89,9 @@ class DummySentence(Duplicable, frozen=True):
     n: str = DUMMY_SENTENCE
 
 
-_KNElem: TypeAlias = str | Duplicable | Template  # 共通型
-KNode: TypeAlias = Term | _KNElem
-KNArg: TypeAlias = Def | _KNElem
+type _KNElem = str | Duplicable | Template  # 共通型
+type KNode = Term | _KNElem
+type KNArg = Def | _KNElem
 
 
 META_TYPES: Final = ["AUTHOR", "PUBLISHED", "URL"]

@@ -1,9 +1,10 @@
 """1network 1nodeを引数にする関数."""
+
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from functools import cache
-from typing import TYPE_CHECKING, Callable, Final, TypeAlias
+from typing import TYPE_CHECKING, Final
 
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.sysnet.sysnode import KNArg, KNode
@@ -17,7 +18,7 @@ from knowde.primitive.__core__.nxutil.edge_type import EdgeType, etype_subgraph
 if TYPE_CHECKING:
     import networkx as nx
 
-Nw1N1Fn: TypeAlias = Callable[[SysNet, KNode], list[KNode]]
+type Nw1N1Fn = Callable[[SysNet, KNode], list[KNode]]
 
 
 def get_detail(sn: SysNet, n: KNode) -> list[KNode]:
@@ -125,10 +126,10 @@ DEP_EDGE_TYPES: Final = [
 @cache
 def has_dependency(sn: SysNet, n: KNArg) -> bool:
     """意味的に重要なエッジを持つ."""
-    _in = sn.g.in_edges(n, data=True)
-    for _u, _, attr in _in:
+    in_ = sn.g.in_edges(n, data=True)
+    for _u, _, attr in in_:
         if attr["type"] in DEP_EDGE_TYPES:
             return True
 
-    _out = sn.g.out_edges(n, data=True)
-    return any(attr["type"] in DEP_EDGE_TYPES for _, _v, attr in _out)
+    out = sn.g.out_edges(n, data=True)
+    return any(attr["type"] in DEP_EDGE_TYPES for _, _v, attr in out)

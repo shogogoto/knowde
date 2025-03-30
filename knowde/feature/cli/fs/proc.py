@@ -1,6 +1,5 @@
 """CLI用手続き."""
 
-
 from pathlib import Path
 
 import click

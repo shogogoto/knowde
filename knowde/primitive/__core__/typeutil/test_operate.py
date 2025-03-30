@@ -20,8 +20,8 @@ class AModel(BaseModel):  # noqa: D101
 def test_extract_type() -> None:  # noqa: D103
     assert extract_type(str) is str
     assert extract_type(str | None) is str
-    assert extract_type(Optional[str]) is str
-    assert extract_type(Optional[AModel]) is AModel
+    assert extract_type(Optional[str]) is str  # noqa: UP045
+    assert extract_type(Optional[AModel]) is AModel  # noqa: UP045
 
 
 def test_extract_alias() -> None:  # noqa: D103

@@ -1,11 +1,12 @@
 """NW1 node0の値、統計値."""
+
 from __future__ import annotations
 
 import operator
-from collections.abc import Hashable
+from collections.abc import Callable, Hashable
 from enum import Enum, StrEnum
 from functools import cache, reduce
-from typing import TYPE_CHECKING, Callable, Self, TypeAlias
+from typing import TYPE_CHECKING, Self
 
 import networkx as nx
 
@@ -22,8 +23,22 @@ from knowde.primitive.term import Term
 if TYPE_CHECKING:
     from knowde.complex.__core__.sysnet.sysnode import KNArg
 
-NW1N0Fn: TypeAlias = Callable[[SysNet], int]
-NW1N0RatioFn: TypeAlias = Callable[[SysNet], float]
+type NW1N0Fn = Callable[[SysNet], int]
+type NW1N0RatioFn = Callable[[SysNet], float]
+
+
+def n_char(sn: SysNet) -> int:  # noqa: D103
+    c = 0
+    for n in sn.g.nodes:
+        match n:
+            case str() | Duplicable():
+                c += len(str(n))
+            case Term():
+                c += 0 if len(n.names) == 0 else reduce(operator.add, map(len, n.names))
+                c += len(n.alias) if n.alias else 0
+            case _:
+                raise TypeError
+    return c
 
 
 class Nw1N0Label(StrEnum):
@@ -82,7 +97,7 @@ class Nw1N0Label(StrEnum):
             dct = nw.to_dict(sn)
             if nw in UnificationRatio:
                 dct = to_percent_values(dct)
-            d = d | dct
+            d |= dct
         return d
 
 
@@ -92,7 +107,7 @@ class Systat(Enum):
     EDGE = (Nw1N0Label.EDGE, lambda sn: len(sn.g.edges))
     TERM = (Nw1N0Label.TERM, lambda sn: len(sn.terms))
     SENTENCE = (Nw1N0Label.SENTENCE, lambda sn: len(sn.sentences))
-    CHAR = (Nw1N0Label.CHAR, lambda sn: n_char(sn))
+    CHAR = (Nw1N0Label.CHAR, n_char)
     ISOLATION = (Nw1N0Label.ISOLATION, lambda sn: len(get_isolation(sn)))
     AXIOM = (Nw1N0Label.AXIOM, lambda sn: len(get_axiom_to(sn)))
     TERM_AXIOM = (Nw1N0Label.TERM_AXIOM, lambda sn: len(get_axiom_resolved(sn)))
@@ -154,20 +169,6 @@ class UnificationRatio(Enum):
 def to_percent_values(d: dict[str, float], n_digit: int = 2) -> dict[str, str]:
     """パーセント表示."""
     return {k: f"{v:.{n_digit}%}" for k, v in d.items()}
-
-
-def n_char(sn: SysNet) -> int:  # noqa: D103
-    c = 0
-    for n in sn.g.nodes:
-        match n:
-            case str() | Duplicable():
-                c += len(str(n))
-            case Term():
-                c += 0 if len(n.names) == 0 else reduce(operator.add, map(len, n.names))
-                c += len(n.alias) if n.alias else 0
-            case _:
-                raise TypeError
-    return c
 
 
 @cache

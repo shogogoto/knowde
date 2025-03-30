@@ -1,6 +1,9 @@
 fix = true
 preview = true
-
+required-version = ">=0.11.2"
+show-fixes = true
+unsafe-fixes = true
+target-version = "py312"
 [lint]
 select = ["ALL"]
 ignore = [
@@ -15,15 +18,18 @@ ignore = [
   "D211",
   "D213",
   "D203",
-  "ANN101",
+  "ANN",
   "CPY001",  # copyright
-  "TCH",     # type-checking block
+  "TC",      # type-checking block
   "ANN",
   "PLR0913", # too many positional arguments
   "ARG001",  # unused argument
   "PGH004",  # ruff: noqa
   "PT001",   # pytest.fixture の()の有無がformatの度にスイッチする
   "DOC201",  # docstringのreturnがない
+  "DOC501",  # docstringにerrorがない
+  "PLC2701", # __core__ は private packageが外部でインポーされてる！
+  "INP001",  # __init__.pyがdirectoryにない
 ]
 fixable = ["ALL"]
 unfixable = [

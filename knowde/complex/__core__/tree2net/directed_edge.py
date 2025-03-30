@@ -1,8 +1,9 @@
 """マージされて同じTermを持つDef同士を、マージ."""
+
 from __future__ import annotations
 
-from collections.abc import Hashable
-from typing import TYPE_CHECKING, Any, Callable, TypeAlias
+from collections.abc import Callable, Hashable
+from typing import TYPE_CHECKING, Any
 
 from lark import Token
 from pydantic import BaseModel, Field
@@ -17,7 +18,7 @@ if TYPE_CHECKING:
     import networkx as nx
 
 
-Converter: TypeAlias = Callable[[KNArg], Any]
+type Converter = Callable[[KNArg], Any]
 
 
 class DirectedEdge(BaseModel, frozen=True, arbitrary_types_allowed=True):

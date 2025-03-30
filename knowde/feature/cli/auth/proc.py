@@ -1,4 +1,5 @@
 """遅延importでCLI補間軽くするための分離."""
+
 from __future__ import annotations
 
 import json

@@ -1,8 +1,10 @@
 """関数からclick parameterへの変換."""
+
 from __future__ import annotations
 
+from collections.abc import Callable
 from inspect import Parameter, signature
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 from pydantic.fields import FieldInfo
 

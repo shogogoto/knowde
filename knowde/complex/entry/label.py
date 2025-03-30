@@ -1,6 +1,5 @@
 """neomodel label."""
 
-
 from abc import abstractproperty
 
 from neomodel import (

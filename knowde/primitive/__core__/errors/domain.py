@@ -1,4 +1,5 @@
 """共通エラー."""
+
 from fastapi import status
 
 from knowde.primitive.__core__.errors.errors import DomainError

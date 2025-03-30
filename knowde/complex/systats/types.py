@@ -1,4 +1,5 @@
 """型を独立 for CLI高速化."""
+
 from enum import StrEnum
 from typing import NamedTuple
 

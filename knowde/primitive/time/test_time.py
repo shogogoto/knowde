@@ -19,6 +19,7 @@
         メモリ効率が良い
         特に期間の重なりチェックに特化
 """
+
 import pytest
 from pytest_unordered import unordered
 

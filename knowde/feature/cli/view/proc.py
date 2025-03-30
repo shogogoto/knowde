@@ -1,4 +1,5 @@
 """CLIの補完がimportがあると遅くなるので、処理部分を独立させる."""
+
 from __future__ import annotations
 
 import json
@@ -67,7 +68,7 @@ def detail_proc(
     detail = Nw1N1Detail.create(item, ignore, config)
     match = sn.match(pattern)
     for i, tgt in enumerate(match):
-        click.echo(f"{i+1}. " + detail.format(sn, tgt))
+        click.echo(f"{i + 1}. " + detail.format(sn, tgt))
     click.echo(f"{len(match)}件ヒットしました")
 
     # click.echo(

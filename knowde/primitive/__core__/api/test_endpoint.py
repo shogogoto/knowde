@@ -1,4 +1,5 @@
 """APIエンドポイントtest."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -68,8 +69,7 @@ def test_fail_with_lost_type() -> None:
     """Partialなど生成した型情報はAPI定義時に喪失してエラーになる."""
     OneParamPartial = create_partial_model(OneParam)  # noqa: N806
 
-    def change(_uid: UUID, _p: OneParamPartial) -> OneModel:
-        ...
+    def change(_uid: UUID, _p: OneParamPartial) -> OneModel: ...
 
     r = APIRouter(prefix=PREFIX)
     router2put(r, change, path="/{uid}")

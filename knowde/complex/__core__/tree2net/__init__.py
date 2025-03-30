@@ -1,4 +1,5 @@
 """parse tree to sysnet."""
+
 from __future__ import annotations
 
 from functools import cache
@@ -32,12 +33,12 @@ if TYPE_CHECKING:
 @cache
 def parse2net(txt: str, do_print: bool = False) -> SysNet:  # noqa: FBT001 FBT002
     """文からsysnetへ."""
-    _t = parse2tree(txt, TSysArg())
+    t = parse2tree(txt, TSysArg())
     if do_print:
-        treeprint(_t, True)  # noqa: FBT003
+        treeprint(t, True)  # noqa: FBT003
     si = SysNetInterpreter()
-    si.visit(_t)
-    g = _build_graph(_t, si.col)
+    si.visit(t)
+    g = _build_graph(t, si.col)
     return SysNet(root=si.root, g=g)
 
 

@@ -1,4 +1,5 @@
 """マークから定義名を抽出する関数群."""
+
 from __future__ import annotations
 
 import re

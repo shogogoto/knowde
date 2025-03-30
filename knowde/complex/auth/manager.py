@@ -1,11 +1,12 @@
 """user manager."""
+
 from __future__ import annotations
 
 import uuid
 from collections.abc import AsyncGenerator
 from functools import cache
 from queue import Queue
-from typing import Any
+from typing import Any, override
 from uuid import UUID
 
 from fastapi import Request
@@ -18,7 +19,6 @@ from fastapi_users.authentication import (
 from fastapi_users.db import (
     BaseUserDatabase,
 )
-from typing_extensions import override
 
 from knowde.primitive.config.env import Settings
 from knowde.primitive.user import Account, User
@@ -87,19 +87,21 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
 class AccountDB(BaseUserDatabase[User, UUID]):
     """DB adapter for fastapi-users."""
 
-    async def get(self, id: UUID) -> User | None:  # noqa: A002
+    @staticmethod
+    async def get(id: UUID) -> User | None:  # noqa: A002
         """Get a single user by id."""
         # print("---------get")
         return User.get_or_none(uid=id.hex)
 
-    async def get_by_email(self, email: str) -> User | None:
+    @staticmethod
+    async def get_by_email(email: str) -> User | None:
         """Get a single user by email."""
         # print("---------get by email")
         return User.get_or_none(email=email)
 
+    @staticmethod
     async def get_by_oauth_account(
-        self,
-        oauth: str,  # noqa:ARG002
+        oauth: str,  # noqa: ARG004
         account_id: str,
     ) -> User | None:
         """Get a single user by OAuth account id."""
@@ -110,13 +112,15 @@ class AccountDB(BaseUserDatabase[User, UUID]):
         lu = la.user.single()
         return User.from_lb(lu)
 
-    async def create(self, create_dict: dict[str, Any]) -> User:
+    @staticmethod
+    async def create(create_dict: dict[str, Any]) -> User:
         """Create a user."""
         # print("------------ create")
         lb = LUser(**create_dict).save()
         return User.from_lb(lb)
 
-    async def update(self, user: User, update_dict: dict) -> User:
+    @staticmethod
+    async def update(user: User, update_dict: dict) -> User:
         """Update a user."""
         # print("------------ update")
         lb = LUser.nodes.get(uid=user.id.hex)
@@ -127,15 +131,16 @@ class AccountDB(BaseUserDatabase[User, UUID]):
         lb = lb.save()
         return User.from_lb(lb)
 
-    async def delete(self, user: User) -> None:
+    @staticmethod
+    async def delete(user: User) -> None:
         """Delete a user."""
         # print("------------ delete")
         lb = LUser.nodes.get(uid=user.id.hex)
         lb.delete()
 
-    ########################################################### OAUTH
+    # OAUTH
+    @staticmethod
     async def add_oauth_account(
-        self: BaseUserDatabase,
         user: User,
         create_dict: dict[str, Any],
     ) -> User:
@@ -147,19 +152,19 @@ class AccountDB(BaseUserDatabase[User, UUID]):
         lu.accounts.connect(la)
         return user
 
+    @staticmethod
     async def update_oauth_account(
-        self: BaseUserDatabase,
         user: User,
-        oauth_account: Account,  # noqa: ARG002
+        oauth_account: Account,  # noqa: ARG004
         update_dict: dict[str, Any],
     ) -> User:
         """Update an OAuth account on a user."""
         print("------------ update oauth account", user, update_dict)  # noqa: T201
 
 
-async def get_user_manager() -> AsyncGenerator:
+def get_user_manager() -> AsyncGenerator:
     """For fastapi-users."""
-    yield UserManager(AccountDB())
+    return UserManager(AccountDB())
 
 
 def auth_backend() -> AuthenticationBackend:

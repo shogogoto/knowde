@@ -1,9 +1,9 @@
 """test repo."""
+
 from __future__ import annotations
 
 from pathlib import Path
 from textwrap import dedent
-from typing import TypeAlias
 
 import pytest
 
@@ -32,7 +32,7 @@ def create_test_files(base_path: Path) -> tuple[Path, list[Path]]:
         base_path / "sub2",
     ]
     [s.mkdir(parents=True) for s in subs]
-    sub11, sub12, sub2 = subs
+    sub11, _sub12, sub2 = subs
 
     title1 = write_text(
         sub11 / "title1.txt",
@@ -89,7 +89,7 @@ def u() -> LUser:  # noqa: D103
     return LUser().save()
 
 
-Fixture: TypeAlias = tuple[LUser, Path, list[Path], NameSpace]
+type Fixture = tuple[LUser, Path, list[Path], NameSpace]
 
 
 @pytest.fixture

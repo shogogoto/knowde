@@ -1,4 +1,5 @@
 """系ネットワーク."""
+
 from __future__ import annotations
 
 from functools import cached_property
@@ -109,5 +110,5 @@ class SysNet(BaseModel, frozen=True):
         return [
             n
             for n in self.g.nodes
-            if isinstance(n, Token) and n.type in ["AUTHOR", "URL", "PUBLISHED"]
+            if isinstance(n, Token) and n.type in {"AUTHOR", "URL", "PUBLISHED"}
         ]

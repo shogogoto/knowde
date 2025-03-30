@@ -1,4 +1,5 @@
 """responseに対してエラーチェック."""
+
 from fastapi import status
 from requests import Response
 

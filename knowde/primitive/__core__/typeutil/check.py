@@ -1,4 +1,5 @@
 """typeの判定."""
+
 from __future__ import annotations
 
 from types import GenericAlias, NoneType

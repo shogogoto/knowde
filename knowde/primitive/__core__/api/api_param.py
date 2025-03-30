@@ -1,17 +1,17 @@
 """API定義用パラメータ."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from typing import (
     TYPE_CHECKING,
     Any,
-    Callable,
-    Optional,
     TypeVar,
+    override,
 )
 
 from pydantic import BaseModel, Field
-from typing_extensions import override
 
 from knowde.primitive.__core__.api.check_response import check_default
 from knowde.primitive.__core__.api.errors import APIParamBindError
@@ -41,7 +41,8 @@ class APIParam(ABC):
 class NullParam(BaseModel, APIParam):
     """空を返す."""
 
-    def getvalue(self, kwargs: dict) -> Any:  # noqa: ARG002
+    @staticmethod
+    def getvalue(kwargs: dict) -> Any:  # noqa: ARG004
         """値を取得."""
         return {}
 
@@ -82,7 +83,7 @@ class BaseAPIPath(BaseModel, APIParam, frozen=True):
 
         return _request
 
-    def to_client(
+    def to_client(  # noqa: PLR0917
         self,
         router: APIRouter,
         r2epm: Router2EndpointMethod,
@@ -90,7 +91,7 @@ class BaseAPIPath(BaseModel, APIParam, frozen=True):
         convert: Callable[[requests.Response], T],
         query: APIQuery | ComplexAPIQuery | None = None,
         t_body: type[BaseModel] | None = None,
-        check_responses: Optional[list[CheckResponse]] = None,
+        check_responses: list[CheckResponse] | None = None,
     ) -> Callable[..., T]:
         """APIResponseを解決して返す."""
         if check_responses is None:
@@ -114,7 +115,7 @@ class NullPath(BaseAPIPath, frozen=True):
         """パスを取得."""
         return ""
 
-    def getvalue(self, kwargs: dict) -> str:  # noqa: ARG002 D102
+    def getvalue(self, kwargs: dict) -> str:  # noqa: ARG002, D102, PLR6301
         return ""
 
 
@@ -127,7 +128,7 @@ class APIPath(BaseAPIPath, frozen=True):
     @property
     def var(self) -> str:
         """パスパラメータ名."""
-        if self.name == "":
+        if not self.name:
             return ""
         return f"{{{self.name}}}"
 
@@ -136,10 +137,10 @@ class APIPath(BaseAPIPath, frozen=True):
         p = []
         p.extend(self.prefix.split("/"))
         p.extend(self.var.split("/"))
-        return "/" + "/".join([e for e in p if e != ""])
+        return "/" + "/".join([e for e in p if e])
 
     def getvalue(self, kwargs: dict) -> str:  # noqa: D102
-        if self.name == "":
+        if not self.name:
             return self.path
         if self.name not in kwargs:
             msg = f"{self.name}は{list(kwargs.keys())}に含まれていません"
@@ -163,7 +164,7 @@ class ComplexAPIPath(BaseAPIPath, frozen=True):
         let = []
         for p in [p.path for p in self.members]:
             let.extend(p.split("/"))
-        return "/" + "/".join([e for e in let if e != ""])
+        return "/" + "/".join([e for e in let if e])
 
     def bind(self, to_req: ToEndpointMethod, f: Callable) -> EndpointMethod:  # noqa: D102
         return to_req(f, path=self.path)

@@ -1,4 +1,5 @@
 """cli root."""
+
 from __future__ import annotations
 
 import click
@@ -23,7 +24,7 @@ def cli() -> None:
 @cli.command("config")
 def config_cmd() -> None:
     """設定内容の確認."""
-    from knowde.primitive.config import CONFIG_PATH, LocalConfig
+    from knowde.primitive.config import CONFIG_PATH, LocalConfig  # noqa: PLC0415
 
     click.echo(CONFIG_PATH)
     c = LocalConfig.load()

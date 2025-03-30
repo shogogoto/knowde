@@ -3,7 +3,6 @@
 説明を表す文字列に定義を埋め込んで表現できるようにしたい
 """
 
-
 import pytest
 
 from .errors import (

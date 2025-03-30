@@ -1,4 +1,5 @@
 """edge type test."""
+
 import networkx as nx
 from pytest_unordered import unordered
 

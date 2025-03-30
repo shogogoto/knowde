@@ -1,14 +1,13 @@
 """CLI引数の逐次変換."""
+
 from __future__ import annotations
 
 import functools
+from collections.abc import Callable
 from typing import (
-    Callable,
     Concatenate,
-    Generic,
     ParamSpec,
     TextIO,
-    TypeAlias,
     TypeVar,
 )
 
@@ -19,13 +18,13 @@ from knowde.primitive.__core__.typeutil.func import rename_argument
 
 P = ParamSpec("P")
 T = TypeVar("T")
-Wrapped: TypeAlias = Callable[Concatenate[T, P], None]
-Param: TypeAlias = Concatenate[tuple[str], TextIO, P]
-Return: TypeAlias = Callable[Param, None]
-Converter: TypeAlias = Callable[[str], T]
+type Wrapped[T, **P] = Callable[Concatenate[T, P], None]
+type Param[**P] = Concatenate[tuple[str], TextIO, P]
+type Return = Callable[Param, None]
+type Converter[T] = Callable[[str], T]
 
 
-class EachArgsWrapper(BaseModel, Generic[T], frozen=True):
+class EachArgsWrapper[T](BaseModel, frozen=True):
     """wrap command."""
 
     converter: Converter[T]
@@ -50,12 +49,12 @@ class EachArgsWrapper(BaseModel, Generic[T], frozen=True):
             *args: P.args,
             **kwargs: P.kwargs,
         ) -> None:
-            _params = list(params___)
+            params = list(params___)
             if not file.isatty():
                 lines = file.read().splitlines()
-                _params.extend(lines)
+                params.extend(lines)
 
-            converted = [self.converter(p) for p in _params]
+            converted = [self.converter(p) for p in params]
             for c in converted:
                 func(c, *args, **kwargs)
 

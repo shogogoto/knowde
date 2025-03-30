@@ -1,4 +1,5 @@
 """型操作."""
+
 from __future__ import annotations
 
 from types import NoneType, UnionType
@@ -7,7 +8,7 @@ from typing import get_args
 from knowde.primitive.__core__.typeutil.check import is_generic_alias
 
 
-def extract_type(t: type | None | UnionType) -> type:
+def extract_type(t: type | UnionType | None) -> type:
     """NoneTypeを取り除いて返す."""
     if t is None:
         msg = f"{t} must be type"

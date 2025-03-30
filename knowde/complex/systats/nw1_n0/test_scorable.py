@@ -1,6 +1,5 @@
 """test."""
 
-
 from knowde.complex.__core__.tree2net import parse2net
 from knowde.complex.systats.nw1_n0.scorable import LRWTpl, SyScore
 from knowde.complex.systats.nw1_n1.ctxdetail import Nw1N1Label
@@ -8,7 +7,7 @@ from knowde.complex.systats.nw1_n1.ctxdetail import Nw1N1Label
 
 def test_scorable_to_edge() -> None:
     """スコアpremise/conclusion."""
-    _s = """
+    s = """
         # tmp
             aaa
                 -> bbb
@@ -18,7 +17,7 @@ def test_scorable_to_edge() -> None:
                     -> fff
                 -> ggg
     """
-    sn = parse2net(_s)
+    sn = parse2net(s)
     items = [Nw1N1Label.PREMISE, Nw1N1Label.CONCLUSION]
     configs = [LRWTpl(Nw1N1Label.PREMISE, 1, 1)]
     ctx = SyScore.create(items, config=configs)
@@ -53,7 +52,7 @@ def test_scorable_to_edge() -> None:
 
 def test_scorable() -> None:
     """スコア設定テスト."""
-    _s = """
+    s = """
         # tmp
             refer referred
             A: a2 0
@@ -62,7 +61,7 @@ def test_scorable() -> None:
             D{CBA}: d0 1
             E{A}{BA}: {CBA}0 3
     """
-    sn = parse2net(_s)
+    sn = parse2net(s)
     items = [Nw1N1Label.REFER, Nw1N1Label.REFERRED]
 
     configs = [LRWTpl(Nw1N1Label.REFER, 1, 1)]

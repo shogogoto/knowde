@@ -1,4 +1,5 @@
 """root api."""
+
 from __future__ import annotations
 
 from collections.abc import AsyncGenerator
@@ -19,7 +20,7 @@ from knowde.tmp.deduction.proposition import p_router
 
 
 @asynccontextmanager
-async def lifespan(_app: FastAPI) -> AsyncGenerator:
+async def lifespan(_app: FastAPI) -> AsyncGenerator:  # noqa: RUF029
     """Set up DB etc."""
     s = Settings()
     s.setup_db()

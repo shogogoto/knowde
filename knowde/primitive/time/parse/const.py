@@ -1,4 +1,5 @@
 """定数系."""
+
 from enum import Enum, StrEnum
 from typing import Final
 

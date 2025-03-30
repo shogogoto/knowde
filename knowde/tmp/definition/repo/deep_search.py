@@ -1,4 +1,5 @@
 """deep search."""
+
 from uuid import UUID
 
 import networkx as nx
