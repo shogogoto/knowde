@@ -1,0 +1,35 @@
+fix = true
+preview = true
+
+[lint]
+select = ["ALL"]
+ignore = [
+  "ERA001",  # found commented-out code
+  "S101",    # use assert
+  "N805",    # first argument of method should be named self
+  "UP007",   # str | Optional[T]が許されない
+  "B008",    # default argに関数の返り値を使えない
+  "A003",    # Class attribute `help` is shadowing a Python builtin
+  "PD011",   # pandas-use-of-dot-values
+  "PD901",   # avoid using DataFrame varname
+  "D211",
+  "D213",
+  "D203",
+  "ANN101",
+  "CPY001",  # copyright
+  "TCH",     # type-checking block
+  "ANN",
+  "PLR0913", # too many positional arguments
+  "ARG001",  # unused argument
+  "PGH004",  # ruff: noqa
+  "PT001",   # pytest.fixture の()の有無がformatの度にスイッチする
+  "DOC201",  # docstringのreturnがない
+]
+fixable = ["ALL"]
+unfixable = [
+  "T201", # print
+  "F841", # unused local variable
+]
+# extend-safe-fixes = ["F401"]
+# extend-unsafe-fixes = ["F401"]
+# [tool.ruff.format]
