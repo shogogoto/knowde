@@ -7,18 +7,14 @@ from pathlib import Path
 
 from pydantic import RootModel
 
-from knowde.complex.entry import ResourceMeta
-from knowde.complex.entry.category.folder import MFolder, MResource, NameSpace
+from knowde.complex.entry import NameSpace, ResourceMeta
 from knowde.complex.entry.label import LFolder, LResource
+from knowde.complex.entry.mapper import MFolder, MResource
 from knowde.primitive.user.repo import LUser
 
 
 class ResourceMetas(RootModel[list[ResourceMeta]]):
     """リクエスト用."""
-
-    @property
-    def titles(self) -> list[str]:  # noqa: D102
-        return [r.title for r in self.root]
 
 
 def fill_parents(ns: NameSpace, *names: str) -> LFolder | None:

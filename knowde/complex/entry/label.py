@@ -16,8 +16,9 @@ from neomodel import (
     ZeroOrOne,
 )
 
-from knowde.complex.entry.category.folder import Entry, MFolder, MResource
 from knowde.primitive.user.repo import LUser
+
+from .mapper import Entry, MFolder, MResource
 
 
 class LEntry(StructuredNode):

@@ -2,12 +2,9 @@
 
 import pytest
 
+from knowde.complex.entry.errors import EntryAlreadyExistsError, EntryNotFoundError
 from knowde.primitive.user.repo import LUser
 
-from .errors import (
-    EntryAlreadyExistsError,
-    EntryNotFoundError,
-)
 from .repo import (
     create_folder,
     create_root_folder,

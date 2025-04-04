@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 @click.group("view")
-def view_cli() -> None:
+def view_cli():
     """ファイル入力に基づく表示."""
 
 

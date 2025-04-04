@@ -1,18 +1,16 @@
 """同期."""
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: I001
 
 from collections.abc import Iterable
 from datetime import datetime
-from typing import TYPE_CHECKING
 
 from knowde.complex.__core__.tree2net import parse2net
 from knowde.complex.entry import ResourceMeta
 from knowde.complex.entry.router import ResourceMetas
 from knowde.primitive.__core__.timeutil import TZ
 
-if TYPE_CHECKING:
-    from pathlib import Path
+from pathlib import Path
 
 
 def can_parse(p: Path, show_error: bool) -> bool:  # noqa: FBT001
@@ -27,6 +25,14 @@ def can_parse(p: Path, show_error: bool) -> bool:  # noqa: FBT001
             print("    ", e)  # noqa: T201
         return False
     return True
+
+
+def txt2meta(s: str) -> ResourceMeta:
+    """テキストをメタ情報へ変換."""
+    sn = parse2net(s)
+    meta = ResourceMeta.of(sn)
+    meta.txt_hash = hash(s)  # ファイルに変更があったかをhash値で判断
+    return meta
 
 
 def path2meta(
@@ -48,12 +54,9 @@ def path2meta(
 
 def read_meta(p: Path, anchor: Path) -> ResourceMeta:
     """ファイルのメタ情報を取得."""
-    s = p.read_text()
     st = p.stat().st_mtime  # 最終更新日時
     t = datetime.fromtimestamp(st, tz=TZ)  # JST が neo4jに対応してないみたいでエラー
-    sn = parse2net(s)
-    meta = ResourceMeta.of(sn)
+    meta = txt2meta(p.read_text())
     meta.updated = t
-    meta.txt_hash = hash(s)  # ファイルに変更があったかをhash値で判断
     meta.path = p.relative_to(anchor).parts
     return meta

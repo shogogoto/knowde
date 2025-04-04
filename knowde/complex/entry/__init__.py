@@ -1,62 +1,83 @@
-"""userに所有されたsysnet.
-
-category
-    フォルダ分け 階層
-    タグ resourceのmeta dataとして扱う?
-
-permission アクセス権限 MVPには不要
-    Owner機能 SysNetの所有者
-        <-> Guest機能
-            read only
-            guest配下の編集権限
-        globalとの違いは?
-
-    team userが所属 leader が user add remove などの権限
-
-{user_id}/path/title/文
-{user_id}/path/sentences
-{user_id}/path/defs
-
-
-User folderやsysnetの永続化のために要求される機能だけを考えろ
-  Resource依存機能
-    一覧 /users get user名やプロフィール一覧
-    Profile
-        戦闘力(Power) 文の総数とか
-            resource総数
-            define総数
-        活動履歴(追加データを最新順で表示)
-        biograph
-    share 共同編集権限
-        guest shareな記事しか作れない
-        <=> folderの編集権限
-
-    favorite
-
-view
-    path > resource名 統計値　一覧
-    TOC 見出しツリー
-    indicator 文の位置情報 パスみたいな単一文字列をイメージしてたが、dictにしよう
-        folder path
-            title前 userId / folder
-        userId/folder/title(H1)/h2...h6/文
-            title後 見出し // URLには含めないでおこう、長くなりすぎそう
-        文脈
-            below parent
-            premise... など
-"""
+"""userに所有されたsysnet."""
 
 from __future__ import annotations
 
 from datetime import date, datetime
 from typing import TYPE_CHECKING, Self
+from uuid import UUID
 
+import networkx as nx
 from pydantic import BaseModel, Field
 
+from knowde.complex.entry.mapper import Entry, MResource
+from knowde.primitive.__core__.types import NXGraph
 from knowde.primitive.time import parse2dt
+
+from .errors import EntryNotFoundError
 
 if TYPE_CHECKING:
     from knowde.complex.__core__.sysnet import SysNet
+
+
+class NameSpace(BaseModel):
+    """リソースの分類."""
+
+    g: NXGraph = Field(default_factory=nx.DiGraph)
+    roots_: dict[str, Entry]
+    user_id: UUID
+
+    def add_root(self, e: Entry) -> None:
+        """user直下."""
+        if e.name in self.roots:
+            msg = f"{e.name}は登録済み"
+            raise ValueError(msg)
+        self.roots_[e.name] = e
+        self.g.add_node(e)
+
+    def children(self, root: str, *names: str) -> list[str]:
+        """element_idなしで文字列だけでアクセス."""
+        tgt = self.get_or_none(root, *names)
+        if tgt is None:
+            return []
+        return sorted([str(s) for s in self.g.successors(tgt)])
+
+    @property
+    def roots(self) -> list[str]:
+        """ユーザー直下のフォルダ一覧."""
+        return sorted(self.roots_.keys())
+
+    def get_or_none(self, root: str, *names: str) -> Entry | None:
+        """文字列でパス指定."""
+        current = self.roots_.get(root, None)
+        if current is None:
+            return None
+        for name in names:
+            succs = [n for n in self.g.successors(current) if n.name == name]
+            if len(succs) != 1:  # 存在しないパスに対して空を返す
+                return None
+            current = succs[0]
+        return current
+
+    def get_path(self, *names: str) -> list[Entry | None]:
+        """対応するEntry、しないならNoneを返す."""
+        n = len(names) + 1
+        return [self.get_or_none(*names[:i]) for i in range(1, n)]
+
+    def get(self, root: str, *names: str) -> Entry:
+        """Noneの場合にエラー."""
+        tgt = self.get_or_none(root, *names)
+        if tgt is None:
+            raise EntryNotFoundError
+        return tgt
+
+    @property
+    def resources(self) -> list[MResource]:
+        """resource一覧."""
+        return [n for n in self.g if isinstance(n, MResource)]
+
+    def get_resource_or_none(self, title: str) -> MResource | None:
+        """titleでリソースを指定."""
+        return next((r for r in self.resources if r.name == title), None)
 
 
 class ResourceMeta(BaseModel):

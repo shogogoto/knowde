@@ -7,7 +7,7 @@ from textwrap import dedent
 
 import pytest
 
-from knowde.complex.entry.category.folder import NameSpace
+from knowde.complex.entry import NameSpace
 from knowde.complex.entry.category.folder.repo import (
     fetch_namespace,
 )

@@ -67,7 +67,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         request: Request | None = None,
     ) -> None:
         print(  # noqa: T201
-            f"User {user.id}[{self.email}] has forgot their password. "
+            f"User {user.id}[{user.email}] has forgot their password. "
             f"Reset token: {token}",
         )
 
@@ -79,7 +79,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         request: Request | None = None,
     ) -> None:
         print(  # noqa: T201
-            f"Verification requested for user {user.id}[{self.email}]."
+            f"Verification requested for user {user.id}[{user.email}]."
             f"Verification token: {token}",
         )
 

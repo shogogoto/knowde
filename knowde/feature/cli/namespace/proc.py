@@ -20,10 +20,6 @@ def link_proc() -> None:
     click.echo(f"'{current}'をDBリンクとして設定しました")
 
 
-class LinkNotExistsError(Exception):
-    """リンク設定してない."""
-
-
 def sync_proc(glob: str, show_error: bool = True) -> None:  # noqa: FBT001 FBT002
     """CLI環境のファイルシステムとDBを同期."""
     c = LocalConfig.load()
