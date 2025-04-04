@@ -1,8 +1,10 @@
 """indentエラーをテキストから探し出すのは大変."""
+
 from __future__ import annotations
 
 import math
-from typing import TYPE_CHECKING, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from lark.indenter import DedentError
 
@@ -37,10 +39,10 @@ def detect_undent(
     part = "\n".join(lines[:pivot]) + "\n"
     try:
         parse_fn(part)
-        _next, next_w = rear_pivot(pivot, prev_width)  # 検出しないから検索範囲拡大
+        next_, next_w = rear_pivot(pivot, prev_width)  # 検出しないから検索範囲拡大
     except DedentError:
-        _next, next_w = front_pivot(pivot, prev_width)  # 検出したから検索範囲絞り込む
+        next_, next_w = front_pivot(pivot, prev_width)  # 検出したから検索範囲絞り込む
         if next_w == 1 and prev_width == 1:
-            return _next  # 前回OK 今回NG
+            return next_  # 前回OK 今回NG
 
-    return detect_undent(parse_fn, lines, _next, next_w)
+    return detect_undent(parse_fn, lines, next_, next_w)

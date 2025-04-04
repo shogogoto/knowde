@@ -1,6 +1,5 @@
 """test."""
 
-
 import networkx as nx
 import pytest
 

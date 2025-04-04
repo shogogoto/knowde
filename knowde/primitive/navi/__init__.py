@@ -1,4 +1,5 @@
 """ナビ 任意sysnodeの位置を把握する羅針盤."""
+
 from __future__ import annotations
 
 from collections import OrderedDict
@@ -36,12 +37,12 @@ class Navi(BaseModel, frozen=True):
     @property
     def max_pred_depth(self) -> int:
         """最大前距離."""
-        return max([len(p) for p in self.axiom_paths])
+        return max(len(p) for p in self.axiom_paths)
 
     @property
     def max_succ_depth(self) -> int:
         """最大次距離."""
-        return max([len(p) for p in self.leaf_paths])
+        return max(len(p) for p in self.leaf_paths)
 
     def succs(self, depth: int) -> list[Hashable]:
         """depth先のnodesを取得."""

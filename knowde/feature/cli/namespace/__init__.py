@@ -1,4 +1,5 @@
 """sysnetの永続化."""
+
 import click
 
 
@@ -7,7 +8,7 @@ def anchor_cmd() -> None:
     """カレントディレクトリをDBと同期するファイルパスとして設定."""
     # いちいちcurrent directoryで同期するのは間違いの元なので
     #   link path を予め設定させる
-    from .proc import link_proc
+    from .proc import link_proc  # noqa: PLC0415
 
     link_proc()
 
@@ -23,6 +24,6 @@ def anchor_cmd() -> None:
 )
 def sync_cmd(glob: str, hide_error: bool) -> None:  # noqa: FBT001
     """ファイルシステムと同期."""
-    from .proc import sync_proc
+    from .proc import sync_proc  # noqa: PLC0415
 
     sync_proc(glob, not hide_error)

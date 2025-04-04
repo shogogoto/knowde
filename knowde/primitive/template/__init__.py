@@ -1,4 +1,5 @@
 """文字列で文字列を返す関数を生成."""
+
 from __future__ import annotations
 
 import re
@@ -158,7 +159,7 @@ def nested_tmpl_name_args(line: str) -> list:
     _, post = line.split(pre, maxsplit=1)
     name = pre.strip()
     for m in ANGLE_MARKER.pick_nesting(post):
-        sp = [s.strip() for s in split_for_args(m) if s.strip() != ""]
+        sp = [s.strip() for s in split_for_args(m) if s.strip()]
         args = [nested_tmpl_name_args(s) if ANGLE_MARKER.contains(s) else s for s in sp]
         sig.extend([name, args])
     return sig

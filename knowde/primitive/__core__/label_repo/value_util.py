@@ -1,7 +1,8 @@
 """対応するモデルがなくてもneomodel基本操作したい."""
+
 from __future__ import annotations
 
-from typing import Generic, TypeVar
+from typing import TypeVar
 
 from neomodel import StructuredNode
 from pydantic import BaseModel
@@ -12,7 +13,7 @@ L = TypeVar("L", bound=StructuredNode)
 M = TypeVar("M", bound=BaseModel)
 
 
-class NodeUtil(BaseModel, Generic[L], frozen=True):
+class NodeUtil[L](BaseModel, frozen=True):
     """StructuredNodeに対するUtil."""
 
     t: type[L]

@@ -1,10 +1,10 @@
 """ツリーの重複チェック."""
+
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Self, override
 
 from pydantic import Field
-from typing_extensions import override
 
 from knowde.complex.__core__.sysnet.sysnode import Def, IDef
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType

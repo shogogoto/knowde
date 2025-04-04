@@ -1,6 +1,5 @@
 """CLI用手続き."""
 
-
 from pathlib import Path
 
 import click
@@ -19,10 +18,6 @@ def link_proc() -> None:
     c.ANCHOR = current
     c.save()
     click.echo(f"'{current}'をDBリンクとして設定しました")
-
-
-class LinkNotExistsError(Exception):
-    """リンク設定してない."""
 
 
 def sync_proc(glob: str, show_error: bool = True) -> None:  # noqa: FBT001 FBT002

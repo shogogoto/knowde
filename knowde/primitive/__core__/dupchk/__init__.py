@@ -1,17 +1,17 @@
 """重複チェック."""
+
 from __future__ import annotations
 
-from collections.abc import Hashable
-from typing import Callable, Generic, NoReturn, TypeVar
+from collections.abc import Callable, Hashable
+from typing import NoReturn, TypeVar
 
 from pydantic import BaseModel, Field
 
 T = TypeVar("T", bound=Hashable)
 
 
-class DuplicationChecker(
+class DuplicationChecker[T: Hashable](
     BaseModel,
-    Generic[T],
     # arbitrary_allow_types=True,
 ):
     """用語重複チェック."""

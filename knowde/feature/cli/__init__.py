@@ -1,10 +1,11 @@
 """cli root."""
+
 from __future__ import annotations
 
 import click
 
 from knowde.feature.cli.auth import user_cli
-from knowde.feature.cli.fs import anchor_cmd, sync_cmd
+from knowde.feature.cli.namespace import anchor_cmd, sync_cmd
 from knowde.feature.cli.options.completion import complete_option
 from knowde.feature.cli.options.help_all import help_all_option
 from knowde.feature.cli.view import view_cli
@@ -23,7 +24,7 @@ def cli() -> None:
 @cli.command("config")
 def config_cmd() -> None:
     """設定内容の確認."""
-    from knowde.primitive.config import CONFIG_PATH, LocalConfig
+    from knowde.primitive.config import CONFIG_PATH, LocalConfig  # noqa: PLC0415
 
     click.echo(CONFIG_PATH)
     c = LocalConfig.load()

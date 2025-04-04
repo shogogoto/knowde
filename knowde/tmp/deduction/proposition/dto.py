@@ -1,4 +1,5 @@
 """data transfer object."""
+
 from pydantic import BaseModel, Field
 
 

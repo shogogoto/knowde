@@ -1,7 +1,8 @@
 """repo."""
+
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from knowde.primitive.__core__.label_repo.query import query_cypher
 from knowde.tmp.definition.domain.statistics import DepStatistics
@@ -14,7 +15,7 @@ if TYPE_CHECKING:
 
 def statistics_query(
     sentence_var: str,
-    with_vars: Optional[list[str]] = None,
+    with_vars: list[str] | None = None,
 ) -> str:
     """依存統計."""
     with_s = "" if with_vars is None else ",".join(with_vars) + ","

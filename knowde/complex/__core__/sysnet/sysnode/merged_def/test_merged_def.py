@@ -1,6 +1,5 @@
 """ツリーの重複チェックtest."""
 
-
 import networkx as nx
 import pytest
 from pytest_unordered import unordered
@@ -21,7 +20,7 @@ from . import MergedDef
 
 def test_merged_def() -> None:
     """マージされるtermを持つdefを合体."""
-    _s = """
+    s = """
         # X
             A: aaa1
             A, A1: aaa2
@@ -36,8 +35,8 @@ def test_merged_def() -> None:
             P | ppp
             Q | qqq
     """
-    _t = parse2tree(_s, TSysArg())
-    leaves = get_leaves(_t)
+    t = parse2tree(s, TSysArg())
+    leaves = get_leaves(t)
     defs = to_def(leaves)
     mdefs, stds, _ = MergedDef.create_and_parted(defs)
     assert mdefs == unordered(

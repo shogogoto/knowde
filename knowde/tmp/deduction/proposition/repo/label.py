@@ -1,4 +1,5 @@
 """neomodel label."""
+
 from neomodel import StringProperty
 
 from knowde.primitive.__core__.label_repo.base import LBase

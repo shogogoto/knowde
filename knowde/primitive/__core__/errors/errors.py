@@ -16,8 +16,8 @@ if TYPE_CHECKING:
 class ErrorHandlingMiddleware(BaseHTTPMiddleware):
     """fastapiでエラーを検出."""
 
+    @staticmethod
     async def dispatch(  # noqa: D102
-        self,
         request: Request,
         call_next: RequestResponseEndpoint,
     ) -> Response:

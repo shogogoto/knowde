@@ -1,6 +1,5 @@
 """db から sysnetを復元."""
 
-
 from functools import cache
 
 import neo4j

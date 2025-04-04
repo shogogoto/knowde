@@ -1,9 +1,11 @@
 """API定義パラメータの変換関連."""
+
 from __future__ import annotations
 
 import functools
+from collections.abc import Callable
 from inspect import Parameter, signature
-from typing import Any, Callable, Optional, TypeVar
+from typing import Any, TypeVar
 
 from makefun import create_function
 from neomodel import db
@@ -17,7 +19,11 @@ from knowde.primitive.__core__.typeutil.func import (
 T = TypeVar("T", bound=BaseModel)
 
 
-def extract_type_arg(t: type[T], args: tuple, kwargs: dict) -> tuple[T, tuple, dict]:
+def extract_type_arg[T: BaseModel](
+    t: type[T],
+    args: tuple,
+    kwargs: dict,
+) -> tuple[T, tuple, dict]:
     """型tの引数を除外する."""
     newargs = []
     newkw = {}
@@ -39,7 +45,7 @@ def to_paramfunc(
     t: type[BaseModel],
     f: Callable,
     argname: str = "param",
-    ignores: Optional[list[str]] = None,
+    ignores: list[str] | None = None,
     convert: Callable = lambda x: x,
 ) -> Callable:
     """API用関数に変換.
@@ -65,19 +71,19 @@ def to_paramfunc(
     )
 
 
-def to_bodyfunc(
+def to_bodyfunc(  # noqa: PLR0917
     f: Callable,
     t_param: type[BaseModel],
     t_out: type | None = None,
     paramname: str = "param",
-    ignores: Optional[list[tuple[str, type]]] = None,
+    ignores: list[tuple[str, type]] | None = None,
     convert: Callable = lambda x: x,
 ) -> Callable:
     """Request bodyを付与する."""
     if ignores is None:
         igkeys, igtypes = [], []
     else:
-        igkeys, igtypes = zip(*ignores)
+        igkeys, igtypes = zip(*ignores, strict=False)
     return inject_signature(
         to_paramfunc(t_param, f, paramname, igkeys, convert),
         [*igtypes, t_param],

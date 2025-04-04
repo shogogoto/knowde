@@ -1,7 +1,5 @@
 """系の永続化."""
 
-
-
 import pytest
 
 from knowde.complex.__core__.sysnet import SysNet
@@ -15,7 +13,7 @@ from .save import sn2db
 
 @pytest.fixture
 def sn() -> SysNet:  # noqa: D103
-    _s = r"""
+    s = r"""
         # h1
             @author nanashi
             @author taro tanaka
@@ -40,7 +38,7 @@ def sn() -> SysNet:  # noqa: D103
             bbbb
             cccc
     """
-    return parse2net(_s)
+    return parse2net(s)
 
 
 def test_save_and_restore(sn: SysNet) -> None:

@@ -1,4 +1,5 @@
 """models for presentation layer."""
+
 from __future__ import annotations
 
 from textwrap import indent

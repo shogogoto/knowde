@@ -1,6 +1,5 @@
 """test."""
 
-
 import pytest
 
 from knowde.complex.__core__.tree2net import parse2net
@@ -9,7 +8,7 @@ from knowde.primitive.term.errors import MarkUncontainedError
 
 def test_alias_resolve_error() -> None:
     """エラー再現(alias引用でMarkUncontainedError)."""
-    _s = """
+    s = """
     # x
         AU |{アリストテレス}の宇宙: 月より内側が変化する世界、外側は不可侵の永久不変領域
           <-> ケプラーの超新星: 急に現れて天文学者たちを驚かせた
@@ -18,12 +17,12 @@ def test_alias_resolve_error() -> None:
               {AU}が誤りであることを決定づけた
     """
     with pytest.raises(MarkUncontainedError):
-        _sn = parse2net(_s)  # アリストテレス が未定義
+        _sn = parse2net(s)  # アリストテレス が未定義
 
 
 def test_regression() -> None:
     """再現."""
-    _s = """
+    s = """
     # x
       選択公理: 空でない集合各々...
         空でない自然数の集合でも各集合の最小の要素を選べば自明に真
@@ -39,4 +38,4 @@ def test_regression() -> None:
       神の公理, 選択公理: 神でもなければ到底実行できない操作をできるとする
 
     """
-    _sn = parse2net(_s)
+    _sn = parse2net(s)

@@ -1,6 +1,5 @@
 """netwok1 node1 getter."""
 
-
 from pytest_unordered import unordered
 
 from knowde.complex.__core__.tree2net import parse2net
@@ -20,7 +19,7 @@ from knowde.complex.systats.nw1_n1 import (
 
 def test_get_detail_parent() -> None:
     """詳細."""
-    _s = r"""
+    s = r"""
         # h1
             aaa
             B: bbb
@@ -37,22 +36,22 @@ def test_get_detail_parent() -> None:
                 1b
                 2b
     """
-    _sn = parse2net(_s)
-    assert get_detail(_sn, "aaa") == []
-    assert get_detail(_sn, "bbb") == ["b1", "b2", "1b", "2b"]
+    sn = parse2net(s)
+    assert get_detail(sn, "aaa") == []
+    assert get_detail(sn, "bbb") == ["b1", "b2", "1b", "2b"]
 
-    assert get_parent_or_none(_sn, "aaa") is None
-    assert get_parent_or_none(_sn, "b2") == "bbb"
-    assert get_parent_or_none(_sn, "b21") == "b2"
-    assert get_parent_or_none(_sn, "b22") == "b2"
-    assert get_parent_or_none(_sn, "b23") == "b2"
-    assert get_parent_or_none(_sn, "# h1") is None
-    assert get_parent_or_none(_sn, "## h2") is None
+    assert get_parent_or_none(sn, "aaa") is None
+    assert get_parent_or_none(sn, "b2") == "bbb"
+    assert get_parent_or_none(sn, "b21") == "b2"
+    assert get_parent_or_none(sn, "b22") == "b2"
+    assert get_parent_or_none(sn, "b23") == "b2"
+    assert get_parent_or_none(sn, "# h1") is None
+    assert get_parent_or_none(sn, "## h2") is None
 
 
 def test_has_dependency() -> None:
     """意味的な依存を持つ."""
-    _s = r"""
+    s = r"""
         # h1
         ## h2
         ### h3
@@ -69,14 +68,14 @@ def test_has_dependency() -> None:
             bro
                 little
     """
-    _sn = parse2net(_s)
-    assert has_dependency(_sn, "aaa")
-    assert not has_dependency(_sn, "bro")
+    sn = parse2net(s)
+    assert has_dependency(sn, "aaa")
+    assert not has_dependency(sn, "bro")
 
 
 def test_refer_referred() -> None:
     """用語引用."""
-    _s = r"""
+    s = r"""
         # h1
             A: aaa
             B: b{A}b
@@ -84,7 +83,7 @@ def test_refer_referred() -> None:
             D: d{C}d
             E{D}: eee
     """
-    sn = parse2net(_s)
+    sn = parse2net(s)
     assert get_refer(sn, "aaa") == unordered(["b{A}b", "c{A}c"])
     assert get_refer(sn, "b{A}b") == []
     assert get_refer(sn, "c{A}c") == ["d{C}d"]
@@ -100,7 +99,7 @@ def test_refer_referred() -> None:
 
 def test_premise_conclusion() -> None:
     """用語引用."""
-    _s = r"""
+    s = r"""
         # h1
             aaa
                 -> A| bbb
@@ -112,14 +111,14 @@ def test_premise_conclusion() -> None:
                 -> ddd
 
     """
-    sn = parse2net(_s)
+    sn = parse2net(s)
     assert get_premise(sn, "bbb") == ["aaa"]
     assert get_conclusion(sn, "bbb") == ["ddd"]
 
 
 def test_example_general() -> None:
     """具体抽象."""
-    _s = r"""
+    s = r"""
         # h1
             aaa
                 ex. a1
@@ -128,14 +127,14 @@ def test_example_general() -> None:
                     ex. a22
                     ex. a23
     """
-    sn = parse2net(_s)
+    sn = parse2net(s)
     assert get_example(sn, "aaa") == ["a1", "a2"]
     assert get_general(sn, "a22") == ["a2"]
 
 
 def test_recursively() -> None:
     """再帰的取得."""
-    _s = r"""
+    s = r"""
         # h1
             aaa
                 -> bbb
@@ -145,7 +144,7 @@ def test_recursively() -> None:
                     -> fff
                 -> ggg
     """
-    sn = parse2net(_s)
+    sn = parse2net(s)
     f1 = recursively_nw1n1(get_conclusion, 1)
     assert f1(sn, "aaa") == ["bbb", "ccc", "ggg"]
     f2 = recursively_nw1n1(get_conclusion, 2)
@@ -167,7 +166,7 @@ def test_recursively() -> None:
 
 def test_get_detail_recursively() -> None:
     """詳細の再帰的取得."""
-    _s = r"""
+    s = r"""
         # h
             1
                 11
@@ -182,7 +181,7 @@ def test_get_detail_recursively() -> None:
                 12
 
     """
-    sn = parse2net(_s)
+    sn = parse2net(s)
     f1 = recursively_nw1n1(get_detail, 1)
     assert f1(sn, "1") == ["11", "12"]
     f2 = recursively_nw1n1(get_detail, 3)
@@ -194,7 +193,7 @@ def test_get_detail_recursively() -> None:
 
 def test_get_refer_recursively() -> None:
     """referの再帰的取得."""
-    _s = r"""
+    s = r"""
         # h
             A: aaa
             B: b{A}
@@ -204,7 +203,7 @@ def test_get_refer_recursively() -> None:
             F: f{E}
             G: g{F}
     """
-    sn = parse2net(_s)
+    sn = parse2net(s)
     f1 = recursively_nw1n1(get_refer, 1)
     assert f1(sn, "aaa") == ["b{A}"]
     f2 = recursively_nw1n1(get_refer, 3)

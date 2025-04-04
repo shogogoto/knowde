@@ -1,4 +1,5 @@
 """networkx関連."""
+
 from __future__ import annotations
 
 from collections.abc import Hashable
@@ -64,7 +65,7 @@ def _to_paths(g: nx.DiGraph, pairs: Edges) -> list[list[Hashable]]:
         try:
             p = list(nx.shortest_path(g, u, v))
             paths.append(p)
-        except nx.NetworkXNoPath:  # noqa: PERF203
+        except nx.NetworkXNoPath:
             continue
     return paths
 

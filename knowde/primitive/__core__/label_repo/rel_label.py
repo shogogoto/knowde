@@ -1,4 +1,5 @@
 """neomodel関係の基礎."""
+
 from neomodel import IntegerProperty
 
 from knowde.primitive.__core__.label_repo.base import RelBase

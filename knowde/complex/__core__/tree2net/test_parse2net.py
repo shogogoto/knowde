@@ -1,6 +1,5 @@
 """用語関連."""
 
-
 from knowde.complex.__core__.tree2net import parse2net
 from knowde.primitive.__core__.nxutil import to_nested
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
@@ -9,7 +8,7 @@ from knowde.primitive.heading import get_heading_path, get_headings
 
 def test_duplicable() -> None:
     """重複可能な文."""
-    _s = r"""
+    s = r"""
         # h1
             1
                 +++ dup1 +++
@@ -17,12 +16,12 @@ def test_duplicable() -> None:
                 +++ dup1 +++
             2
     """
-    _sn = parse2net(_s)
+    _sn = parse2net(s)
 
 
 def test_add_resolved_edge() -> None:
     """parse2net版."""
-    _s = r"""
+    s = r"""
         # h1
             A: df
             B: b{A}b
@@ -33,7 +32,7 @@ def test_add_resolved_edge() -> None:
             Q: qqq
             X:
     """
-    sn = parse2net(_s)
+    sn = parse2net(s)
     assert sn.get_resolved("df") == {}
     assert sn.get_resolved("b{A}b") == {"df": {}}
     assert sn.get_resolved("ccc") == {"b{A}b": {"df": {}}}
@@ -44,18 +43,18 @@ def test_add_resolved_edge() -> None:
 
 def test_multiline() -> None:
     r"""\改行を1行に."""
-    _s = r"""
+    s = r"""
         # 1
             aaa\
                 bbb
     """
-    _t = parse2net(_s)
-    assert "aaabbb" in _t.g
+    t = parse2net(s)
+    assert "aaabbb" in t.g
 
 
 def test_add_block() -> None:
     """blockを正しく配置."""
-    _s = """
+    s = """
         # h1
             1
             2
@@ -77,7 +76,7 @@ def test_add_block() -> None:
                         4422
                         4423
     """
-    sn = parse2net(_s)
+    sn = parse2net(s)
     assert list(EdgeType.BELOW.succ(sn.g, sn.root)) == ["1"]
     assert to_nested(sn.g, "1", EdgeType.SIBLING.succ) == {"2": {"3": {"4": {}}}}
     assert list(EdgeType.BELOW.succ(sn.g, "2")) == ["21"]
@@ -97,7 +96,7 @@ def test_add_block() -> None:
 
 def test_add_heading() -> None:
     """headingを正しく取得できる."""
-    _s = """
+    s = """
         !c00
         # h1
         !c0
@@ -120,7 +119,7 @@ def test_add_heading() -> None:
                 iii
                 <- jjj
     """
-    sn = parse2net(_s)
+    sn = parse2net(s)
     assert get_headings(sn.g, sn.root) == {"# h1", "## h2", "### h3"}
     assert get_heading_path(sn.g, sn.root, "ccc") == ["# h1"]
     assert get_heading_path(sn.g, sn.root, "eEE") == ["# h1"]
@@ -132,7 +131,7 @@ def test_add_heading() -> None:
 
 def test_add_ctx() -> None:
     """文脈."""
-    _s = """
+    s = """
         # h1
             aaa
                 <-> anti aaa\
@@ -144,7 +143,7 @@ def test_add_ctx() -> None:
                     www
     """
 
-    sn = parse2net(_s)
+    sn = parse2net(s)
     assert list(EdgeType.SIBLING.succ(sn.g, "bbb")) == ["ccc"]
     assert list(EdgeType.TO.succ(sn.g, "ccc")) == ["d{CB}d"]
     assert list(EdgeType.SIBLING.succ(sn.g, "ccc")) == []
@@ -158,7 +157,7 @@ def test_add_ctx() -> None:
 
 def test_replace_quoterm() -> None:
     """引用用語."""
-    _s = """
+    s = """
         # h1
             A: aaa
                 aAA
@@ -170,7 +169,7 @@ def test_replace_quoterm() -> None:
                 ddd
     """
 
-    sn = parse2net(_s)
+    sn = parse2net(s)
     assert to_nested(sn.g, "aaa", EdgeType.SIBLING.succ) == {"bbb": {}}
     # belowを1つに統合しようと思ったけどやめた
     assert to_nested(sn.g, "aaa", EdgeType.BELOW.succ) == {
@@ -181,12 +180,12 @@ def test_replace_quoterm() -> None:
 
 def test_template() -> None:
     """テンプレート."""
-    _s = r"""
+    s = r"""
         # h1
             f<a,b>: \diff{a, b}
             g<a>: !a!
             call g<a> -> _g<f<a, 1>>_
     """
-    _sn = parse2net(_s)
-    ret = [_sn.expand(s) for s in _sn.sentences]
+    sn = parse2net(s)
+    ret = [sn.expand(s) for s in sn.sentences]
     assert ret == [r"call g<a> -> !\diff{a, 1}!"]

@@ -1,4 +1,5 @@
 """ネットワーク1 node1のview."""
+
 from __future__ import annotations
 
 from collections.abc import Iterable, Sequence
@@ -70,7 +71,7 @@ class CtxScorables(BaseModel, frozen=True):
     @property
     def score(self) -> int:
         """For sorting."""
-        return sum([r.score for r in self.rets])
+        return sum(r.score for r in self.rets)
 
     def get(self) -> dict:
         """Get dict."""

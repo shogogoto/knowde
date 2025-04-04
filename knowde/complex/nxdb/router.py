@@ -1,4 +1,5 @@
 """系の永続化 router."""
+
 from __future__ import annotations
 
 from functools import cache

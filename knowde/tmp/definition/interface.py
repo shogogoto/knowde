@@ -1,4 +1,5 @@
 """define api and cli."""
+
 from __future__ import annotations
 
 import click

@@ -3,6 +3,7 @@
 folderと一体化したCRUD
 permission指定できるよう拡張
 """
+
 from __future__ import annotations
 
 from neomodel import (
