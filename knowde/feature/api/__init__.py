@@ -29,7 +29,15 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator:  # noqa: RUF029
     s.terdown_db()
 
 
-api = FastAPI(lifespan=lifespan)
+deps = [
+    # APIKeyHeader(name="Authorization", auto_error=True),
+    # HTTPBearer(),
+]
+
+api = FastAPI(
+    lifespan=lifespan,
+    # dependencies=[Depends(dep) for dep in deps],
+)
 api.add_middleware(ErrorHandlingMiddleware)
 api.add_middleware(
     Neo4jTransactionMiddleware,

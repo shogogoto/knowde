@@ -7,6 +7,7 @@ import httpx
 from pydantic import BaseModel
 from typing_extensions import TypedDict
 
+from knowde.complex.auth import PREFIX_USER
 from knowde.complex.auth.errors import TokenUnsavedError
 from knowde.primitive.config import LocalConfig
 from knowde.primitive.config.env import Settings
@@ -65,10 +66,10 @@ class AuthGet(BaseModel):
     client: Callable[..., httpx.Response] = s.get
 
     def me(self) -> httpx.Response:  # noqa: D102
-        return self.client("/users/me", headers=auth_header())
+        return self.client(f"{PREFIX_USER}/me", headers=auth_header())
 
     def user(self, uid: UUID) -> httpx.Response:  # noqa: D102
-        return self.client(f"/users/{uid}", headers=auth_header())
+        return self.client(f"{PREFIX_USER}/{uid}", headers=auth_header())
 
 
 class AuthPatch(BaseModel):
@@ -78,7 +79,7 @@ class AuthPatch(BaseModel):
 
     def change_me(self, info: OptionalInfo) -> httpx.Response:  # noqa: D102
         d = {k: v for k, v in info.items() if v is not None}
-        return self.client("/users/me", headers=auth_header(), json=d)
+        return self.client(f"{PREFIX_USER}/me", headers=auth_header(), json=d)
 
 
 # def change_user_proc(

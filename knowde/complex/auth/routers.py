@@ -9,6 +9,7 @@ from fastapi import APIRouter
 from fastapi_users import FastAPIUsers
 from httpx_oauth.clients.google import GoogleOAuth2
 
+from knowde.complex.auth import PREFIX_USER
 from knowde.primitive.config.env import Settings
 from knowde.primitive.user import User
 
@@ -23,7 +24,7 @@ def auth_component() -> FastAPIUsers:
 
 
 ac = auth_component()
-user_router = APIRouter(prefix="/users", tags=["users"])
+user_router = APIRouter(prefix=PREFIX_USER, tags=[PREFIX_USER])
 user_router.include_router(ac.get_users_router(UserRead, UserUpdate))
 
 auth_router = APIRouter(tags=["auth"])
