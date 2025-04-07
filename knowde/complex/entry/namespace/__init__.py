@@ -73,6 +73,7 @@ def save_resource(m: ResourceMeta, ns: NameSpace) -> LResource | None:
 
 def save_or_move_resource(m: ResourceMeta, ns: NameSpace) -> LResource | None:
     """移動を反映してsave."""
+    # NSに重複したタイトルがあると困る
     old = next((r for r in ns.resources if r.name == m.title), None)
     if old is None:  # 新規
         return save_resource(m, ns)

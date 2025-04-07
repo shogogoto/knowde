@@ -11,12 +11,10 @@ from knowde.complex.entry import NameSpace
 from knowde.complex.entry.category.folder.repo import (
     fetch_namespace,
 )
-from knowde.complex.entry.repo import (
-    save_resource,
-    sync_namespace,
-)
-from knowde.complex.entry.repo.sync import path2meta
+from knowde.complex.entry.namespace import save_resource, sync_namespace
 from knowde.primitive.user.repo import LUser
+
+from .sync import Anchor, filter_parsable
 
 
 def write_text(p: Path, txt: str) -> Path:  # noqa: D103
@@ -24,7 +22,7 @@ def write_text(p: Path, txt: str) -> Path:  # noqa: D103
     return p
 
 
-def create_test_files(base_path: Path) -> tuple[Path, list[Path]]:
+def create_test_files(base_path: Path) -> tuple[Anchor, list[Path]]:
     """sync用テストファイル群."""
     subs = [
         base_path / "sub1" / "sub11",
@@ -75,12 +73,11 @@ def create_test_files(base_path: Path) -> tuple[Path, list[Path]]:
                -> yyy
         """,
     )
-
-    return base_path, [title1, title2, direct, fail]
+    return Anchor(base_path), [title1, title2, direct, fail]
 
 
 @pytest.fixture
-def files(tmp_path: Path) -> tuple[Path, list[Path]]:  # noqa: D103
+def files(tmp_path: Path) -> tuple[Anchor, list[Path]]:  # noqa: D103
     return create_test_files(tmp_path)
 
 
@@ -89,17 +86,17 @@ def u() -> LUser:  # noqa: D103
     return LUser().save()
 
 
-type Fixture = tuple[LUser, Path, list[Path], NameSpace]
+type Fixture = tuple[LUser, Anchor, list[Path], NameSpace]
 
 
 @pytest.fixture
-def setup(u: LUser, files: tuple[Path, list[Path]]) -> Fixture:  # noqa: D103
-    meta = path2meta(*files)
+def setup(u: LUser, tmp_path: Path) -> Fixture:  # noqa: D103
+    anchor, paths = create_test_files(tmp_path)
+    meta = anchor.to_metas(filter_parsable(*paths))
     ns = fetch_namespace(u.uid)
     for m in meta.root:
         save_resource(m, ns)
     ns = fetch_namespace(u.uid)
-    anchor, paths = files
     return u, anchor, paths, ns
 
 
@@ -131,7 +128,7 @@ def test_save_halfway_exists_folder(setup: Fixture) -> None:
             c
         """,
     )
-    meta = path2meta(anchor, [*paths, new])
+    meta = anchor.to_metas(filter_parsable(*[*paths, new]))
     ns = fetch_namespace(u.uid)
     for m in meta.root:
         save_resource(m, ns)
@@ -161,7 +158,7 @@ def test_save_update_exists(setup: Fixture) -> None:
     )
     assert ns.get("sub1", "sub11", "# title1").txt_hash != hash(tgt.read_text())
     paths[0] = tgt
-    meta = path2meta(anchor, paths)
+    meta = anchor.to_metas(filter_parsable(*paths))
     for m in meta.root:
         save_resource(m, ns)
     ns = fetch_namespace(u.uid)
@@ -173,7 +170,7 @@ def test_sync_move(setup: Fixture) -> None:
     u, anchor, paths, ns = setup
     tgt = paths[0]
     paths[0] = tgt.rename(tgt.parent.parent / tgt.name)
-    meta = path2meta(anchor, paths)
+    meta = anchor.to_metas(filter_parsable(*paths))
     assert ns.get_or_none("sub1", "sub11", "# title1")
     uplist = sync_namespace(meta, ns)
 

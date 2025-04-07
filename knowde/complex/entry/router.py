@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends
 from knowde.complex.auth.routers import auth_component
 from knowde.complex.entry import NameSpace
 from knowde.complex.entry.category.folder.repo import fetch_namespace
-from knowde.complex.entry.repo import ResourceMetas, sync_namespace
+from knowde.complex.entry.namespace import ResourceMetas, sync_namespace
 
 if TYPE_CHECKING:
     from knowde.primitive.user import User
