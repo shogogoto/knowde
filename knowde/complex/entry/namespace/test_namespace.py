@@ -11,7 +11,10 @@ from knowde.complex.entry import NameSpace
 from knowde.complex.entry.category.folder.repo import (
     fetch_namespace,
 )
-from knowde.complex.entry.namespace import save_resource, sync_namespace
+from knowde.complex.entry.namespace import (
+    save_resource,
+    sync_namespace,
+)
 from knowde.primitive.user.repo import LUser
 
 from .sync import Anchor, filter_parsable
@@ -169,7 +172,7 @@ def test_sync_move(setup: Fixture) -> None:
     """移動したResourceを検知."""
     u, anchor, paths, ns = setup
     tgt = paths[0]
-    paths[0] = tgt.rename(tgt.parent.parent / tgt.name)
+    paths[0] = tgt.rename(tgt.parent.parent / tgt.name)  # 2階上に移動
     meta = anchor.to_metas(filter_parsable(*paths))
     assert ns.get_or_none("sub1", "sub11", "# title1")
     uplist = sync_namespace(meta, ns)
@@ -178,3 +181,26 @@ def test_sync_move(setup: Fixture) -> None:
     assert ns.get_or_none("sub1", "sub11", "# title1") is None  # たまに失敗
     assert ns.get_or_none("sub1", "# title1")
     assert [anchor / p for p in uplist] == [paths[0]]
+
+
+# def test_duplicated_title(setup: Fixture) -> None:
+#     """重複したタイトルを検知."""
+#     _u, _anchor, paths, ns = setup
+#     nxprint(ns.g)
+#     m = ResourceMeta(title="# title3")  # 既存タイトル
+#     save_or_move_resource(m, ns)
+#     tgt = paths[0]
+#     nxprint(ns.g)
+#     m = ResourceMeta(title="# title3", path=("sub1", "xxx"))  # 既存タイトル
+#     save_or_move_resource(m, ns)
+#     nxprint(ns.g)
+#     # raise AssertionError
+#     # paths[0] = tgt.rename(tgt.parent.parent / tgt.name)
+#     # meta = anchor.to_metas(filter_parsable(*paths))
+#     # assert ns.get_or_none("sub1", "sub11", "# title1")
+#     # uplist = sync_namespace(meta, ns)
+
+#     # ns = fetch_namespace(u.uid)
+#     # assert ns.get_or_none("sub1", "sub11", "# title1") is None  # たまに失敗
+#     # assert ns.get_or_none("sub1", "# title1")
+#     # assert [anchor / p for p in uplist] == [paths[0]]

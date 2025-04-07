@@ -59,6 +59,7 @@ def save_resource(m: ResourceMeta, ns: NameSpace) -> LResource | None:
                 lb.owner.connect(u)
             else:
                 lb.parent.connect(parent)
+            ns.add_root(lb.frozen)
             return lb
         case MResource():  # 更新
             if m.txt_hash == tail.txt_hash:  # 変更なし
@@ -74,10 +75,11 @@ def save_resource(m: ResourceMeta, ns: NameSpace) -> LResource | None:
 def save_or_move_resource(m: ResourceMeta, ns: NameSpace) -> LResource | None:
     """移動を反映してsave."""
     # NSに重複したタイトルがあると困る
-    old = next((r for r in ns.resources if r.name == m.title), None)
+    old = ns.get_resource_or_none(m.title)
+    # print(old)
     if old is None:  # 新規
         return save_resource(m, ns)
-    old = LResource(**old.model_dump()).save()
+    old = LResource(**old.model_dump()).save()  # reflesh
     new = fill_parents(ns, *m.names[:-1])
     old.parent.disconnect(old.parent.get())
     old.parent.connect(new)
