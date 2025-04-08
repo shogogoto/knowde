@@ -13,7 +13,7 @@ from knowde.complex.entry.mapper import Entry, MResource
 from knowde.primitive.__core__.types import NXGraph
 from knowde.primitive.time import parse2dt
 
-from .errors import EntryNotFoundError
+from .errors import DuplicatedTitleError, EntryNotFoundError
 
 if TYPE_CHECKING:
     from knowde.complex.__core__.sysnet import SysNet
@@ -26,13 +26,34 @@ class NameSpace(BaseModel):
     roots_: dict[str, Entry]
     user_id: UUID
 
+    def remove_resource(self, title: str) -> None:
+        """リソースの削除."""
+        r = self.get_resource_or_none(title)
+        self.g.remove_node(r)
+        if title in self.roots_:
+            del self.roots_[title]
+
+    def check_added_reosurce(self, e: Entry) -> None:
+        """titleの重複を許さない."""
+        if isinstance(e, MResource):
+            r = self.get_resource_or_none(e.name)
+            if r is not None:
+                msg = f"'{e.name}'は既に登録済み"
+                raise DuplicatedTitleError(msg, r.path)
+
     def add_root(self, e: Entry) -> None:
         """user直下."""
         if e.name in self.roots:
             msg = f"{e.name}は登録済み"
-            raise ValueError(msg)
+            raise ValueError(msg, self.roots)
+        self.check_added_reosurce(e)
         self.roots_[e.name] = e
         self.g.add_node(e)
+
+    def add_edge(self, parent: Entry, child: Entry) -> None:
+        """user直下以外."""
+        self.check_added_reosurce(child)
+        self.g.add_edge(parent, child)
 
     def children(self, root: str, *names: str) -> list[str]:
         """element_idなしで文字列だけでアクセス."""

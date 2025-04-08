@@ -7,14 +7,16 @@ from textwrap import dedent
 
 import pytest
 
-from knowde.complex.entry import NameSpace
+from knowde.complex.entry import NameSpace, ResourceMeta
 from knowde.complex.entry.category.folder.repo import (
     fetch_namespace,
 )
 from knowde.complex.entry.namespace import (
+    save_or_move_resource,
     save_resource,
     sync_namespace,
 )
+from knowde.primitive.__core__.nxutil import nxprint
 from knowde.primitive.user.repo import LUser
 
 from .sync import Anchor, filter_parsable
@@ -183,24 +185,25 @@ def test_sync_move(setup: Fixture) -> None:
     assert [anchor / p for p in uplist] == [paths[0]]
 
 
-# def test_duplicated_title(setup: Fixture) -> None:
-#     """重複したタイトルを検知."""
-#     _u, _anchor, paths, ns = setup
-#     nxprint(ns.g)
-#     m = ResourceMeta(title="# title3")  # 既存タイトル
-#     save_or_move_resource(m, ns)
-#     tgt = paths[0]
-#     nxprint(ns.g)
-#     m = ResourceMeta(title="# title3", path=("sub1", "xxx"))  # 既存タイトル
-#     save_or_move_resource(m, ns)
-#     nxprint(ns.g)
-#     # raise AssertionError
-#     # paths[0] = tgt.rename(tgt.parent.parent / tgt.name)
-#     # meta = anchor.to_metas(filter_parsable(*paths))
-#     # assert ns.get_or_none("sub1", "sub11", "# title1")
-#     # uplist = sync_namespace(meta, ns)
+def test_move_resource(setup: Fixture) -> None:
+    """重複したタイトルの追加は失敗させる."""
+    _u, _anchor, _paths, ns = setup
+    m = ResourceMeta(title="# title3")  # 新規タイトルをuser直下へ
+    save_or_move_resource(m, ns)
+    assert ns.get_or_none("# title3")
+    # 既存タイトルを違う場所に追加
+    m = ResourceMeta(title="# title3", path=("sub1", "xxx"))
+    save_or_move_resource(m, ns)
+    assert not ns.get_or_none("# title3")
+    assert ns.get_or_none("sub1", "# title3")
 
-#     # ns = fetch_namespace(u.uid)
-#     # assert ns.get_or_none("sub1", "sub11", "# title1") is None  # たまに失敗
-#     # assert ns.get_or_none("sub1", "# title1")
-#     # assert [anchor / p for p in uplist] == [paths[0]]
+    m = ResourceMeta(title="# title3", path=("sub1", "sub2", "xxx"))
+    save_or_move_resource(m, ns)
+    assert not ns.get_or_none("sub1", "# title3")
+    assert ns.get_or_none("sub1", "sub2", "# title3")
+
+    nxprint(ns.g)
+    m = ResourceMeta(title="# title3")  # 新規タイトルをuser直下へ
+    save_or_move_resource(m, ns)
+    assert not ns.get_or_none("sub1", "sub2", "# title3")
+    assert ns.get_or_none("# title3")

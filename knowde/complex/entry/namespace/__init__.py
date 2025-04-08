@@ -8,6 +8,7 @@ from pathlib import Path
 from pydantic import RootModel
 
 from knowde.complex.entry import NameSpace, ResourceMeta
+from knowde.complex.entry.errors import SaveResourceError
 from knowde.complex.entry.label import LFolder, LResource
 from knowde.complex.entry.mapper import MFolder, MResource
 from knowde.primitive.user.repo import LUser
@@ -32,7 +33,7 @@ def fill_parents(ns: NameSpace, *names: str) -> LFolder | None:
             ns.add_root(head.frozen)
             for f1, f2 in pairwise(folders):
                 f2.parent.connect(f1)
-                ns.g.add_edge(f1.frozen, f2.frozen)
+                ns.add_edge(f1.frozen, f2.frozen)
             return folders[-1]
         case MFolder():  # フォルダが途中まで既存
             i = path.index(tail) + 1  # not none の最初の位置
@@ -54,12 +55,13 @@ def save_resource(m: ResourceMeta, ns: NameSpace) -> LResource | None:
         case None | MFolder():  # 新規作成 or フォルダが途中まで既存
             lb = LResource(**m.model_dump()).save()
             parent = fill_parents(ns, *m.names[:-1])
-            if parent is None:
+            if parent is None:  # user直下
                 u = LUser.nodes.get(uid=ns.user_id.hex)
                 lb.owner.connect(u)
+                ns.add_root(lb.frozen)
             else:
                 lb.parent.connect(parent)
-            ns.add_root(lb.frozen)
+                ns.add_edge(parent.frozen, lb.frozen)
             return lb
         case MResource():  # 更新
             if m.txt_hash == tail.txt_hash:  # 変更なし
@@ -76,13 +78,28 @@ def save_or_move_resource(m: ResourceMeta, ns: NameSpace) -> LResource | None:
     """移動を反映してsave."""
     # NSに重複したタイトルがあると困る
     old = ns.get_resource_or_none(m.title)
-    # print(old)
     if old is None:  # 新規
         return save_resource(m, ns)
+    ns.remove_resource(m.title)
+    # ns.g.remove_node(old)
     old = LResource(**old.model_dump()).save()  # reflesh
-    new = fill_parents(ns, *m.names[:-1])
-    old.parent.disconnect(old.parent.get())
-    old.parent.connect(new)
+    owner = old.owner.get_or_none()
+    parent = old.parent.get_or_none()
+    if owner is None and parent is None:
+        msg = "所有者も親もなかったなんてあり得ないからね"
+        raise SaveResourceError(msg)
+    if parent is None:  # owner直下
+        old.owner.disconnect(owner)
+    else:
+        old.parent.disconnect(parent)
+    new_parent = fill_parents(ns, *m.names[:-1])
+    if new_parent is None:  # user直下
+        u = LUser.nodes.get(uid=ns.user_id.hex)
+        old.owner.connect(u)
+        ns.add_root(old.frozen)
+    else:
+        old.parent.connect(new_parent)
+        ns.add_edge(new_parent.frozen, old.frozen)
     return old
 
 
