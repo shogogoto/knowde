@@ -39,3 +39,19 @@ def test_regression() -> None:
 
     """
     _sn = parse2net(s)
+
+
+def test_regression2() -> None:
+    """bbbaaaaaの用語が複数ヒットする場合のエラー再現."""
+    s = """
+    # title1
+        @author John Due
+        @published H20/11/1
+    ## xxx
+        A: a
+        B: b
+        C: c
+        aA: aaa
+        D: bbbaaaaa
+    """
+    _sn = parse2net(s)
