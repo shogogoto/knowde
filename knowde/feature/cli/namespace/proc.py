@@ -4,8 +4,9 @@ from pathlib import Path
 
 import click
 import httpx
+from fastapi import status
 
-from knowde.complex.auth.repo.client import auth_header
+from knowde.complex.auth.repo.client import AuthGet, auth_header
 from knowde.complex.entry.namespace.sync import Anchor, filter_parsable
 from knowde.primitive.config import LocalConfig
 from knowde.primitive.config.env import Settings
@@ -34,11 +35,13 @@ def sync_proc(glob: str, show_error: bool = True) -> None:  # noqa: FBT001 FBT00
         return
     a = Anchor(c.ANCHOR)
     h = auth_header()  # ユーザーを待たせないためにparse前に失敗したい
+    res = AuthGet().me()
+    if res.status_code == status.HTTP_401_UNAUTHORIZED:
+        click.echo("ログインしてください")
+        return
     data = a.to_metas(
-        filter_parsable(
-            *a.rglob(glob),
-            handle_error=print_error if show_error else None,
-        ),
+        a.rglob(glob),
+        filter_parsable(handle_error=print_error if show_error else None),
     )
     s = Settings()
     res = s.post("/namespace", json=data.model_dump(mode="json"), headers=h)
@@ -55,3 +58,8 @@ def sync_proc(glob: str, show_error: bool = True) -> None:  # noqa: FBT001 FBT00
             op.append(f)
             reqfiles.append(("files", (p.name, f, "application/octet-stream")))
             res = httpx.post(s.url("/upload"), headers=h, files=reqfiles, timeout=1000)
+        if res.is_success:
+            print(f"'{p}'をアップロードしました")  # noqa: T201
+        else:
+            print(f"'{p}'のアップロードに失敗しました")  # noqa: T201
+            print(res.text)  # noqa: T201

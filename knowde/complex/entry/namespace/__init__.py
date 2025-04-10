@@ -8,7 +8,7 @@ from pathlib import Path
 from pydantic import RootModel
 
 from knowde.complex.entry import NameSpace, ResourceMeta
-from knowde.complex.entry.errors import SaveResourceError
+from knowde.complex.entry.errors import DuplicatedTitleError, SaveResourceError
 from knowde.complex.entry.label import LFolder, LResource
 from knowde.complex.entry.mapper import MFolder, MResource
 from knowde.primitive.user.repo import LUser
@@ -16,6 +16,13 @@ from knowde.primitive.user.repo import LUser
 
 class ResourceMetas(RootModel[list[ResourceMeta]]):
     """リクエスト用."""
+
+    def check_duplicated_title(self) -> None:
+        """titleの重複を許さない."""
+        titles = [m.title for m in self.root]
+        if len(titles) != len(set(titles)):
+            msg = "titleが重複しています"
+            raise DuplicatedTitleError(msg, titles)
 
 
 def fill_parents(ns: NameSpace, *names: str) -> LFolder | None:
@@ -81,7 +88,6 @@ def save_or_move_resource(m: ResourceMeta, ns: NameSpace) -> LResource | None:
     if old is None:  # 新規
         return save_resource(m, ns)
     ns.remove_resource(m.title)
-    # ns.g.remove_node(old)
     old = LResource(**old.model_dump()).save()  # reflesh
     owner = old.owner.get_or_none()
     parent = old.parent.get_or_none()
@@ -104,7 +110,8 @@ def save_or_move_resource(m: ResourceMeta, ns: NameSpace) -> LResource | None:
 
 
 def sync_namespace(metas: ResourceMetas, ns: NameSpace) -> list[Path]:
-    """変更や移動されたファイルパスをDBに反映して返す."""
+    """変更や移動されたファイルパスをDBに反映して変更があったものを返す."""
+    metas.check_duplicated_title()
     ls = []
     for m in metas.root:
         e = ns.get_or_none(*m.names)

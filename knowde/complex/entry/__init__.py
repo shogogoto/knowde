@@ -100,6 +100,14 @@ class NameSpace(BaseModel):
         """titleでリソースを指定."""
         return next((r for r in self.resources if r.name == title), None)
 
+    def get_resource(self, title: str) -> MResource:
+        """titleでリソースを指定."""
+        r = self.get_resource_or_none(title)
+        if r is None:
+            msg = f"{title}は登録されていません"
+            raise ValueError(msg, title)
+        return r
+
 
 class ResourceMeta(BaseModel):
     """リソースメタ情報."""

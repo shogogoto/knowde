@@ -10,7 +10,7 @@ from knowde.complex.auth.repo.client import (
     AuthArgs,
     AuthPost,
 )
-from knowde.complex.entry.namespace.sync import Anchor, filter_parsable
+from knowde.complex.entry.namespace.sync import Anchor
 from knowde.complex.entry.namespace.test_namespace import files  # noqa: F401
 from knowde.feature.api import api
 from knowde.primitive.config.env import Settings
@@ -30,7 +30,7 @@ def test_sync_router(files: tuple[Anchor, list[Path]]) -> None:  # noqa: F811
     token = res.json()["access_token"]
     h = {"Authorization": f"Bearer {token}"}
 
-    meta = anchor.to_metas(filter_parsable(*paths))
+    meta = anchor.to_metas(paths)
     s = Settings()
     res = s.post(
         "/namespace",

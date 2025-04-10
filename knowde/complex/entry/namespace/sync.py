@@ -33,11 +33,14 @@ def can_parse(
 
 
 def filter_parsable(
-    *ps: Path,
     handle_error: ParseHandler | None = None,
-) -> list[Path]:
+) -> Callable[[Iterable[Path]], list[Path]]:
     """パースできるファイルのみを抽出."""
-    return [p for p in ps if can_parse(p, handle_error)]
+
+    def _f(_ps: Iterable[Path]) -> list[Path]:
+        return [p for p in _ps if can_parse(p, handle_error)]
+
+    return _f
 
 
 def txt2meta(s: str) -> ResourceMeta:
@@ -45,16 +48,6 @@ def txt2meta(s: str) -> ResourceMeta:
     sn = parse2net(s)
     meta = ResourceMeta.of(sn)
     meta.txt_hash = hash(s)  # ファイルに変更があったかをhash値で判断
-    return meta
-
-
-def read_meta(p: Path, anchor: Path) -> ResourceMeta:
-    """ファイルのメタ情報を取得."""
-    st = p.stat().st_mtime  # 最終更新日時
-    t = datetime.fromtimestamp(st, tz=TZ)  # JST が neo4jに対応してないみたいでエラー
-    meta = txt2meta(p.read_text())
-    meta.updated = t
-    meta.path = p.relative_to(anchor).parts
     return meta
 
 
@@ -73,10 +66,14 @@ class Anchor(Path):
         meta.path = p.relative_to(self).parts
         return meta
 
-    def to_metas(self, ps: Iterable[Path]) -> ResourceMetas:
+    def to_metas(
+        self,
+        ps: Iterable[Path],
+        filter_: Callable[[Iterable[Path]], list[Path]] = filter_parsable(),
+    ) -> ResourceMetas:
         """テキストファイル群からメタ情報群へ."""
         data = ResourceMetas(root=[])
-        for p in ps:
+        for p in filter_(ps):
             meta = self.to_meta(p)
             data.root.append(meta)
         return data
