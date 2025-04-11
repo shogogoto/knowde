@@ -1,6 +1,5 @@
 """systemビルド."""
 
-
 import networkx as nx
 
 from knowde.complex.__core__.sysnet.errors import QuotermNotFoundError

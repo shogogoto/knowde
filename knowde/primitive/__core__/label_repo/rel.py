@@ -5,7 +5,7 @@ RelationshipPropertyでは型を明示できない
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar, override
 
 from neomodel import (
     RelationshipFrom,
@@ -14,7 +14,6 @@ from neomodel import (
     ZeroOrMore,
 )
 from pydantic import BaseModel
-from typing_extensions import override
 
 from knowde.primitive.__core__.errors.domain import (
     CompleteNotFoundError,
@@ -36,16 +35,15 @@ def dict2query_literal(d: dict[str, str | int]) -> str:
     """dictをcypherの表現に変換."""
     s = "{"
     for k, v in d.items():
-        _v = v
+        v_ = v
         if isinstance(v, str):
-            _v = f"'{v}'"
-        s += f"{k}: {_v}"
+            v_ = f"'{v}'"
+        s += f"{k}: {v_}"
     return s + "}"
 
 
-class RelUtil(
+class RelUtil[S, T, R](
     BaseModel,
-    Generic[S, T, R],
     frozen=True,
     arbitrary_types_allowed=True,
 ):
@@ -117,7 +115,7 @@ class RelUtil(
     def find_by_source_id(
         self,
         source_uid: UUID,
-        attrs: Optional[dict[str, str | int]] = None,
+        attrs: dict[str, str | int] | None = None,
     ) -> list[R]:
         """Get StructuredRel object."""
         s = "" if attrs is None else dict2query_literal(attrs)

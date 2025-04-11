@@ -1,7 +1,8 @@
 """neomodelの基本操作のwrapper."""
+
 from __future__ import annotations
 
-from typing import Generic, TypeVar
+from typing import TypeVar
 from uuid import UUID
 
 from neomodel import DoesNotExist
@@ -68,7 +69,7 @@ class LBaseUtil(NodeUtil[L], frozen=True):
         return lb
 
 
-class LabelUtil(BaseModel, Generic[L, M], frozen=True):
+class LabelUtil[L, M](BaseModel, frozen=True):
     """neomodelを隠蔽する."""
 
     label: type[L]

@@ -1,22 +1,25 @@
 """test repo."""
+
 from __future__ import annotations
 
 from pathlib import Path
 from textwrap import dedent
-from typing import TypeAlias
 
 import pytest
 
-from knowde.complex.entry.category.folder import NameSpace
+from knowde.complex.entry import NameSpace, ResourceMeta
 from knowde.complex.entry.category.folder.repo import (
     fetch_namespace,
 )
-from knowde.complex.entry.repo import (
+from knowde.complex.entry.errors import DuplicatedTitleError
+from knowde.complex.entry.namespace import (
+    save_or_move_resource,
     save_resource,
     sync_namespace,
 )
-from knowde.complex.entry.repo.sync import path2meta
 from knowde.primitive.user.repo import LUser
+
+from .sync import Anchor
 
 
 def write_text(p: Path, txt: str) -> Path:  # noqa: D103
@@ -24,7 +27,7 @@ def write_text(p: Path, txt: str) -> Path:  # noqa: D103
     return p
 
 
-def create_test_files(base_path: Path) -> tuple[Path, list[Path]]:
+def create_test_files(base_path: Path) -> tuple[Anchor, list[Path]]:
     """sync用テストファイル群."""
     subs = [
         base_path / "sub1" / "sub11",
@@ -32,7 +35,7 @@ def create_test_files(base_path: Path) -> tuple[Path, list[Path]]:
         base_path / "sub2",
     ]
     [s.mkdir(parents=True) for s in subs]
-    sub11, sub12, sub2 = subs
+    sub11, _sub12, sub2 = subs
 
     title1 = write_text(
         sub11 / "title1.txt",
@@ -75,12 +78,11 @@ def create_test_files(base_path: Path) -> tuple[Path, list[Path]]:
                -> yyy
         """,
     )
-
-    return base_path, [title1, title2, direct, fail]
+    return Anchor(base_path), [title1, title2, direct, fail]
 
 
 @pytest.fixture
-def files(tmp_path: Path) -> tuple[Path, list[Path]]:  # noqa: D103
+def files(tmp_path: Path) -> tuple[Anchor, list[Path]]:  # noqa: D103
     return create_test_files(tmp_path)
 
 
@@ -89,17 +91,17 @@ def u() -> LUser:  # noqa: D103
     return LUser().save()
 
 
-Fixture: TypeAlias = tuple[LUser, Path, list[Path], NameSpace]
+type Fixture = tuple[LUser, Anchor, list[Path], NameSpace]
 
 
 @pytest.fixture
-def setup(u: LUser, files: tuple[Path, list[Path]]) -> Fixture:  # noqa: D103
-    meta = path2meta(*files)
+def setup(u: LUser, tmp_path: Path) -> Fixture:  # noqa: D103
+    anchor, paths = create_test_files(tmp_path)
+    meta = anchor.to_metas(paths)
     ns = fetch_namespace(u.uid)
     for m in meta.root:
         save_resource(m, ns)
     ns = fetch_namespace(u.uid)
-    anchor, paths = files
     return u, anchor, paths, ns
 
 
@@ -131,7 +133,7 @@ def test_save_halfway_exists_folder(setup: Fixture) -> None:
             c
         """,
     )
-    meta = path2meta(anchor, [*paths, new])
+    meta = anchor.to_metas([*paths, new])
     ns = fetch_namespace(u.uid)
     for m in meta.root:
         save_resource(m, ns)
@@ -161,7 +163,7 @@ def test_save_update_exists(setup: Fixture) -> None:
     )
     assert ns.get("sub1", "sub11", "# title1").txt_hash != hash(tgt.read_text())
     paths[0] = tgt
-    meta = path2meta(anchor, paths)
+    meta = anchor.to_metas(paths)
     for m in meta.root:
         save_resource(m, ns)
     ns = fetch_namespace(u.uid)
@@ -172,8 +174,8 @@ def test_sync_move(setup: Fixture) -> None:
     """移動したResourceを検知."""
     u, anchor, paths, ns = setup
     tgt = paths[0]
-    paths[0] = tgt.rename(tgt.parent.parent / tgt.name)
-    meta = path2meta(anchor, paths)
+    paths[0] = tgt.rename(tgt.parent.parent / tgt.name)  # 2階上に移動
+    meta = anchor.to_metas(paths)
     assert ns.get_or_none("sub1", "sub11", "# title1")
     uplist = sync_namespace(meta, ns)
 
@@ -181,3 +183,42 @@ def test_sync_move(setup: Fixture) -> None:
     assert ns.get_or_none("sub1", "sub11", "# title1") is None  # たまに失敗
     assert ns.get_or_none("sub1", "# title1")
     assert [anchor / p for p in uplist] == [paths[0]]
+
+
+def test_move_resource(setup: Fixture) -> None:
+    """重複したタイトルの追加は失敗させる."""
+    _u, _anchor, _paths, ns = setup
+    m = ResourceMeta(title="# title3")  # 新規タイトルをuser直下へ
+    save_or_move_resource(m, ns)
+    assert ns.get_or_none("# title3")
+    # 既存タイトルを違う場所に追加
+    m = ResourceMeta(title="# title3", path=("sub1", "xxx"))
+    save_or_move_resource(m, ns)
+    assert not ns.get_or_none("# title3")
+    assert ns.get_or_none("sub1", "# title3")
+
+    m = ResourceMeta(title="# title3", path=("sub1", "sub2", "xxx"))
+    save_or_move_resource(m, ns)
+    assert not ns.get_or_none("sub1", "# title3")
+    assert ns.get_or_none("sub1", "sub2", "# title3")
+
+    m = ResourceMeta(title="# title3")  # 新規タイトルをuser直下へ
+    save_or_move_resource(m, ns)
+    assert not ns.get_or_none("sub1", "sub2", "# title3")
+    assert ns.get_or_none("# title3")
+
+
+def test_duplicate_title(setup: Fixture) -> None:
+    """重複したタイトルの追加は失敗させる."""
+    _u, anchor, paths, ns = setup
+
+    metas = anchor.to_metas(paths)
+    metas.root.extend(
+        [
+            ResourceMeta(title="# title3", path=("xxx",)),
+            ResourceMeta(title="# title3", path=("sub1", "xxx")),
+        ],
+    )
+
+    with pytest.raises(DuplicatedTitleError):
+        sync_namespace(metas, ns)

@@ -1,11 +1,11 @@
 """API interface type."""
+
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import (
     TYPE_CHECKING,
-    Callable,
     Protocol,
-    TypeAlias,
     TypeVar,
 )
 
@@ -15,8 +15,8 @@ if TYPE_CHECKING:
     import requests
     from fastapi import APIRouter
 
-ClientRequest: TypeAlias = Callable[..., Response]
-CheckResponse: TypeAlias = Callable[[Response], None]
+type ClientRequest = Callable[..., Response]
+type CheckResponse = Callable[[Response], None]
 T = TypeVar("T")
 
 
@@ -40,8 +40,7 @@ class ToEndpointMethod(Protocol):
         self,
         f: Callable[..., T],
         path: str,
-    ) -> EndpointMethod:
-        ...
+    ) -> EndpointMethod: ...
 
 
 class Router2EndpointMethod(Protocol):
@@ -52,5 +51,4 @@ class Router2EndpointMethod(Protocol):
         router: APIRouter,
         f: Callable,
         path: str,
-    ) -> EndpointMethod:
-        ...
+    ) -> EndpointMethod: ...

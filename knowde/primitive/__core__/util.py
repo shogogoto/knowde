@@ -1,7 +1,8 @@
 """util."""
+
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 
 def parted(it: iter, f: Callable[..., bool]) -> tuple[list, list]:

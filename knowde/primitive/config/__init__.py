@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import json
 import operator
+from collections.abc import Callable
 from functools import cache
 from pathlib import Path
-from typing import Annotated, Any, Callable, Final, Self
+from typing import Annotated, Any, Final, Self, override
 
 from pydantic import BaseModel, PlainSerializer
-from typing_extensions import TypedDict, override
+from typing_extensions import TypedDict
 
 CONFIG_PATH: Final = Path.home() / ".config" / "knowde"
 

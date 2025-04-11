@@ -1,7 +1,9 @@
 """API Client for CLI."""
+
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Generic, Optional, TypeVar
+from collections.abc import Callable
+from typing import TYPE_CHECKING, TypeVar
 
 from fastapi import APIRouter
 from pydantic import BaseModel
@@ -25,9 +27,8 @@ if TYPE_CHECKING:
 T = TypeVar("T", bound=APIReturn)
 
 
-class ClientFactory(
+class ClientFactory[T](
     BaseModel,
-    Generic[T],
     frozen=True,
     arbitrary_types_allowed=True,
 ):
@@ -42,7 +43,7 @@ class ClientFactory(
         f: Callable,
         query: APIQuery | ComplexAPIQuery | None = None,
         t_body: type[BaseModel] | None = None,
-        check_responses: Optional[list[CheckResponse]] = None,
+        check_responses: list[CheckResponse] | None = None,
     ) -> Callable[..., T]:
         """Get client."""
         return p.to_client(
@@ -61,7 +62,7 @@ class ClientFactory(
         f: Callable,
         query: APIQuery | ComplexAPIQuery | None = None,
         t_body: type[BaseModel] | None = None,
-        check_responses: Optional[list[CheckResponse]] = None,
+        check_responses: list[CheckResponse] | None = None,
     ) -> Callable[..., list[T]]:
         """Get list client."""
         return p.to_client(
@@ -80,7 +81,7 @@ class ClientFactory(
         f: Callable,
         query: APIQuery | ComplexAPIQuery | None = None,
         t_body: type[BaseModel] | None = None,
-        check_responses: Optional[list[CheckResponse]] = None,
+        check_responses: list[CheckResponse] | None = None,
     ) -> Callable[..., T]:
         """Post client."""
         return p.to_client(
@@ -99,7 +100,7 @@ class ClientFactory(
         f: Callable,
         query: APIQuery | ComplexAPIQuery | None = None,
         t_body: type[BaseModel] | None = None,
-        check_responses: Optional[list[CheckResponse]] = None,
+        check_responses: list[CheckResponse] | None = None,
     ) -> Callable[..., T]:
         """Put client."""
         return p.to_client(
@@ -118,7 +119,7 @@ class ClientFactory(
         f: Callable,
         query: APIQuery | ComplexAPIQuery | None = None,
         t_body: type[BaseModel] | None = None,
-        check_responses: Optional[list[CheckResponse]] = None,
+        check_responses: list[CheckResponse] | None = None,
     ) -> Callable[..., None]:
         """Delete client."""
         return p.to_client(

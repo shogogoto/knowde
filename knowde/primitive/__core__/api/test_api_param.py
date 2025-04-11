@@ -6,6 +6,7 @@
 - query paramの値をkwargsから取得
 - bodyの値をkwargsから取得
 """
+
 from __future__ import annotations
 
 from uuid import UUID, uuid4
@@ -40,7 +41,7 @@ def test_bind_path_param() -> None:
         return uid
 
     p = APIPath(name="uid", prefix="")
-    assert p.var == "{uid}"
+    assert p.var == "{uid}"  # noqa: RUF027
     router2get(router, _f, p.path)
     res = _to_client(router).get(f"/tests/{uid}")
     assert UUID(res.json()) == uid

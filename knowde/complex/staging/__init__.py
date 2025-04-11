@@ -16,12 +16,14 @@ networkxのCRUD
 class Stage(BaseModel, frozen=True):
     """永続化前中間一時ファイル."""
 
-    def save(self, sn: SysNet) -> None:
+    @staticmethod
+    def save(sn: SysNet) -> None:
         """SysNet -> file."""
         p = dir_path() / sn.root.replace("#", "")
         nxwrite(sn.g, p.with_suffix(".json"))
 
-    def read(self, p: Path) -> SysNet:
+    @staticmethod
+    def read(p: Path) -> SysNet:
         """File -> SysNet."""
         g = nxread(p.read_text())
         return SysNet(root=p.name, g=g)

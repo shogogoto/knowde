@@ -3,6 +3,7 @@
 folderと一体化したCRUD
 permission指定できるよう拡張
 """
+
 from __future__ import annotations
 
 from neomodel import (
@@ -41,4 +42,4 @@ class LTerm(StructuredNode):
     __label__ = "Term"
     uid = UniqueIdProperty()
     val = StringProperty(index=True, required=True)  # , max_length=MAX_CHARS)
-    alias = RelationshipTo("LTerm", "TERM", cardinality=ZeroOrOne)
+    alias = RelationshipTo("LTerm", "ALIAS", cardinality=ZeroOrOne)

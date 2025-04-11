@@ -1,6 +1,5 @@
 """test."""
 
-
 import json
 from pathlib import Path
 

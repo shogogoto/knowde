@@ -1,6 +1,5 @@
 """test staging."""
 
-
 import networkx as nx
 
 from knowde.complex.__core__.file_io import nx2json_dump, nxread
@@ -9,7 +8,7 @@ from knowde.complex.__core__.tree2net import parse2net
 
 def test_inout() -> None:
     """In out is equal."""
-    _s1 = r"""
+    s1 = r"""
         # h1
             a
             b
@@ -24,7 +23,7 @@ def test_inout() -> None:
             +++ zzz +++
             W:
     """
-    sn = parse2net(_s1)
+    sn = parse2net(s1)
     js = nx2json_dump(sn.g)
     g = nxread(js)
 

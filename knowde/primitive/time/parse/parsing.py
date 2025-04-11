@@ -1,4 +1,5 @@
 """pyparsing関連."""
+
 from functools import cache
 
 from pyparsing import (

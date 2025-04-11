@@ -1,4 +1,5 @@
 """sys系関数."""
+
 from __future__ import annotations
 
 import re

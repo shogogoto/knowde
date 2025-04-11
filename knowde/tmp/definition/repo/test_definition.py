@@ -5,7 +5,6 @@
 - 既存のsentenceに新規用語をくっつける
 """
 
-
 import pytest
 from pytest_unordered import unordered
 

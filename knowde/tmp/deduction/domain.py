@@ -1,4 +1,5 @@
 """domain."""
+
 from __future__ import annotations
 
 from textwrap import indent

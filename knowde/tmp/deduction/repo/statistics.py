@@ -1,7 +1,8 @@
 """repo of deduction stats."""
+
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Final, Optional
+from typing import TYPE_CHECKING, Final
 
 from knowde.primitive.__core__.label_repo.query import query_cypher
 from knowde.tmp.deduction.domain import DeductionStatistics
@@ -16,7 +17,7 @@ if TYPE_CHECKING:
 
 def q_deduction_stats(
     deduction_var: str,
-    with_vars: Optional[list[str]] = None,
+    with_vars: list[str] | None = None,
 ) -> str:
     """演繹統計用query."""
     d = deduction_var

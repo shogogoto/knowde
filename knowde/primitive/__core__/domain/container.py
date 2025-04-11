@@ -1,7 +1,8 @@
 """コンテナ共通ドメイン."""
+
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from pydantic import BaseModel, Field, RootModel
 
@@ -33,7 +34,7 @@ class ModelList(RootModel[list[M]], frozen=True):
 T = TypeVar("T", bound=BaseModel)
 
 
-class Composite(APIReturn, Generic[T], frozen=True):
+class Composite[T](APIReturn, frozen=True):
     """入れ子."""
 
     parent: T
@@ -50,7 +51,7 @@ def build_composite(t: type[T], g: NXGraph, parent: T) -> Composite[T]:
     )
 
 
-class CompositeTree(APIReturn, Generic[T], frozen=True):
+class CompositeTree[T](APIReturn, frozen=True):
     """Composite builder."""
 
     # ここで型情報を保持してCompositeに渡さないとjson decode時にtype lostする

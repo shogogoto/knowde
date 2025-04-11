@@ -1,4 +1,5 @@
 """domain."""
+
 from pydantic import BaseModel, Field
 
 from knowde.primitive.__core__.domain import Entity

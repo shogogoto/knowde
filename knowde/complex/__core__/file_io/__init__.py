@@ -1,4 +1,5 @@
 """file I/O for networkx graph."""
+
 import json
 from pathlib import Path
 from typing import Final

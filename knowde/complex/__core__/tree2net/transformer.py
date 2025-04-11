@@ -1,4 +1,5 @@
 """tree変換."""
+
 from __future__ import annotations
 
 from lark import Token, Transformer
@@ -46,11 +47,13 @@ class TSysArg(Transformer):
     PUBLISHED = lambda _, _tok: _stoken(_tok, "@published")  # noqa: E731
     URL = lambda _, _tok: _stoken(_tok, "@url")  # noqa: E731
 
-    def ONELINE(self, tok: Token) -> KNArg:  # noqa: N802 D102
+    @staticmethod
+    def ONELINE(tok: Token) -> KNArg:  # noqa: N802 D102
         v = "".join(tok.split("   "))  # 適当な\nに対応する空白
         return _parse2sysarg(v)
 
-    def MULTILINE(self, tok: Token) -> KNArg:  # noqa: N802 D102
+    @staticmethod
+    def MULTILINE(tok: Token) -> KNArg:  # noqa: N802 D102
         sp = tok.split("\\\n")
         v = ""
         for s in sp:

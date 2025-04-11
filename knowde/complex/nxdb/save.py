@@ -1,4 +1,5 @@
 """save sysnet."""
+
 from __future__ import annotations
 
 from datetime import date
@@ -80,8 +81,7 @@ def reconnect_root_below(sn: SysNet, varnames: dict[KNode, str]) -> str | None:
     vs = set()
     for n in nodes:
         uvs = sn.g.edges(n)
-        for uv in uvs:
-            vs.add(uv[1])
+        vs.update(uv[1] for uv in uvs)
     belows = list(vs - nodes)
     match len(belows):
         case 0:
@@ -107,9 +107,10 @@ def rel2q(
                 raise TypeError
             uv = varnames[u]
             p = f"{{ alias: '{u.alias}' }}" if u.alias else ""
-            ret = [f"CREATE ({uv}) -[:{t.arrow} {p}]-> ({varnames[v]})"]
+            ret = [f"CREATE ({uv}) -[:{t.arrow} {p}]-> ({varnames[v]})"]  # DEF
             names = [f"{uv}_{i}" if i > 0 else uv for i, name in enumerate(u.names)]
-            ret += [f"CREATE ({x}) -[:TERM]-> ({y})" for x, y in pairwise(names)]
+            # 別名は :ALIAS 関係 term同士の関係
+            ret += [f"CREATE ({x}) -[:ALIAS]-> ({y})" for x, y in pairwise(names)]
             return ret
         case _:
             return f"CREATE ({varnames[u]}) -[:{t.arrow}]-> ({varnames[v]})"

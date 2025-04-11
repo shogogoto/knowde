@@ -1,4 +1,5 @@
 """floder DB."""
+
 from __future__ import annotations
 
 from pathlib import PurePath
@@ -11,15 +12,11 @@ from neomodel import (
     db,
 )
 
+from knowde.complex.entry import NameSpace
+from knowde.complex.entry.errors import EntryAlreadyExistsError, EntryNotFoundError
 from knowde.complex.entry.label import LEntry, LFolder, LResource
 from knowde.primitive.__core__.neoutil import to_uuid
 from knowde.primitive.user.repo import LUser
-
-from . import NameSpace
-from .errors import (
-    EntryAlreadyExistsError,
-    EntryNotFoundError,
-)
 
 if TYPE_CHECKING:
     from datetime import date
@@ -150,7 +147,7 @@ def fetch_subfolders(
     qs = [
         f"MATCH (:User {{uid: $uid}})<-[:OWNED]-(f0:Entry {{ name: '{root}' }})",
         *[
-            f"<-[:PARENT]-(f{i+1}:Folder {{ name: '{name}' }})"
+            f"<-[:PARENT]-(f{i + 1}:Folder {{ name: '{name}' }})"
             for i, name in enumerate(names)
         ],
         f"OPTIONAL MATCH (f{n})<-[:PARENT]-(sub:Entry)",
@@ -167,7 +164,7 @@ def fetch_subfolders(
         msg = f"フォルダ'/{p}'が見つからない"
         raise EntryNotFoundError(msg, res)
 
-    targets, subs = zip(*res)
+    targets, subs = zip(*res, strict=False)
     return targets[0], subs
 
 

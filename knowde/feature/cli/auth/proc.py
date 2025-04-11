@@ -1,4 +1,5 @@
 """遅延importでCLI補間軽くするための分離."""
+
 from __future__ import annotations
 
 import json
@@ -6,6 +7,7 @@ import webbrowser
 
 import click
 import requests
+from fastapi import status
 
 from knowde.primitive.config import LocalConfig
 from knowde.primitive.config.env import Settings
@@ -19,6 +21,10 @@ def browse_for_sso() -> bool:
         res = requests.get(url, timeout=3)
     except requests.ConnectionError:
         click.echo(f"認証URL'{url}'への接続に失敗しました")
+        return False
+    if res.status_code != status.HTTP_200_OK:
+        click.echo(f"'{url}'での認証に失敗しました")
+        click.echo(res.text)
         return False
     auth_url = res.json().get("authorization_url")
     webbrowser.open(auth_url)
