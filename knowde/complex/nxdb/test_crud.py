@@ -37,6 +37,9 @@ def sn() -> SysNet:  # noqa: D103
             aaaa
             bbbb
             cccc
+                -> ppp
+                    -> qqq
+                        <- rrrrrrrrrrrrrrrrrrrrrrrrrrrrr
     """
     return parse2net(s)
 

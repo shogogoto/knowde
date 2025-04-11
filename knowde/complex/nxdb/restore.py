@@ -33,10 +33,11 @@ def to_sysnode(n: neo4j.graph.Node) -> KNode:
             raise ValueError(props, lb_name)
 
 
-def restore_sysnet(resource_uid: UUIDy) -> SysNet:
+def restore_sysnet(resource_uid: UUIDy) -> SysNet:  # noqa: PLR0914
     """DBからSysNetを復元."""
-    q = """
-        MATCH (root:Resource {uid: $uid})
+    various = "|".join([et.name for et in EdgeType if et != EdgeType.HEAD])
+    q = f"""
+        MATCH (root:Resource {{uid: $uid}})
         RETURN null as r, root as s, null as e
 
         // 直下
@@ -52,18 +53,17 @@ def restore_sysnet(resource_uid: UUIDy) -> SysNet:
         // いろいろ
         UNION
         OPTIONAL MATCH (top)-[:BELOW|SIBLING]->*(n1:Sentence)
-            <-[r2:BELOW|SIBLING|RESOLVED|DEF]-(n2:Sentence|Term|Head)
+            <-[r2:{various}]-(n2:Sentence|Term|Head)
         return r2 as r, n2 as s, n1 as e
 
         // 複数名の用語がある場合
         UNION
-        MATCH (n2)<-[r3:TERM]-(m:Term)
+        MATCH (n2)<-[r3:ALIAS]-(m:Term)
         RETURN r3 as r, m as s, n2 as e
     """
     res = db.cypher_query(q, params={"uid": to_uuid(resource_uid).hex})
     col = DirectedEdgeCollection()
     defs = []
-    rsrc: LResource
     for r, _s, _e in res[0]:
         if r is None:  # resource
             rsrc = LResource(**dict(_s))
@@ -71,14 +71,16 @@ def restore_sysnet(resource_uid: UUIDy) -> SysNet:
         s = to_sysnode(_s)
         e = to_sysnode(_e)
         match r.type:
-            case "TERM" if isinstance(s, Term) and isinstance(e, Term):
+            case "ALIAS" if isinstance(s, Term) and isinstance(e, Term):
                 term = Term(names=s.names + e.names)
                 defs.append(Def.dummy(term))
             case "DEF" if isinstance(s, Term) and isinstance(e, (str, Duplicable)):
                 s2 = Term.create(*s.names, alias=r.get("alias", None))
                 d = Def.dummy(s2) if e == DUMMY_SENTENCE else Def(term=s2, sentence=e)
                 defs.append(d)
-            case "RESOLVED" | "SIBLING" | "BELOW" | "HEAD":
+            case "WHEN":
+                col.append(EdgeType.WHEN, Direction.FORWARD, s, Duplicable(n=e))
+            case x if x in [et.name for et in EdgeType]:
                 t = EdgeType.__members__.get(r.type)
                 col.append(t, Direction.FORWARD, s, e)
             case _:
