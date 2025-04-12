@@ -21,7 +21,7 @@ from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.__core__.types import Duplicable, NXGraph
 from knowde.primitive.heading import get_headings
 from knowde.primitive.template import Templates
-from knowde.primitive.time import Series
+from knowde.primitive.time import Series, WhenNode
 
 from .errors import SysNetNotFoundError
 from .sysnode import Def, KNArg, KNode, is_meta
@@ -94,6 +94,11 @@ class SysNet(BaseModel, frozen=True):
         if n not in self.g:
             msg = f"{n} is not in system[{self.root}]."
             raise SysNetNotFoundError(msg)
+
+    @cached_property
+    def whens(self) -> list[WhenNode]:
+        """WhenNodeのリスト."""
+        return [n for n in self.g.nodes if isinstance(n, WhenNode)]
 
     @cached_property
     def series(self) -> Series:

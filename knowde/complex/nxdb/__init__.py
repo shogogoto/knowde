@@ -7,6 +7,7 @@ permission指定できるよう拡張
 from __future__ import annotations
 
 from neomodel import (
+    FloatProperty,
     One,
     RelationshipFrom,
     RelationshipTo,
@@ -43,3 +44,12 @@ class LTerm(StructuredNode):
     uid = UniqueIdProperty()
     val = StringProperty(index=True, required=True)  # , max_length=MAX_CHARS)
     alias = RelationshipTo("LTerm", "ALIAS", cardinality=ZeroOrOne)
+
+
+class LInterval(StructuredNode):
+    """時刻期間."""
+
+    __label__ = "Interval"
+    val = StringProperty(index=True, required=True)
+    start = FloatProperty(default=None, index=True)
+    end = FloatProperty(default=None, index=True)

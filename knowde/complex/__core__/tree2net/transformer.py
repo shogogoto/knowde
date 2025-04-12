@@ -10,6 +10,7 @@ from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.template import Template
 from knowde.primitive.term import Term
+from knowde.primitive.time import WhenNode
 
 
 def _stoken(tok: Token, erase: str | None = None) -> Token:
@@ -40,7 +41,7 @@ class TSysArg(Transformer):
     SIMILAR = lambda _, _tok: EdgeType.SIMILAR.both  # noqa: E731
     DUPLICABLE = lambda _, _tok: Duplicable(n=_stoken(_tok))  # noqa: E731
     QUOTERM = lambda _, _tok: _stoken(_tok)  # noqa: E731
-    TIME = lambda _, _tok: Duplicable(n=_stoken(_tok))  # noqa: E731
+    TIME = lambda _, _tok: WhenNode.of(n=_stoken(_tok))  # noqa: E731
 
     # Resources
     AUTHOR = lambda _, _tok: _stoken(_tok, "@author")  # noqa: E731

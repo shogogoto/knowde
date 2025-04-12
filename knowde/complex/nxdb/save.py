@@ -5,23 +5,24 @@ from __future__ import annotations
 from datetime import date
 from itertools import pairwise
 from typing import TYPE_CHECKING, Any
+from uuid import UUID
 
 import networkx as nx
 from lark import Token
 from more_itertools import collapse
-from neomodel import db
+from neomodel import StructuredNode, db
+from pydantic import BaseModel
 
 from knowde.complex.entry.label import LResource
 from knowde.primitive.__core__.neoutil import to_uuid
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.term import Term
+from knowde.primitive.time import WhenNode
 
-from . import LHead, LSentence, LTerm
+from . import LHead, LInterval, LSentence, LTerm
 
 if TYPE_CHECKING:
-    from neomodel import StructuredNode
-
     from knowde.complex.__core__.sysnet import SysNet
     from knowde.complex.__core__.sysnet.sysnode import KNode
     from knowde.primitive.__core__.neoutil import UUIDy
@@ -35,13 +36,23 @@ def val2str(val: Any) -> str:
             return f"[{s}]"
         case date():
             return f"date('{val}')"
+        case float() | int():
+            return str(val)
+        case UUID():
+            return val.hex
         case _:
             return f"'{val}'"
 
 
-def label2propstr(lb: StructuredNode) -> str:
+def propstr(tgt: StructuredNode | BaseModel | dict) -> str:
     """Neomodel のラベルからcypher用プロパティ文字列へ."""
-    kvs = [f"{k}: {val2str(v)}" for k, v in lb.__properties__.items() if v]
+    d = tgt
+    if isinstance(tgt, StructuredNode):
+        d = tgt.__properties__
+    if isinstance(tgt, BaseModel):
+        d = tgt.model_dump(mode="json")
+
+    kvs = [f"{k}: {val2str(v)}" for k, v in d.items() if v]
     s = ", ".join(kvs)
     return f"{{ {s} }}"
 
@@ -68,6 +79,10 @@ def node2q(n: KNode, nvars: dict[KNode, str]) -> str | list[str] | None:
                 c = f"CREATE ({ivar}:{t2labels(LTerm)} {{val: '{name}'}})"
                 ret.append(c)
             return ret
+        case WhenNode():
+            d = n.model_dump(mode="json")
+            d["val"] = d.pop("n")
+            return f"CREATE ({var}:{t2labels(LInterval)} {propstr(d)})"
         case str() | Duplicable():
             return f"CREATE ({var}:{t2labels(LSentence)} {{val: '{n}'}})"
         case _:

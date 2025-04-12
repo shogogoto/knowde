@@ -14,6 +14,7 @@ from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.template import Template
 from knowde.primitive.term import Term
+from knowde.primitive.time import WhenNode
 
 if TYPE_CHECKING:
     import networkx as nx
@@ -89,7 +90,7 @@ class DummySentence(Duplicable, frozen=True):
     n: str = DUMMY_SENTENCE
 
 
-type _KNElem = str | Duplicable | Template  # 共通型
+type _KNElem = str | Duplicable | Template | WhenNode  # 共通型
 type KNode = Term | _KNElem
 type KNArg = Def | _KNElem
 

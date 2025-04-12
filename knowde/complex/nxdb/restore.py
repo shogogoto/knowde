@@ -11,10 +11,12 @@ from knowde.complex.__core__.sysnet.sysnode import DUMMY_SENTENCE, Def, KNode
 from knowde.complex.__core__.sysnet.sysnode.merged_def import MergedDef
 from knowde.complex.__core__.tree2net.directed_edge import DirectedEdgeCollection
 from knowde.complex.entry.label import LResource
+from knowde.complex.nxdb import LInterval
 from knowde.primitive.__core__.neoutil import UUIDy, to_uuid
 from knowde.primitive.__core__.nxutil.edge_type import Direction, EdgeType
 from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.term import Term
+from knowde.primitive.time import WhenNode
 
 
 @cache
@@ -28,6 +30,10 @@ def to_sysnode(n: neo4j.graph.Node) -> KNode:
             return Term.create(n.get("val"))
         case "Resource" | "Entry":
             return n.get("title")
+        case "Interval":
+            d = dict(n)
+            d["n"] = d.pop("val")
+            return WhenNode.model_validate(d)
         case _:
             props = n.items()
             raise ValueError(props, lb_name)
@@ -52,7 +58,7 @@ def restore_sysnet(resource_uid: UUIDy) -> SysNet:  # noqa: PLR0914
 
         // いろいろ
         UNION
-        OPTIONAL MATCH (top)-[:BELOW|SIBLING]->*(n1:Sentence)
+        OPTIONAL MATCH (top)-[:BELOW|SIBLING]->*(n1:Sentence|Interval)
             <-[r2:{various}]-(n2:Sentence|Term|Head)
         return r2 as r, n2 as s, n1 as e
 
@@ -78,8 +84,8 @@ def restore_sysnet(resource_uid: UUIDy) -> SysNet:  # noqa: PLR0914
                 s2 = Term.create(*s.names, alias=r.get("alias", None))
                 d = Def.dummy(s2) if e == DUMMY_SENTENCE else Def(term=s2, sentence=e)
                 defs.append(d)
-            case "WHEN":
-                col.append(EdgeType.WHEN, Direction.FORWARD, s, Duplicable(n=e))
+            case x if x == "WHEN" and isinstance(e, LInterval):
+                col.append(EdgeType.WHEN, Direction.FORWARD, s, e)
             case x if x in [et.name for et in EdgeType]:
                 t = EdgeType.__members__.get(r.type)
                 col.append(t, Direction.FORWARD, s, e)

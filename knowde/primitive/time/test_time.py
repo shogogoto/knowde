@@ -61,7 +61,7 @@ def test_series() -> None:
     """時系列のソート."""
     dup1 = Duplicable(n="2004")
     dup2 = Duplicable(n="2004")
-    ser = Series.create(
+    series = Series.create(
         [
             "2000/1 ~ 2025",
             "2004/12",
@@ -73,9 +73,10 @@ def test_series() -> None:
             "1950/7/7",
             "1945",
             "-02XX",
+            "2020",
         ],
     )
-    assert ser.overlap("2002 ~ 2005") == unordered(
+    assert series.overlap("2002 ~ 2005") == unordered(
         [
             "2000/1 ~ 2025",
             dup1,
@@ -84,7 +85,8 @@ def test_series() -> None:
             "2004/12",
         ],
     )
-    assert ser.overlap("2004/11") == unordered(["2000/1 ~ 2025", dup1, dup2, "2004"])
-    assert ser.overlap("2002") == ["2000/1 ~ 2025"]
-    assert ser.overlap("1945/1/2") == ["1945"]
-    assert ser.envelop("~ 1949") == ["-02XX", "1945"]
+    assert series.overlap("2004/11") == unordered(["2000/1 ~ 2025", dup1, dup2, "2004"])
+    assert series.overlap("2002") == ["2000/1 ~ 2025"]
+    assert series.overlap("1945/1/2") == ["1945"]
+    assert series.envelop("~ 1949") == ["-02XX", "1945"]
+    assert series.envelop("2005 ~") == ["2020"]

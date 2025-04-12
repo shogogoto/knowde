@@ -1,6 +1,7 @@
 """系の永続化."""
 
 import pytest
+from pytest_unordered import unordered
 
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.tree2net import parse2net
@@ -31,8 +32,11 @@ def sn() -> SysNet:  # noqa: D103
             abcdefg
         ### h32
             aaa
+                when. 19C
             bbb
+                when. -500
             ccc
+                when. 1900 ~ 2050
         #### h4
             aaaa
             bbbb
@@ -40,6 +44,7 @@ def sn() -> SysNet:  # noqa: D103
                 -> ppp
                     -> qqq
                         <- rrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+                            when. 19C
     """
     return parse2net(s)
 
@@ -54,3 +59,4 @@ def test_save_and_restore(sn: SysNet) -> None:
     # assert set(sn.sentences) == set(r.sentences)  # なぜかFalse
     diff_stc = set(sn.sentences) - set(r.sentences)
     assert len(diff_stc) == 0
+    assert sn.whens == unordered(r.whens)
