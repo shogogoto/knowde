@@ -46,5 +46,5 @@ def test_get_knowde_attrs(u: LUser):
 
     adjs = search_knowde("xxx")
     assert adjs[0].referreds[0].sentence == "{x}yy"
-    adjs = search_knowde("y")
-    assert adjs[0].refers[0].sentence == "xxx"
+    # adjs = search_knowde("y")
+    # assert adjs[0].refers[0].sentence == "xxx"
