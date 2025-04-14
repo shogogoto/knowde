@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import date
 from itertools import pairwise
 from typing import TYPE_CHECKING, Any
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import networkx as nx
 from lark import Token
@@ -84,7 +84,8 @@ def node2q(n: KNode, nvars: dict[KNode, str]) -> str | list[str] | None:
             d["val"] = d.pop("n")
             return f"CREATE ({var}:{t2labels(LInterval)} {propstr(d)})"
         case str() | Duplicable():
-            return f"CREATE ({var}:{t2labels(LSentence)} {{val: '{n}'}})"
+            uid = getattr(n, "uid", uuid4()).hex
+            return f"CREATE ({var}:{t2labels(LSentence)} {{val: '{n}', uid: '{uid}'}})"
         case _:
             return None
     return None

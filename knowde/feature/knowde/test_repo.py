@@ -11,7 +11,9 @@ sync
 """
 
 import pytest
+from pytest_unordered import unordered
 
+from knowde.feature.knowde.repo import save_text, search_knowde
 from knowde.primitive.user.repo import LUser
 
 
@@ -20,27 +22,25 @@ def u() -> LUser:  # noqa: D103
     return LUser(email="one@gmail.com").save()
 
 
-def test_get_knowde_attrs():
+def test_get_knowde_attrs(u: LUser):
     """文の所属などを取得."""
-
-
-def test_x():
-    """Aaa."""
-
-
-# def test_aaaa(u: LUser):
-#     """Test."""
-#     repo = NameSpaceRepo(user=u)
-#     with repo.ns_scope() as ns:
-#         f11 = repo.add_folders("f1", "f11")
-#         f12 = repo.add_folders("f1", "f12")
-#         f21 = repo.add_folders("f2", "f21")
-#         f3 = repo.add_folders("f3")
-
-#         nxprint(ns.g)
-#         s1 = """
-#         # r1
-#             @author aaa
-#         """
-#         print(txt2meta(s1))
-#         # r1 = f11.write_resource(s1)
+    s = """
+    # title1
+        @author John Due
+        @published H20/11/1
+    ## xxx
+        A, A1, A2: a
+            when. 20C
+            -> P: aaa
+            aaaa
+        B: bA123
+        A11, TNTN: ちん
+        D: bbbaaaaa
+    """
+    save_text(u.uid, s)
+    adjs = search_knowde("A1")
+    # for adj in adjs:
+    #     print("-" * 30)
+    #     print(adj)
+    #     # print(adj.model_dump_json(indent=2))
+    assert [a.center.sentence for a in adjs] == unordered(["a", "ちん", "bA123"])
