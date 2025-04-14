@@ -7,6 +7,7 @@ from more_itertools import collapse
 from neomodel import db
 from pydantic import BaseModel, PrivateAttr
 
+from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.tree2net import parse2net
 from knowde.complex.entry import NameSpace
 from knowde.complex.entry.category.folder.repo import fetch_namespace
@@ -46,7 +47,7 @@ class NameSpaceRepo(BaseModel, arbitrary_types_allowed=True):
             return fill_parents(ns, *names)
 
 
-def save_text(user_id: UUIDy, s: str, path: tuple[str, ...] | None = None) -> None:
+def save_text(user_id: UUIDy, s: str, path: tuple[str, ...] | None = None) -> SysNet:
     """テキストを保存."""
     meta = txt2meta(s)
     meta.path = path
@@ -55,6 +56,7 @@ def save_text(user_id: UUIDy, s: str, path: tuple[str, ...] | None = None) -> No
     r = ns.get_resource(meta.title)
     sn = parse2net(s)
     sn2db(sn, r.uid)
+    return sn
 
 
 def search_knowde(s: str) -> list:
@@ -80,10 +82,10 @@ def search_knowde(s: str) -> list:
         OPTIONAL MATCH (premise)<-[:DEF]-(t_pre: Term)
         OPTIONAL MATCH (sent)-[:TO]->(conclusion:Sentence)
         OPTIONAL MATCH (conclusion)<-[:DEF]-(t_con: Term)
-        OPTIONAL MATCH (sent)<-[:REF]-(refer:Sentence)
-        OPTIONAL MATCH (refer)<-[:DEF]-(t_ref: Term)
-        OPTIONAL MATCH (sent)-[:REF]->(referred:Sentence)
+        OPTIONAL MATCH (sent)<-[:RESOLVED]-(referred:Sentence)
         OPTIONAL MATCH (referred)<-[:DEF]-(t_refd: Term)
+        OPTIONAL MATCH (sent)-[:RESOLVED]->(refer:Sentence)
+        OPTIONAL MATCH (refer)<-[:DEF]-(t_ref: Term)
         OPTIONAL MATCH (sent)-[:BELOW]->(detail:Sentence)
         OPTIONAL MATCH (detail)<-[:DEF]-(t_detail: Term)
         RETURN sent, names, intv

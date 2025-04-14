@@ -36,11 +36,15 @@ def test_get_knowde_attrs(u: LUser):
         B: bA123
         A11, TNTN: ちん
         D: bbbaaaaa
+    ## yyy
+        x: xxx
+        y: {x}yy
     """
-    save_text(u.uid, s)
+    _sn = save_text(u.uid, s)
     adjs = search_knowde("A1")
-    # for adj in adjs:
-    #     print("-" * 30)
-    #     print(adj)
-    #     # print(adj.model_dump_json(indent=2))
     assert [a.center.sentence for a in adjs] == unordered(["a", "ちん", "bA123"])
+
+    adjs = search_knowde("xxx")
+    assert adjs[0].referreds[0].sentence == "{x}yy"
+    adjs = search_knowde("y")
+    assert adjs[0].refers[0].sentence == "xxx"
