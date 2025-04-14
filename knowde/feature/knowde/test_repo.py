@@ -25,10 +25,10 @@ def u() -> LUser:  # noqa: D103
 def test_get_knowde_attrs(u: LUser):
     """文の所属などを取得."""
     s = """
-    # title1
+    # titleX
         @author John Due
         @published H20/11/1
-    ## xxx
+    ## h11
         A, A1, A2: a
             when. 20C
             -> P: aaa
@@ -36,7 +36,7 @@ def test_get_knowde_attrs(u: LUser):
         B: bA123
         A11, TNTN: ちん
         D: bbbaaaaa
-    ## yyy
+    ## h12
         x: xxx
         y: {x}yy
     """
