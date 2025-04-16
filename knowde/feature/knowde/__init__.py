@@ -56,6 +56,18 @@ class KLocation(BaseModel):
     path: tuple[str, ...]
 
 
+class KStats(BaseModel):
+    """知識の関係統計."""
+
+    n_premise: int
+    n_conclusion: int
+    n_refer: int
+    n_referred: int
+    n_detail: int
+    dist_axiom: int
+    dist_leaf: int
+
+
 class KAdjacency(BaseModel):
     """周辺情報も含める."""
 
@@ -66,6 +78,7 @@ class KAdjacency(BaseModel):
     conclusions: list[Knowde] = Field(default_factory=list)
     refers: list[Knowde] = Field(default_factory=list)
     referreds: list[Knowde] = Field(default_factory=list)
+    stats: KStats | None = None
 
     def __str__(self) -> str:
         """For display in CLI."""

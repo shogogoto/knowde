@@ -20,7 +20,7 @@ from knowde.primitive.__core__.neoutil import UUIDy, to_uuid
 from knowde.primitive.term import Term
 from knowde.primitive.user.repo import LUser
 
-from . import KAdjacency, Knowde
+from . import KAdjacency, Knowde, KStats
 
 
 # fsと独
@@ -68,7 +68,8 @@ def search_knowde(
     s: str,
 ) -> list:
     """用語、文のいずれかでマッチするものを返す."""
-    q = r"""
+    q = (
+        r"""
         CALL {
             // 検索文字列が含まれる文 bA123
             MATCH (sent1: Sentence WHERE sent1.val CONTAINS $s)
@@ -84,25 +85,20 @@ def search_knowde(
             RETURN sent3 as sent, COLLECT(DISTINCT name3) as names
         }
         WITH sent, names // 中間結果のサイズダウン
-        OPTIONAL MATCH (sent)<-[:TO]-{1,}(premise:Sentence)
-        OPTIONAL MATCH (sent)-[:TO]->{1,}(conclusion:Sentence)
-        OPTIONAL MATCH p_leaf = (sent)-[:TO]->{1,}(leaf:Sentence)
-            WHERE NOT (leaf)-[:TO]->(:Sentence)
-        OPTIONAL MATCH p_axiom = (axiom:Sentence)-[:TO]->{1,}(sent)
-            WHERE NOT (:Sentence)-[:TO]->(axiom)
-        OPTIONAL MATCH (sent)<-[:RESOLVED]-{1,}(referred:Sentence)
-        OPTIONAL MATCH (sent)-[:RESOLVED]->{1,}(refer:Sentence)
-        OPTIONAL MATCH (sent)-[:BELOW]->(:Sentence)
-            -[:SIBLING|BELOW]->*(detail:Sentence)
-
+        CALL {
+            WITH sent, names
+        """
+        + q_stats("sent")
+        + """
+        }
         WITH sent, names
-        , COUNT(DISTINCT premise) AS n_premise
-        , COUNT(DISTINCT conclusion) AS n_conclusion
-        , MAX(coalesce(length(p_axiom), 0)) AS dist_axiom
-        , MAX(coalesce(length(p_leaf), 0)) AS dist_leaf
-        , COUNT(DISTINCT referred) AS n_referred
-        , COUNT(DISTINCT refer) AS n_refer
-        , COUNT(DISTINCT detail.val) AS n_detail
+            , n_premise
+            , n_conclusion
+            , dist_axiom
+            , dist_leaf
+            , n_referred
+            , n_refer
+            , n_detail
 
         OPTIONAL MATCH (intv: Interval)<-[:WHEN]-(sent)
         OPTIONAL MATCH (sent)<-[:TO]-(premise:Sentence)
@@ -136,6 +132,7 @@ def search_knowde(
                 n_detail: n_detail
                 } AS stats
     """
+    )
     res = db.cypher_query(
         q,
         params={"s": s},
@@ -163,7 +160,7 @@ def search_knowde(
         refers,
         referreds,
         details,
-        _stats,
+        stats,
     ) in res[0]:
         adj = KAdjacency(
             center=Knowde(
@@ -177,37 +174,48 @@ def search_knowde(
             conclusions=neocol2knowde(conclusions),
             refers=neocol2knowde(refers),
             referreds=neocol2knowde(referreds),
+            stats=KStats.model_validate(stats),
         )
         ls.append(adj)
     return ls
 
 
-def get_stats_by_id(uid: UUIDy) -> list[int] | None:
-    """systats相当のものをDBから取得する(用)."""
-    q = r"""
-        MATCH (tgt:Sentence) WHERE tgt.uid= $uid
-        // 自身を含めないように 1以上
-        // TO
-        OPTIONAL MATCH (tgt)<-[:TO]-{1,}(premise:Sentence)
-        OPTIONAL MATCH (tgt)-[:TO]->{1,}(conclusion:Sentence)
-        OPTIONAL MATCH p_leaf = (tgt)-[:TO]->{1,}(leaf:Sentence)
+def q_stats(tgt: str):
+    """関係統計の取得cypher."""
+    return f"""
+        OPTIONAL MATCH ({tgt})<-[:TO]-{{1,}}(premise:Sentence)
+        OPTIONAL MATCH ({tgt})-[:TO]->{{1,}}(conclusion:Sentence)
+        OPTIONAL MATCH p_leaf = ({tgt})-[:TO]->{{1,}}(leaf:Sentence)
             WHERE NOT (leaf)-[:TO]->(:Sentence)
-        OPTIONAL MATCH p_axiom = (axiom:Sentence)-[:TO]->{1,}(tgt)
+        OPTIONAL MATCH p_axiom = (axiom:Sentence)-[:TO]->{{1,}}({tgt})
             WHERE NOT (:Sentence)-[:TO]->(axiom)
-        OPTIONAL MATCH (tgt)<-[:RESOLVED]-{1,}(referred:Sentence)
-        OPTIONAL MATCH (tgt)-[:RESOLVED]->{1,}(refer:Sentence)
-        OPTIONAL MATCH (tgt)-[:BELOW]->(:Sentence)
+        OPTIONAL MATCH ({tgt})<-[:RESOLVED]-{{1,}}(referred:Sentence)
+        OPTIONAL MATCH ({tgt})-[:RESOLVED]->{{1,}}(refer:Sentence)
+        OPTIONAL MATCH ({tgt})-[:BELOW]->(:Sentence)
             -[:SIBLING|BELOW]->*(detail:Sentence)
-
+        WITH COLLECT(DISTINCT premise) as premises
+            , COLLECT(DISTINCT conclusion) as conclusions
+            , COLLECT(DISTINCT referred) as referreds
+            , COLLECT(DISTINCT refer) as refers
+            , COLLECT(DISTINCT detail) as details
+            , p_axiom
+            , p_leaf
         RETURN
-          COUNT(DISTINCT premise) AS n_premise
-        , COUNT(DISTINCT conclusion) AS n_conclusion
+          SIZE(premises) AS n_premise
+        , SIZE(conclusions) AS n_conclusion
         , MAX(coalesce(length(p_axiom), 0)) AS dist_axiom
         , MAX(coalesce(length(p_leaf), 0)) AS dist_leaf
-        , COUNT(DISTINCT referred) AS n_referred
-        , COUNT(DISTINCT refer) AS n_refer
-        , COUNT(DISTINCT detail.val) AS n_detail
+        , SIZE(referreds) AS n_referred
+        , SIZE(refers) AS n_refer
+        , SIZE(details) AS n_detail
+    """
 
+
+def get_stats_by_id(uid: UUIDy) -> list[int] | None:
+    """systats相当のものをDBから取得する(用)."""
+    q = rf"""
+        MATCH (tgt:Sentence) WHERE tgt.uid= $uid
+        {q_stats("tgt")}
     """
     res = db.cypher_query(
         q,

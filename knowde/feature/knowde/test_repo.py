@@ -32,7 +32,10 @@ def test_get_knowde_attrs(u: LUser):
     ## h11
         A, A1, A2: a
             when. 20C
+            <- premise1
+            <- premise2
             -> P: aaa
+                -> leaf
             aaaa
         B: bA123
         A11, TNTN: ちん
@@ -47,8 +50,6 @@ def test_get_knowde_attrs(u: LUser):
 
     adjs = search_knowde("xxx")
     assert adjs[0].referreds[0].sentence == "{x}yy"
-    # adjs = search_knowde("y")
-    # assert adjs[0].refers[0].sentence == "xxx"
 
 
 def test_stats_from_db(u: LUser):
