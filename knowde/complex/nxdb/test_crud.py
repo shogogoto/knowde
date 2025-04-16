@@ -54,7 +54,7 @@ def test_save_and_restore(sn: SysNet) -> None:
     m = ResourceMeta.of(sn)
     r = LResource(**m.model_dump()).save()
     sn2db(sn, r.uid)
-    r = restore_sysnet(r.uid)
+    r, _ = restore_sysnet(r.uid)
     assert set(sn.terms) == set(r.terms)
     # assert set(sn.sentences) == set(r.sentences)  # なぜかFalse
     diff_stc = set(sn.sentences) - set(r.sentences)

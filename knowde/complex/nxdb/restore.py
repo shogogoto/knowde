@@ -1,6 +1,7 @@
 """db から sysnetを復元."""
 
 from functools import cache
+from uuid import UUID
 
 import neo4j
 import networkx as nx
@@ -39,7 +40,7 @@ def to_sysnode(n: neo4j.graph.Node) -> KNode:
             raise ValueError(props, lb_name)
 
 
-def restore_sysnet(resource_uid: UUIDy) -> SysNet:  # noqa: PLR0914
+def restore_sysnet(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]]:  # noqa: PLR0914
     """DBからSysNetを復元."""
     various = "|".join([et.name for et in EdgeType if et != EdgeType.HEAD])
     q = f"""
@@ -70,12 +71,16 @@ def restore_sysnet(resource_uid: UUIDy) -> SysNet:  # noqa: PLR0914
     res = db.cypher_query(q, params={"uid": to_uuid(resource_uid).hex})
     col = DirectedEdgeCollection()
     defs = []
+    uids = {}
     for r, _s, _e in res[0]:
         if r is None:  # resource
-            rsrc = LResource(**dict(_s))
+            if not (_s is None and _e is None):
+                rsrc = LResource(**dict(_s))
             continue
         s = to_sysnode(_s)
         e = to_sysnode(_e)
+        uids[s] = _s.get("uid")
+        uids[e] = _e.get("uid")
         match r.type:
             case "ALIAS" if isinstance(s, Term) and isinstance(e, Term):
                 term = Term(names=s.names + e.names)
@@ -90,10 +95,10 @@ def restore_sysnet(resource_uid: UUIDy) -> SysNet:  # noqa: PLR0914
                 t = EdgeType.__members__.get(r.type)
                 col.append(t, Direction.FORWARD, s, e)
             case _:
-                raise ValueError(r.type)
+                raise ValueError(r, s, e)
     g = nx.MultiDiGraph()
     col.add_edges(g)
     mdefs, stddefs, _ = MergedDef.create_and_parted(defs)
     [md.add_edge(g) for md in mdefs]
     [d.add_edge(g) for d in stddefs]
-    return SysNet(root=rsrc.title, g=g)
+    return SysNet(root=rsrc.title, g=g), uids
