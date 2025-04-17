@@ -1,4 +1,5 @@
 """test."""
+
 from knowde.tmp.deduction.proposition.repo.repo import (
     add_proposition,
     change_proposition,

@@ -11,6 +11,7 @@
 
 
 """
+
 from __future__ import annotations
 
 import time
@@ -32,6 +33,7 @@ from pyparsing import (
 )
 
 from knowde.primitive.__core__.timeutil import TZ
+from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.time.errors import EndBeforeStartError
 from knowde.primitive.time.parse import parse_extime, str2edtf
 
@@ -119,6 +121,26 @@ class Series(BaseModel, arbitrary_types_allowed=True):
         # t: IntervalTree = self.tree  # なぜか補間が聞かないself.treeの代わり
         intvs = sorted(self.tree.all_intervals)
         return [intv.data for intv in intvs]
+
+
+class WhenNode(Duplicable, frozen=True):
+    """時間ノード."""
+
+    # Noneは無限
+    start: float | None
+    end: float | None
+
+    def to_interval(self) -> Interval:
+        """Intervalに変換."""
+        start = self.start if self.start is not None else float("-inf")
+        end = self.end if self.end is not None else float("inf")
+        return Interval(start, end, data=self.n)
+
+    @classmethod
+    def of(cls, n: str) -> Self:
+        """文字列から生成."""
+        start, end = _when2span(n)
+        return cls(n=n, start=start, end=end)
 
 
 def _when2span(when: str) -> tuple[float, float]:

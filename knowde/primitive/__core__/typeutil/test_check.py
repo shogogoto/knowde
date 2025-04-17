@@ -1,7 +1,7 @@
 """test."""
+
 from __future__ import annotations
 
-from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -17,7 +17,7 @@ class NestedModel(BaseModel):  # noqa: D101
 class OneModel(BaseModel):  # noqa: D101
     pstr: str
     pstr_: str | None
-    pstr__: Optional[str]
+    pstr__: str | None
     pex: str = Field(exclude=True)
     nested: NestedModel
     nested_: NestedModel | None

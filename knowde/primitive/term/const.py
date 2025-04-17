@@ -1,4 +1,5 @@
 """constant."""
+
 from typing import Final
 
 from knowde.primitive.__core__.mark import Marker

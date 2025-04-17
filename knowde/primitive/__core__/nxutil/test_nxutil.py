@@ -1,6 +1,5 @@
 """networkx関連テスト."""
 
-
 import networkx as nx
 import pytest
 

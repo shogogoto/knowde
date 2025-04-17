@@ -1,10 +1,11 @@
 """nw1n1の周辺情報というか文脈詳細というか."""
+
 from __future__ import annotations
 
 import textwrap
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from enum import Enum
-from typing import TYPE_CHECKING, Callable, Self
+from typing import TYPE_CHECKING, Self
 
 from pydantic import BaseModel
 
@@ -84,7 +85,7 @@ class Nw1N1Detail(BaseModel, frozen=True):
         for v in self.values:
             n_rec = self._get_n_rec(v.label)
             fn = recursively_nw1n1(v.fn, n_rec)
-            d[v.label.value] = apply_nest(fn(sn, n), lambda n: sn.expand(n))
+            d[v.label.value] = apply_nest(fn(sn, n), sn.expand)
         return d
 
     def _get_n_rec(self, lb: Nw1N1Label) -> int:

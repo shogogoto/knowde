@@ -1,4 +1,5 @@
 """sync router test."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -9,8 +10,8 @@ from knowde.complex.auth.repo.client import (
     AuthArgs,
     AuthPost,
 )
-from knowde.complex.entry.repo.sync import path2meta
-from knowde.complex.entry.repo.test_namespace import files  # noqa: F401
+from knowde.complex.entry.namespace.sync import Anchor
+from knowde.complex.entry.namespace.test_namespace import files  # noqa: F401
 from knowde.feature.api import api
 from knowde.primitive.config.env import Settings
 
@@ -18,9 +19,9 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
-def test_sync_router(files: tuple[Path, list[Path]]) -> None:  # noqa: F811
+def test_sync_router(files: tuple[Anchor, list[Path]]) -> None:  # noqa: F811
     """Sync コマンドでの想定."""
-    anchor, _ = files
+    anchor, paths = files
     client = TestClient(api)
     p = AuthPost(client=client.post)
     info = AuthArgs(email="user@example.com", password="password")  # noqa: S106
@@ -29,7 +30,7 @@ def test_sync_router(files: tuple[Path, list[Path]]) -> None:  # noqa: F811
     token = res.json()["access_token"]
     h = {"Authorization": f"Bearer {token}"}
 
-    meta = path2meta(*files)
+    meta = anchor.to_metas(paths)
     s = Settings()
     res = s.post(
         "/namespace",

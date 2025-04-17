@@ -51,11 +51,11 @@ def test_parse_heading_level_error(txt: str) -> None:
 
 def test_parse_missing_top_heading() -> None:
     """H1なし."""
-    _s = """
+    s = """
         aaaa
     """
     with pytest.raises(MissingTopHeadingError):
-        parse2tree(_s)
+        parse2tree(s)
 
 
 @pytest.mark.parametrize(
@@ -113,7 +113,7 @@ def test_parse_missing_indent(txt: str) -> None:
 
 def test_parse_context() -> None:
     """文脈をパースできることだけ確認."""
-    _s = r"""
+    s = r"""
         # 1
             ctx1
                 -> b1
@@ -128,12 +128,12 @@ def test_parse_context() -> None:
                 1. one
                 2. two
     """
-    _t = parse2tree(_s)
+    _t = parse2tree(s)
 
 
 def test_parser_quoterm() -> None:
     """引用用語のパース."""
-    _s = r"""
+    s = r"""
         # 1
             `ctx`
                 ->`b1`
@@ -141,12 +141,12 @@ def test_parser_quoterm() -> None:
                     -> bb2
                     -> +++dup+++
     """
-    _t = parse2tree(_s)
+    _t = parse2tree(s)
 
 
 def test_parse_comment() -> None:
     """コメント."""
-    _s = r"""
+    s = r"""
         ! a
         # 1
             `ctx`
@@ -159,7 +159,7 @@ def test_parse_comment() -> None:
 
         ! g
     """
-    _t = parse2tree(_s)
+    _t = parse2tree(s)
 
 
 @pytest.mark.parametrize(

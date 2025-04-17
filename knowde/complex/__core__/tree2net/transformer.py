@@ -1,4 +1,5 @@
 """tree変換."""
+
 from __future__ import annotations
 
 from lark import Token, Transformer
@@ -9,6 +10,7 @@ from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.template import Template
 from knowde.primitive.term import Term
+from knowde.primitive.time import WhenNode
 
 
 def _stoken(tok: Token, erase: str | None = None) -> Token:
@@ -39,18 +41,20 @@ class TSysArg(Transformer):
     SIMILAR = lambda _, _tok: EdgeType.SIMILAR.both  # noqa: E731
     DUPLICABLE = lambda _, _tok: Duplicable(n=_stoken(_tok))  # noqa: E731
     QUOTERM = lambda _, _tok: _stoken(_tok)  # noqa: E731
-    TIME = lambda _, _tok: Duplicable(n=_stoken(_tok))  # noqa: E731
+    TIME = lambda _, _tok: WhenNode.of(n=_stoken(_tok))  # noqa: E731
 
     # Resources
     AUTHOR = lambda _, _tok: _stoken(_tok, "@author")  # noqa: E731
     PUBLISHED = lambda _, _tok: _stoken(_tok, "@published")  # noqa: E731
     URL = lambda _, _tok: _stoken(_tok, "@url")  # noqa: E731
 
-    def ONELINE(self, tok: Token) -> KNArg:  # noqa: N802 D102
+    @staticmethod
+    def ONELINE(tok: Token) -> KNArg:  # noqa: N802 D102
         v = "".join(tok.split("   "))  # 適当な\nに対応する空白
         return _parse2sysarg(v)
 
-    def MULTILINE(self, tok: Token) -> KNArg:  # noqa: N802 D102
+    @staticmethod
+    def MULTILINE(tok: Token) -> KNArg:  # noqa: N802 D102
         sp = tok.split("\\\n")
         v = ""
         for s in sp:

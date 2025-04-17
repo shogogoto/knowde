@@ -2,6 +2,7 @@
 
 fparam :: inspect.Parameter = 関数のパラメータ
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
@@ -43,7 +44,7 @@ def test_get_fparams() -> None:
     def f(
         uid: UUID,
         _uid: UUID | None = None,
-        __uid: Optional[UUID] = None,
+        __uid: UUID | None = None,
         field: str | None = Field(description="help", default="default"),
         nest: Nest = Field(),
         _nest: NestOp = Field(),
@@ -57,7 +58,7 @@ def test_get_fparams() -> None:
             t_in=[
                 UUID,
                 UUID | None,
-                Optional[UUID],
+                Optional[UUID],  # noqa: UP045
                 str | None,
                 Nest,
                 NestOp,

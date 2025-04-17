@@ -1,9 +1,11 @@
 """API endpoints."""
+
 from __future__ import annotations
 
 import os
+from collections.abc import Callable
 from enum import Enum
-from typing import TYPE_CHECKING, Callable, Self
+from typing import TYPE_CHECKING, Self
 from urllib.parse import urljoin
 
 import requests
@@ -55,13 +57,13 @@ class Endpoint(Enum):
         return Inflector().singularize(self.value)
 
     def __url(self, relative: str | None = None) -> str:
-        _relative = self.value
-        if relative is not None and relative != "":
-            _relative += f"/{relative}"
+        relative_ = self.value
+        if relative is not None and relative:
+            relative_ += f"/{relative}"
 
         try:
             base = os.getenv("KNOWDE_URL", "https://knowde.onrender.com")
-            return urljoin(base, _relative)
+            return urljoin(base, relative_)
         except KeyError as e:
             msg = "KNOWDE_URL環境変数にAPIのURLを設定してください"
             raise KeyError(msg) from e

@@ -3,6 +3,7 @@
 n_arg 1 2 3
 name <, >  含む
 """
+
 from __future__ import annotations
 
 import pytest

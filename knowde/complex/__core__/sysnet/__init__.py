@@ -1,4 +1,5 @@
 """系ネットワーク."""
+
 from __future__ import annotations
 
 from functools import cached_property
@@ -20,7 +21,7 @@ from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.__core__.types import Duplicable, NXGraph
 from knowde.primitive.heading import get_headings
 from knowde.primitive.template import Templates
-from knowde.primitive.time import Series
+from knowde.primitive.time import Series, WhenNode
 
 from .errors import SysNetNotFoundError
 from .sysnode import Def, KNArg, KNode, is_meta
@@ -95,6 +96,11 @@ class SysNet(BaseModel, frozen=True):
             raise SysNetNotFoundError(msg)
 
     @cached_property
+    def whens(self) -> list[WhenNode]:
+        """WhenNodeのリスト."""
+        return [n for n in self.g.nodes if isinstance(n, WhenNode)]
+
+    @cached_property
     def series(self) -> Series:
         """時系列一覧."""
         whens = []
@@ -109,5 +115,5 @@ class SysNet(BaseModel, frozen=True):
         return [
             n
             for n in self.g.nodes
-            if isinstance(n, Token) and n.type in ["AUTHOR", "URL", "PUBLISHED"]
+            if isinstance(n, Token) and n.type in {"AUTHOR", "URL", "PUBLISHED"}
         ]

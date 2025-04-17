@@ -1,6 +1,5 @@
 """definition repo errors."""
 
-
 from fastapi import status
 
 from knowde.primitive.__core__.errors.errors import DomainError

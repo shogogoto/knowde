@@ -1,9 +1,10 @@
 """ネットワーク2 node0 系の差分."""
+
 from __future__ import annotations
 
 from collections.abc import Hashable, Iterable
 from itertools import product
-from typing import TYPE_CHECKING, Generic, Self, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, Self, TypeVar
 
 import Levenshtein
 from pydantic import BaseModel
@@ -22,7 +23,7 @@ if TYPE_CHECKING:
 T = TypeVar("T")
 
 
-class SysNodeDiff(BaseModel, Generic[T], frozen=True):
+class SysNodeDiff[T](BaseModel, frozen=True):
     """SysNet間の用語差分."""
 
     added: set[T]
@@ -100,7 +101,7 @@ def identify_term(
     return d
 
 
-TypedEdge: TypeAlias = tuple[Hashable, EdgeType, Hashable]
+type TypedEdge = tuple[Hashable, EdgeType, Hashable]
 
 
 def edges2tuples(sn: SysNet) -> set[TypedEdge]:

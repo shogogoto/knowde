@@ -1,4 +1,5 @@
 """sys系関数."""
+
 from __future__ import annotations
 
 import re
@@ -21,6 +22,7 @@ from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.template import Template
 from knowde.primitive.term import Term
+from knowde.primitive.time import WhenNode
 
 if TYPE_CHECKING:
     import networkx as nx
@@ -62,7 +64,8 @@ def arg2sentence(n: KNArg) -> str | DummySentence:
 def to_sentence(vs: Iterable[Hashable]) -> list[str | Duplicable]:
     """文のみを取り出す."""
     defed = [v.sentence for v in vs if isinstance(v, Def)]
-    return [*defed, *[v for v in vs if isinstance(v, (str, Duplicable))]]
+    stc = [*defed, *[v for v in vs if isinstance(v, (str, Duplicable))]]
+    return [s for s in stc if not isinstance(s, WhenNode)]
 
 
 def check_duplicated_sentence(vs: Iterable[Hashable]) -> None:

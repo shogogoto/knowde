@@ -1,7 +1,9 @@
 """シェル補間."""
+
 import os
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Final
+from typing import Final
 
 import click
 from click.decorators import FC

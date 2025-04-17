@@ -1,4 +1,5 @@
 """単一ファイルの読み込み・表示."""
+
 from __future__ import annotations
 
 from typing import IO, TYPE_CHECKING
@@ -13,7 +14,7 @@ if TYPE_CHECKING:
 
 
 @click.group("view")
-def view_cli() -> None:
+def view_cli():
     """ファイル入力に基づく表示."""
 
 
@@ -27,7 +28,7 @@ def stat_cmd(
     table: bool,  # noqa: FBT001
 ) -> None:
     """統計値."""
-    from .proc import stat_proc
+    from .proc import stat_proc  # noqa: PLC0415
 
     stat_proc(stdin, heavy, table)
 
@@ -79,7 +80,7 @@ def score_cmd(
     config: tuple[LRWTpl],
 ) -> None:
     """ノードの文脈スコア順に表示."""
-    from .proc import score_proc
+    from .proc import score_proc  # noqa: PLC0415
 
     score_proc(stdin, number, item, ignore, config)
 
@@ -104,7 +105,7 @@ def detail_cmd(
     config: tuple[Nw1N1Recursive],
 ) -> None:
     """文字列にマッチするノードの詳細."""
-    from .proc import detail_proc
+    from .proc import detail_proc  # noqa: PLC0415
 
     detail_proc(stdin, pattern, item, ignore, config)
 
@@ -135,7 +136,7 @@ def time_cmd(stdin: IO, timespan: str, overlap: bool) -> None:  # noqa: FBT001
         ex. 19XX => 1900 ~ 1999
 
     """
-    from .proc import time_proc
+    from .proc import time_proc  # noqa: PLC0415
 
     if overlap:
         time_proc(stdin, timespan, "overlap")

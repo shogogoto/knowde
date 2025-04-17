@@ -1,9 +1,10 @@
 """view cli wrapper."""
+
 from __future__ import annotations
 
 import functools
-from collections.abc import Sequence
-from typing import Callable, ParamSpec, TypeVar
+from collections.abc import Callable, Sequence
+from typing import ParamSpec, TypeVar
 
 import click
 from pydantic import BaseModel

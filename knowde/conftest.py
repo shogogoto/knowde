@@ -1,6 +1,5 @@
 """pytest hooks."""
 
-
 from neomodel import clear_neo4j_database, db
 
 from knowde.primitive.config.env import Settings

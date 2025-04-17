@@ -1,4 +1,5 @@
 """認可の種類."""
+
 import uuid
 
 from fastapi_users import schemas

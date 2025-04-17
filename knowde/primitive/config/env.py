@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Callable, Final, Optional, Protocol
+from collections.abc import Callable
+from typing import Final, Protocol
 from urllib.parse import urljoin
 
 import httpx
@@ -48,7 +49,7 @@ class Settings(BaseSettings):
         self,
         relative: str,
         params: dict | None = None,
-        headers: Optional[dict] = None,
+        headers: dict | None = None,
         client: Callable[..., httpx.Response] = httpx.get,
     ) -> httpx.Response:
         """Get of RESTful API."""
@@ -59,13 +60,13 @@ class Settings(BaseSettings):
             headers=headers,
         )
 
-    def delete(
+    def delete(  # noqa: PLR0917
         self,
         relative: str,
         params: dict | None = None,
         json: object = None,
         data: object = None,
-        headers: Optional[dict] = None,
+        headers: dict | None = None,
         client: Callable[..., httpx.Response] = httpx.delete,
     ) -> httpx.Response:
         """Delete of Restful API."""
@@ -78,13 +79,13 @@ class Settings(BaseSettings):
             headers=headers,
         )
 
-    def post(
+    def post(  # noqa: PLR0917
         self,
         relative: str,
         params: dict | None = None,
         json: object = None,
         data: object = None,
-        headers: Optional[dict] = None,
+        headers: dict | None = None,
         client: Callable[..., httpx.Response] = httpx.post,
     ) -> httpx.Response:
         """Post of Restful API."""
@@ -97,13 +98,13 @@ class Settings(BaseSettings):
             headers=headers,
         )
 
-    def put(
+    def put(  # noqa: PLR0917
         self,
         relative: str,
         params: dict | None = None,
         json: object = None,
         data: object = None,
-        headers: Optional[dict] = None,
+        headers: dict | None = None,
         client: Callable[..., httpx.Response] = httpx.put,
     ) -> httpx.Response:
         """Post of Restful API."""
@@ -116,13 +117,13 @@ class Settings(BaseSettings):
             headers=headers,
         )
 
-    def patch(
+    def patch(  # noqa: PLR0917
         self,
         relative: str,
         params: dict | None = None,
         json: object = None,
         data: object = None,
-        headers: Optional[dict] = None,
+        headers: dict | None = None,
         client: Callable[..., httpx.Response] = httpx.patch,
     ) -> httpx.Response:
         """Patch of RESTful API."""
@@ -145,7 +146,7 @@ class ReqProtocol(Protocol):
         params: dict | None = None,
         json: object = None,
         data: object = None,
-        headers: Optional[dict] = None,
+        headers: dict | None = None,
     ) -> httpx.Response:
         """Request."""
         ...

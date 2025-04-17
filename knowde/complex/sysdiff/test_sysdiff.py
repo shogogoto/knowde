@@ -1,6 +1,5 @@
 """ネットワーク2 node0 系の差分."""
 
-
 from knowde.complex.__core__.tree2net import parse2net
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.term import Term
@@ -15,21 +14,21 @@ from . import (
 
 def test_term_diff() -> None:
     """用語差分."""
-    _s1 = """
+    s1 = """
         # title
             A: a
             B: b
             c
     """
-    _s2 = """
+    s2 = """
         # title
             B: b
             c
             D: d
     """
 
-    sn1 = parse2net(_s1)
-    sn2 = parse2net(_s2)
+    sn1 = parse2net(s1)
+    sn2 = parse2net(s2)
     d = SysNodeDiff.terms(sn1, sn2)
     assert d.added == {Term.create("D")}
     assert d.removed == {Term.create("A")}
@@ -37,14 +36,14 @@ def test_term_diff() -> None:
 
 def test_identify_changed_sentence() -> None:
     """変更前と変更後を同定したい."""
-    _s1 = """
+    s1 = """
         # title
             aaaaaold
             bbb
             ccc
             dsafdfewx
     """
-    _s2 = """
+    s2 = """
         # title
             bbb
             ccc
@@ -52,8 +51,8 @@ def test_identify_changed_sentence() -> None:
             ddd
     """
 
-    sn1 = parse2net(_s1)
-    sn2 = parse2net(_s2)
+    sn1 = parse2net(s1)
+    sn2 = parse2net(s2)
     assert identify_sentence(sn1, sn2) == {"aaaaaold": "aaaaanew"}
 
 

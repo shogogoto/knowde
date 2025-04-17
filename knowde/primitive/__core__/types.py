@@ -1,4 +1,5 @@
 """非pydanticデータ型を対応させる."""
+
 from __future__ import annotations
 
 from collections.abc import Hashable

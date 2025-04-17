@@ -1,4 +1,5 @@
 """test term domain."""
+
 from __future__ import annotations
 
 import pytest
@@ -32,7 +33,7 @@ def test_term_str() -> None:
     t5 = Term.create("V", "v1", alias="P1")
     t6 = Term.create(alias="P1")
     t7 = Term.create("B{A}")
-    assert str(t1) in ["X(x1, x2)", "X(x2, x1)"]
+    assert str(t1) in {"X(x1, x2)", "X(x2, x1)"}
     assert str(t2) == "Y(y1)"
     assert str(t3) == "Z"
     assert str(t4) == "U[P1]"

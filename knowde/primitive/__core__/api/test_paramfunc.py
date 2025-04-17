@@ -1,4 +1,5 @@
 """test."""
+
 from pydantic import BaseModel
 
 from .paramfunc import to_paramfunc
@@ -12,7 +13,7 @@ class OneParam(BaseModel, frozen=True):  # noqa: D101
 def test_to_paramfunc() -> None:
     """Paramを引数に持つAPI用関数に変換."""
 
-    def f1(p1: int, p2: int) -> int:
+    def f1(p1: int, p2: int) -> int:  # noqa: FURB118
         return p1 + p2
 
     f = to_paramfunc(OneParam, f1)

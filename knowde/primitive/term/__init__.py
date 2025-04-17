@@ -1,4 +1,5 @@
 """用語モデル."""
+
 from __future__ import annotations
 
 from collections import Counter
@@ -10,6 +11,7 @@ import networkx as nx
 from more_itertools import flatten
 from pydantic import BaseModel, Field, PrivateAttr, field_validator
 
+from knowde.complex.nxdb import LTerm
 from knowde.primitive.__core__.dupchk import DuplicationChecker
 from knowde.primitive.term.const import BRACE_MARKER
 
@@ -34,6 +36,7 @@ class Term(BaseModel, frozen=True):
         title="別名",
         description="参照用の無意味な記号(参照を持たない)",
     )
+
     # rep: str = Field(default="", title="代表名")
 
     @property
@@ -65,6 +68,12 @@ class Term(BaseModel, frozen=True):
     @classmethod
     def create(cls, *names: str, alias: str | None = None) -> Self:  # noqa: D102
         return cls(names=names, alias=alias)
+
+    @classmethod
+    def from_labels(cls, lbs: Iterable[LTerm]) -> Self | None:
+        """LTermから生成."""
+        names = [str(lb.val) for lb in lbs if lb]
+        return cls.create(*names) if len(names) > 0 else None
 
     def __repr__(self) -> str:
         """Class representation."""

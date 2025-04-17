@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from functools import cache
-from typing import TypeAlias
 
 from knowde.primitive.term import Term
 from knowde.primitive.term.const import BRACE_MARKER
@@ -26,7 +25,7 @@ def get_refer_terms(
     return frozenset(ret)
 
 
-Lookup: TypeAlias = dict[str, Term]  # mark Term辞書
+type Lookup = dict[str, Term]  # mark Term辞書
 
 
 @cache
@@ -50,14 +49,14 @@ def to_lookup(terms: set[Term]) -> Lookup:
     diff = terms - referred
     while len(diff) > 0:
         refer = get_refer_terms(terms, referred)
-        lookup = lookup | get_lookup(refer)
-        referred = referred | refer
-        _next = terms - referred
-        if _next == diff:  # 同じdiffが残り続ける
-            marks = next(iter(_next)).marks
+        lookup |= get_lookup(refer)
+        referred |= refer
+        next_ = terms - referred
+        if next_ == diff:  # 同じdiffが残り続ける
+            marks = next(iter(next_)).marks
             m = next(m for m in marks if m not in lookup)
             msg = f"'{m}'を解決できませんでした"
-            raise MarkUncontainedError(msg, set(_next))
-        diff = _next
+            raise MarkUncontainedError(msg, set(next_))
+        diff = next_
     # g = reduce(nx.compose, [t.marktree for t in terms])
     return lookup

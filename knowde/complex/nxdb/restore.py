@@ -1,7 +1,7 @@
 """db から sysnetを復元."""
 
-
 from functools import cache
+from uuid import UUID
 
 import neo4j
 import networkx as nx
@@ -12,10 +12,12 @@ from knowde.complex.__core__.sysnet.sysnode import DUMMY_SENTENCE, Def, KNode
 from knowde.complex.__core__.sysnet.sysnode.merged_def import MergedDef
 from knowde.complex.__core__.tree2net.directed_edge import DirectedEdgeCollection
 from knowde.complex.entry.label import LResource
+from knowde.complex.nxdb import LInterval
 from knowde.primitive.__core__.neoutil import UUIDy, to_uuid
 from knowde.primitive.__core__.nxutil.edge_type import Direction, EdgeType
 from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.term import Term
+from knowde.primitive.time import WhenNode
 
 
 @cache
@@ -29,15 +31,20 @@ def to_sysnode(n: neo4j.graph.Node) -> KNode:
             return Term.create(n.get("val"))
         case "Resource" | "Entry":
             return n.get("title")
+        case "Interval":
+            d = dict(n)
+            d["n"] = d.pop("val")
+            return WhenNode.model_validate(d)
         case _:
             props = n.items()
             raise ValueError(props, lb_name)
 
 
-def restore_sysnet(resource_uid: UUIDy) -> SysNet:
+def restore_sysnet(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]]:  # noqa: PLR0914
     """DBからSysNetを復元."""
-    q = """
-        MATCH (root:Resource {uid: $uid})
+    various = "|".join([et.name for et in EdgeType if et != EdgeType.HEAD])
+    q = f"""
+        MATCH (root:Resource {{uid: $uid}})
         RETURN null as r, root as s, null as e
 
         // 直下
@@ -52,41 +59,46 @@ def restore_sysnet(resource_uid: UUIDy) -> SysNet:
 
         // いろいろ
         UNION
-        OPTIONAL MATCH (top)-[:BELOW|SIBLING]->*(n1:Sentence)
-            <-[r2:BELOW|SIBLING|RESOLVED|DEF]-(n2:Sentence|Term|Head)
+        OPTIONAL MATCH (top)-[:BELOW|SIBLING]->*(n1:Sentence|Interval)
+            <-[r2:{various}]-(n2:Sentence|Term|Head)
         return r2 as r, n2 as s, n1 as e
 
         // 複数名の用語がある場合
         UNION
-        MATCH (n2)<-[r3:TERM]-(m:Term)
+        MATCH (n2)<-[r3:ALIAS]-(m:Term)
         RETURN r3 as r, m as s, n2 as e
     """
     res = db.cypher_query(q, params={"uid": to_uuid(resource_uid).hex})
     col = DirectedEdgeCollection()
     defs = []
-    rsrc: LResource
+    uids = {}
     for r, _s, _e in res[0]:
         if r is None:  # resource
-            rsrc = LResource(**dict(_s))
+            if not (_s is None and _e is None):
+                rsrc = LResource(**dict(_s))
             continue
         s = to_sysnode(_s)
         e = to_sysnode(_e)
+        uids[s] = _s.get("uid")
+        uids[e] = _e.get("uid")
         match r.type:
-            case "TERM" if isinstance(s, Term) and isinstance(e, Term):
+            case "ALIAS" if isinstance(s, Term) and isinstance(e, Term):
                 term = Term(names=s.names + e.names)
                 defs.append(Def.dummy(term))
             case "DEF" if isinstance(s, Term) and isinstance(e, (str, Duplicable)):
                 s2 = Term.create(*s.names, alias=r.get("alias", None))
                 d = Def.dummy(s2) if e == DUMMY_SENTENCE else Def(term=s2, sentence=e)
                 defs.append(d)
-            case "RESOLVED" | "SIBLING" | "BELOW" | "HEAD":
+            case x if x == "WHEN" and isinstance(e, LInterval):
+                col.append(EdgeType.WHEN, Direction.FORWARD, s, e)
+            case x if x in [et.name for et in EdgeType]:
                 t = EdgeType.__members__.get(r.type)
                 col.append(t, Direction.FORWARD, s, e)
             case _:
-                raise ValueError(r.type)
+                raise ValueError(r, s, e)
     g = nx.MultiDiGraph()
     col.add_edges(g)
     mdefs, stddefs, _ = MergedDef.create_and_parted(defs)
     [md.add_edge(g) for md in mdefs]
     [d.add_edge(g) for d in stddefs]
-    return SysNet(root=rsrc.title, g=g)
+    return SysNet(root=rsrc.title, g=g), uids

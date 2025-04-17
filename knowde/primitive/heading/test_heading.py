@@ -1,4 +1,5 @@
 """test."""
+
 import networkx as nx
 
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
@@ -28,7 +29,7 @@ def test_heading_path() -> None:
     assert get_heading_path(g, r, "x") == [r]  # root直下
     assert get_heading_path(g, r, "aaa") == [r, "h1"]  # 見出しの兄弟
     # 非隣接
-    assert get_heading_path(g, r, "Aaa") == [r, "h1"]  #   文の下
-    assert get_heading_path(g, r, "AAa") == [r, "h1"]  #   文の下の下
+    assert get_heading_path(g, r, "Aaa") == [r, "h1"]  # 文の下
+    assert get_heading_path(g, r, "AAa") == [r, "h1"]  # 文の下の下
     assert get_heading_path(g, r, "bbb") == [r, "h1", "h2"]
     assert get_heading_path(g, r, "ccc") == [r, "h1", "h2"]

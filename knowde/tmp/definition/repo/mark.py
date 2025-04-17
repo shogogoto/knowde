@@ -2,6 +2,7 @@
 
 (:Sentence)-[:MARK]->(:Term)-[:DEFINE]->(:Sentence)
 """
+
 from __future__ import annotations
 
 from operator import attrgetter

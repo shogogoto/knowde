@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import logging
+from typing import override
 
 from fastapi import FastAPI, Request, Response, status
 from neomodel import db
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
-from typing_extensions import override
 
 
 class Neo4jTransactionMiddleware(BaseHTTPMiddleware):

@@ -1,4 +1,5 @@
 """test."""
+
 from textwrap import dedent
 
 import pytest
@@ -33,10 +34,10 @@ _t3 = """
 )
 def test_no_undent(txt: str) -> None:
     """不完全インデント検出なし."""
-    _s = dedent(txt)
-    lines = _s.splitlines()
+    s = dedent(txt)
+    lines = s.splitlines()
     pivot, w = front_pivot(len(lines), len(lines))
-    create_parser().parse(_s)  # DedentErrorそもそも起きない
+    create_parser().parse(s)  # DedentErrorそもそも起きない
     with pytest.raises(UnexpectedPivotError):
         detect_undent(create_parser().parse, lines, pivot, w)
 
@@ -87,10 +88,10 @@ _t8 = """
 )
 def test_detect_undent(txt: str, expected: int) -> None:
     """不完全インデント検出."""
-    _s = dedent(txt).strip()
+    s = dedent(txt).strip()
     with pytest.raises(DedentError):
-        create_parser().parse(_s)
-    lines = _s.splitlines()
+        create_parser().parse(s)
+    lines = s.splitlines()
     pivot, w = front_pivot(len(lines), len(lines))
     i = detect_undent(create_parser().parse, lines, pivot, w)
     assert i == expected

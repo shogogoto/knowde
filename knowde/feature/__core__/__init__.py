@@ -1,4 +1,5 @@
 """common."""
+
 import sys
 import time
 from collections.abc import Generator

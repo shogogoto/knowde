@@ -1,26 +1,28 @@
 """save sysnet."""
+
 from __future__ import annotations
 
 from datetime import date
 from itertools import pairwise
 from typing import TYPE_CHECKING, Any
+from uuid import UUID, uuid4
 
 import networkx as nx
 from lark import Token
 from more_itertools import collapse
-from neomodel import db
+from neomodel import StructuredNode, db
+from pydantic import BaseModel
 
 from knowde.complex.entry.label import LResource
 from knowde.primitive.__core__.neoutil import to_uuid
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.term import Term
+from knowde.primitive.time import WhenNode
 
-from . import LHead, LSentence, LTerm
+from . import LHead, LInterval, LSentence, LTerm
 
 if TYPE_CHECKING:
-    from neomodel import StructuredNode
-
     from knowde.complex.__core__.sysnet import SysNet
     from knowde.complex.__core__.sysnet.sysnode import KNode
     from knowde.primitive.__core__.neoutil import UUIDy
@@ -34,13 +36,23 @@ def val2str(val: Any) -> str:
             return f"[{s}]"
         case date():
             return f"date('{val}')"
+        case float() | int():
+            return str(val)
+        case UUID():
+            return val.hex
         case _:
             return f"'{val}'"
 
 
-def label2propstr(lb: StructuredNode) -> str:
+def propstr(tgt: StructuredNode | BaseModel | dict) -> str:
     """Neomodel のラベルからcypher用プロパティ文字列へ."""
-    kvs = [f"{k}: {val2str(v)}" for k, v in lb.__properties__.items() if v]
+    d = tgt
+    if isinstance(tgt, StructuredNode):
+        d = tgt.__properties__
+    if isinstance(tgt, BaseModel):
+        d = tgt.model_dump(mode="json")
+
+    kvs = [f"{k}: {val2str(v)}" for k, v in d.items() if v]
     s = ", ".join(kvs)
     return f"{{ {s} }}"
 
@@ -67,8 +79,13 @@ def node2q(n: KNode, nvars: dict[KNode, str]) -> str | list[str] | None:
                 c = f"CREATE ({ivar}:{t2labels(LTerm)} {{val: '{name}'}})"
                 ret.append(c)
             return ret
+        case WhenNode():
+            d = n.model_dump(mode="json")
+            d["val"] = d.pop("n")
+            return f"CREATE ({var}:{t2labels(LInterval)} {propstr(d)})"
         case str() | Duplicable():
-            return f"CREATE ({var}:{t2labels(LSentence)} {{val: '{n}'}})"
+            uid = getattr(n, "uid", uuid4()).hex
+            return f"CREATE ({var}:{t2labels(LSentence)} {{val: '{n}', uid: '{uid}'}})"
         case _:
             return None
     return None
@@ -80,8 +97,7 @@ def reconnect_root_below(sn: SysNet, varnames: dict[KNode, str]) -> str | None:
     vs = set()
     for n in nodes:
         uvs = sn.g.edges(n)
-        for uv in uvs:
-            vs.add(uv[1])
+        vs.update(uv[1] for uv in uvs)
     belows = list(vs - nodes)
     match len(belows):
         case 0:
@@ -107,9 +123,10 @@ def rel2q(
                 raise TypeError
             uv = varnames[u]
             p = f"{{ alias: '{u.alias}' }}" if u.alias else ""
-            ret = [f"CREATE ({uv}) -[:{t.arrow} {p}]-> ({varnames[v]})"]
+            ret = [f"CREATE ({uv}) -[:{t.arrow} {p}]-> ({varnames[v]})"]  # DEF
             names = [f"{uv}_{i}" if i > 0 else uv for i, name in enumerate(u.names)]
-            ret += [f"CREATE ({x}) -[:TERM]-> ({y})" for x, y in pairwise(names)]
+            # 別名は :ALIAS 関係 term同士の関係
+            ret += [f"CREATE ({x}) -[:ALIAS]-> ({y})" for x, y in pairwise(names)]
             return ret
         case _:
             return f"CREATE ({varnames[u]}) -[:{t.arrow}]-> ({varnames[v]})"
@@ -134,9 +151,12 @@ def sysnet2cypher(sn: SysNet) -> str:
     return "\n".join([q for q in qs if q is not None])
 
 
-def sn2db(sn: SysNet, resource_id: UUIDy) -> None:
+def sn2db(sn: SysNet, resource_id: UUIDy, do_print: bool = False) -> None:  # noqa: FBT001, FBT002
     """新規登録."""
     q = sysnet2cypher(sn)
     if len(q.splitlines()) <= 1:  # create対象なし
         return
+    if do_print:
+        print()  # noqa: T201
+        print(q)  # noqa: T201
     db.cypher_query(q, params={"uid": to_uuid(resource_id).hex})

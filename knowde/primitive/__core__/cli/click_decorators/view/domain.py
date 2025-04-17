@@ -1,8 +1,9 @@
 """domain."""
+
 from __future__ import annotations
 
 import json
-from typing import Literal, TypeAlias, TypeVar
+from typing import Literal, TypeVar
 
 import click
 from pydantic import BaseModel
@@ -16,7 +17,7 @@ class ExtraPropertyError(Exception):
 T = TypeVar("T", bound=BaseModel)
 
 
-def check_includes_props(t: type[T], props: set[str] | None) -> None:
+def check_includes_props[T: BaseModel](t: type[T], props: set[str] | None) -> None:
     """キーがmodelに含まれていなければエラー."""
     all_props = set(t.model_fields)
     if props is None:
@@ -30,7 +31,10 @@ def check_includes_props(t: type[T], props: set[str] | None) -> None:
         raise ExtraPropertyError(msg)
 
 
-def filter_props_json(models: list[T], props: set[str] | None) -> list[object]:
+def filter_props_json[T: BaseModel](
+    models: list[T],
+    props: set[str] | None,
+) -> list[object]:
     """指定プロパティのJSONを抽出."""
     if len(models) == 0:
         return []
@@ -49,19 +53,19 @@ def rows_view(js: list) -> str:  # noqa: D103
     return tabulate(js, headers=(), tablefmt="plain", showindex=False)
 
 
-Style: TypeAlias = Literal["json", "table", "rows"]
+type Style = Literal["json", "table", "rows"]
 
 
-def view(  # noqa: D103
+def view[T: BaseModel](  # noqa: D103
     models: list[T],
     props: set[str],
     style: Style = "table",
 ) -> None:
-    _props = props
-    if len(_props) == 0:
-        _props = None
+    props_ = props
+    if len(props_) == 0:
+        props_ = None
 
-    js = filter_props_json(models, _props)
+    js = filter_props_json(models, props_)
     if style == "json":
         txt = json.dumps(js, indent=2)
     elif style == "table":

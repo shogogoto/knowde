@@ -3,9 +3,12 @@
 folderと一体化したCRUD
 permission指定できるよう拡張
 """
+
 from __future__ import annotations
 
 from neomodel import (
+    FloatProperty,
+    FulltextIndex,
     One,
     RelationshipFrom,
     RelationshipTo,
@@ -31,7 +34,11 @@ class LSentence(StructuredNode):
 
     __label__ = "Sentence"
     uid = UniqueIdProperty()
-    val = StringProperty(index=True, required=True)  # , max_length=MAX_CHARS)
+    val = StringProperty(
+        index=True,
+        required=True,
+        fulltext_index=FulltextIndex(),
+    )  # , max_length=MAX_CHARS)
     term = RelationshipTo("LTerm", "TERM", cardinality=ZeroOrOne)
 
 
@@ -40,5 +47,18 @@ class LTerm(StructuredNode):
 
     __label__ = "Term"
     uid = UniqueIdProperty()
-    val = StringProperty(index=True, required=True)  # , max_length=MAX_CHARS)
-    alias = RelationshipTo("LTerm", "TERM", cardinality=ZeroOrOne)
+    val = StringProperty(
+        index=True,
+        required=True,
+        fulltext_index=FulltextIndex(),
+    )  # , max_length=MAX_CHARS)
+    alias = RelationshipTo("LTerm", "ALIAS", cardinality=ZeroOrOne)
+
+
+class LInterval(StructuredNode):
+    """時刻期間."""
+
+    __label__ = "Interval"
+    val = StringProperty(index=True, required=True)
+    start = FloatProperty(default=None, index=True)
+    end = FloatProperty(default=None, index=True)

@@ -1,8 +1,7 @@
 """系の永続化."""
 
-
-
 import pytest
+from pytest_unordered import unordered
 
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.tree2net import parse2net
@@ -15,7 +14,7 @@ from .save import sn2db
 
 @pytest.fixture
 def sn() -> SysNet:  # noqa: D103
-    _s = r"""
+    s = r"""
         # h1
             @author nanashi
             @author taro tanaka
@@ -33,14 +32,21 @@ def sn() -> SysNet:  # noqa: D103
             abcdefg
         ### h32
             aaa
+                when. 19C
             bbb
+                when. -500
             ccc
+                when. 1900 ~ 2050
         #### h4
             aaaa
             bbbb
             cccc
+                -> ppp
+                    -> qqq
+                        <- rrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+                            when. 19C
     """
-    return parse2net(_s)
+    return parse2net(s)
 
 
 def test_save_and_restore(sn: SysNet) -> None:
@@ -48,8 +54,9 @@ def test_save_and_restore(sn: SysNet) -> None:
     m = ResourceMeta.of(sn)
     r = LResource(**m.model_dump()).save()
     sn2db(sn, r.uid)
-    r = restore_sysnet(r.uid)
+    r, _ = restore_sysnet(r.uid)
     assert set(sn.terms) == set(r.terms)
     # assert set(sn.sentences) == set(r.sentences)  # なぜかFalse
     diff_stc = set(sn.sentences) - set(r.sentences)
     assert len(diff_stc) == 0
+    assert sn.whens == unordered(r.whens)

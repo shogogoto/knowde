@@ -1,4 +1,5 @@
 """parse treeを再帰的に解析."""
+
 from __future__ import annotations
 
 from collections.abc import Hashable
@@ -72,7 +73,8 @@ class SysNetInterpreter(Interpreter):
             parent = self.visit(parent)
         return parent, t, d
 
-    def attach(self, tree: Tree) -> tuple[Branch, EdgeType, Direction]:  # noqa: D102
+    @staticmethod
+    def attach(tree: Tree) -> tuple[Branch, EdgeType, Direction]:  # noqa: D102
         cs = tree.children[0].children
         t, d = cs[0]
         p = cs[1]
@@ -80,7 +82,7 @@ class SysNetInterpreter(Interpreter):
 
     # return self.ctxline(tree)
 
-    def __default__(self, tree: Tree) -> Branch:
+    def __default__(self, tree: Tree) -> Branch:  # noqa: PLW3201
         """Heading要素."""
         children = self.visit_children(tree)
         p = children[0]

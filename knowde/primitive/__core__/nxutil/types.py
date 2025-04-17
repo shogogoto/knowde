@@ -1,11 +1,11 @@
 """nxutil types."""
+
 from __future__ import annotations
 
-from collections.abc import Hashable, Iterable
-from typing import Callable, TypeAlias
+from collections.abc import Callable, Hashable, Iterable
 
 import networkx as nx
 
-Accessor: TypeAlias = Callable[[nx.DiGraph, Hashable], Iterable[Hashable]]
-EdgeFilter: TypeAlias = Callable[[Hashable, Hashable], bool]
-Edges: TypeAlias = Iterable[tuple[Hashable, Hashable]]
+type Accessor = Callable[[nx.DiGraph, Hashable], Iterable[Hashable]]
+type EdgeFilter = Callable[[Hashable, Hashable], bool]
+type Edges = Iterable[tuple[Hashable, Hashable]]

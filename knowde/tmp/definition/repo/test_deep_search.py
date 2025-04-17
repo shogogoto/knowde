@@ -1,6 +1,5 @@
 """文章にマークされた用語の定義をさらに遡ってマークを辿る."""
 
-
 from knowde.tmp.definition.domain.domain import DefinitionParam
 from knowde.tmp.definition.repo.deep_search import find_recursively
 from knowde.tmp.definition.repo.definition import add_definition
