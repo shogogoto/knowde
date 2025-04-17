@@ -17,6 +17,7 @@ from knowde.complex.entry.namespace import fill_parents, save_resource
 from knowde.complex.entry.namespace.sync import txt2meta
 from knowde.complex.nxdb.save import sn2db
 from knowde.feature.knowde.cypher import (
+    OrderBy,
     Paging,
     WherePhrase,
     q_sentence_from_def,
@@ -74,6 +75,7 @@ def search_knowde(
     s: str,
     wp: WherePhrase = WherePhrase.CONTAINS,
     paging: Paging = Paging(),
+    order_by: OrderBy | None = None,
     do_print: bool = False,  # noqa: FBT001, FBT002
 ) -> list:
     """用語、文のいずれかでマッチするものを返す."""
@@ -111,7 +113,8 @@ def search_knowde(
         OPTIONAL MATCH (refer)<-[:DEF]-(t_ref: Term)
         OPTIONAL MATCH (sent)-[:BELOW]->(detail:Sentence)
         OPTIONAL MATCH (detail)<-[:DEF]-(t_detail: Term)
-        RETURN sent, names, intv
+
+        WITH sent, names, intv
             , COLLECT(DISTINCT CASE WHEN premise IS NOT NULL
                 THEN [premise.val, premise.uid, t_pre.val] END) AS premises
             , COLLECT(DISTINCT CASE WHEN conclusion IS NOT NULL
@@ -122,6 +125,16 @@ def search_knowde(
                 THEN [referred.val, referred.uid, t_refd.val] END) AS referreds
             , COLLECT(DISTINCT CASE WHEN detail IS NOT NULL
                 THEN [detail.val, detail.uid, t_detail.val] END) AS details
+            , n_premise, n_conclusion
+            , n_referred, n_refer
+            , dist_axiom, dist_leaf, n_detail
+        """
+        + (order_by.score() if order_by else "")
+        + """
+        RETURN sent, names, intv
+            , premises, conclusions
+            , refers, referreds
+            , details
             , {
                 n_premise: n_premise,
                 n_conclusion: n_conclusion,
@@ -130,10 +143,13 @@ def search_knowde(
                 n_referred: n_referred,
                 n_refer: n_refer,
                 n_detail: n_detail
-                } AS st
-        //ORDER BY st.n_conclusion DESC
+                """
+        + (", score: score" if order_by else "")
+        + """
+            } AS st
         """
-        + paging.query()
+        + (order_by.phrase() if order_by else "")
+        + paging.phrase()
     )
     if do_print:
         print(q)  # noqa: T201

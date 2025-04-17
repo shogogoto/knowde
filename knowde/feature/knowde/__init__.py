@@ -66,6 +66,7 @@ class KStats(BaseModel):
     n_referred: int
     dist_axiom: int
     dist_leaf: int
+    score: int | None = None
 
     def __str__(self) -> str:  # noqa: D105
         ls = [
@@ -76,6 +77,7 @@ class KStats(BaseModel):
             self.n_referred,
             self.dist_axiom,
             self.dist_leaf,
+            self.score,
         ]
         return str(ls)
 

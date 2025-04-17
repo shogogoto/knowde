@@ -4,6 +4,8 @@ from enum import Enum
 
 from pydantic import BaseModel, Field
 
+from knowde.feature.knowde import KStats
+
 
 def q_stats(tgt: str):
     """関係統計の取得cypher."""
@@ -75,17 +77,51 @@ class Paging(BaseModel):
     def skip(self) -> int:  # noqa: D102
         return (self.page - 1) * self.size
 
-    def query(self) -> str:
+    def phrase(self) -> str:
         """1ページから始まる."""
         return f"""
         SKIP {self.skip} LIMIT {self.size}
         """
 
 
-def q_sorting() -> str:
-    """OrderBy句の作成."""
-    return """
+class OrderBy(BaseModel):
+    """ORDER BY句.
 
-
-
+    weightと項目の合計値(score)でソートできる
+    他のスコア算出方法についてはペンディング
     """
+
+    # 元の意味の値ではない
+    weight: KStats = KStats(
+        n_detail=1,
+        n_premise=3,
+        n_conclusion=3,
+        n_refer=3,
+        n_referred=-3,
+        dist_axiom=0,
+        dist_leaf=0,
+    )
+    prefix: str = ""
+    desc: bool = True  # スコアの高い順がデフォルト
+
+    def score(self) -> str:
+        """スコアの計算式."""
+        qs = []
+        prefix = self.prefix + "." if self.prefix else ""
+        for k, v in self.weight:
+            if v == 0 or k == "score":
+                continue
+            if v == 1:  # 重み1のときは省略
+                qs.append(f"{prefix}{k}")
+            else:
+                qs.append(f"({v:+} * {prefix}{k})")
+        line = " + ".join(qs)
+        return f"""
+        , ({line}) AS score
+        """
+
+    def phrase(self) -> str:
+        """ORDER BY句."""
+        return f"""
+        ORDER BY score {"DESC" if self.desc else "ASC"}
+        """

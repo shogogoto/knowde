@@ -17,7 +17,8 @@ from pytest_unordered import unordered
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.nxdb.restore import restore_sysnet
 from knowde.complex.nxdb.save import sn2db
-from knowde.feature.knowde.cypher import Paging, WherePhrase
+from knowde.feature.knowde import KStats
+from knowde.feature.knowde.cypher import OrderBy, Paging, WherePhrase
 from knowde.feature.knowde.repo import get_stats_by_id, save_text, search_knowde
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.user.repo import LUser
@@ -113,3 +114,38 @@ def test_paging(u: LUser):
     assert len(adjs) == 21  # noqa: PLR2004
     adjs = search_knowde(".*", WherePhrase.REGEX, Paging(page=3))
     assert len(adjs) == 0
+
+
+def test_ordering(u: LUser):
+    """検索結果の順番を確認.
+
+    sortをどう生成するのか
+    scoreの定義 weight * var の sumというのだけでいい
+    desc asc
+    """
+    sn, r = save_text(u.uid, "# titleY\n")
+    g = nx.path_graph(30, create_using=nx.MultiDiGraph)
+    g = nx.relabel_nodes(g, {i: str(i) for i in g.nodes})
+    nx.set_edge_attributes(g, EdgeType.TO, "type")
+    h = nx.compose(sn.g, g)
+    EdgeType.BELOW.add_edge(h, sn.root, "0")
+    sn = SysNet(root=sn.root, g=h)
+    sn2db(sn, r.uid)
+    sn, _uids = restore_sysnet(r.uid)
+    order_by = OrderBy(
+        weight=KStats(
+            n_detail=0,
+            n_premise=-1,
+            n_conclusion=0,
+            n_refer=0,
+            n_referred=-0,
+            dist_axiom=0,
+            dist_leaf=0,
+        ),
+    )
+    adjs = search_knowde(
+        ".*",
+        WherePhrase.REGEX,
+        order_by=order_by,
+    )
+    assert [a.center.sentence for a in adjs] == [str(i) for i in range(30)]
