@@ -16,6 +16,12 @@ from knowde.complex.entry.mapper import MResource
 from knowde.complex.entry.namespace import fill_parents, save_resource
 from knowde.complex.entry.namespace.sync import txt2meta
 from knowde.complex.nxdb.save import sn2db
+from knowde.feature.knowde.cypher import (
+    Paging,
+    WherePhrase,
+    q_sentence_from_def,
+    q_stats,
+)
 from knowde.primitive.__core__.neoutil import UUIDy, to_uuid
 from knowde.primitive.term import Term
 from knowde.primitive.user.repo import LUser
@@ -66,23 +72,17 @@ def save_text(
 
 def search_knowde(
     s: str,
+    wp: WherePhrase = WherePhrase.CONTAINS,
+    paging: Paging = Paging(),
+    do_print: bool = False,  # noqa: FBT001, FBT002
 ) -> list:
     """用語、文のいずれかでマッチするものを返す."""
     q = (
         r"""
         CALL {
-            // 検索文字列が含まれる文 bA123
-            MATCH (sent1: Sentence WHERE sent1.val CONTAINS $s)
-            OPTIONAL MATCH (term1: Term)-[:DEF|ALIAS]->(sent1)
-            OPTIONAL MATCH (term1)-[:ALIAS]-*(name1: Term)
-            RETURN sent1 as sent,  COLLECT(name1) as names
-            UNION
-            // 検索文字列が含まれる用語
-            MATCH (term2: Term WHERE term2.val CONTAINS $s),
-            (n1)-[:ALIAS]-*(term2: Term)-[:ALIAS]-*(n2: Term)
-                -[:DEF]->(sent3: Sentence)
-            UNWIND [n2, n1] as name3
-            RETURN sent3 as sent, COLLECT(DISTINCT name3) as names
+        """
+        + q_sentence_from_def(wp)
+        + """
         }
         WITH sent, names // 中間結果のサイズダウン
         CALL {
@@ -130,9 +130,13 @@ def search_knowde(
                 n_referred: n_referred,
                 n_refer: n_refer,
                 n_detail: n_detail
-                } AS stats
-    """
+                } AS st
+        //ORDER BY st.n_conclusion DESC
+        """
+        + paging.query()
     )
+    if do_print:
+        print(q)  # noqa: T201
     res = db.cypher_query(
         q,
         params={"s": s},
@@ -178,37 +182,6 @@ def search_knowde(
         )
         ls.append(adj)
     return ls
-
-
-def q_stats(tgt: str):
-    """関係統計の取得cypher."""
-    return f"""
-        OPTIONAL MATCH ({tgt})<-[:TO]-{{1,}}(premise:Sentence)
-        OPTIONAL MATCH ({tgt})-[:TO]->{{1,}}(conclusion:Sentence)
-        OPTIONAL MATCH p_leaf = ({tgt})-[:TO]->{{1,}}(leaf:Sentence)
-            WHERE NOT (leaf)-[:TO]->(:Sentence)
-        OPTIONAL MATCH p_axiom = (axiom:Sentence)-[:TO]->{{1,}}({tgt})
-            WHERE NOT (:Sentence)-[:TO]->(axiom)
-        OPTIONAL MATCH ({tgt})<-[:RESOLVED]-{{1,}}(referred:Sentence)
-        OPTIONAL MATCH ({tgt})-[:RESOLVED]->{{1,}}(refer:Sentence)
-        OPTIONAL MATCH ({tgt})-[:BELOW]->(:Sentence)
-            -[:SIBLING|BELOW]->*(detail:Sentence)
-        WITH COLLECT(DISTINCT premise) as premises
-            , COLLECT(DISTINCT conclusion) as conclusions
-            , COLLECT(DISTINCT referred) as referreds
-            , COLLECT(DISTINCT refer) as refers
-            , COLLECT(DISTINCT detail) as details
-            , p_axiom
-            , p_leaf
-        RETURN
-          SIZE(premises) AS n_premise
-        , SIZE(conclusions) AS n_conclusion
-        , MAX(coalesce(length(p_axiom), 0)) AS dist_axiom
-        , MAX(coalesce(length(p_leaf), 0)) AS dist_leaf
-        , SIZE(referreds) AS n_referred
-        , SIZE(refers) AS n_refer
-        , SIZE(details) AS n_detail
-    """
 
 
 def get_stats_by_id(uid: UUIDy) -> list[int] | None:

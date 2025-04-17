@@ -59,13 +59,25 @@ class KLocation(BaseModel):
 class KStats(BaseModel):
     """知識の関係統計."""
 
+    n_detail: int
     n_premise: int
     n_conclusion: int
     n_refer: int
     n_referred: int
-    n_detail: int
     dist_axiom: int
     dist_leaf: int
+
+    def __str__(self) -> str:  # noqa: D105
+        ls = [
+            self.n_detail,
+            self.n_premise,
+            self.n_conclusion,
+            self.n_refer,
+            self.n_referred,
+            self.dist_axiom,
+            self.dist_leaf,
+        ]
+        return str(ls)
 
 
 class KAdjacency(BaseModel):
@@ -84,6 +96,7 @@ class KAdjacency(BaseModel):
         """For display in CLI."""
         s = str(self.center)
         s += f"@{self.when}" if self.when else ""
+        s += "\n" + str(self.stats) if self.stats else ""
         if self.details:
             s += f"  {{ {', '.join(map(str, self.details))} }}"
         if self.premises:

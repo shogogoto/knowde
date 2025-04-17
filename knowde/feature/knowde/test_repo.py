@@ -10,11 +10,16 @@ knowde search
 sync
 """
 
+import networkx as nx
 import pytest
 from pytest_unordered import unordered
 
+from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.nxdb.restore import restore_sysnet
+from knowde.complex.nxdb.save import sn2db
+from knowde.feature.knowde.cypher import Paging, WherePhrase
 from knowde.feature.knowde.repo import get_stats_by_id, save_text, search_knowde
+from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.user.repo import LUser
 
 
@@ -80,7 +85,6 @@ def test_stats_from_db(u: LUser):
             d3
                 d31
                 d32
-
     """
     _, r = save_text(u.uid, s)
     _sn, uids = restore_sysnet(r.uid)
@@ -89,3 +93,23 @@ def test_stats_from_db(u: LUser):
     assert get_stats_by_id(uids["a"]) == [0, 0, 0, 0, 2, 0, 0]
     assert get_stats_by_id(uids["b{A}b"]) == [0, 0, 0, 0, 1, 1, 0]
     assert get_stats_by_id(uids["detail"]) == [0, 0, 0, 0, 0, 0, 5]
+
+
+def test_paging(u: LUser):
+    """ページングのテスト."""
+    sn, r = save_text(u.uid, "# titleY\n")
+    g = nx.balanced_tree(3, 4, create_using=nx.MultiDiGraph)
+    g = nx.relabel_nodes(g, {i: str(i) for i in g.nodes})
+    nx.set_edge_attributes(g, EdgeType.TO, "type")
+    h = nx.compose(sn.g, g)
+    EdgeType.BELOW.add_edge(h, sn.root, "0")
+    sn = SysNet(root=sn.root, g=h)
+    sn2db(sn, r.uid)
+    sn, _uids = restore_sysnet(r.uid)
+    assert len(sn.g.nodes) == 122  # title除いて121の文  # noqa: PLR2004
+    adjs = search_knowde(".*", WherePhrase.REGEX, Paging(page=1))
+    assert len(adjs) == 100  # noqa: PLR2004
+    adjs = search_knowde(".*", WherePhrase.REGEX, Paging(page=2))
+    assert len(adjs) == 21  # noqa: PLR2004
+    adjs = search_knowde(".*", WherePhrase.REGEX, Paging(page=3))
+    assert len(adjs) == 0
