@@ -1,10 +1,8 @@
 """cypherの組立て."""
 
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
-
-from knowde.feature.knowde import KStats
 
 
 def q_stats(tgt: str):
@@ -38,7 +36,7 @@ def q_stats(tgt: str):
     """
 
 
-class WherePhrase(Enum):
+class WherePhrase(StrEnum):
     """WHERE句の条件."""
 
     CONTAINS = "CONTAINS"
@@ -92,24 +90,31 @@ class OrderBy(BaseModel):
     """
 
     # 元の意味の値ではない
-    weight: KStats = KStats(
-        n_detail=1,
-        n_premise=3,
-        n_conclusion=3,
-        n_refer=3,
-        n_referred=-3,
-        dist_axiom=0,
-        dist_leaf=0,
-    )
-    prefix: str = ""
+    # weight: KStats = KStats(
+    #     n_detail=1,
+    #     n_premise=3,
+    #     n_conclusion=3,
+    #     n_refer=3,
+    #     n_referred=-3,
+    #     dist_axiom=1,
+    #     dist_leaf=1,
+    # )
+
+    n_detail: int = 1
+    n_premise: int = 3
+    n_conclusion: int = 3
+    n_refer: int = 3
+    n_referred: int = -3
+    dist_axiom: int = 1
+    dist_leaf: int = 1
     desc: bool = True  # スコアの高い順がデフォルト
 
     def score(self) -> str:
         """スコアの計算式."""
         qs = []
-        prefix = self.prefix + "." if self.prefix else ""
-        for k, v in self.weight:
-            if v == 0 or k == "score":
+        prefix = ""
+        for k, v in self:
+            if v == 0 or k in {"score", "desc"}:  # スコアは省略
                 continue
             if v == 1:  # 重み1のときは省略
                 qs.append(f"{prefix}{k}")

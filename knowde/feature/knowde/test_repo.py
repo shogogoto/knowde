@@ -17,7 +17,6 @@ from pytest_unordered import unordered
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.nxdb.restore import restore_sysnet
 from knowde.complex.nxdb.save import sn2db
-from knowde.feature.knowde import KStats
 from knowde.feature.knowde.cypher import OrderBy, Paging, WherePhrase
 from knowde.feature.knowde.repo import get_stats_by_id, save_text, search_knowde
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
@@ -133,15 +132,13 @@ def test_ordering(u: LUser):
     sn2db(sn, r.uid)
     sn, _uids = restore_sysnet(r.uid)
     order_by = OrderBy(
-        weight=KStats(
-            n_detail=0,
-            n_premise=-1,
-            n_conclusion=0,
-            n_refer=0,
-            n_referred=-0,
-            dist_axiom=0,
-            dist_leaf=0,
-        ),
+        n_detail=0,
+        n_premise=-1,
+        n_conclusion=0,
+        n_refer=0,
+        n_referred=-0,
+        dist_axiom=0,
+        dist_leaf=0,
     )
     adjs = search_knowde(
         ".*",
