@@ -151,9 +151,12 @@ def sysnet2cypher(sn: SysNet) -> str:
     return "\n".join([q for q in qs if q is not None])
 
 
-def sn2db(sn: SysNet, resource_id: UUIDy) -> None:
+def sn2db(sn: SysNet, resource_id: UUIDy, do_print: bool = False) -> None:  # noqa: FBT001, FBT002
     """新規登録."""
     q = sysnet2cypher(sn)
     if len(q.splitlines()) <= 1:  # create対象なし
         return
+    if do_print:
+        print()  # noqa: T201
+        print(q)  # noqa: T201
     db.cypher_query(q, params={"uid": to_uuid(resource_id).hex})

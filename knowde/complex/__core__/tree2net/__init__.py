@@ -39,7 +39,8 @@ def parse2net(txt: str, do_print: bool = False) -> SysNet:  # noqa: FBT001 FBT00
     si = SysNetInterpreter()
     si.visit(t)
     g = _build_graph(t, si.col)
-    return SysNet(root=si.root, g=g)
+    g.add_node(si.root)
+    return SysNet(root=si.root, g=nx.freeze(g))
 
 
 def _build_graph(tree: Tree, col: DirectedEdgeCollection) -> nx.MultiDiGraph:
@@ -47,7 +48,7 @@ def _build_graph(tree: Tree, col: DirectedEdgeCollection) -> nx.MultiDiGraph:
     col.add_edges(g)
     add_resolved_edges(g, resolver)
     replace_quoterms(g, resolver)
-    return nx.freeze(g)
+    return g
 
 
 def _extract_leaves(tree: Tree) -> tuple[nx.MultiDiGraph, MarkResolver]:
