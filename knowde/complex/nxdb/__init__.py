@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from neomodel import (
     FloatProperty,
+    FulltextIndex,
     One,
     RelationshipFrom,
     RelationshipTo,
@@ -33,7 +34,11 @@ class LSentence(StructuredNode):
 
     __label__ = "Sentence"
     uid = UniqueIdProperty()
-    val = StringProperty(index=True, required=True)  # , max_length=MAX_CHARS)
+    val = StringProperty(
+        index=True,
+        required=True,
+        fulltext_index=FulltextIndex(),
+    )  # , max_length=MAX_CHARS)
     term = RelationshipTo("LTerm", "TERM", cardinality=ZeroOrOne)
 
 
@@ -42,7 +47,11 @@ class LTerm(StructuredNode):
 
     __label__ = "Term"
     uid = UniqueIdProperty()
-    val = StringProperty(index=True, required=True)  # , max_length=MAX_CHARS)
+    val = StringProperty(
+        index=True,
+        required=True,
+        fulltext_index=FulltextIndex(),
+    )  # , max_length=MAX_CHARS)
     alias = RelationshipTo("LTerm", "ALIAS", cardinality=ZeroOrOne)
 
 
