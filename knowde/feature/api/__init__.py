@@ -16,8 +16,6 @@ from knowde.feature.api.middle import Neo4jTransactionMiddleware, neo4j_logger
 from knowde.feature.knowde.router import knowde_router
 from knowde.primitive.__core__ import ErrorHandlingMiddleware
 from knowde.primitive.config.env import Settings
-from knowde.tmp import deduct_router, def_router
-from knowde.tmp.deduction.proposition import p_router
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
@@ -49,9 +47,6 @@ api.add_middleware(
     allow_headers=["*"],
 )
 
-api.include_router(def_router)
-api.include_router(p_router)
-api.include_router(deduct_router)
 api.include_router(auth_router)
 api.include_router(user_router)
 api.include_router(entry_router)

@@ -24,7 +24,7 @@ def auth_component() -> FastAPIUsers:
 
 
 ac = auth_component()
-user_router = APIRouter(prefix=PREFIX_USER, tags=[PREFIX_USER])
+user_router = APIRouter(prefix=PREFIX_USER, tags=["user"])
 user_router.include_router(ac.get_users_router(UserRead, UserUpdate))
 
 auth_router = APIRouter(tags=["auth"])
