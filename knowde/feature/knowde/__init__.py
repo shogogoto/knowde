@@ -59,14 +59,15 @@ class KLocation(BaseModel):
 class KStats(BaseModel):
     """知識の関係統計."""
 
-    n_detail: int
-    n_premise: int
-    n_conclusion: int
-    n_refer: int
-    n_referred: int
-    dist_axiom: int
-    dist_leaf: int
-    score: int | None = None
+    # frontendのモック自動生成で数値の範囲を制限したい
+    n_detail: int = Field(ge=-100, le=1000)
+    n_premise: int = Field(ge=-100, le=1000)
+    n_conclusion: int = Field(ge=-100, le=1000)
+    n_refer: int = Field(ge=-100, le=1000)
+    n_referred: int = Field(ge=-100, le=1000)
+    dist_axiom: int = Field(ge=-100, le=1000)
+    dist_leaf: int = Field(ge=-100, le=1000)
+    score: int | None = Field(default=None, ge=-100, le=1000)
 
     def __str__(self) -> str:  # noqa: D105
         ls = [

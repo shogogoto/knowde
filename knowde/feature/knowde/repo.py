@@ -159,7 +159,7 @@ def search_knowde(
         resolve_objects=True,
     )
 
-    def neocol2knowde(col: list) -> list[Knowde]:
+    def _neocol2knowde(col: list) -> list[Knowde]:
         """neomodelのcollected listを変換."""
         return [
             Knowde(
@@ -189,11 +189,11 @@ def search_knowde(
                 uid=sent.uid,
             ),
             when=intv.val if intv else None,
-            details=neocol2knowde(details),
-            premises=neocol2knowde(premises),
-            conclusions=neocol2knowde(conclusions),
-            refers=neocol2knowde(refers),
-            referreds=neocol2knowde(referreds),
+            details=_neocol2knowde(details),
+            premises=_neocol2knowde(premises),
+            conclusions=_neocol2knowde(conclusions),
+            refers=_neocol2knowde(refers),
+            referreds=_neocol2knowde(referreds),
             stats=KStats.model_validate(stats),
         )
         ls.append(adj)
