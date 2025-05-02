@@ -38,12 +38,13 @@ pydantic-settings = "^2.7.1"
 fastapi-users = { extras = ["oauth"], version = "^14.0.1" }
 chardet = "^5.2.0"
 ruff = "^0.11.2"
+httpx = "^0.28.1"
+clerk-backend-api = "^2.0.2"
 [tool.poetry.group.dev.dependencies]
 pytest = "8.3.4"
 pre-commit = "^3.5.0"
 requests-mock = "^1.11.0"
 pytest-watch = "^4.2.0"
-httpx = "^0.25.2"
 pytest-unordered = "^0.5.2"
 
 pytest-testmon = "^2.1.3"
