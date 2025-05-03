@@ -22,13 +22,15 @@ class LUser(StructuredNode):
     __label__ = "User"
     uid = UniqueIdProperty()
     email = EmailProperty()
-    hashed_password = StringProperty()
+    hashed_password = StringProperty(default=None)
     is_active = BooleanProperty(default=True)
     is_verified = BooleanProperty(default=False)
     is_superuser = BooleanProperty(default=False)
     created = DateTimeNeo4jFormatProperty(default_now=True)
 
     accounts = RelationshipTo("LAccount", "OAUTH")
+    clerk_id = StringProperty(default=None, unique_index=True)
+    display_name = StringProperty(default=None)
 
 
 class LAccount(StructuredNode):
