@@ -389,27 +389,6 @@ files = [
 ]
 
 [[package]]
-name = "clerk-backend-api"
-version = "2.0.2"
-description = "Python Client SDK for clerk.dev"
-optional = false
-python-versions = ">=3.9"
-groups = ["main"]
-files = [
-    {file = "clerk_backend_api-2.0.2-py3-none-any.whl", hash = "sha256:22b02119aa7b6c8011bc54cb9564760b8faf0bf85f5d775b299afa9fe64c9819"},
-    {file = "clerk_backend_api-2.0.2.tar.gz", hash = "sha256:58e53b85ceb386ae051f3f1984ad295a7cbad1a2d6d5761e5e9695149b8b10fd"},
-]
-
-[package.dependencies]
-cryptography = ">=43.0.1,<44.0.0"
-eval-type-backport = ">=0.2.0"
-httpx = ">=0.28.1"
-pydantic = ">=2.10.3"
-pyjwt = ">=2.9.0,<3.0.0"
-python-dateutil = ">=2.8.2"
-typing-inspection = ">=0.4.0"
-
-[[package]]
 name = "click"
 version = "8.1.8"
 description = "Composable command line interface toolkit"
@@ -666,21 +645,6 @@ files = [
 [package.dependencies]
 dnspython = ">=2.0.0"
 idna = ">=2.0.0"
-
-[[package]]
-name = "eval-type-backport"
-version = "0.2.2"
-description = "Like `typing._eval_type`, but lets older Python versions use newer typing features."
-optional = false
-python-versions = ">=3.8"
-groups = ["main"]
-files = [
-    {file = "eval_type_backport-0.2.2-py3-none-any.whl", hash = "sha256:cb6ad7c393517f476f96d456d0412ea80f0a8cf96f6892834cd9340149111b0a"},
-    {file = "eval_type_backport-0.2.2.tar.gz", hash = "sha256:f0576b4cf01ebb5bd358d02314d31846af5e07678387486e2c798af0e7d849c1"},
-]
-
-[package.extras]
-tests = ["pytest"]
 
 [[package]]
 name = "fastapi"
@@ -3039,4 +3003,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">3.11.0,<3.14"
-content-hash = "e0785cdf1869ba9b013b81e01aabd6eadfe90dd48af4fc1831a15b6cfad6293f"
+content-hash = "0e23e71366c7545a4dac28428c5271a89afd2affb3d3227e21bedc399a153377"

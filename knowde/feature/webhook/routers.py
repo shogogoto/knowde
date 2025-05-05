@@ -1,8 +1,6 @@
 """API router."""
 
-from typing import Annotated
-
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 
 from knowde.complex.auth.routers import auth_component
 from knowde.feature.webhook import ClerkEventType, ClerkPayload
@@ -36,11 +34,3 @@ async def clerk_webhook(payload: ClerkPayload) -> User | None:
         for k, v in payload.for_update_dict().items():
             setattr(user, k, v)
     return User.from_lb(user.save())
-
-
-@router.post("/clerk")
-def sync_user_api2clerk(
-    user: Annotated[User, Depends(auth_component().current_user(active=True))],
-):
-    """APIからclerkへのユーザー同期."""
-    sync_user_api2clerk()
