@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     KNOWDE_URL: str = "https://knowde.onrender.com/"
     KN_AUTH_SECRET: str = "SECRET"  # noqa: S105
     KN_TOKEN_LIFETIME_SEC: int = 60 * 60 * 24  # 1 day
+    CLERK_SECRET_KEY: str
 
     def setup_db(self) -> None:
         """DB設定."""

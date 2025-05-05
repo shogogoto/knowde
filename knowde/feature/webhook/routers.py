@@ -1,13 +1,15 @@
 """API router."""
 
-from fastapi import APIRouter, HTTPException, status
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from knowde.complex.auth.routers import auth_component
 from knowde.feature.webhook import ClerkEventType, ClerkPayload
 from knowde.primitive.user import User
 from knowde.primitive.user.repo import LUser
 
-router = APIRouter(prefix="/webhook", tags=["webhook"])
+router = APIRouter(tags=["clerk"])
 
 
 def webhook_router() -> APIRouter:
@@ -15,7 +17,7 @@ def webhook_router() -> APIRouter:
     return router
 
 
-@router.post("/clerk")
+@router.post("/webhook/clerk")
 async def clerk_webhook(payload: ClerkPayload) -> User | None:
     """ClerkでのUser CRUDがwebhookでこのAPIに連携される."""
     manager = auth_component().get_user_manager()
@@ -26,15 +28,19 @@ async def clerk_webhook(payload: ClerkPayload) -> User | None:
         u = User.from_lb(user)
         await manager.delete(u, None)
     user = user or LUser.nodes.get_or_none(
-        email=payload.email,
+        email__iexact=payload.email,
     )
     if user is None:
-        user = LUser(email=payload.email, clerk_id=payload.user_id)
+        user = LUser(**payload.for_register_dict())
     else:  # 既にユーザーあり
-        user.clerk_id = payload.user_id
+        for k, v in payload.for_update_dict().items():
+            setattr(user, k, v)
     return User.from_lb(user.save())
 
-    # await adb.create({
-    #     "email": email,
-    #     "clerk_id": clerk_user_id,
-    # })
+
+@router.post("/clerk")
+def sync_user_api2clerk(
+    user: Annotated[User, Depends(auth_component().current_user(active=True))],
+):
+    """APIからclerkへのユーザー同期."""
+    sync_user_api2clerk()

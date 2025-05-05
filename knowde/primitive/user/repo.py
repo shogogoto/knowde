@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any, override
+
 from neomodel import (
     BooleanProperty,
     DateTimeNeo4jFormatProperty,
@@ -16,12 +18,19 @@ from neomodel import (
 )
 
 
+class LowerEmailProperty(EmailProperty):  # noqa: D101
+    @override
+    def normalize(self, value: Any) -> str:
+        val = super().normalize(value)
+        return val.lower()
+
+
 class LUser(StructuredNode):
     """Neo4j label."""
 
     __label__ = "User"
     uid = UniqueIdProperty()
-    email = EmailProperty()
+    email = LowerEmailProperty(unique_index=True)
     hashed_password = StringProperty(default=None)
     is_active = BooleanProperty(default=True)
     is_verified = BooleanProperty(default=False)

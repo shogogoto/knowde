@@ -112,10 +112,12 @@ class AccountDB(BaseUserDatabase[User, UUID]):
         lu = la.user.single()
         return User.from_lb(lu)
 
-    @staticmethod
-    async def create(create_dict: dict[str, Any]) -> User:
+    @classmethod
+    async def create(cls, create_dict: dict[str, Any]) -> User:
         """Create a user."""
-        # print("------------ create")
+        if await cls.get_by_email(create_dict["email"]):
+            raise  # noqa: PLE0704
+
         lb = LUser(**create_dict).save()
         return User.from_lb(lb)
 

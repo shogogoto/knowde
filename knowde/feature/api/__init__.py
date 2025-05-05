@@ -12,7 +12,11 @@ from neomodel import db
 from knowde.complex.auth.routers import auth_router, user_router
 from knowde.complex.entry.router import entry_router
 from knowde.complex.nxdb.router import nxdb_router
-from knowde.feature.api.middle import Neo4jTransactionMiddleware, neo4j_logger
+from knowde.feature.api.middle import (
+    Neo4jTransactionMiddleware,
+    neo4j_logger,
+    set_error_handlers,
+)
 from knowde.feature.knowde.router import knowde_router
 from knowde.feature.webhook.routers import webhook_router
 from knowde.primitive.__core__ import ErrorHandlingMiddleware
@@ -47,6 +51,9 @@ api.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+set_error_handlers(api)
+
 
 api.include_router(auth_router)
 api.include_router(user_router)

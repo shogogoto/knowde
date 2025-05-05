@@ -26,12 +26,12 @@
 		"delivered_by_clerk": true,
 		"email_address_id": "idn_abcd",
 		"from_email_name": "notifications",
-		"id": "ema_abcd",
+		"id": "user_29w83sxmDNGwOuEthce5gg56FcC",
 		"object": "email",
 		"slug": "verification_code",
 		"status": "queued",
 		"subject": "123456 is your verification code\n",
-		"to_email_address": "johndoe@acme.com",
+		"to_email_address": "example@example.org",
 		"user_id": "user_abcd"
 	},
 	"event_attributes": {
