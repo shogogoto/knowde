@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Self, TypeVar
+from typing import Any, Self, TypeVar
 from uuid import UUID
 
 from neomodel import StringProperty, StructuredNode, UniqueIdProperty
@@ -37,7 +37,7 @@ class BaseMapper[L: StructuredNode](BaseModel):
         return self.__label__(**self.model_dump())
 
     @classmethod
-    def get_or_none(cls, **kwargs: dict) -> Self | None:
+    def get_or_none(cls, **kwargs: dict[str, Any]) -> Self | None:
         """Shortcut."""
         lb = cls.__label__.nodes.get_or_none(**kwargs)
         return None if lb is None else cls.from_lb(lb)

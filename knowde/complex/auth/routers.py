@@ -18,7 +18,7 @@ from .schema import UserCreate, UserRead, UserUpdate
 
 
 @cache
-def auth_component() -> FastAPIUsers:
+def auth_component() -> FastAPIUsers[User, UUID]:
     """fastapi-usersの設定."""
     return FastAPIUsers[User, UUID](get_user_manager, [auth_backend()])
 

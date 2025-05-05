@@ -76,3 +76,7 @@ def neo4j_logger() -> logging.Logger:
     )
     logger.addHandler(handler)
     return logger
+
+
+def set_error_handlers(app: FastAPI):
+    """独自のエラーハンドリング."""

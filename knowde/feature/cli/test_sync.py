@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 from fastapi.testclient import TestClient
 
 from knowde.complex.auth.repo.client import (
-    AuthArgs,
     AuthPost,
 )
 from knowde.complex.entry.namespace.sync import Anchor
@@ -24,9 +23,10 @@ def test_sync_router(files: tuple[Anchor, list[Path]]) -> None:  # noqa: F811
     anchor, paths = files
     client = TestClient(api)
     p = AuthPost(client=client.post)
-    info = AuthArgs(email="user@example.com", password="password")  # noqa: S106
-    res = p.register(info)
-    res = p.login(info)
+    email = "user@example.com"
+    password = "password"  # noqa: S105
+    res = p.register(email, password)
+    res = p.login(email, password)
     token = res.json()["access_token"]
     h = {"Authorization": f"Bearer {token}"}
 
