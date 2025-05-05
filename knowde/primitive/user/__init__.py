@@ -22,12 +22,13 @@ class User(BaseMapper):
     __label__ = LUser
     uid: UUID | None = None
     email: EmailStr
-    hashed_password: str | None = None
+    hashed_password: str
     is_active: bool
     is_superuser: bool = False
     is_verified: bool = False
-    clerk_id: str | None = None
     oauth_accounts: list[Account] = Field(default_factory=list)
+    clerk_id: str | None = None
+    display_name: str | None = None
 
     @property
     def id(self) -> UUID:  # noqa: D102

@@ -31,11 +31,12 @@ def sso_cmd() -> None:
 @user_cli.command("register")
 @click.argument("email", type=click.STRING)
 @click.password_option()
-def register_cmd(email: str, password: str) -> None:
+@click.option("-n", "--name", type=click.STRING, help="表示名")
+def register_cmd(email: str, password: str, name: str) -> None:
     """アカウント作成."""
     from knowde.complex.auth.repo.client import AuthPost  # noqa: PLC0415
 
-    res = AuthPost().register({"email": email, "password": password})
+    res = AuthPost().register(email=email, password=password, display_name=name)
     echo_response(res, "登録")
     click.echo("ログインしてください")
 
@@ -50,7 +51,7 @@ def login_cmd(email: str, password: str) -> None:
         save_credential,
     )
 
-    res = AuthPost().login({"email": email, "password": password})
+    res = AuthPost().login(email, password)
     save_credential(res)
     echo_response(res, "ログイン")
 
@@ -85,6 +86,14 @@ def me_cmd() -> None:
 
     res = AuthGet().me()
     echo_response(res, "ログインアカウント情報の取得")
+
+
+@user_cli.command("clerk")
+def clerk_cmd():
+    """Trial."""
+    from .proc import clerk  # noqa: PLC0415
+
+    clerk()
 
 
 # @user_cli.command("get")

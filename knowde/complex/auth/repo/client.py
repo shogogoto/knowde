@@ -5,7 +5,6 @@ from uuid import UUID
 
 import httpx
 from pydantic import BaseModel
-from typing_extensions import TypedDict
 
 from knowde.complex.auth import PREFIX_USER
 from knowde.complex.auth.errors import TokenUnsavedError
@@ -13,17 +12,6 @@ from knowde.primitive.config import LocalConfig
 from knowde.primitive.config.env import Settings
 
 s = Settings()
-
-
-class AuthArgs(TypedDict):
-    """ログイン情報."""
-
-    email: str
-    password: str
-
-
-class OptionalInfo(AuthArgs, total=False):  # noqa: D101
-    pass
 
 
 def auth_header() -> dict:
@@ -41,11 +29,17 @@ class AuthPost(BaseModel):
 
     client: Callable[..., httpx.Response] = s.post
 
-    def register(self, info: AuthArgs) -> httpx.Response:  # noqa: D102
-        return self.client("/auth/register", json=info)
+    def register(  # noqa: D102
+        self,
+        email: str,
+        password: str,
+        display_name: str | None = None,
+    ) -> httpx.Response:
+        d = {"email": email, "password": password, "display_name": display_name}
+        return self.client("/auth/register", json=d)
 
-    def login(self, info: AuthArgs) -> httpx.Response:  # noqa: D102
-        d = {"username": info["email"], "password": info["password"]}
+    def login(self, email: str, password: str) -> httpx.Response:  # noqa: D102
+        d = {"username": email, "password": password}
         return self.client("/auth/jwt/login", data=d)
 
     def logout(self) -> httpx.Response:  # noqa: D102
@@ -77,8 +71,14 @@ class AuthPatch(BaseModel):
 
     client: Callable[..., httpx.Response] = s.patch
 
-    def change_me(self, info: OptionalInfo) -> httpx.Response:  # noqa: D102
-        d = {k: v for k, v in info.items() if v is not None}
+    def change_me(  # noqa: D102
+        self,
+        email: str | None = None,
+        password: str | None = None,
+        display_name: str | None = None,
+    ) -> httpx.Response:
+        d = {"email": email, "password": password, "display_name": display_name}
+        d = {k: v for k, v in d.items() if v is not None}
         return self.client(f"{PREFIX_USER}/me", headers=auth_header(), json=d)
 
 

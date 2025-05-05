@@ -56,6 +56,10 @@ api.include_router(knowde_router())
 api.include_router(webhook_router())
 
 
+def root_router() -> FastAPI:  # noqa: D103
+    return api
+
+
 @api.get("/health")
 async def check_health() -> str:
     """Check health."""

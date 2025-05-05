@@ -6,7 +6,6 @@ from fastapi.testclient import TestClient
 from knowde.complex.auth.routers import auth_router, user_router
 
 from .client import (
-    AuthArgs,
     AuthGet,
     AuthPatch,
     AuthPost,
@@ -26,12 +25,14 @@ def test_crud_user() -> None:
     """User CRUD flow."""
     client = _api_client()
 
-    info = AuthArgs(email="user@example.com", password="password")  # noqa: S106
+    # info = AuthArgs(email="user@example.com", password="password")
+    email = "user@example.com"
+    password = "password"  # noqa: S105
     p = AuthPost(client=client.post)
-    assert not p.login(info).is_success
-    res = p.register(info)
+    assert not p.login(email, password).is_success
+    res = p.register(email, password)
     assert res.is_success
-    login_res = p.login(info)
+    login_res = p.login(email, password)
     assert login_res.is_success
     save_credential(login_res)
 
@@ -39,9 +40,9 @@ def test_crud_user() -> None:
     res = g.me()
     assert res.is_success
 
-    assert res.json()["email"] == info["email"]
-    info2 = AuthArgs(email="user@gmail.com", password="password")  # noqa: S106
+    assert res.json()["email"] == email
+    email2 = "user@gmail.com"
     pa = AuthPatch(client=client.patch)
-    res = pa.change_me(info2)
+    res = pa.change_me(email2)
     assert res.is_success
-    assert res.json()["email"] == info2["email"]
+    assert res.json()["email"] == email2
