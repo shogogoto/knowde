@@ -144,5 +144,6 @@ def test_ordering(u: LUser):
         ".*",
         WherePhrase.REGEX,
         order_by=order_by,
+        do_print=True,
     )
     assert [a.center.sentence for a in adjs] == [str(i) for i in range(30)]

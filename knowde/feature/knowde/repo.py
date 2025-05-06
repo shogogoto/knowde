@@ -94,13 +94,18 @@ def search_knowde(
         + """
         }
         WITH sent, names
-            , n_premise
-            , n_conclusion
-            , dist_axiom
-            , dist_leaf
-            , n_referred
-            , n_refer
-            , n_detail
+            , {
+                n_premise: n_premise,
+                n_conclusion: n_conclusion,
+                dist_axiom: dist_axiom,
+                dist_leaf: dist_leaf,
+                n_referred: n_referred,
+                n_refer: n_refer,
+                n_detail: n_detail
+                """
+        + (order_by.score_prop() if order_by else "")
+        + """
+            } AS stats
 
         OPTIONAL MATCH (intv: Interval)<-[:WHEN]-(sent)
         OPTIONAL MATCH (sent)<-[:TO]-(premise:Sentence)
@@ -125,28 +130,14 @@ def search_knowde(
                 THEN [referred.val, referred.uid, t_refd.val] END) AS referreds
             , COLLECT(DISTINCT CASE WHEN detail IS NOT NULL
                 THEN [detail.val, detail.uid, t_detail.val] END) AS details
-            , n_premise, n_conclusion
-            , n_referred, n_refer
-            , dist_axiom, dist_leaf, n_detail
-        """
-        + (order_by.score() if order_by else "")
-        + """
-        RETURN sent, names, intv
+            , stats
+        RETURN sent,
+            names,
+            intv
             , premises, conclusions
             , refers, referreds
             , details
-            , {
-                n_premise: n_premise,
-                n_conclusion: n_conclusion,
-                dist_axiom: dist_axiom,
-                dist_leaf: dist_leaf,
-                n_referred: n_referred,
-                n_refer: n_refer,
-                n_detail: n_detail
-                """
-        + (", score: score" if order_by else "")
-        + """
-            } AS st
+            , stats
         """
         + (order_by.phrase() if order_by else "")
         + paging.phrase()

@@ -109,7 +109,7 @@ class OrderBy(BaseModel):
     dist_leaf: int = 1
     desc: bool = True  # スコアの高い順がデフォルト
 
-    def score(self) -> str:
+    def score_prop(self) -> str:
         """スコアの計算式."""
         qs = []
         prefix = ""
@@ -121,12 +121,10 @@ class OrderBy(BaseModel):
             else:
                 qs.append(f"({v:+} * {prefix}{k})")
         line = " + ".join(qs)
-        return f"""
-        , ({line}) AS score
-        """
+        return f", score: {line}"
 
     def phrase(self) -> str:
         """ORDER BY句."""
         return f"""
-        ORDER BY score {"DESC" if self.desc else "ASC"}
+        ORDER BY stats.score {"DESC" if self.desc else "ASC"}
         """
