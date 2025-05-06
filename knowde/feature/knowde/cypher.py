@@ -101,10 +101,10 @@ class OrderBy(BaseModel):
     # )
 
     n_detail: int = 1
-    n_premise: int = 3
-    n_conclusion: int = 3
-    n_refer: int = 3
-    n_referred: int = 3
+    n_premise: int = 1
+    n_conclusion: int = 1
+    n_refer: int = 1
+    n_referred: int = 1
     dist_axiom: int = 1
     dist_leaf: int = 1
     desc: bool = True  # スコアの高い順がデフォルト

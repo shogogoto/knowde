@@ -54,11 +54,19 @@ def get_search_param(  # noqa: PLR0917
     return SearchParam(q=q, type=type, paging=paging, order=order)
 
 
+class KnowdeSearchResult(BaseModel):
+    """knowde検索結果."""
+
+    total: int
+    data: list[KAdjacency]
+
+
 @knowde_router().get("/")
 def search_by_text(
     # param: SearchParam = Query(default=SearchParam()),
     param: SearchParam = Depends(get_search_param),
-) -> list[KAdjacency]:
+) -> KnowdeSearchResult:
     """文字列検索."""
     t = WherePhrase[param.type]
-    return search_knowde(param.q, t, param.paging, param.order)
+    tot, data = search_knowde(param.q, t, param.paging, param.order)
+    return KnowdeSearchResult(total=tot, data=data)
