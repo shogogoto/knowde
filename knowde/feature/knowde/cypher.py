@@ -101,15 +101,15 @@ class OrderBy(BaseModel):
     # )
 
     n_detail: int = 1
-    n_premise: int = 3
-    n_conclusion: int = 3
-    n_refer: int = 3
-    n_referred: int = 3
+    n_premise: int = 1
+    n_conclusion: int = 1
+    n_refer: int = 1
+    n_referred: int = 1
     dist_axiom: int = 1
     dist_leaf: int = 1
     desc: bool = True  # スコアの高い順がデフォルト
 
-    def score(self) -> str:
+    def score_prop(self) -> str:
         """スコアの計算式."""
         qs = []
         prefix = ""
@@ -121,12 +121,10 @@ class OrderBy(BaseModel):
             else:
                 qs.append(f"({v:+} * {prefix}{k})")
         line = " + ".join(qs)
-        return f"""
-        , ({line}) AS score
-        """
+        return f", score: {line}"
 
     def phrase(self) -> str:
         """ORDER BY句."""
         return f"""
-        ORDER BY score {"DESC" if self.desc else "ASC"}
+        ORDER BY stats.score {"DESC" if self.desc else "ASC"}
         """

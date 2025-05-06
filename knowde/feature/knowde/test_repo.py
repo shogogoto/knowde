@@ -50,10 +50,10 @@ def test_get_knowde_attrs(u: LUser):
         y: {x}yy
     """
     _sn, _ = save_text(u.uid, s)
-    adjs = search_knowde("A1")
+    _total, adjs = search_knowde("A1")
     assert [a.center.sentence for a in adjs] == unordered(["a", "ちん", "bA123"])
 
-    adjs = search_knowde("xxx")
+    _total, adjs = search_knowde("xxx")
     assert adjs[0].referreds[0].sentence == "{x}yy"
 
 
@@ -106,12 +106,16 @@ def test_paging(u: LUser):
     sn = SysNet(root=sn.root, g=h)
     sn2db(sn, r.uid)
     sn, _uids = restore_sysnet(r.uid)
-    assert len(sn.g.nodes) == 122  # title除いて121の文  # noqa: PLR2004
-    adjs = search_knowde(".*", WherePhrase.REGEX, Paging(page=1))
+    n_nodes = len(sn.g.nodes) - 1
+    assert n_nodes == 121  # title除いて121の文  # noqa: PLR2004
+    total, adjs = search_knowde(".*", WherePhrase.REGEX, Paging(page=1))
+    assert total == n_nodes
     assert len(adjs) == 100  # noqa: PLR2004
-    adjs = search_knowde(".*", WherePhrase.REGEX, Paging(page=2))
+
+    total, adjs = search_knowde(".*", WherePhrase.REGEX, Paging(page=2))
     assert len(adjs) == 21  # noqa: PLR2004
-    adjs = search_knowde(".*", WherePhrase.REGEX, Paging(page=3))
+
+    total, adjs = search_knowde(".*", WherePhrase.REGEX, Paging(page=3))
     assert len(adjs) == 0
 
 
@@ -140,7 +144,7 @@ def test_ordering(u: LUser):
         dist_axiom=0,
         dist_leaf=0,
     )
-    adjs = search_knowde(
+    _total, adjs = search_knowde(
         ".*",
         WherePhrase.REGEX,
         order_by=order_by,

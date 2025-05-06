@@ -75,10 +75,27 @@ def search_knowde(
     s: str,
     wp: WherePhrase = WherePhrase.CONTAINS,
     paging: Paging = Paging(),
-    order_by: OrderBy | None = None,
+    order_by: OrderBy = OrderBy(),
     do_print: bool = False,  # noqa: FBT001, FBT002
-) -> list:
+) -> tuple[int, list[KAdjacency]]:
     """用語、文のいずれかでマッチするものを返す."""
+    # 総数取得
+    q_tot = (
+        """
+        CALL {
+        """
+        + q_sentence_from_def(wp)
+        + """
+        }
+        RETURN COUNT(sent)
+    """
+    )
+    res = db.cypher_query(
+        q_tot,
+        params={"s": s},
+    )
+    total = res[0][0][0]
+
     q = (
         r"""
         CALL {
@@ -94,13 +111,18 @@ def search_knowde(
         + """
         }
         WITH sent, names
-            , n_premise
-            , n_conclusion
-            , dist_axiom
-            , dist_leaf
-            , n_referred
-            , n_refer
-            , n_detail
+            , {
+                n_premise: n_premise,
+                n_conclusion: n_conclusion,
+                dist_axiom: dist_axiom,
+                dist_leaf: dist_leaf,
+                n_referred: n_referred,
+                n_refer: n_refer,
+                n_detail: n_detail
+                """
+        + (order_by.score_prop() if order_by else "")
+        + """
+            } AS stats
 
         OPTIONAL MATCH (intv: Interval)<-[:WHEN]-(sent)
         OPTIONAL MATCH (sent)<-[:TO]-(premise:Sentence)
@@ -113,7 +135,6 @@ def search_knowde(
         OPTIONAL MATCH (refer)<-[:DEF]-(t_ref: Term)
         OPTIONAL MATCH (sent)-[:BELOW]->(detail:Sentence)
         OPTIONAL MATCH (detail)<-[:DEF]-(t_detail: Term)
-
         WITH sent, names, intv
             , COLLECT(DISTINCT CASE WHEN premise IS NOT NULL
                 THEN [premise.val, premise.uid, t_pre.val] END) AS premises
@@ -125,31 +146,19 @@ def search_knowde(
                 THEN [referred.val, referred.uid, t_refd.val] END) AS referreds
             , COLLECT(DISTINCT CASE WHEN detail IS NOT NULL
                 THEN [detail.val, detail.uid, t_detail.val] END) AS details
-            , n_premise, n_conclusion
-            , n_referred, n_refer
-            , dist_axiom, dist_leaf, n_detail
-        """
-        + (order_by.score() if order_by else "")
+            , stats
+            """
+        + (order_by.phrase() if order_by else "")
+        + paging.phrase()
         + """
-        RETURN sent, names, intv
+        RETURN sent
+            , names
+            , intv
             , premises, conclusions
             , refers, referreds
             , details
-            , {
-                n_premise: n_premise,
-                n_conclusion: n_conclusion,
-                dist_axiom: dist_axiom,
-                dist_leaf: dist_leaf,
-                n_referred: n_referred,
-                n_refer: n_refer,
-                n_detail: n_detail
-                """
-        + (", score: score" if order_by else "")
-        + """
-            } AS st
+            , stats
         """
-        + (order_by.phrase() if order_by else "")
-        + paging.phrase()
     )
     if do_print:
         print(q)  # noqa: T201
@@ -171,17 +180,18 @@ def search_knowde(
         ]
 
     ls = []
-    for (
-        sent,
-        names,
-        intv,
-        premises,
-        conclusions,
-        refers,
-        referreds,
-        details,
-        stats,
-    ) in res[0]:
+    for row in res[0]:
+        (
+            sent,
+            names,
+            intv,
+            premises,
+            conclusions,
+            refers,
+            referreds,
+            details,
+            stats,
+        ) = row
         adj = KAdjacency(
             center=Knowde(
                 sentence=str(sent.val),
@@ -197,7 +207,7 @@ def search_knowde(
             stats=KStats.model_validate(stats),
         )
         ls.append(adj)
-    return ls
+    return total, ls
 
 
 def get_stats_by_id(uid: UUIDy) -> list[int] | None:
