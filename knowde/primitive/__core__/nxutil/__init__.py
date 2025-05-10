@@ -78,7 +78,7 @@ def to_leaves(g: nx.DiGraph, *ts: Any) -> list[Hashable]:
 
 
 @cache
-def to_axioms(g: nx.DiGraph, *ts: Any) -> list[Hashable]:
+def to_roots(g: nx.DiGraph, *ts: Any) -> list[Hashable]:
     """根を取得."""
     sub = filter_edge_attr(g, "type", *ts)
     return [n for n in sub.nodes if sub.in_degree(n) == 0 and sub.out_degree(n) != 0]
@@ -91,10 +91,10 @@ def leaf_paths(g: nx.DiGraph, tgt: Hashable, t: Any) -> list[list[Hashable]]:
     return _to_paths(sub, pairs)
 
 
-def axiom_paths(g: nx.DiGraph, tgt: Hashable, t: Any) -> list[list[Hashable]]:
+def root_paths(g: nx.DiGraph, tgt: Hashable, t: Any) -> list[list[Hashable]]:
     """入力ノードから特定の関係を遡って依存元がないノードまでのパスを返す."""
     sub = filter_edge_attr(g, "type", t)
-    pairs = [(n, tgt) for n in to_axioms(g, t)]
+    pairs = [(n, tgt) for n in to_roots(g, t)]
     return _to_paths(sub, pairs)
 
 
@@ -117,7 +117,7 @@ def copy_old_edges(
         g.add_edge(new, succ, **data)
 
 
-def get_axioms(g: nx.MultiDiGraph, *types: Any) -> list[Hashable]:
+def get_roots(g: nx.MultiDiGraph, *types: Any) -> list[Hashable]:
     """出発点を取得."""
 
     def _f(u: Hashable, v: Hashable, attr: dict) -> bool:

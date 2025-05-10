@@ -10,8 +10,8 @@ from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.sysnet.sysnode import KNArg, KNode
 from knowde.primitive.__core__.nxutil import (
     filter_edge_attr,
-    to_axioms,
     to_nodes,
+    to_roots,
 )
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType, etype_subgraph
 
@@ -39,7 +39,7 @@ class ParentLookupError(Exception):
 def parent_lookup(g: nx.DiGraph) -> dict:
     """親の辞書."""
     g = filter_edge_attr(g, "type", EdgeType.BELOW, EdgeType.SIBLING)
-    parents = to_axioms(g, EdgeType.BELOW)
+    parents = to_roots(g, EdgeType.BELOW)
     lookup = {}
     for p in parents:
         first_sibs = EdgeType.BELOW.succ(g, p)

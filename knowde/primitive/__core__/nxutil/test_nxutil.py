@@ -5,7 +5,7 @@ import pytest
 
 from knowde.primitive.__core__.nxutil.util import succ_attr
 
-from . import axiom_paths, filter_edge_attr, get_axioms, leaf_paths, to_nested
+from . import filter_edge_attr, get_roots, leaf_paths, root_paths, to_nested
 
 
 def test_to_nested() -> None:  # noqa: D103
@@ -63,13 +63,13 @@ def test_axiom_paths() -> None:
     g = nx.balanced_tree(3, 2, nx.MultiDiGraph())
     nx.set_edge_attributes(g, "x", "type")
     g.add_edge(9, "dummy", type="dummy")
-    assert axiom_paths(g, 7, "x") == [[0, 2, 7]]
-    assert axiom_paths(g, 2, "x") == [[0, 2]]
-    assert axiom_paths(g, "dummy", "x") == []
+    assert root_paths(g, 7, "x") == [[0, 2, 7]]
+    assert root_paths(g, 2, "x") == [[0, 2]]
+    assert root_paths(g, "dummy", "x") == []
 
 
 def test_axioms() -> None:
     """出発点となるnodesを取得."""
     g = nx.balanced_tree(3, 2, nx.MultiDiGraph()).reverse()  # 逆向き
     nx.set_edge_attributes(g, "x", "type")
-    assert get_axioms(g, "x") == [4, 5, 6, 7, 8, 9, 10, 11, 12]
+    assert get_roots(g, "x") == [4, 5, 6, 7, 8, 9, 10, 11, 12]
