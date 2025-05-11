@@ -6,6 +6,7 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 from knowde.complex.nxdb import LSentence
+from knowde.primitive.__core__.types import NXGraph
 from knowde.primitive.term import Term
 from knowde.primitive.user import User
 
@@ -111,3 +112,11 @@ class KAdjacency(BaseModel):
         if self.referreds:
             s += f"\n>> {', '.join(map(str, self.referreds))}"
         return s
+
+
+class KnowdeDetail(BaseModel):
+    """詳細."""
+
+    uid: UUID
+    g: NXGraph
+    uids: dict[str, UUID]

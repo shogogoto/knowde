@@ -4,16 +4,34 @@ from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
+from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 
-def q_stats(tgt: str):
-    """関係統計の取得cypher."""
+
+def q_leaf_path(tgt: str, var: str, t: str) -> str:
+    """ターゲット方向へのパス."""
     return f"""
+        OPTIONAL MATCH {var} = ({tgt}:Sentence)
+            -[rel_{var}:{t}]->{{1,}}(leaf_{var}:Sentence)
+            WHERE NOT (leaf_{var}:Sentence)-[:TO]->(:Sentence)"""
+
+
+def q_root_path(tgt: str, var: str, t: str) -> str:
+    """ソース方向へのパス."""
+    return f"""
+        OPTIONAL MATCH {var} = (axiom_{var}:Sentence)-[:{t}]->{{1,}}({tgt})
+            WHERE NOT (:Sentence)-[:TO]->(axiom_{var}:Sentence)"""
+
+
+def q_stats(tgt: str) -> str:
+    """関係統計の取得cypher."""
+    return (
+        f"""
         OPTIONAL MATCH ({tgt})<-[:TO]-{{1,}}(premise:Sentence)
         OPTIONAL MATCH ({tgt})-[:TO]->{{1,}}(conclusion:Sentence)
-        OPTIONAL MATCH p_leaf = ({tgt})-[:TO]->{{1,}}(leaf:Sentence)
-            WHERE NOT (leaf)-[:TO]->(:Sentence)
-        OPTIONAL MATCH p_axiom = (axiom:Sentence)-[:TO]->{{1,}}({tgt})
-            WHERE NOT (:Sentence)-[:TO]->(axiom)
+        """
+        + q_leaf_path(tgt, "p_leaf", EdgeType.TO.name)
+        + q_root_path(tgt, "p_axiom", EdgeType.TO.name)
+        + f"""
         OPTIONAL MATCH ({tgt})<-[:RESOLVED]-{{1,}}(referred:Sentence)
         OPTIONAL MATCH ({tgt})-[:RESOLVED]->{{1,}}(refer:Sentence)
         OPTIONAL MATCH ({tgt})-[:BELOW]->(:Sentence)
@@ -34,6 +52,7 @@ def q_stats(tgt: str):
         , SIZE(refers) AS n_refer
         , SIZE(details) AS n_detail
     """
+    )
 
 
 class WherePhrase(StrEnum):
