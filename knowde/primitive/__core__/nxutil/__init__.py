@@ -52,11 +52,13 @@ def to_nodes(g: nx.DiGraph, start: Hashable, f: Accessor) -> list[Hashable]:
 @cache
 def filter_edge_attr(g: nx.DiGraph, name: str, *values: Any) -> nx.DiGraph:
     """ある属性のエッジのみを抽出する関数を返す."""
-
-    def _f(u: Hashable, v: Hashable, attr: dict) -> bool:
-        return g[u][v][attr][name] in values
-
-    return nx.subgraph_view(g, filter_edge=_f)
+    sub = g.__class__()
+    for e in g.edges(data=True):
+        u, v, attr = e
+        a = {k: v for k, v in attr.items() if k == name and v in values}
+        if any(a):
+            sub.add_edge(u, v, **a)
+    return sub
 
 
 def _to_paths(g: nx.DiGraph, pairs: Edges) -> list[list[Hashable]]:
@@ -115,14 +117,3 @@ def copy_old_edges(
         if data["type"] in ignore:
             continue
         g.add_edge(new, succ, **data)
-
-
-def get_roots(g: nx.MultiDiGraph, *types: Any) -> list[Hashable]:
-    """出発点を取得."""
-
-    def _f(u: Hashable, v: Hashable, attr: dict) -> bool:
-        return g[u][v][attr]["type"] in types
-
-    sub: nx.MultiDiGraph = nx.subgraph_view(g, filter_edge=_f)
-
-    return [n for n in sub.nodes if sub.in_degree(n) == 0 and sub.degree(n) != 0]

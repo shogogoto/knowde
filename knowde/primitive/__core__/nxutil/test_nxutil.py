@@ -5,7 +5,7 @@ import pytest
 
 from knowde.primitive.__core__.nxutil.util import succ_attr
 
-from . import filter_edge_attr, get_roots, leaf_paths, root_paths, to_nested
+from . import filter_edge_attr, leaf_paths, nxprint, root_paths, to_nested, to_roots
 
 
 def test_to_nested() -> None:  # noqa: D103
@@ -31,7 +31,7 @@ def test_filter_edge_attr() -> None:
     nx.add_path(g, ["sys", *[f"b{i}" for i in range(2)]], type="B")
     sub = filter_edge_attr(g, "type", "A")
     assert list(nx.shortest_path(g, "sys", "b1")) == ["sys", "b0", "b1"]
-    with pytest.raises(nx.NetworkXNoPath):
+    with pytest.raises(nx.NodeNotFound):
         nx.shortest_path(sub, "sys", "b1")
 
 
@@ -63,13 +63,15 @@ def test_axiom_paths() -> None:
     g = nx.balanced_tree(3, 2, nx.MultiDiGraph())
     nx.set_edge_attributes(g, "x", "type")
     g.add_edge(9, "dummy", type="dummy")
+    nxprint(g)
     assert root_paths(g, 7, "x") == [[0, 2, 7]]
     assert root_paths(g, 2, "x") == [[0, 2]]
-    assert root_paths(g, "dummy", "x") == []
+    with pytest.raises(nx.NodeNotFound):
+        root_paths(g, "dummy", "x")
 
 
 def test_axioms() -> None:
     """出発点となるnodesを取得."""
     g = nx.balanced_tree(3, 2, nx.MultiDiGraph()).reverse()  # 逆向き
     nx.set_edge_attributes(g, "x", "type")
-    assert get_roots(g, "x") == [4, 5, 6, 7, 8, 9, 10, 11, 12]
+    assert to_roots(g, "x") == [4, 5, 6, 7, 8, 9, 10, 11, 12]
