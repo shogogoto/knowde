@@ -102,8 +102,6 @@ def search_knowde(
     do_print: bool = False,  # noqa: FBT001, FBT002
 ) -> tuple[int, list[KAdjacency]]:
     """用語、文のいずれかでマッチするものを返す."""
-    total = search_total(s, wp)
-
     q = (
         r"""
         CALL {
@@ -142,6 +140,7 @@ def search_knowde(
         OPTIONAL MATCH (sent)-[:RESOLVED]->(refer:Sentence)
         OPTIONAL MATCH (refer)<-[:DEF]-(t_ref: Term)
         OPTIONAL MATCH (sent)-[:BELOW]->(detail:Sentence)
+        OPTIONAL MATCH (detail)-[:SEBLING]->*(detail2)
         OPTIONAL MATCH (detail)<-[:DEF]-(t_detail: Term)
         WITH sent, names, intv
             , COLLECT(DISTINCT CASE WHEN premise IS NOT NULL
@@ -215,6 +214,7 @@ def search_knowde(
             stats=KStats.model_validate(stats),
         )
         ls.append(adj)
+    total = search_total(s, wp)
     return total, ls
 
 

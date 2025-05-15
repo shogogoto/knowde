@@ -1,14 +1,11 @@
 """detail repo."""
 
-from typing import Any
 from uuid import UUID
 
 import networkx as nx
 from more_itertools import first_true
 from neomodel import db
 
-from knowde.complex.__core__.sysnet.sysnode import Def
-from knowde.complex.__core__.sysnet.sysnode.merged_def import MergedDef
 from knowde.complex.entry.mapper import MResource
 from knowde.feature.knowde import Knowde, KnowdeDetail, KnowdeLocation, UidStr
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
@@ -17,22 +14,36 @@ from knowde.primitive.user import User
 
 
 # うまいクエリの方法が思いつかないので、別クエリに分ける
-def fetch_names(uids: list[str]) -> dict[UUID, Term]:
-    """文のuuidリストから名前一覧を返す."""
+def fetch_knowde_by_ids(uids: list[str]) -> dict[UUID, Knowde]:
+    """文のuuidリストから名前などの付属情報を返す."""
     q = """
         UNWIND $uids as uid
-        MATCH p = (sent: Sentence {uid: uid})-[:DEF|ALIAS]-*(:Term)
-        WITH p, LENGTH(p) as len
-        ORDER BY len DESC
-        LIMIT 1  // 最大長のみ取得
-        RETURN nodes(p)
+        MATCH (sent: Sentence {uid: uid})
+        CALL {
+            WITH sent
+            OPTIONAL MATCH p = (sent)-[:DEF|ALIAS]-*(:Term)
+            WITH p, LENGTH(p) as len
+            ORDER BY len DESC
+            LIMIT 1
+            RETURN nodes(p) as names
+        }
+        OPTIONAL MATCH (intv: Interval)<-[:WHEN]-(sent)
+        RETURN sent
+            , names[1..]
+            , intv
     """
     res = db.cypher_query(q, params={"uids": uids})
     d = {}
     for row in res[0]:
-        uid = row[0][0].get("uid")
-        names = [n.get("val") for n in row[0][1:]]
-        d[uid] = Term.create(*names)
+        sent, names, when = row
+        uid = sent.get("uid")
+        names = [n.get("val") for n in names] if names is not None else []
+        d[uid] = Knowde(
+            sentence=sent.get("val"),
+            uid=uid,
+            term=Term.create(*names) if names else None,
+            when=when.get("val") if when is not None else None,
+        )
     return d
 
 
@@ -47,7 +58,6 @@ def locate_knowde(uid: UUID, do_print: bool = False) -> KnowdeLocation:  # noqa:
         OPTIONAL MATCH p_name = (s)-[:DEF|ALIAS]-*(:Term)
         RETURN nodes(p)
     """
-    # user entry_path, resource, header_path, parent_sentence
     if do_print:
         print(q)  # noqa: T201
 
@@ -65,15 +75,8 @@ def locate_knowde(uid: UUID, do_print: bool = False) -> KnowdeLocation:  # noqa:
             UidStr(val=e.get("val"), uid=e.get("uid")) for e in row[r_i + 1 : s_i]
         ]
         uids = [e.get("uid") for e in row[s_i:]]
-        names = fetch_names(uids)
-        parents = [
-            Knowde(
-                sentence=n.get("val"),
-                uid=n.get("uid"),
-                term=names.get(n.get("uid")),
-            )
-            for n in row[s_i:]
-        ]
+        knowdes = fetch_knowde_by_ids(uids)
+        parents = [knowdes[uid] for uid in uids]
         return KnowdeLocation(
             user=user,
             folders=folders,
@@ -84,13 +87,8 @@ def locate_knowde(uid: UUID, do_print: bool = False) -> KnowdeLocation:  # noqa:
     raise ValueError
 
 
-def detail_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: FBT001, FBT002, PLR0914
+def detail_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: FBT001, FBT002
     """knowdeの依存chain全てを含めた詳細."""
-    # + q_root_path("sent", "p_premise", EdgeType.TO.name)
-    # + q_leaf_path("sent", "p_conclution", EdgeType.TO.name)
-    # + q_root_path("sent", "p_referred", EdgeType.RESOLVED.name)
-    # + q_leaf_path("sent", "p_refer", EdgeType.RESOLVED.name)
-    # + q_leaf_path("sent", "p_detail", "BELOW|SIBLING")
     q = """
         MATCH (sent: Sentence {uid: $uid})
         CALL {
@@ -110,21 +108,7 @@ def detail_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: F
                 -[:RESOLVED]-*(sent)
             RETURN startNode(r) as start, endNode(r) as end, type(r) as type
         }
-
-        OPTIONAL MATCH (intv: Interval)<-[:WHEN]-(sent)
-        OPTIONAL MATCH (start)<-[:DEF]-(:Term)-[:ALIAS]-*(start_name:Term)
-        OPTIONAL MATCH (end)<-[:DEF]-(:Term)-[:ALIAS]-*(end_name:Term)
-
-        // meta data
-        OPTIONAL MATCH (start_intv: Interval)<-[:WHEN]-(start)
-        OPTIONAL MATCH (end_intv: Interval)<-[:WHEN]-(end)
-
-        // MATCH p_parent = (user: User)-[]->*(sent)
         RETURN start, end, type
-            , COLLECT(DISTINCT start_name) AS start_names
-            , COLLECT(DISTINCT end_name) AS end_names
-            , start_intv
-            , end_intv
         """
     if do_print:
         print(q)  # noqa: T201
@@ -136,41 +120,13 @@ def detail_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: F
     )
 
     g = nx.MultiDiGraph()
-    uids = {}
-    defs = []
-
-    def add_proc(node: str, name_nodes: list[list], intv: Any | None = None):
-        if node not in uids:
-            names = [n.val for n in name_nodes[0]]
-            if names:
-                defs.append(Def.create(node, names))
-            if intv is not None:
-                EdgeType.WHEN.add_edge(g, node, intv.val)
-
     for row in res[0]:
-        (
-            start,
-            end,
-            type_,
-            start_names,
-            end_names,
-            start_intv,
-            end_intv,
-        ) = row
+        start, end, type_ = row
         t: EdgeType = getattr(EdgeType, type_)
-        t.add_edge(g, start.val, end.val)
-        # add_def(start.val)
-        add_proc(start.val, start_names, start_intv)
-        add_proc(end.val, end_names, end_intv)
-        uids[start.val] = start.uid
-        uids[end.val] = end.uid
-    mdefs, stddefs, _ = MergedDef.create_and_parted(defs)
-    [md.add_edge(g) for md in mdefs]
-    [d.add_edge(g) for d in stddefs]
-
+        t.add_edge(g, start.uid, end.uid)
     return KnowdeDetail(
         uid=uid,
         g=g,
-        uids=uids,
+        knowdes=fetch_knowde_by_ids(list(g.nodes)),
         location=locate_knowde(uid),
     )

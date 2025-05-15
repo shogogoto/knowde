@@ -15,13 +15,13 @@ term: sentでマッチ
 その文脈を加える
 """
 
-from typing import Self
 from uuid import UUID
 
 from pydantic import BaseModel, Field
 
 from knowde.complex.entry.mapper import MResource
-from knowde.complex.nxdb import LSentence
+from knowde.primitive.__core__.nxutil import nxprint as nxprint
+from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.__core__.types import NXGraph
 from knowde.primitive.term import Term
 from knowde.primitive.user import User
@@ -33,18 +33,12 @@ class Knowde(BaseModel, frozen=True):
     sentence: str
     uid: UUID
     term: Term | None = None
-
-    @classmethod
-    def of(cls, lb: LSentence) -> Self:
-        """LSentenceから知識を取得."""
-        return cls(
-            sentence=str(lb.val),
-            uid=lb.uid,
-        )
+    when: str | None = None
 
     def __str__(self) -> str:  # noqa: D105
         t = f"[{self.term}]" if self.term else ""
-        return f"{self.sentence}{t}"
+        when = f"T({self.when})" if self.when else ""
+        return f"{self.sentence}{t}{when}"
 
 
 class UidStr(BaseModel):
@@ -126,5 +120,19 @@ class KnowdeDetail(BaseModel):
 
     uid: UUID
     g: NXGraph
-    uids: dict[str, UUID]
+    knowdes: dict[UUID, Knowde]
     location: KnowdeLocation
+
+    # テスト用メソッド
+    def get(self, sentence: str) -> UUID | None:
+        for k, v in self.knowdes.items():
+            if v.sentence == sentence:
+                return k
+        return None
+
+    def succ(self, sentence: str, t: EdgeType) -> list[Knowde]:
+        uid = self.get(sentence)
+        if uid is None:
+            raise ValueError
+        succs = list(t.succ(self.g, uid.hex))
+        return [self.knowdes[UUID(s)] for s in succs]
