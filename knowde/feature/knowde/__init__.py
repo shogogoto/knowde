@@ -1,17 +1,5 @@
-"""情報の基本単位."""
+"""adjacent 直近の周辺情報.
 
-from typing import Self
-from uuid import UUID
-
-from pydantic import BaseModel, Field
-
-from knowde.complex.nxdb import LSentence
-from knowde.primitive.__core__.types import NXGraph
-from knowde.primitive.term import Term
-from knowde.primitive.user import User
-
-"""
-  adjacent 直近の周辺情報
     as logic
       premises -> self
       conclusions <- self
@@ -20,14 +8,23 @@ from knowde.primitive.user import User
       referred この文が引用している文 被参照 <- self
     as part
       detail
-      parent
+      parent.
 
 DB 検索
 term: sentでマッチ
 その文脈を加える
-
-
 """
+
+from typing import Self
+from uuid import UUID
+
+from pydantic import BaseModel, Field
+
+from knowde.complex.entry.mapper import MResource
+from knowde.complex.nxdb import LSentence
+from knowde.primitive.__core__.types import NXGraph
+from knowde.primitive.term import Term
+from knowde.primitive.user import User
 
 
 class Knowde(BaseModel, frozen=True):
@@ -50,11 +47,21 @@ class Knowde(BaseModel, frozen=True):
         return f"{self.sentence}{t}"
 
 
-class KLocation(BaseModel):
-    """知識の位置情報."""
+class UidStr(BaseModel):
+    """UUID付き文章."""
 
-    owner: User
-    path: tuple[str, ...]
+    val: str
+    uid: UUID
+
+
+class KnowdeLocation(BaseModel):
+    """knowdeの位置情報."""
+
+    user: User
+    folders: list[UidStr]
+    resource: MResource
+    headers: list[UidStr]
+    parents: list[Knowde]
 
 
 class KStats(BaseModel):
@@ -120,3 +127,4 @@ class KnowdeDetail(BaseModel):
     uid: UUID
     g: NXGraph
     uids: dict[str, UUID]
+    location: KnowdeLocation

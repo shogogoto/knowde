@@ -1,6 +1,7 @@
 """neomodel label."""
 
-from abc import abstractproperty
+from abc import abstractmethod
+from typing import override
 
 from neomodel import (
     AliasProperty,
@@ -40,7 +41,8 @@ class LEntry(StructuredNode):
         cardinality=ZeroOrOne,
     )
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def frozen(self) -> Entry:
         """namespace用hashable."""
         raise NotImplementedError
@@ -61,8 +63,8 @@ class LResource(LEntry):
     updated = DateTimeNeo4jFormatProperty()
 
     @property
+    @override
     def frozen(self) -> MResource:
-        """hashableへ."""
         return MResource(
             name=self.name,
             element_id_property=self.element_id,
@@ -82,6 +84,7 @@ class LFolder(LEntry):
     name = StringProperty(index=True)
 
     @property
+    @override
     def frozen(self) -> MFolder:
         """hashableへ."""
         return MFolder(

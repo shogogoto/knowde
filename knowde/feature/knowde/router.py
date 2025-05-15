@@ -65,7 +65,6 @@ class KnowdeSearchResult(BaseModel):
 
 @knowde_router().get("/")
 def search_by_text(
-    # param: SearchParam = Query(default=SearchParam()),
     param: SearchParam = Depends(get_search_param),
 ) -> KnowdeSearchResult:
     """文字列検索."""

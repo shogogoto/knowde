@@ -59,6 +59,7 @@ def save_text(
     user_id: UUIDy,
     s: str,
     path: tuple[str, ...] | None = None,
+    do_print: bool = False,  # noqa: FBT001, FBT002
 ) -> tuple[SysNet, MResource]:
     """テキストを保存."""
     meta = txt2meta(s)
@@ -67,7 +68,7 @@ def save_text(
     save_resource(meta, ns)
     r = ns.get_resource(meta.title)
     sn = parse2net(s)
-    sn2db(sn, r.uid)
+    sn2db(sn, r.uid, do_print=do_print)
     return sn, r
 
 

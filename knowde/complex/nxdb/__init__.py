@@ -14,11 +14,11 @@ from neomodel import (
     RelationshipTo,
     StringProperty,
     StructuredNode,
-    StructuredRel,
     UniqueIdProperty,
     ZeroOrOne,
 )
 
+from knowde.complex.entry.label import LResource
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 
 
@@ -26,26 +26,14 @@ class LHead(StructuredNode):
     """見出し."""
 
     __label__ = "Head"
+    uid = UniqueIdProperty()
     val = StringProperty(index=True, required=True)  # , max_length=MAX_CHARS)
     children = RelationshipTo("LHead", "HEAD")
     parent = RelationshipFrom("LHead", "HEAD", cardinality=One)
-    resource = RelationshipTo("LResource", "")
+    resource = RelationshipFrom(LResource, "HEAD")
 
-
-class RelTO(StructuredRel):  # noqa: D101
-    pass
-
-
-class RelRESOLVED(StructuredRel):  # noqa: D101
-    pass
-
-
-class RelBELOW(StructuredRel):  # noqa: D101
-    pass
-
-
-class RelSIBLING(StructuredRel):  # noqa: D101
-    pass
+    below = RelationshipTo("LSentence", EdgeType.BELOW.name)
+    child = RelationshipTo("LHead", EdgeType.HEAD.name)
 
 
 class LSentence(StructuredNode):
@@ -59,17 +47,17 @@ class LSentence(StructuredNode):
         fulltext_index=FulltextIndex(),
     )  # , max_length=MAX_CHARS)
     term = RelationshipTo("LTerm", "TERM", cardinality=ZeroOrOne)
+    resource = RelationshipFrom(LResource, "BELOW")
 
     # cypher_query で relからNodeのpropertyを取得するために必要
     # resolve_object=Trueにするとpropertiesが空にならずにマッピングされる
-    premise = RelationshipFrom("LSentence", EdgeType.TO.name, model=RelTO)
-    conculusion = RelationshipTo("LSentence", EdgeType.TO.name, model=RelTO)
-    refer = RelationshipFrom("LSentence", EdgeType.RESOLVED.name, model=RelRESOLVED)
-    referred = RelationshipTo("LSentence", EdgeType.RESOLVED.name, model=RelRESOLVED)
-    parent = RelationshipFrom("LSentence", EdgeType.BELOW.name, model=RelBELOW)
-    detail = RelationshipTo("LSentence", EdgeType.BELOW.name, model=RelBELOW)
-
-    sibling = RelationshipTo("LSentence", EdgeType.SIBLING.name, model=RelSIBLING)
+    premise = RelationshipFrom("LSentence", EdgeType.TO.name)
+    conculusion = RelationshipTo("LSentence", EdgeType.TO.name)
+    refer = RelationshipFrom("LSentence", EdgeType.RESOLVED.name)
+    referred = RelationshipTo("LSentence", EdgeType.RESOLVED.name)
+    parent = RelationshipFrom("LSentence", EdgeType.BELOW.name)
+    detail = RelationshipTo("LSentence", EdgeType.BELOW.name)
+    sibling = RelationshipTo("LSentence", EdgeType.SIBLING.name)
 
 
 class LTerm(StructuredNode):

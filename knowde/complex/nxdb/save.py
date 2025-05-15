@@ -71,7 +71,8 @@ def node2q(n: KNode, nvars: dict[KNode, str]) -> str | list[str] | None:
         case Token() if n.type == "H1":
             pass
         case Token():  # heading
-            return f"CREATE ({var}:{t2labels(LHead)} {{val: '{n}'}})"
+            uid = getattr(n, "uid", uuid4()).hex
+            return f"CREATE ({var}:{t2labels(LHead)} {{val: '{n}', uid: '{uid}'}})"
         case Term():
             ret = []
             for i, name in enumerate(n.names):

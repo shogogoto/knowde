@@ -4,12 +4,84 @@ from typing import Any
 from uuid import UUID
 
 import networkx as nx
+from more_itertools import first_true
 from neomodel import db
 
 from knowde.complex.__core__.sysnet.sysnode import Def
 from knowde.complex.__core__.sysnet.sysnode.merged_def import MergedDef
-from knowde.feature.knowde import KnowdeDetail
+from knowde.complex.entry.mapper import MResource
+from knowde.feature.knowde import Knowde, KnowdeDetail, KnowdeLocation, UidStr
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
+from knowde.primitive.term import Term
+from knowde.primitive.user import User
+
+
+# うまいクエリの方法が思いつかないので、別クエリに分ける
+def fetch_names(uids: list[str]) -> dict[UUID, Term]:
+    """文のuuidリストから名前一覧を返す."""
+    q = """
+        UNWIND $uids as uid
+        MATCH p = (sent: Sentence {uid: uid})-[:DEF|ALIAS]-*(:Term)
+        WITH p, LENGTH(p) as len
+        ORDER BY len DESC
+        LIMIT 1  // 最大長のみ取得
+        RETURN nodes(p)
+    """
+    res = db.cypher_query(q, params={"uids": uids})
+    d = {}
+    for row in res[0]:
+        uid = row[0][0].get("uid")
+        names = [n.get("val") for n in row[0][1:]]
+        d[uid] = Term.create(*names)
+    return d
+
+
+def locate_knowde(uid: UUID, do_print: bool = False) -> KnowdeLocation:  # noqa: FBT001, FBT002
+    """knowdeの親~userまでを返す."""
+    q = """
+        MATCH (sent: Sentence {uid: $uid})
+        MATCH p = (user:User)<-[:OWNED|PARENT]-*(r:Resource)
+            -[:HEAD]->*(h:Head)
+            -[:SIBLING|BELOW]->*(s:Sentence)
+            -[:SIBLING|BELOW]->*(sent)
+        OPTIONAL MATCH p_name = (s)-[:DEF|ALIAS]-*(:Term)
+        RETURN nodes(p)
+    """
+    # user entry_path, resource, header_path, parent_sentence
+    if do_print:
+        print(q)  # noqa: T201
+
+    res = db.cypher_query(q, params={"uid": uid})
+    for row in res[0][0]:
+        user = User.model_validate(dict(row[0]))
+        r = first_true(row[1:], pred=lambda n: "Resource" in n.labels)
+        r_i = row.index(r)
+        folders = [UidStr(val=e.get("name"), uid=e.get("uid")) for e in row[1:r_i]]
+        resource = MResource.freeze_dict(dict(r))
+
+        first_sent = first_true(row, pred=lambda n: "Sentence" in n.labels)
+        s_i = row.index(first_sent)
+        headers = [
+            UidStr(val=e.get("val"), uid=e.get("uid")) for e in row[r_i + 1 : s_i]
+        ]
+        uids = [e.get("uid") for e in row[s_i:]]
+        names = fetch_names(uids)
+        parents = [
+            Knowde(
+                sentence=n.get("val"),
+                uid=n.get("uid"),
+                term=names.get(n.get("uid")),
+            )
+            for n in row[s_i:]
+        ]
+        return KnowdeLocation(
+            user=user,
+            folders=folders,
+            resource=resource,
+            headers=headers,
+            parents=parents,
+        )
+    raise ValueError
 
 
 def detail_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: FBT001, FBT002, PLR0914
@@ -95,4 +167,10 @@ def detail_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: F
     mdefs, stddefs, _ = MergedDef.create_and_parted(defs)
     [md.add_edge(g) for md in mdefs]
     [d.add_edge(g) for d in stddefs]
-    return KnowdeDetail(uid=uid, g=g, uids=uids)
+
+    return KnowdeDetail(
+        uid=uid,
+        g=g,
+        uids=uids,
+        location=locate_knowde(uid),
+    )
