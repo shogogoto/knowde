@@ -1,6 +1,7 @@
 """neomodelのhashableな表現."""
 
 from datetime import date, datetime
+from typing import Self
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -34,6 +35,22 @@ class MResource(Entry, frozen=True):
     path: tuple[str, ...] | None = None
     updated: datetime | None = None
     txt_hash: int | None = None
+
+    @classmethod
+    def freeze_dict(cls, d: dict) -> Self:
+        """リストをfrozensetに変換."""
+        new = dict(d)
+        for k, v in d.items():
+            if k == "uid":
+                new[k] = UUID(v)
+            if k == "title":
+                new["name"] = v
+            if isinstance(v, list):
+                if len(v) == 0:
+                    new[k] = None
+                else:
+                    new[k] = frozenset(v)
+        return cls.model_validate(new)
 
     def __str__(self) -> str:
         """For display."""

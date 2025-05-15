@@ -59,6 +59,7 @@ def save_text(
     user_id: UUIDy,
     s: str,
     path: tuple[str, ...] | None = None,
+    do_print: bool = False,  # noqa: FBT001, FBT002
 ) -> tuple[SysNet, MResource]:
     """テキストを保存."""
     meta = txt2meta(s)
@@ -67,19 +68,15 @@ def save_text(
     save_resource(meta, ns)
     r = ns.get_resource(meta.title)
     sn = parse2net(s)
-    sn2db(sn, r.uid)
+    sn2db(sn, r.uid, do_print=do_print)
     return sn, r
 
 
-def search_knowde(
+def search_total(
     s: str,
     wp: WherePhrase = WherePhrase.CONTAINS,
-    paging: Paging = Paging(),
-    order_by: OrderBy = OrderBy(),
-    do_print: bool = False,  # noqa: FBT001, FBT002
-) -> tuple[int, list[KAdjacency]]:
-    """用語、文のいずれかでマッチするものを返す."""
-    # 総数取得
+) -> int:
+    """検索文字列にマッチするknowde総数."""
     q_tot = (
         """
         CALL {
@@ -94,7 +91,18 @@ def search_knowde(
         q_tot,
         params={"s": s},
     )
-    total = res[0][0][0]
+    return res[0][0][0]
+
+
+def search_knowde(
+    s: str,
+    wp: WherePhrase = WherePhrase.CONTAINS,
+    paging: Paging = Paging(),
+    order_by: OrderBy = OrderBy(),
+    do_print: bool = False,  # noqa: FBT001, FBT002
+) -> tuple[int, list[KAdjacency]]:
+    """用語、文のいずれかでマッチするものを返す."""
+    total = search_total(s, wp)
 
     q = (
         r"""

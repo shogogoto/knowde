@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Self
 
 from pydantic import BaseModel
 
-from knowde.primitive.__core__.nxutil import axiom_paths, leaf_paths
+from knowde.primitive.__core__.nxutil import leaf_paths, root_paths
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 
 if TYPE_CHECKING:
@@ -29,7 +29,7 @@ class Navi(BaseModel, frozen=True):
         """ファクトリー."""
         return cls(
             node=n,
-            axiom_paths=axiom_paths(g, n, t),
+            axiom_paths=root_paths(g, n, t),
             leaf_paths=leaf_paths(g, n, t),
             t=t,
         )

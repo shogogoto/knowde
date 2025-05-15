@@ -18,7 +18,11 @@ from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.nxdb.restore import restore_sysnet
 from knowde.complex.nxdb.save import sn2db
 from knowde.feature.knowde.cypher import OrderBy, Paging, WherePhrase
-from knowde.feature.knowde.repo import get_stats_by_id, save_text, search_knowde
+from knowde.feature.knowde.repo import (
+    get_stats_by_id,
+    save_text,
+    search_knowde,
+)
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.user.repo import LUser
 
