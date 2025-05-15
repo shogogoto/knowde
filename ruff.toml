@@ -1,11 +1,11 @@
+builtins = ["_"]
 fix = true
 preview = true
-required-version = ">=0.11.2"
+required-version = ">=0.11.9"
 show-fixes = true
 unsafe-fixes = true
 target-version = "py312"
 [lint]
-select = ["ALL"]
 ignore = [
   "ERA001",  # found commented-out code
   "S101",    # use assert
@@ -31,11 +31,7 @@ ignore = [
   "PLC2701", # __core__ は private packageが外部でインポーされてる！
   "INP001",  # __init__.pyがdirectoryにない
 ]
-fixable = ["ALL"]
 unfixable = [
   "T201", # print
   "F841", # unused local variable
 ]
-# extend-safe-fixes = ["F401"]
-# extend-unsafe-fixes = ["F401"]
-# [tool.ruff.format]
