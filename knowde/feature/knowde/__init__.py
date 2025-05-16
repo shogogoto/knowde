@@ -20,7 +20,6 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 from knowde.complex.entry.mapper import MResource
-from knowde.primitive.__core__.nxutil import nxprint as nxprint
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.__core__.types import NXGraph
 from knowde.primitive.term import Term
@@ -124,13 +123,13 @@ class KnowdeDetail(BaseModel):
     location: KnowdeLocation
 
     # テスト用メソッド
-    def get(self, sentence: str) -> UUID | None:
+    def get(self, sentence: str) -> UUID | None:  # noqa: D102
         for k, v in self.knowdes.items():
             if v.sentence == sentence:
                 return k
         return None
 
-    def succ(self, sentence: str, t: EdgeType) -> list[Knowde]:
+    def succ(self, sentence: str, t: EdgeType) -> list[Knowde]:  # noqa: D102
         uid = self.get(sentence)
         if uid is None:
             raise ValueError

@@ -2,6 +2,7 @@
 
 from collections.abc import Generator
 from contextlib import contextmanager
+from uuid import UUID
 
 from more_itertools import collapse
 from neomodel import db
@@ -23,11 +24,11 @@ from knowde.feature.knowde.cypher import (
     q_sentence_from_def,
     q_stats,
 )
+from knowde.feature.knowde.detail import fetch_knowde_by_ids
 from knowde.primitive.__core__.neoutil import UUIDy, to_uuid
-from knowde.primitive.term import Term
 from knowde.primitive.user.repo import LUser
 
-from . import KAdjacency, Knowde, KStats
+from . import KAdjacency, KStats
 
 
 # fsと独
@@ -109,14 +110,14 @@ def search_knowde(
         + q_sentence_from_def(wp)
         + """
         }
-        WITH sent, names // 中間結果のサイズダウン
+        WITH sent // 中間結果のサイズダウン
         CALL {
-            WITH sent, names
+            WITH sent
         """
         + q_stats("sent")
         + """
         }
-        WITH sent, names
+        WITH sent
             , {
                 n_premise: n_premise,
                 n_conclusion: n_conclusion,
@@ -129,38 +130,25 @@ def search_knowde(
         + (order_by.score_prop() if order_by else "")
         + """
             } AS stats
-
-        OPTIONAL MATCH (intv: Interval)<-[:WHEN]-(sent)
         OPTIONAL MATCH (sent)<-[:TO]-(premise:Sentence)
-        OPTIONAL MATCH (premise)<-[:DEF]-(t_pre: Term)
         OPTIONAL MATCH (sent)-[:TO]->(conclusion:Sentence)
-        OPTIONAL MATCH (conclusion)<-[:DEF]-(t_con: Term)
         OPTIONAL MATCH (sent)<-[:RESOLVED]-(referred:Sentence)
-        OPTIONAL MATCH (referred)<-[:DEF]-(t_refd: Term)
         OPTIONAL MATCH (sent)-[:RESOLVED]->(refer:Sentence)
-        OPTIONAL MATCH (refer)<-[:DEF]-(t_ref: Term)
-        OPTIONAL MATCH (sent)-[:BELOW]->(detail:Sentence)
-        OPTIONAL MATCH (detail)-[:SEBLING]->*(detail2)
-        OPTIONAL MATCH (detail)<-[:DEF]-(t_detail: Term)
-        WITH sent, names, intv
-            , COLLECT(DISTINCT CASE WHEN premise IS NOT NULL
-                THEN [premise.val, premise.uid, t_pre.val] END) AS premises
-            , COLLECT(DISTINCT CASE WHEN conclusion IS NOT NULL
-                THEN [conclusion.val, conclusion.uid, t_con.val] END) AS conclusions
-            , COLLECT(DISTINCT CASE WHEN refer IS NOT NULL
-                THEN [refer.val, refer.uid, t_ref.val] END) AS refers
-            , COLLECT(DISTINCT CASE WHEN referred IS NOT NULL
-                THEN [referred.val, referred.uid, t_refd.val] END) AS referreds
-            , COLLECT(DISTINCT CASE WHEN detail IS NOT NULL
-                THEN [detail.val, detail.uid, t_detail.val] END) AS details
+        OPTIONAL MATCH (sent)-[:BELOW]->(detail1:Sentence)
+        OPTIONAL MATCH (detail1)-[:SIBLING]->*(detail2)
+        UNWIND [detail1, detail2] as detail
+        WITH sent
+            , COLLECT(DISTINCT premise.uid) as premises
+            , COLLECT(DISTINCT conclusion.uid) as conclusions
+            , COLLECT(DISTINCT referred.uid) as referreds
+            , COLLECT(DISTINCT refer.uid) as refers
+            , COLLECT(DISTINCT detail.uid) as details
             , stats
             """
         + (order_by.phrase() if order_by else "")
         + paging.phrase()
         + """
-        RETURN sent
-            , names
-            , intv
+        RETURN sent.uid as sent_uid
             , premises, conclusions
             , refers, referreds
             , details
@@ -175,23 +163,19 @@ def search_knowde(
         resolve_objects=True,
     )
 
-    def _neocol2knowde(col: list) -> list[Knowde]:
-        """neomodelのcollected listを変換."""
-        return [
-            Knowde(
-                sentence=str(sent),
-                uid=uid,
-                term=Term.create(name) if name else None,
-            )
-            for sent, uid, name in collapse(col, levels=2)
-        ]
+    def is_valid_uuid(uuid_string) -> bool:
+        try:
+            UUID(uuid_string)
+            return True  # noqa: TRY300
+        except ValueError:
+            return False
 
+    uids = set(filter(is_valid_uuid, collapse(res, base_type=UUID)))
+    knowdes = fetch_knowde_by_ids(list(uids))
     ls = []
     for row in res[0]:
         (
             sent,
-            names,
-            intv,
             premises,
             conclusions,
             refers,
@@ -200,17 +184,12 @@ def search_knowde(
             stats,
         ) = row
         adj = KAdjacency(
-            center=Knowde(
-                sentence=str(sent.val),
-                term=Term.from_labels(collapse(names)),
-                uid=sent.uid,
-            ),
-            when=intv.val if intv else None,
-            details=_neocol2knowde(details),
-            premises=_neocol2knowde(premises),
-            conclusions=_neocol2knowde(conclusions),
-            refers=_neocol2knowde(refers),
-            referreds=_neocol2knowde(referreds),
+            center=knowdes[sent],
+            details=[knowdes[d] for d in details[0]],
+            premises=[knowdes[p] for p in premises[0]],
+            conclusions=[knowdes[c] for c in conclusions[0]],
+            refers=[knowdes[r] for r in refers[0]],
+            referreds=[knowdes[r] for r in referreds[0]],
             stats=KStats.model_validate(stats),
         )
         ls.append(adj)

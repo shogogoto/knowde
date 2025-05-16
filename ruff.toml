@@ -6,6 +6,7 @@ show-fixes = true
 unsafe-fixes = true
 target-version = "py312"
 [lint]
+select = [ "ALL" ]
 ignore = [
   "ERA001",  # found commented-out code
   "S101",    # use assert
