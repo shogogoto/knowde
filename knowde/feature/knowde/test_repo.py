@@ -154,3 +154,39 @@ def test_ordering(u: LUser):
         order_by=order_by,
     )
     assert [a.center.sentence for a in adjs] == [str(i) for i in range(30)]
+
+
+def test_details(u: LUser):
+    """詳細の取得が変だったから."""
+    s = """
+    # titleX
+        detail1
+            d1
+                when. 114
+                d11
+                d12
+            d2
+            d3
+                d31
+                d32
+                    d33
+        detail2
+            x1
+            X2: x2
+            X3, X31: x3
+                when. 514
+                x4
+                    x5
+                    x6
+
+    """
+    _, r = save_text(u.uid, s)
+    _sn, _uids = restore_sysnet(r.uid)
+    _total, adjs = search_knowde(
+        "detail",
+        WherePhrase.CONTAINS,
+        # do_print=True,
+    )
+
+    assert [str(k) for k in adjs[0].details] == ["d1T(114)", "d2", "d3"]
+    assert [str(k) for k in adjs[1].details] == ["x1", "x2[X2]", "x3[X3(X31)]T(514)"]

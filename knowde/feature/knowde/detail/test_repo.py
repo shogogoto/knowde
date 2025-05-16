@@ -25,6 +25,7 @@ def test_detail(u: LUser):
     ## head1
     ### head2
         parent
+            when. 19C
             p1
             p2
                 zero, re :0
@@ -62,15 +63,41 @@ def test_detail(u: LUser):
     _sn, _r = save_text(u.uid, s, path=("A", "B", "C.txt"))  # C.txtはDBには格納されない
     s = LSentence.nodes.get(val="0")
     detail = detail_knowde(s.uid)
-    assert list(EdgeType.TO.succ(detail.g, "0")) == unordered(["1", "2"])
-    assert to_roots(detail.g, EdgeType.TO) == unordered(["-11", "-12", "-21", "-22"])
-    assert to_leaves(detail.g, EdgeType.TO) == unordered(["11", "12", "21", "221"])
-    assert to_roots(detail.g, EdgeType.RESOLVED) == unordered(["c{B}c"])
-    assert to_leaves(detail.g, EdgeType.RESOLVED) == unordered(["0", "a"])
+    # assert list(EdgeType.TO.succ(detail.g, "0")) == unordered(["1", "2"])
+    assert [k.sentence for k in detail.succ("0", EdgeType.TO)] == unordered(["1", "2"])
+    roots_to = to_roots(detail.g, EdgeType.TO)
+    assert [detail.knowdes[UUID(s)].sentence for s in roots_to] == unordered([
+        "-11",
+        "-12",
+        "-21",
+        "-22",
+    ])
+    leaves_to = to_leaves(detail.g, EdgeType.TO)
+    assert [detail.knowdes[UUID(s)].sentence for s in leaves_to] == unordered([
+        "11",
+        "12",
+        "21",
+        "221",
+    ])
+    roots_ref = to_roots(detail.g, EdgeType.RESOLVED)
+    leaves_ref = to_leaves(detail.g, EdgeType.RESOLVED)
+    assert [detail.knowdes[UUID(s)].sentence for s in roots_ref] == unordered([
+        "c{B}c",
+    ])
+
+    assert [detail.knowdes[UUID(s)].sentence for s in leaves_ref] == unordered([
+        "0",
+        "a",
+    ])
 
     loc = detail.location
     assert loc.user.uid == UUID(u.uid)
     assert [f.val for f in loc.folders] == ["A", "B"]
     assert loc.resource.name == "# titleX"
     assert [f.val for f in loc.headers] == ["## head1", "### head2"]
-    assert [str(f) for f in loc.parents] == ["parent", "p1", "p2", "0[zero(re)]"]
+    assert [str(p) for p in loc.parents] == [
+        "parentT(19C)",
+        "p1",
+        "p2",
+        "0[zero(re)]T(R10/11/11)",
+    ]
