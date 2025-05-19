@@ -22,7 +22,7 @@ jobs:
             wait_sec: 1
     services:
       db-${{ matrix.python-version }}:
-        image: neo4j:${{ env.NEO4J_VERSION }}
+        image: neo4j:latest
         env:
           NEO4J_AUTH: neo4j/passwordneo
         ports:
