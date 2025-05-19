@@ -8,6 +8,7 @@ from neomodel import db
 
 from knowde.complex.entry.mapper import MResource
 from knowde.feature.knowde import Knowde, KnowdeDetail, KnowdeLocation, UidStr
+from knowde.primitive.__core__.errors.domain import NeomodelNotFoundError
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.term import Term
 from knowde.primitive.user import User
@@ -19,8 +20,7 @@ def fetch_knowde_by_ids(uids: list[str]) -> dict[UUID, Knowde]:
     q = """
         UNWIND $uids as uid
         MATCH (sent: Sentence {uid: uid})
-        CALL {
-            WITH sent
+        CALL (sent) {
             OPTIONAL MATCH p = (sent)-[:DEF|ALIAS]-*(:Term)
             WITH p, LENGTH(p) as len
             ORDER BY len DESC
@@ -61,7 +61,7 @@ def locate_knowde(uid: UUID, do_print: bool = False) -> KnowdeLocation:  # noqa:
     if do_print:
         print(q)  # noqa: T201
 
-    res = db.cypher_query(q, params={"uid": uid})
+    res = db.cypher_query(q, params={"uid": uid.hex})
     for row in res[0][0]:
         user = User.model_validate(dict(row[0]))
         r = first_true(row[1:], pred=lambda n: "Resource" in n.labels)
@@ -91,7 +91,7 @@ def detail_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: F
     """knowdeの依存chain全てを含めた詳細."""
     q = """
         MATCH (sent: Sentence {uid: $uid})
-        CALL {
+        CALL (sent) {
             // detail
             MATCH (sent)-[:BELOW]->(:Sentence)-[:SIBLING|BELOW]->*(b1:Sentence)
                 -[r:SIBLING|BELOW]->(b2:Sentence)
@@ -112,13 +112,15 @@ def detail_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: F
         """
     if do_print:
         print(q)  # noqa: T201
-
     res = db.cypher_query(
         q,
-        params={"uid": uid},
+        params={"uid": uid.hex},
         resolve_objects=True,
     )
 
+    if len(res[0]) == 0:
+        msg = f"{uid} not found"
+        raise NeomodelNotFoundError(msg)
     g = nx.MultiDiGraph()
     for row in res[0]:
         start, end, type_ = row

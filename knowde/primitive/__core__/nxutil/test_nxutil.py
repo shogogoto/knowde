@@ -5,7 +5,7 @@ import pytest
 
 from knowde.primitive.__core__.nxutil.util import succ_attr
 
-from . import filter_edge_attr, leaf_paths, nxprint, root_paths, to_nested, to_roots
+from . import filter_edge_attr, leaf_paths, root_paths, to_nested, to_roots
 
 
 def test_to_nested() -> None:  # noqa: D103
@@ -63,7 +63,6 @@ def test_axiom_paths() -> None:
     g = nx.balanced_tree(3, 2, nx.MultiDiGraph())
     nx.set_edge_attributes(g, "x", "type")
     g.add_edge(9, "dummy", type="dummy")
-    nxprint(g)
     assert root_paths(g, 7, "x") == [[0, 2, 7]]
     assert root_paths(g, 2, "x") == [[0, 2]]
     with pytest.raises(nx.NodeNotFound):

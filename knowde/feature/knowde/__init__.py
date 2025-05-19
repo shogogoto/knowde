@@ -89,11 +89,11 @@ class KAdjacency(BaseModel):
 
     center: Knowde
     when: str | None = None
-    details: list[Knowde] = Field(default_factory=list)
-    premises: list[Knowde] = Field(default_factory=list)
-    conclusions: list[Knowde] = Field(default_factory=list)
-    refers: list[Knowde] = Field(default_factory=list)
-    referreds: list[Knowde] = Field(default_factory=list)
+    details: list[Knowde]
+    premises: list[Knowde]
+    conclusions: list[Knowde]
+    refers: list[Knowde]
+    referreds: list[Knowde]
     stats: KStats | None = None
 
     def __str__(self) -> str:
