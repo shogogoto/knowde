@@ -62,7 +62,7 @@ def test_detail(u: LUser):
     """
     _sn, _r = save_text(u.uid, s, path=("A", "B", "C.txt"))  # C.txtはDBには格納されない
     s = LSentence.nodes.get(val="0")
-    detail = detail_knowde(s.uid)
+    detail = detail_knowde(UUID(s.uid))
     # assert list(EdgeType.TO.succ(detail.g, "0")) == unordered(["1", "2"])
     assert [k.sentence for k in detail.succ("0", EdgeType.TO)] == unordered(["1", "2"])
     roots_to = to_roots(detail.g, EdgeType.TO)
