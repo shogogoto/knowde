@@ -8,6 +8,7 @@ from neomodel import db
 
 from knowde.complex.entry.mapper import MResource
 from knowde.feature.knowde import Knowde, KnowdeDetail, KnowdeLocation, UidStr
+from knowde.primitive.__core__.errors.domain import NeomodelNotFoundError
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.term import Term
 from knowde.primitive.user import User
@@ -117,6 +118,9 @@ def detail_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: F
         resolve_objects=True,
     )
 
+    if len(res[0]) == 0:
+        msg = f"{uid} not found"
+        raise NeomodelNotFoundError(msg)
     g = nx.MultiDiGraph()
     for row in res[0]:
         start, end, type_ = row
