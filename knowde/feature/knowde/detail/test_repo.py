@@ -1,13 +1,16 @@
 """test."""
 
-from uuid import UUID
+from datetime import datetime
+from uuid import UUID, uuid4
 
 import pytest
+import pytz
 from pytest_unordered import unordered
 
 from knowde.complex.nxdb import LSentence
-from knowde.feature.knowde.detail import detail_knowde
+from knowde.feature.knowde.detail import detail_knowde, locate_knowde
 from knowde.feature.knowde.repo import save_text
+from knowde.primitive.__core__.errors.domain import NotFoundError
 from knowde.primitive.__core__.nxutil import to_leaves, to_roots
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.user.repo import LUser
@@ -101,3 +104,33 @@ def test_detail(u: LUser):
         "p2",
         "0[zero(re)]T(R10/11/11)",
     ]
+
+
+def test_locate_knowde(u: LUser):
+    """knowdeの位置を返す."""
+    s = """
+    # titleX
+    ## head1
+    ### head2
+        parent
+            when. 19C
+            p1
+            p2
+    """
+    _sn, _r = save_text(
+        u.uid,
+        s,
+        updated=datetime.now(tz=pytz.timezone("Asia/Tokyo")),
+        path=("A", "B", "C.txt"),
+    )  # C.txtはDBには格納されない
+
+    s = LSentence.nodes.get(val="p2")
+    with pytest.raises(NotFoundError):
+        locate_knowde(uuid4())
+
+    lc = locate_knowde(UUID(s.uid))
+    assert lc.user.uid == UUID(u.uid)
+    assert lc.folders[0].val == "A"
+    assert lc.resource.name == "# titleX"
+    assert lc.headers[0].val == "## head1"
+    assert lc.headers[1].val == "### head2"

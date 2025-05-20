@@ -2,6 +2,7 @@
 
 from collections.abc import Generator
 from contextlib import contextmanager
+from datetime import datetime
 from uuid import UUID
 
 from more_itertools import collapse
@@ -60,10 +61,12 @@ def save_text(
     user_id: UUIDy,
     s: str,
     path: tuple[str, ...] | None = None,
+    updated: datetime | None = None,
     do_print: bool = False,  # noqa: FBT001, FBT002
 ) -> tuple[SysNet, MResource]:
     """テキストを保存."""
     meta = txt2meta(s)
+    meta.updated = updated
     meta.path = path
     ns = fetch_namespace(to_uuid(user_id))
     save_resource(meta, ns)

@@ -13,7 +13,7 @@ from knowde.primitive.__core__.errors.domain import (
     AlreadyExistsError,
     CompleteNotFoundError,
     MultiHitError,
-    NeomodelNotFoundError,
+    NotFoundError,
 )
 from knowde.primitive.__core__.label_repo.value_util import NodeUtil
 
@@ -51,7 +51,7 @@ class LBaseUtil(NodeUtil[L], frozen=True):
         try:
             return self.t.nodes.get(uid=uid.hex)
         except DoesNotExist as e:
-            raise NeomodelNotFoundError(msg=str(e)) from e
+            raise NotFoundError(msg=str(e)) from e
 
     def delete_by_uid(self, uid: UUID) -> None:  # noqa: D102
         # 存在チェックはしない

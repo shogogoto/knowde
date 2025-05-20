@@ -4,6 +4,7 @@ from datetime import date, datetime
 from typing import Self
 from uuid import UUID
 
+import neo4j
 from pydantic import BaseModel
 from pydantic_core import Url
 
@@ -41,6 +42,8 @@ class MResource(Entry, frozen=True):
         """リストをfrozensetに変換."""
         new = dict(d)
         for k, v in d.items():
+            if k == "updated" and isinstance(v, neo4j.time.DateTime):
+                new[k] = v.to_native()
             if k == "uid":
                 new[k] = UUID(v)
             if k == "title":

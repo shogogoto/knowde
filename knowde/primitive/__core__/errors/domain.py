@@ -23,7 +23,7 @@ class MultiHitError(DomainError):
     status_code = status.HTTP_409_CONFLICT
 
 
-class NeomodelNotFoundError(DomainError):
+class NotFoundError(DomainError):
     """neomodel内で見つからなかったとき."""
 
     status_code = status.HTTP_404_NOT_FOUND
