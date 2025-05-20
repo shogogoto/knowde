@@ -7,7 +7,7 @@ from typing import TypeVar
 from neomodel import StructuredNode
 from pydantic import BaseModel
 
-from knowde.primitive.__core__.errors.domain import NeomodelNotFoundError
+from knowde.primitive.__core__.errors.domain import NotFoundError
 
 L = TypeVar("L", bound=StructuredNode)
 M = TypeVar("M", bound=BaseModel)
@@ -25,7 +25,7 @@ class NodeUtil[L](BaseModel, frozen=True):
     def find_one(self, **kwargs) -> L:  # noqa: D102
         lb = self.find_one_or_none(**kwargs)
         if lb is None:
-            raise NeomodelNotFoundError
+            raise NotFoundError
         return lb
 
     def find_one_or_none(self, **kwargs) -> L | None:  # noqa: D102
