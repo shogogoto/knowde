@@ -15,11 +15,15 @@ term: sentでマッチ
 その文脈を加える
 """
 
+import itertools
+from collections.abc import Hashable, Iterable
 from uuid import UUID
 
+from networkx import DiGraph
 from pydantic import BaseModel, Field
 
 from knowde.complex.entry.mapper import MResource
+from knowde.primitive.__core__.nxutil import to_nodes
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.__core__.types import NXGraph
 from knowde.primitive.term import Term
@@ -123,15 +127,44 @@ class KnowdeDetail(BaseModel):
     location: KnowdeLocation
 
     # テスト用メソッド
-    def get(self, sentence: str) -> UUID | None:  # noqa: D102
+    def get(self, sentence: str) -> UUID:  # noqa: D102
         for k, v in self.knowdes.items():
             if v.sentence == sentence:
+                if v.uid.hex not in self.g:
+                    raise ValueError
                 return k
-        return None
+        raise ValueError
 
     def succ(self, sentence: str, t: EdgeType) -> list[Knowde]:  # noqa: D102
         uid = self.get(sentence)
-        if uid is None:
-            raise ValueError
         succs = list(t.succ(self.g, uid.hex))
         return [self.knowdes[UUID(s)] for s in succs]
+
+    def part(self, tgt: str) -> set[Knowde]:
+        """targetも含めて返す."""
+        uid = self.get(tgt)
+
+        is_first = True
+
+        def succ(g: DiGraph, n: Hashable) -> Iterable[Hashable]:
+            nonlocal is_first
+            it = itertools.chain(
+                EdgeType.BELOW.succ(g, n),
+                EdgeType.SIBLING.succ(g, n) if not is_first else [],
+            )
+            is_first = False
+            return it
+
+        ns = to_nodes(self.g, uid.hex, succ)
+        return {self.knowdes.get(UUID(s)) for s in ns if s is not None}
+
+    @property
+    def graph(self) -> DiGraph:  # noqa: D102
+        g = DiGraph()
+
+        for u, v, attr in self.g.edges(data=True):
+            uu = self.knowdes.get(UUID(u))
+            vv = self.knowdes.get(UUID(v))
+            if uu is not None and vv is not None:
+                g.add_edge(uu, vv, **attr)
+        return g

@@ -1,16 +1,13 @@
 """test."""
 
-from datetime import datetime
-from uuid import UUID, uuid4
+from uuid import UUID
 
 import pytest
-import pytz
 from pytest_unordered import unordered
 
 from knowde.complex.nxdb import LSentence
-from knowde.feature.knowde.detail import detail_knowde, locate_knowde
+from knowde.feature.knowde.detail import detail_knowde
 from knowde.feature.knowde.repo import save_text
-from knowde.primitive.__core__.errors.domain import NotFoundError
 from knowde.primitive.__core__.nxutil import to_leaves, to_roots
 from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.user.repo import LUser
@@ -21,8 +18,8 @@ def u() -> LUser:  # noqa: D103
     return LUser(email="onex@gmail.com", hashed_password="xxx").save()  # noqa: S106
 
 
-def test_detail(u: LUser):
-    """IDによる詳細."""
+def test_detail_networks_to_or_resolved_edges(u: LUser):
+    """IDによる詳細 TO/RESOLVED関係."""
     s = """
     # titleX
     ## head1
@@ -66,7 +63,6 @@ def test_detail(u: LUser):
     _sn, _r = save_text(u.uid, s, path=("A", "B", "C.txt"))  # C.txtはDBには格納されない
     s = LSentence.nodes.get(val="0")
     detail = detail_knowde(UUID(s.uid))
-    # assert list(EdgeType.TO.succ(detail.g, "0")) == unordered(["1", "2"])
     assert [k.sentence for k in detail.succ("0", EdgeType.TO)] == unordered(["1", "2"])
     roots_to = to_roots(detail.g, EdgeType.TO)
     assert [detail.knowdes[UUID(s)].sentence for s in roots_to] == unordered([
@@ -93,6 +89,21 @@ def test_detail(u: LUser):
         "a",
     ])
 
+    assert [p.sentence for p in detail.part("0")] == unordered([
+        "0",
+        "xxx",
+        "x1",
+        "x11",
+        "x12",
+        "x2",
+        "x21",
+        "x22",
+        "x23",
+        "x231",
+        "yyy",
+        "zzz",
+    ])
+
     loc = detail.location
     assert loc.user.uid == UUID(u.uid)
     assert [f.val for f in loc.folders] == ["A", "B"]
@@ -102,35 +113,55 @@ def test_detail(u: LUser):
         "parentT(19C)",
         "p1",
         "p2",
-        "0[zero(re)]T(R10/11/11)",
     ]
 
 
-def test_locate_knowde(u: LUser):
-    """knowdeの位置を返す."""
+def test_detail_no_below_no_header(u: LUser):
+    """belowなしでも取得できるか."""
     s = """
     # titleX
-    ## head1
-    ### head2
-        parent
-            when. 19C
-            p1
-            p2
+        a
     """
-    _sn, _r = save_text(
-        u.uid,
-        s,
-        updated=datetime.now(tz=pytz.timezone("Asia/Tokyo")),
-        path=("A", "B", "C.txt"),
-    )  # C.txtはDBには格納されない
+    _sn, _r = save_text(u.uid, s)
+    s = LSentence.nodes.get(val="a")
+    d = detail_knowde(UUID(s.uid))
+    assert [k.sentence for k in d.part("a")] == ["a"]
+    assert d.location.parents == []
+    assert d.location.headers == []
+    assert d.location.user.uid.hex == u.uid
 
-    s = LSentence.nodes.get(val="p2")
-    with pytest.raises(NotFoundError):
-        locate_knowde(uuid4())
 
-    lc = locate_knowde(UUID(s.uid))
-    assert lc.user.uid == UUID(u.uid)
-    assert lc.folders[0].val == "A"
-    assert lc.resource.name == "# titleX"
-    assert lc.headers[0].val == "## head1"
-    assert lc.headers[1].val == "### head2"
+def test_detail_no_below_no_header_with_parent(u: LUser):
+    """belowなしでも取得できるか."""
+    s = """
+    # titleX
+        parent
+            a
+    """
+    _sn, _r = save_text(u.uid, s)
+    s = LSentence.nodes.get(val="a")
+    d = detail_knowde(UUID(s.uid))
+    assert [k.sentence for k in d.part("a")] == ["a"]
+    assert [k.sentence for k in d.location.parents] == ["parent"]
+    assert d.location.headers == []
+    assert d.location.user.uid.hex == u.uid
+
+
+def test_detail_no_header(u: LUser):
+    """headerなし."""
+    s = """
+    # titleX
+        a
+            b
+            c
+        d
+        e
+            f
+    """
+    _sn, _r = save_text(u.uid, s)
+    s = LSentence.nodes.get(val="a")
+    d = detail_knowde(UUID(s.uid))
+    assert [k.sentence for k in d.part("a")] == unordered(["a", "b", "c"])
+    assert d.location.parents == []
+    assert d.location.headers == []
+    assert d.location.user.uid.hex == u.uid

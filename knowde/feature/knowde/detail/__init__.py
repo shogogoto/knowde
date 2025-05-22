@@ -51,12 +51,9 @@ def locate_knowde(uid: UUID, do_print: bool = False) -> KnowdeLocation:  # noqa:
     """knowdeの親~userまでを返す."""
     q = """
         MATCH (sent: Sentence {uid: $uid})
-        MATCH p = (user:User)<-[:OWNED|PARENT]-*(r:Resource)
-            -[:HEAD]->*(h:Head)
-            -[:SIBLING|BELOW]->*(s:Sentence)
-            -[:SIBLING|BELOW]->*(sent)
-        OPTIONAL MATCH p_name = (s)-[:DEF|ALIAS]-*(:Term)
-        RETURN nodes(p)
+            , p2 = (r:Resource)-[:SIBLING|BELOW|HEAD]->*(sent)
+            , p = (user:User)-[:OWNED|PARENT]-*(r)
+        RETURN nodes(p) + nodes(p2)[0..-1] as nodes
     """
     if do_print:
         print(q)  # noqa: T201
@@ -66,6 +63,7 @@ def locate_knowde(uid: UUID, do_print: bool = False) -> KnowdeLocation:  # noqa:
         raise NotFoundError(msg)
 
     for row in res[0][0]:
+        row = list(dict.fromkeys(row))  # noqa: PLW2901 重複削除
         user = User.model_validate(dict(row[0]))
         r = first_true(row[1:], pred=lambda n: "Resource" in n.labels)
         r_i = row.index(r)
@@ -73,11 +71,11 @@ def locate_knowde(uid: UUID, do_print: bool = False) -> KnowdeLocation:  # noqa:
         resource = MResource.freeze_dict(dict(r))
 
         first_sent = first_true(row, pred=lambda n: "Sentence" in n.labels)
-        s_i = row.index(first_sent)
+        s_i = row.index(first_sent) if first_sent is not None else -1
         headers = [
             UidStr(val=e.get("val"), uid=e.get("uid")) for e in row[r_i + 1 : s_i]
         ]
-        uids = [e.get("uid") for e in row[s_i:]]
+        uids = [e.get("uid") for e in row[s_i:]] if s_i != -1 else []
         knowdes = fetch_knowde_by_ids(uids)
         parents = [knowdes[uid] for uid in uids]
         return KnowdeLocation(
@@ -95,17 +93,21 @@ def detail_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: F
     q = """
         MATCH (sent: Sentence {uid: $uid})
         CALL (sent) {
-            // detail
-            MATCH (sent)-[:BELOW]->(:Sentence)-[:SIBLING|BELOW]->*(b1:Sentence)
-                -[r:SIBLING|BELOW]->(b2:Sentence)
-            RETURN b1 as start, b2 as end, type(r) as type
+            // detail がない場合にMATCHしなくなる
+            RETURN (sent) as start, null as end, null as type
             UNION
-            WITH sent
+            // Part Chain
+            MATCH (sent)-[r:BELOW]->(:Sentence)
+            RETURN startNode(r) as start, endNode(r) as end, type(r) as type
+            UNION
+            MATCH (below)-[rs:SIBLING|BELOW]->*(:Sentence)
+            UNWIND rs as r
+            RETURN startNode(r) as start, endNode(r) as end, type(r) as type
+            UNION
             // Logic Chain
             MATCH (p1:Sentence)-[r:TO]-(p2:Sentence)-[:TO]-*(sent)
             RETURN startNode(r) as start, endNode(r) as end, type(r) as type
             UNION
-            WITH sent
             // Ref Chain
             MATCH (:Sentence)-[r:RESOLVED]-(:Sentence)
                 -[:RESOLVED]-*(sent)
@@ -120,13 +122,12 @@ def detail_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: F
         params={"uid": uid.hex},
         resolve_objects=True,
     )
-
-    if len(res[0]) == 0:
-        msg = f"{uid} not found"
-        raise NotFoundError(msg)
     g = nx.MultiDiGraph()
     for row in res[0]:
         start, end, type_ = row
+        if type_ is None:
+            g.add_node(start.uid)
+            continue
         t: EdgeType = getattr(EdgeType, type_)
         t.add_edge(g, start.uid, end.uid)
     return KnowdeDetail(
