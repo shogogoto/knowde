@@ -1,13 +1,58 @@
 """knowde router test."""
 
+from datetime import datetime
+from uuid import UUID
+
+import pytest
+import pytz
 from fastapi import status
 from fastapi.testclient import TestClient
 
+from knowde.complex.nxdb import LSentence
 from knowde.feature.api import root_router
+from knowde.feature.knowde import KnowdeDetail
+from knowde.feature.knowde.repo import save_text
+from knowde.primitive.user.repo import LUser
 
 
-def test_detail():
-    """Knowde detail router test."""
+@pytest.fixture
+def u() -> LUser:  # noqa: D103
+    return LUser(email="onex@gmail.com", hashed_password="xxx").save()  # noqa: S106
+
+
+def test_detail_router(u: LUser):
+    """Router testは1つはしておくけど細かいケースはrepositoryなどでやっておく."""
     client = TestClient(root_router())
     res = client.get("/knowde/sentence/064ef00c-5e33-4505-acf5-45ba26cc54dc")
     assert res.status_code == status.HTTP_404_NOT_FOUND
+
+    s = """
+    # titleX
+    ## head1
+    ### head2
+        parent
+            when. 19C
+            p1
+            p2
+                p21
+            p3
+    """
+    t = datetime.now(tz=pytz.timezone("Asia/Tokyo"))
+    _sn, _r = save_text(
+        u.uid,
+        s,
+        # DB readしたときにneo4j.DateTimeが返ってきて
+        # pydanticとvalidate error にならないかチェック
+        updated=t,
+        path=("A", "B", "C.txt"),
+    )
+
+    s = LSentence.nodes.get(val="p21")
+    url = f"/knowde/sentence/{UUID(s.uid)}"
+    res = client.get(url)
+    assert res.status_code == status.HTTP_200_OK
+    d = KnowdeDetail.model_validate(res.json())
+
+    assert d.location.resource.updated == t
+    assert d.location.user.uid.hex == u.uid
+    assert [f.val for f in d.location.folders] == ["A", "B"]
