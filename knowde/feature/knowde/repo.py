@@ -108,14 +108,13 @@ def search_knowde(
     """用語、文のいずれかでマッチするものを返す."""
     q = (
         r"""
-        CALL {
+        CALL () {
         """
         + q_sentence_from_def(wp)
         + """
         }
         WITH sent // 中間結果のサイズダウン
-        CALL {
-            WITH sent
+        CALL (sent){
         """
         + q_stats("sent")
         + """
@@ -138,7 +137,8 @@ def search_knowde(
         OPTIONAL MATCH (sent)<-[:RESOLVED]-(referred:Sentence)
         OPTIONAL MATCH (sent)-[:RESOLVED]->(refer:Sentence)
         OPTIONAL MATCH (sent)-[:BELOW]->(detail1:Sentence)
-        OPTIONAL MATCH (detail1)-[:SIBLING]->*(detail2)
+        // 近接1階層分だか SIB or BELOW で全てを辿るのではない
+        OPTIONAL MATCH (detail1)-[:SIBLING]->*(detail2:Sentence)
         UNWIND [detail1, detail2] as detail
         WITH sent
             , COLLECT(DISTINCT premise.uid) as premises
