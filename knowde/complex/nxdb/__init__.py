@@ -11,6 +11,7 @@ from neomodel import (
     FulltextIndex,
     One,
     RelationshipFrom,
+    RelationshipManager,
     RelationshipTo,
     StringProperty,
     StructuredNode,
@@ -71,6 +72,7 @@ class LTerm(StructuredNode):
         fulltext_index=FulltextIndex(),
     )  # , max_length=MAX_CHARS)
     alias = RelationshipTo("LTerm", "ALIAS", cardinality=ZeroOrOne)
+    sentence: RelationshipManager = RelationshipTo("LSentence", "DEF")
 
 
 class LInterval(StructuredNode):

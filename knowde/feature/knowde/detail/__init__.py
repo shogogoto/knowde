@@ -44,6 +44,11 @@ def fetch_knowde_by_ids(uids: list[str]) -> dict[UUID, Knowde]:
             term=Term.create(*names) if names else None,
             when=when.get("val") if when is not None else None,
         )
+
+    diff = set(uids) - set(d.keys())
+    if len(diff) > 0:
+        msg = f"fail to fetch_nodes_by_ids: {[UUID(e) for e in diff]}"
+        raise NotFoundError(msg)
     return d
 
 
@@ -100,7 +105,8 @@ def detail_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: F
             MATCH (sent)-[r:BELOW]->(:Sentence)
             RETURN startNode(r) as start, endNode(r) as end, type(r) as type
             UNION
-            MATCH (below)-[rs:SIBLING|BELOW]->*(:Sentence)
+            MATCH (sent)-[:BELOW]->(below:Sentence)
+                -[rs:SIBLING|BELOW]->*(:Sentence)
             UNWIND rs as r
             RETURN startNode(r) as start, endNode(r) as end, type(r) as type
             UNION
