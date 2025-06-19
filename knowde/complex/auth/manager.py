@@ -14,6 +14,7 @@ from fastapi_users import BaseUserManager, UUIDIDMixin
 from fastapi_users.authentication import (
     AuthenticationBackend,
     BearerTransport,
+    CookieTransport,
     JWTStrategy,
 )
 from fastapi_users.db import (
@@ -47,9 +48,8 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     #     response: Response | None = None,
     # ) -> None:
     #     """SSOのブラウザからのレスポンスを取得."""
-    #     print("A" * 100)
     #     if response is not None:
-    #         response_queue().put(response.body)
+    #         pass
 
     @override
     async def on_after_register(
@@ -169,11 +169,23 @@ def get_user_manager() -> AsyncGenerator:
     return UserManager(AccountDB())
 
 
-def auth_backend() -> AuthenticationBackend:
+def bearer_backend() -> AuthenticationBackend:
     """For fastapi-users."""
     return AuthenticationBackend(
         name="jwt",
         transport=BearerTransport(tokenUrl="auth/jwt/login"),
+        get_strategy=lambda: JWTStrategy(
+            secret=s.KN_AUTH_SECRET,
+            lifetime_seconds=s.KN_TOKEN_LIFETIME_SEC,
+        ),
+    )
+
+
+def cookie_backend() -> AuthenticationBackend:
+    """For fastapi-users."""
+    return AuthenticationBackend(
+        name="cookie",
+        transport=CookieTransport(cookie_max_age=s.KN_TOKEN_LIFETIME_SEC),
         get_strategy=lambda: JWTStrategy(
             secret=s.KN_AUTH_SECRET,
             lifetime_seconds=s.KN_TOKEN_LIFETIME_SEC,
