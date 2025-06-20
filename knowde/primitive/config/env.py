@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     KN_REDIRECT_URL: str = "http://localhost:5173/home"
     COOKIE_SECURE: bool = False
     ALLOW_ORIGINS: str = "*"
-    COOLIE_SAMESITE: Literal["lax", "strict", "none"] = "lax"
+    COOKIE_SAMESITE: Literal["lax", "strict", "none"] = "lax"
 
     @property
     def allow_origins(self) -> list[str]:  # noqa: D102

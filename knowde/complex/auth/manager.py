@@ -188,7 +188,7 @@ def cookie_backend() -> AuthenticationBackend:
         transport=CookieTransport(
             cookie_max_age=s.KN_TOKEN_LIFETIME_SEC,
             cookie_secure=s.COOKIE_SECURE,
-            cookie_samesite=s.COOLIE_SAMESITE,
+            cookie_samesite=s.COOKIE_SAMESITE,
         ),
         get_strategy=lambda: JWTStrategy(
             secret=s.KN_AUTH_SECRET,
