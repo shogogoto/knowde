@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Final, Protocol
+from typing import Final, Literal, Protocol
 from urllib.parse import urljoin
 
 import httpx
@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     KN_REDIRECT_URL: str = "http://localhost:5173/home"
     COOKIE_SECURE: bool = False
     ALLOW_ORIGINS: str = "*"
+    COOLIE_SAMESITE: Literal["lax", "strict", "none"] = "lax"
 
     @property
     def allow_origins(self) -> list[str]:  # noqa: D102
