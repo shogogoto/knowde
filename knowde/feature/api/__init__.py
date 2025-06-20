@@ -36,7 +36,6 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator:  # noqa: RUF029
     s.terdown_db()
 
 
-s = Settings()
 api = FastAPI(lifespan=lifespan)
 api.add_middleware(ErrorHandlingMiddleware)
 api.add_middleware(
@@ -45,10 +44,11 @@ api.add_middleware(
     exclude_paths=["/health"],
     logger=neo4j_logger(),
 )
+s = Settings()
 api.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=s.ALLOW_ORIGINS,
+    allow_origins=s.allow_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )

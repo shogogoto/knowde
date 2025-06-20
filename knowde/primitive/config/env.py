@@ -32,7 +32,12 @@ class Settings(BaseSettings):
     KN_TOKEN_LIFETIME_SEC: int = 60 * 60 * 24 * 7  # 7 days
     KN_REDIRECT_URL: str = "http://localhost:5173/home"
     COOKIE_SECURE: bool = False
-    ALLOW_ORIGINS: list[str] = ["*"]
+    ALLOW_ORIGINS: str = "*"
+
+    @property
+    def allow_origins(self) -> list[str]:  # noqa: D102
+        s = self.ALLOW_ORIGINS
+        return [o.strip() for o in s.split(",") if o.strip()]
 
     def setup_db(self) -> None:
         """DB設定."""
