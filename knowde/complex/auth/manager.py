@@ -185,7 +185,11 @@ def cookie_backend() -> AuthenticationBackend:
     """For fastapi-users."""
     return AuthenticationBackend(
         name="cookie",
-        transport=CookieTransport(cookie_max_age=s.KN_TOKEN_LIFETIME_SEC),
+        transport=CookieTransport(
+            cookie_max_age=s.KN_TOKEN_LIFETIME_SEC,
+            cookie_secure=s.COOKIE_SECURE,
+            cookie_samesite="none",
+        ),
         get_strategy=lambda: JWTStrategy(
             secret=s.KN_AUTH_SECRET,
             lifetime_seconds=s.KN_TOKEN_LIFETIME_SEC,

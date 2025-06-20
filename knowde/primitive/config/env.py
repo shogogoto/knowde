@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     KN_AUTH_SECRET: str = "SECRET"  # noqa: S105
     KN_TOKEN_LIFETIME_SEC: int = 60 * 60 * 24 * 7  # 7 days
     KN_REDIRECT_URL: str = "http://localhost:5173/home"
+    COOKIE_SECURE: bool = False
 
     def setup_db(self) -> None:
         """DB設定."""
