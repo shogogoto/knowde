@@ -184,6 +184,7 @@ def get_cookie_transport() -> CookieTransport:
         cookie_max_age=s.KN_TOKEN_LIFETIME_SEC,
         cookie_secure=s.COOKIE_SECURE,
         cookie_samesite=s.COOKIE_SAMESITE,
+        cookie_domain=s.FRONTEND_URL,
     )
 
 
