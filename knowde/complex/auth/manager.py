@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 import uuid
-from collections.abc import AsyncGenerator
 from functools import cache
 from queue import Queue
 from typing import Any, override
 from uuid import UUID
 
-from fastapi import Request
+from fastapi import Request, Response
 from fastapi_users import BaseUserManager, UUIDIDMixin
 from fastapi_users.authentication import (
     AuthenticationBackend,
@@ -40,16 +39,17 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     reset_password_token_secret = s.KN_AUTH_SECRET
     verification_token_secret = s.KN_AUTH_SECRET
 
-    # @override
-    # async def on_after_login(
-    #     self,
-    #     user: User,
-    #     request: Request | None = None,
-    #     response: Response | None = None,
-    # ) -> None:
-    #     """SSOのブラウザからのレスポンスを取得."""
-    #     if response is not None:
-    #         pass
+    @override
+    async def on_after_login(
+        self,
+        user: User,
+        request: Request | None = None,
+        response: Response | None = None,
+    ) -> None:
+        """SSOのブラウザからのレスポンスを取得."""
+        if response is not None and s.FRONTEND_URL is not None:
+            response.status_code = 303
+            response.headers["Location"] = s.FRONTEND_URL
 
     @override
     async def on_after_register(
@@ -164,7 +164,7 @@ class AccountDB(BaseUserDatabase[User, UUID]):
         print("------------ update oauth account", user, update_dict)  # noqa: T201
 
 
-def get_user_manager() -> AsyncGenerator:
+def get_user_manager() -> UserManager:
     """For fastapi-users."""
     return UserManager(AccountDB())
 

@@ -43,6 +43,7 @@ auth_router.include_router(pref_auth)
 s = Settings()
 google_router = APIRouter(prefix="/google", tags=["google"])
 google = GoogleOAuth2(s.GOOGLE_CLIENT_ID, s.GOOGLE_CLIENT_SECRET)
+
 google_router.include_router(
     ac.get_oauth_router(
         google,
@@ -50,7 +51,6 @@ google_router.include_router(
         s.KN_AUTH_SECRET,
     ),
 )
-
 google_router.include_router(
     ac.get_oauth_router(
         google,

@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     COOKIE_SECURE: bool = False
     ALLOW_ORIGINS: str = "*"
     COOKIE_SAMESITE: Literal["lax", "strict", "none"] = "lax"
+    FRONTEND_URL: str | None = None
 
     @property
     def allow_origins(self) -> list[str]:  # noqa: D102
