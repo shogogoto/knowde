@@ -1,3 +1,5 @@
+"""oauth."""
+
 from typing import override
 
 from fastapi import Response
