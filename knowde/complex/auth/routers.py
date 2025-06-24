@@ -58,7 +58,7 @@ google_router.include_router(
         google_cookie_backend(),
         s.KN_AUTH_SECRET,
         redirect_url=s.KN_REDIRECT_URL,
-        # associate_by_email=True,
+        associate_by_email=True,
         # is_verified_by_default=True,
     ),
     prefix="/cookie",
