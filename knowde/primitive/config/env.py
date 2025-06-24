@@ -30,10 +30,10 @@ class Settings(BaseSettings):
     KNOWDE_URL: str = "https://knowde.onrender.com/"
     KN_AUTH_SECRET: str = "SECRET"  # noqa: S105
     KN_TOKEN_LIFETIME_SEC: int = 60 * 60 * 24 * 7  # 7 days
-    KN_REDIRECT_URL: str | None = None
     COOKIE_SECURE: bool = False
     ALLOW_ORIGINS: str = "*"
     COOKIE_SAMESITE: Literal["lax", "strict", "none"] = "lax"
+    KN_REDIRECT_URL: str | None = None
     FRONTEND_URL: str | None = None
 
     @property

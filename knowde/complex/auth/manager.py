@@ -8,7 +8,7 @@ from queue import Queue
 from typing import Any, override
 from uuid import UUID
 
-from fastapi import Request, Response
+from fastapi import Request
 from fastapi_users import BaseUserManager, UUIDIDMixin
 from fastapi_users.authentication import (
     AuthenticationBackend,
@@ -39,17 +39,18 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     reset_password_token_secret = s.KN_AUTH_SECRET
     verification_token_secret = s.KN_AUTH_SECRET
 
-    @override
-    async def on_after_login(
-        self,
-        user: User,
-        request: Request | None = None,
-        response: Response | None = None,
-    ) -> None:
-        """SSOのブラウザからのレスポンスを取得."""
-        if response is not None and s.FRONTEND_URL is not None:
-            response.status_code = 303
-            response.headers["Location"] = s.FRONTEND_URL
+    # @override
+    # async def on_after_login(
+    #     self,
+    #     user: User,
+    #     request: Request | None = None,
+    #     response: Response | None = None,
+    # ) -> None:
+    #     """SSOのブラウザからのレスポンスを取得."""
+    #     if response is not None and s.FRONTEND_URL is not None:
+    #         await super().get_login_response(user, response, self)
+    #         response.status_code = 303
+    #         response.headers["Location"] = s.FRONTEND_URL
 
     @override
     async def on_after_register(
@@ -169,15 +170,29 @@ def get_user_manager() -> UserManager:
     return UserManager(AccountDB())
 
 
+def get_strategy() -> JWTStrategy:
+    """共通."""
+    return JWTStrategy(
+        secret=s.KN_AUTH_SECRET,
+        lifetime_seconds=s.KN_TOKEN_LIFETIME_SEC,
+    )
+
+
+def get_cookie_transport() -> CookieTransport:
+    """For fastapi-users."""
+    return CookieTransport(
+        cookie_max_age=s.KN_TOKEN_LIFETIME_SEC,
+        cookie_secure=s.COOKIE_SECURE,
+        cookie_samesite=s.COOKIE_SAMESITE,
+    )
+
+
 def bearer_backend() -> AuthenticationBackend:
     """For fastapi-users."""
     return AuthenticationBackend(
         name="jwt",
         transport=BearerTransport(tokenUrl="auth/jwt/login"),
-        get_strategy=lambda: JWTStrategy(
-            secret=s.KN_AUTH_SECRET,
-            lifetime_seconds=s.KN_TOKEN_LIFETIME_SEC,
-        ),
+        get_strategy=get_strategy,
     )
 
 
@@ -185,13 +200,6 @@ def cookie_backend() -> AuthenticationBackend:
     """For fastapi-users."""
     return AuthenticationBackend(
         name="cookie",
-        transport=CookieTransport(
-            cookie_max_age=s.KN_TOKEN_LIFETIME_SEC,
-            cookie_secure=s.COOKIE_SECURE,
-            cookie_samesite=s.COOKIE_SAMESITE,
-        ),
-        get_strategy=lambda: JWTStrategy(
-            secret=s.KN_AUTH_SECRET,
-            lifetime_seconds=s.KN_TOKEN_LIFETIME_SEC,
-        ),
+        transport=get_cookie_transport(),
+        get_strategy=get_strategy,
     )

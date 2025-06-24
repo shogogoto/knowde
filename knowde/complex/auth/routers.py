@@ -10,6 +10,7 @@ from fastapi_users import FastAPIUsers
 from httpx_oauth.clients.google import GoogleOAuth2
 
 from knowde.complex.auth import PREFIX_USER
+from knowde.complex.auth.oauth import google_cookie_backend
 from knowde.primitive.config.env import Settings
 from knowde.primitive.user import User
 
@@ -54,7 +55,7 @@ google_router.include_router(
 google_router.include_router(
     ac.get_oauth_router(
         google,
-        cookie_backend(),
+        google_cookie_backend(),
         s.KN_AUTH_SECRET,
         redirect_url=s.KN_REDIRECT_URL,
         # associate_by_email=True,
