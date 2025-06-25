@@ -33,7 +33,7 @@ class NameSpace(BaseModel):
         if title in self.roots_:
             del self.roots_[title]
 
-    def check_added_reosurce(self, e: Entry) -> None:
+    def check_added_reosource(self, e: Entry) -> None:
         """titleの重複を許さない."""
         if isinstance(e, MResource):
             r = self.get_resource_or_none(e.name)
@@ -46,13 +46,13 @@ class NameSpace(BaseModel):
         if e.name in self.roots:
             msg = f"{e.name}は登録済み"
             raise ValueError(msg, self.roots)
-        self.check_added_reosurce(e)
+        self.check_added_reosource(e)
         self.roots_[e.name] = e
         self.g.add_node(e)
 
     def add_edge(self, parent: Entry, child: Entry) -> None:
         """user直下以外."""
-        self.check_added_reosurce(child)
+        self.check_added_reosource(child)
         self.g.add_edge(parent, child)
 
     def children(self, root: str, *names: str) -> list[str]:

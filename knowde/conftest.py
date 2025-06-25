@@ -1,6 +1,6 @@
 """pytest hooks."""
 
-from neomodel import clear_neo4j_database, db
+from neomodel import db
 
 from knowde.primitive.config.env import Settings
 
@@ -14,13 +14,12 @@ def pytest_configure() -> None:
 def pytest_runtest_teardown() -> None:
     """Pytest hook."""
     if db.driver is not None:
-        clear_neo4j_database(db)
         s = Settings()
         s.terdown_db()
+        db.clear_neo4j_database()
 
 
 def pytest_sessionfinish() -> None:
     """Pytest hook."""
     s = Settings()
-    clear_neo4j_database(db)
     s.terdown_db()
