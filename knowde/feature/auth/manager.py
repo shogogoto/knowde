@@ -20,9 +20,9 @@ from fastapi_users.db import (
     BaseUserDatabase,
 )
 
+from knowde.config.env import Settings
 from knowde.feature.user import Account, User
 from knowde.feature.user.repo import LAccount, LUser
-from knowde.primitive.config.env import Settings
 
 s = Settings()
 

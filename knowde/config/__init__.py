@@ -9,7 +9,7 @@ from typing import Annotated, Final, Self
 from pydantic import BaseModel, PlainSerializer
 from typing_extensions import TypedDict
 
-from knowde.primitive.config.env import Settings
+from knowde.config.env import Settings
 
 s = Settings()
 CONFIG_FILE: Final = s.config_file

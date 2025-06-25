@@ -9,7 +9,7 @@ from fastapi_users.authentication import (
     Strategy,
 )
 
-from knowde.primitive.config.env import Settings
+from knowde.config.env import Settings
 
 from .manager import get_cookie_transport, get_strategy
 

@@ -9,8 +9,8 @@ import click
 import requests
 from fastapi import status
 
-from knowde.primitive.config import LocalConfig
-from knowde.primitive.config.env import Settings
+from knowde.config import LocalConfig
+from knowde.config.env import Settings
 
 
 def browse_for_sso() -> bool:

@@ -4,9 +4,9 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
+from knowde.config.env import Settings
 from knowde.feature.parsing.file_io import nxread, nxwrite
 from knowde.feature.parsing.sysnet import SysNet
-from knowde.primitive.config.env import Settings
 
 s = Settings()
 

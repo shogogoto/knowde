@@ -6,10 +6,10 @@ import click
 import httpx
 from fastapi import status
 
+from knowde.config import LocalConfig
+from knowde.config.env import Settings
 from knowde.feature.auth.repo.client import AuthGet, auth_header
 from knowde.feature.entry.namespace.sync import Anchor, filter_parsable
-from knowde.primitive.config import LocalConfig
-from knowde.primitive.config.env import Settings
 
 
 def link_proc() -> None:

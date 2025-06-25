@@ -2,7 +2,7 @@
 
 from neomodel import db
 
-from knowde.primitive.config.env import Settings
+from knowde.config.env import Settings
 
 
 def pytest_configure() -> None:

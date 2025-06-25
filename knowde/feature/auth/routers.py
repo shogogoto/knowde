@@ -9,8 +9,8 @@ from fastapi import APIRouter
 from fastapi_users import FastAPIUsers
 from httpx_oauth.clients.google import GoogleOAuth2
 
+from knowde.config.env import Settings
 from knowde.feature.user import User
-from knowde.primitive.config.env import Settings
 
 from . import PREFIX_USER
 from .manager import bearer_backend, cookie_backend, get_user_manager
