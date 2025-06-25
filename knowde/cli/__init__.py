@@ -25,9 +25,11 @@ def cli() -> None:
 @cli.command("config")
 def config_cmd() -> None:
     """設定内容の確認."""
-    from knowde.primitive.config import CONFIG_PATH, LocalConfig  # noqa: PLC0415
+    from knowde.primitive.config import LocalConfig  # noqa: PLC0415
+    from knowde.primitive.config.env import Settings  # noqa: PLC0415
 
-    click.echo(CONFIG_PATH)
+    s = Settings()
+    click.echo(s.CONFIG_PATH)
     c = LocalConfig.load()
     click.echo(c.model_dump_json(indent=2))
 

@@ -6,7 +6,9 @@ from pydantic import BaseModel
 
 from knowde.feature.parsing.file_io import nxread, nxwrite
 from knowde.feature.parsing.sysnet import SysNet
-from knowde.primitive.config import dir_path
+from knowde.primitive.config.env import Settings
+
+s = Settings()
 
 
 class Stage(BaseModel, frozen=True):
@@ -15,7 +17,7 @@ class Stage(BaseModel, frozen=True):
     @staticmethod
     def save(sn: SysNet) -> None:
         """SysNet -> file."""
-        p = dir_path() / sn.root.replace("#", "")
+        p = s.config_dir / sn.root.replace("#", "")
         nxwrite(sn.g, p.with_suffix(".json"))
 
     @staticmethod

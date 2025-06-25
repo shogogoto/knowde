@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Final, Literal, Protocol
+from pathlib import Path
+from typing import Final, Literal
 from urllib.parse import urljoin
 
 import httpx
@@ -36,6 +37,18 @@ class Settings(BaseSettings):
     COOKIE_DOMAIN: str | None = None
     KN_REDIRECT_URL: str | None = None
     FRONTEND_URL: str | None = None
+
+    CONFIG_PATH: str = ".config/knowde"
+
+    @property
+    def config_file(self) -> Path:  # noqa: D102
+        return self.config_dir / "config.json"
+
+    @property
+    def config_dir(self) -> Path:  # noqa: D102
+        p = Path.home() / self.CONFIG_PATH
+        p.parent.mkdir(parents=True, exist_ok=True)
+        return p
 
     @property
     def allow_origins(self) -> list[str]:  # noqa: D102
@@ -146,18 +159,3 @@ class Settings(BaseSettings):
             data=data,
             headers=headers,
         )
-
-
-class ReqProtocol(Protocol):
-    """APIメソッド."""
-
-    def __call__(
-        self,
-        relative: str,
-        params: dict | None = None,
-        json: object = None,
-        data: object = None,
-        headers: dict | None = None,
-    ) -> httpx.Response:
-        """Request."""
-        ...
