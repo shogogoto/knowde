@@ -6,12 +6,12 @@ from typing import TYPE_CHECKING
 
 from fastapi.testclient import TestClient
 
+from knowde.api import api
 from knowde.complex.auth.repo.client import (
     AuthPost,
 )
 from knowde.complex.entry.namespace.sync import Anchor
 from knowde.complex.entry.namespace.test_namespace import files  # noqa: F401
-from knowde.feature.api import api
 from knowde.primitive.config.env import Settings
 
 if TYPE_CHECKING:

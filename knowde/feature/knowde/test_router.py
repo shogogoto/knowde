@@ -9,8 +9,8 @@ import pytz
 from fastapi import status
 from fastapi.testclient import TestClient
 
+from knowde.api import root_router
 from knowde.complex.nxdb import LSentence, LTerm
-from knowde.feature.api import root_router
 from knowde.feature.knowde import KnowdeDetail
 from knowde.feature.knowde.repo import save_text
 from knowde.primitive.user.repo import LUser
