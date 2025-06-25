@@ -8,8 +8,8 @@ from neomodel import db
 
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.knowde import Knowde, KnowdeDetail, KnowdeLocation, UidStr
+from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.user import User
-from knowde.primitive.term import Term
 from knowde.shared.errors.domain import NotFoundError
 from knowde.shared.nxutil.edge_type import EdgeType
 

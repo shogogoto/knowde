@@ -9,6 +9,7 @@ import networkx as nx
 
 from knowde.feature.parsing.parser import get_leaves, parse2tree
 from knowde.feature.parsing.parser.testing import treeprint
+from knowde.feature.parsing.primitive.term.markresolver import MarkResolver
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.sysnet.sysfn import (
     check_duplicated_sentence,
@@ -19,7 +20,6 @@ from knowde.feature.parsing.sysnet.sysfn.build_fn import (
     replace_quoterms,
 )
 from knowde.feature.parsing.sysnet.sysnode.merged_def import MergedDef
-from knowde.primitive.term.markresolver import MarkResolver
 
 from .interpreter import SysNetInterpreter
 from .transformer import TSysArg

@@ -2,7 +2,7 @@
 
 import networkx as nx
 
-from knowde.primitive.heading import get_heading_path, get_headings
+from knowde.feature.parsing.primitive.heading import get_heading_path, get_headings
 from knowde.shared.nxutil.edge_type import EdgeType
 
 

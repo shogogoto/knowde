@@ -50,7 +50,7 @@ class DateType(ParamType):
 
 
 def to_clicktype(t: type) -> ParamType:
-    """Primitive typeからclickの矯正型へ."""
+    """feature.parsing.primitive.typeからclickの矯正型へ."""
     if is_generic_alias(t):
         t = extract_generic_alias_type(t)
     t_map: dict[type, ParamType] = {

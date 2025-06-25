@@ -14,8 +14,8 @@ from neomodel import StructuredNode, db
 from pydantic import BaseModel
 
 from knowde.feature.entry.label import LResource
-from knowde.primitive.term import Term
-from knowde.primitive.time import WhenNode
+from knowde.feature.parsing.primitive.term import Term
+from knowde.feature.parsing.primitive.time import WhenNode
 from knowde.shared.neoutil import to_uuid
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import Duplicable

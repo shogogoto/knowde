@@ -13,8 +13,8 @@ from knowde.feature.parsing.sysnet.sysnode import Def
 from knowde.shared.nxutil.edge_type import EdgeType
 
 if TYPE_CHECKING:
+    from knowde.feature.parsing.primitive.term import Term
     from knowde.feature.parsing.sysnet import SysNet
-    from knowde.primitive.term import Term
 
 # class TermDifference
 # diff

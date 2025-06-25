@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from knowde.primitive.term.markresolver import MarkResolver
+from knowde.feature.parsing.primitive.term.markresolver import MarkResolver
 
 from . import (
     MergedTerms,

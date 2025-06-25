@@ -32,8 +32,8 @@ from pyparsing import (
     printables,
 )
 
-from knowde.primitive.time.errors import EndBeforeStartError
-from knowde.primitive.time.parse import parse_extime, str2edtf
+from knowde.feature.parsing.primitive.time.errors import EndBeforeStartError
+from knowde.feature.parsing.primitive.time.parse import parse_extime, str2edtf
 from knowde.shared.timeutil import TZ
 from knowde.shared.types import Duplicable
 

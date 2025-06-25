@@ -23,8 +23,8 @@ from networkx import DiGraph
 from pydantic import BaseModel, Field
 
 from knowde.feature.entry.mapper import MResource
+from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.user import User
-from knowde.primitive.term import Term
 from knowde.shared.nxutil import to_nodes
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import NXGraph

@@ -5,8 +5,13 @@ from functools import cache
 from edtf import EDTFObject, parse_edtf
 from japanera import EraDate
 
-from knowde.primitive.time.parse.const import MagicTime, Season, p_century, p_number
-from knowde.primitive.time.parse.parsing import p_interval, p_jp
+from knowde.feature.parsing.primitive.time.parse.const import (
+    MagicTime,
+    Season,
+    p_century,
+    p_number,
+)
+from knowde.feature.parsing.primitive.time.parse.parsing import p_interval, p_jp
 
 
 def parse_extime(s: str) -> EDTFObject:

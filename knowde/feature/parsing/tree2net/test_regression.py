@@ -2,8 +2,8 @@
 
 import pytest
 
+from knowde.feature.parsing.primitive.term.errors import MarkUncontainedError
 from knowde.feature.parsing.tree2net import parse2net
-from knowde.primitive.term.errors import MarkUncontainedError
 
 
 def test_alias_resolve_error() -> None:

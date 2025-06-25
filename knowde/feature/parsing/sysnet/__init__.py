@@ -9,6 +9,9 @@ import networkx as nx
 from lark import Token
 from pydantic import BaseModel, Field
 
+from knowde.feature.parsing.primitive.heading import get_headings
+from knowde.feature.parsing.primitive.template import Templates
+from knowde.feature.parsing.primitive.time import Series, WhenNode
 from knowde.feature.parsing.sysnet.sysfn import (
     get_ifdef,
     get_ifquote,
@@ -16,9 +19,6 @@ from knowde.feature.parsing.sysnet.sysfn import (
     to_template,
     to_term,
 )
-from knowde.primitive.heading import get_headings
-from knowde.primitive.template import Templates
-from knowde.primitive.time import Series, WhenNode
 from knowde.shared.nxutil import to_nested
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import Duplicable, NXGraph
@@ -27,7 +27,7 @@ from .errors import SysNetNotFoundError
 from .sysnode import Def, KNArg, KNode, is_meta
 
 if TYPE_CHECKING:
-    from knowde.primitive.term import Term
+    from knowde.feature.parsing.primitive.term import Term
 
 
 # 様々なgetter機能を分離したいかも

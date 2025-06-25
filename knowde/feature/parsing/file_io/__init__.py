@@ -8,11 +8,11 @@ from uuid import UUID
 import networkx as nx
 from pydantic import BaseModel
 
+from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.sysnet.sysnode import (
     DUMMY_SENTENCE,
     DummySentence,
 )
-from knowde.primitive.term import Term
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import Duplicable
 

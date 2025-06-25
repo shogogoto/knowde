@@ -8,6 +8,9 @@ from typing import TYPE_CHECKING
 
 from lark import Token
 
+from knowde.feature.parsing.primitive.template import Template
+from knowde.feature.parsing.primitive.term import Term
+from knowde.feature.parsing.primitive.time import WhenNode
 from knowde.feature.parsing.sysnet.errors import (
     SysNetNotFoundError,
     sentence_dup_checker,
@@ -18,9 +21,6 @@ from knowde.feature.parsing.sysnet.sysnode import (
     KNArg,
     KNode,
 )
-from knowde.primitive.template import Template
-from knowde.primitive.term import Term
-from knowde.primitive.time import WhenNode
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import Duplicable
 

@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from functools import cache
 
-from knowde.primitive.term import Term
-from knowde.primitive.term.const import BRACE_MARKER
-from knowde.primitive.term.errors import MarkUncontainedError
+from knowde.feature.parsing.primitive.term import Term
+from knowde.feature.parsing.primitive.term.const import BRACE_MARKER
+from knowde.feature.parsing.primitive.term.errors import MarkUncontainedError
 
 
 def get_refer_terms(

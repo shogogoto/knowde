@@ -2,10 +2,10 @@
 
 import networkx as nx
 
+from knowde.feature.parsing.primitive.term.errors import TermResolveError
+from knowde.feature.parsing.primitive.term.markresolver import MarkResolver
 from knowde.feature.parsing.sysnet.errors import QuotermNotFoundError
 from knowde.feature.parsing.sysnet.sysnode import Def
-from knowde.primitive.term.errors import TermResolveError
-from knowde.primitive.term.markresolver import MarkResolver
 from knowde.shared.nxutil import copy_old_edges
 from knowde.shared.nxutil.edge_type import EdgeType
 

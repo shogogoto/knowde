@@ -4,11 +4,11 @@ from __future__ import annotations
 
 from lark import Token, Transformer
 
+from knowde.feature.parsing.primitive.template import Template
+from knowde.feature.parsing.primitive.term import Term
+from knowde.feature.parsing.primitive.time import WhenNode
 from knowde.feature.parsing.sysnet.sysnode import Def, KNArg
 from knowde.feature.parsing.tree2net.lineparse import parse_line
-from knowde.primitive.template import Template
-from knowde.primitive.term import Term
-from knowde.primitive.time import WhenNode
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import Duplicable
 

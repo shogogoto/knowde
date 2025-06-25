@@ -10,13 +10,13 @@ from typing import TYPE_CHECKING, Self
 
 import networkx as nx
 
+from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.stats.systats.nw1_n1 import (
     get_detail,
     get_parent_or_none,
     has_dependency,
 )
-from knowde.primitive.term import Term
 from knowde.shared.nxutil.edge_type import EdgeType, etype_subgraph
 from knowde.shared.types import Duplicable
 

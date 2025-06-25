@@ -9,10 +9,10 @@ from typing import TYPE_CHECKING, Final, Self, override
 from lark import Token
 from pydantic import BaseModel
 
+from knowde.feature.parsing.primitive.template import Template
+from knowde.feature.parsing.primitive.term import Term
+from knowde.feature.parsing.primitive.time import WhenNode
 from knowde.feature.parsing.sysnet.errors import DefSentenceConflictError
-from knowde.primitive.template import Template
-from knowde.primitive.term import Term
-from knowde.primitive.time import WhenNode
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import Duplicable
 
