@@ -17,8 +17,8 @@ from knowde.complex.__core__.sysnet.sysfn.build_fn import (
     replace_quoterms,
 )
 from knowde.complex.__core__.sysnet.sysnode.merged_def import MergedDef
-from knowde.primitive.parser import get_leaves, parse2tree
-from knowde.primitive.parser.testing import treeprint
+from knowde.feature.parsing.parser import get_leaves, parse2tree
+from knowde.feature.parsing.parser.testing import treeprint
 from knowde.primitive.term.markresolver import MarkResolver
 
 from .interpreter import SysNetInterpreter

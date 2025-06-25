@@ -4,8 +4,8 @@ from textwrap import dedent
 
 import pytest
 
-from knowde.primitive.parser import parse2tree
-from knowde.primitive.parser.errors import (
+from knowde.feature.parsing.parser import parse2tree
+from knowde.feature.parsing.parser.errors import (
     AttachDetailError,
     HeadingMismatchError,
     MissingIndentError,

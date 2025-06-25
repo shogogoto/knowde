@@ -12,7 +12,7 @@ from knowde.complex.__core__.sysnet.sysfn import (
 )
 from knowde.complex.__core__.sysnet.sysnode import Def
 from knowde.complex.__core__.tree2net.transformer import TSysArg
-from knowde.primitive.parser import get_leaves, parse2tree
+from knowde.feature.parsing.parser import get_leaves, parse2tree
 from knowde.primitive.term import Term
 
 from . import MergedDef

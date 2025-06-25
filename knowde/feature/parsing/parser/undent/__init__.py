@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 from lark.indenter import DedentError
 
-from knowde.primitive.parser.errors import UnexpectedPivotError
+from knowde.feature.parsing.parser.errors import UnexpectedPivotError
 
 if TYPE_CHECKING:
     from lark import Tree
