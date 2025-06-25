@@ -29,7 +29,7 @@ def config_cmd() -> None:
     from knowde.config.env import Settings  # noqa: PLC0415
 
     s = Settings()
-    click.echo(s.CONFIG_PATH)
+    click.echo(s.config_file)
     c = LocalConfig.load()
     click.echo(c.model_dump_json(indent=2))
 

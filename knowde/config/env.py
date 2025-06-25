@@ -47,7 +47,7 @@ class Settings(BaseSettings):
     @property
     def config_dir(self) -> Path:  # noqa: D102
         p = Path.home() / self.CONFIG_PATH
-        p.parent.mkdir(parents=True, exist_ok=True)
+        p.mkdir(parents=True, exist_ok=True)
         return p
 
     @property

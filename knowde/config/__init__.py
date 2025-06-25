@@ -12,7 +12,7 @@ from typing_extensions import TypedDict
 from knowde.config.env import Settings
 
 s = Settings()
-CONFIG_FILE: Final = s.config_file
+_F: Final = s.config_file
 
 
 class Credential(TypedDict):
@@ -35,9 +35,9 @@ class LocalConfig(BaseModel):
     @classmethod
     def load(cls) -> Self:
         """読み取り."""
-        data = json.loads(CONFIG_FILE.read_text()) if CONFIG_FILE.exists() else {}
+        data = json.loads(_F.read_text()) if _F.exists() else {}
         return cls.model_validate(data)
 
     def save(self) -> None:
         """書き込み."""
-        CONFIG_FILE.write_text(self.model_dump_json(indent=2))
+        _F.write_text(self.model_dump_json(indent=2))
