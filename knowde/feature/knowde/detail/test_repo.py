@@ -8,7 +8,7 @@ from pytest_unordered import unordered
 from knowde.feature.knowde.detail import detail_knowde
 from knowde.feature.knowde.repo import save_text
 from knowde.feature.stats.nxdb import LSentence
-from knowde.primitive.user.repo import LUser
+from knowde.feature.user.repo import LUser
 from knowde.shared.nxutil import to_leaves, to_roots
 from knowde.shared.nxutil.edge_type import EdgeType
 

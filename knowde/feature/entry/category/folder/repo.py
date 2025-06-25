@@ -15,7 +15,7 @@ from neomodel import (
 from knowde.feature.entry import NameSpace
 from knowde.feature.entry.errors import EntryAlreadyExistsError, EntryNotFoundError
 from knowde.feature.entry.label import LEntry, LFolder, LResource
-from knowde.primitive.user.repo import LUser
+from knowde.feature.user.repo import LUser
 from knowde.shared.neoutil import to_uuid
 
 if TYPE_CHECKING:

@@ -3,7 +3,7 @@
 import pytest
 
 from knowde.feature.entry.errors import EntryAlreadyExistsError, EntryNotFoundError
-from knowde.primitive.user.repo import LUser
+from knowde.feature.user.repo import LUser
 
 from .repo import (
     create_folder,

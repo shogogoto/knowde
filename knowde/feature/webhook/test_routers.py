@@ -11,7 +11,7 @@ from fastapi.testclient import TestClient
 
 from knowde.api import root_router
 from knowde.feature.auth.repo.client import AuthPost
-from knowde.primitive.user.repo import LUser
+from knowde.feature.user.repo import LUser
 
 
 @cache

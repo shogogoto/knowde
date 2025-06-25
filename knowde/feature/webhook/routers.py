@@ -3,9 +3,9 @@
 from fastapi import APIRouter, HTTPException, status
 
 from knowde.feature.auth.routers import auth_component
+from knowde.feature.user import User
+from knowde.feature.user.repo import LUser
 from knowde.feature.webhook import ClerkEventType, ClerkPayload
-from knowde.primitive.user import User
-from knowde.primitive.user.repo import LUser
 
 router = APIRouter(tags=["clerk"])
 
