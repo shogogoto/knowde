@@ -1,5 +1,7 @@
 """test."""
 
+from uuid import uuid4
+
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
@@ -26,7 +28,7 @@ def test_crud_user() -> None:
     client = _api_client()
 
     # info = AuthArgs(email="user@example.com", password="password")
-    email = "user@example.com"
+    email = f"user-{uuid4()}@example.com"
     password = "password"  # noqa: S105
     p = AuthPost(client=client.post)
     assert not p.login(email, password).is_success
