@@ -7,10 +7,10 @@ from pathlib import Path
 
 from pydantic import RootModel
 
-from knowde.complex.entry import NameSpace, ResourceMeta
-from knowde.complex.entry.errors import DuplicatedTitleError, SaveResourceError
-from knowde.complex.entry.label import LFolder, LResource
-from knowde.complex.entry.mapper import MFolder, MResource
+from knowde.feature.entry import NameSpace, ResourceMeta
+from knowde.feature.entry.errors import DuplicatedTitleError, SaveResourceError
+from knowde.feature.entry.label import LFolder, LResource
+from knowde.feature.entry.mapper import MFolder, MResource
 from knowde.primitive.user.repo import LUser
 
 

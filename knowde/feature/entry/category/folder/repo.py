@@ -12,9 +12,9 @@ from neomodel import (
     db,
 )
 
-from knowde.complex.entry import NameSpace
-from knowde.complex.entry.errors import EntryAlreadyExistsError, EntryNotFoundError
-from knowde.complex.entry.label import LEntry, LFolder, LResource
+from knowde.feature.entry import NameSpace
+from knowde.feature.entry.errors import EntryAlreadyExistsError, EntryNotFoundError
+from knowde.feature.entry.label import LEntry, LFolder, LResource
 from knowde.primitive.user.repo import LUser
 from knowde.shared.neoutil import to_uuid
 

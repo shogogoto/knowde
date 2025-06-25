@@ -22,7 +22,7 @@ from uuid import UUID
 from networkx import DiGraph
 from pydantic import BaseModel, Field
 
-from knowde.complex.entry.mapper import MResource
+from knowde.feature.entry.mapper import MResource
 from knowde.primitive.term import Term
 from knowde.primitive.user import User
 from knowde.shared.nxutil import to_nodes

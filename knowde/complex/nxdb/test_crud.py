@@ -5,8 +5,8 @@ from pytest_unordered import unordered
 
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.tree2net import parse2net
-from knowde.complex.entry import ResourceMeta
-from knowde.complex.entry.label import LResource
+from knowde.feature.entry import ResourceMeta
+from knowde.feature.entry.label import LResource
 
 from .restore import restore_sysnet
 from .save import sn2db

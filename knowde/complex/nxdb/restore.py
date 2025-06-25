@@ -11,8 +11,8 @@ from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.sysnet.sysnode import DUMMY_SENTENCE, Def, KNode
 from knowde.complex.__core__.sysnet.sysnode.merged_def import MergedDef
 from knowde.complex.__core__.tree2net.directed_edge import DirectedEdgeCollection
-from knowde.complex.entry.label import LResource
 from knowde.complex.nxdb import LInterval
+from knowde.feature.entry.label import LResource
 from knowde.primitive.term import Term
 from knowde.primitive.time import WhenNode
 from knowde.shared.neoutil import UUIDy, to_uuid

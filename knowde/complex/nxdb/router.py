@@ -9,11 +9,11 @@ import chardet  # 文字エンコーディング検出用
 from fastapi import APIRouter, Depends, UploadFile
 
 from knowde.complex.__core__.tree2net import parse2net
-from knowde.complex.entry import ResourceMeta
-from knowde.complex.entry.category.folder.repo import fetch_namespace
-from knowde.complex.entry.label import LResource
 from knowde.complex.nxdb.save import sn2db
 from knowde.feature.auth.routers import auth_component
+from knowde.feature.entry import ResourceMeta
+from knowde.feature.entry.category.folder.repo import fetch_namespace
+from knowde.feature.entry.label import LResource
 
 if TYPE_CHECKING:
     from knowde.primitive.user import User

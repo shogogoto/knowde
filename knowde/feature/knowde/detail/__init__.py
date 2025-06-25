@@ -6,7 +6,7 @@ import networkx as nx
 from more_itertools import first_true
 from neomodel import db
 
-from knowde.complex.entry.mapper import MResource
+from knowde.feature.entry.mapper import MResource
 from knowde.feature.knowde import Knowde, KnowdeDetail, KnowdeLocation, UidStr
 from knowde.primitive.term import Term
 from knowde.primitive.user import User

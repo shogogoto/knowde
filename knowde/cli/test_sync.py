@@ -7,11 +7,11 @@ from typing import TYPE_CHECKING
 from fastapi.testclient import TestClient
 
 from knowde.api import api
-from knowde.complex.entry.namespace.sync import Anchor
-from knowde.complex.entry.namespace.test_namespace import files  # noqa: F401
 from knowde.feature.auth.repo.client import (
     AuthPost,
 )
+from knowde.feature.entry.namespace.sync import Anchor
+from knowde.feature.entry.namespace.test_namespace import files  # noqa: F401
 from knowde.primitive.config.env import Settings
 
 if TYPE_CHECKING:

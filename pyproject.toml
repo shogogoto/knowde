@@ -67,7 +67,8 @@ requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
 build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.taskipy.tasks]
-test = "pytest --cov"
+# test = "pytest --cov"
+test = "pytest"
 ptw = "ptw -- --ff --testmon"                               # ispytest-watch
 lint = "ruff check ."
 lintfix = "ruff check . --fix"

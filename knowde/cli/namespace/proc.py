@@ -6,8 +6,8 @@ import click
 import httpx
 from fastapi import status
 
-from knowde.complex.entry.namespace.sync import Anchor, filter_parsable
 from knowde.feature.auth.repo.client import AuthGet, auth_header
+from knowde.feature.entry.namespace.sync import Anchor, filter_parsable
 from knowde.primitive.config import LocalConfig
 from knowde.primitive.config.env import Settings
 

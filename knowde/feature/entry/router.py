@@ -7,10 +7,10 @@ from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Depends
 
-from knowde.complex.entry import NameSpace
-from knowde.complex.entry.category.folder.repo import fetch_namespace
-from knowde.complex.entry.namespace import ResourceMetas, sync_namespace
 from knowde.feature.auth.routers import auth_component
+from knowde.feature.entry import NameSpace
+from knowde.feature.entry.category.folder.repo import fetch_namespace
+from knowde.feature.entry.namespace import ResourceMetas, sync_namespace
 
 if TYPE_CHECKING:
     from knowde.primitive.user import User

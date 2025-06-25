@@ -19,7 +19,7 @@ from neomodel import (
     ZeroOrOne,
 )
 
-from knowde.complex.entry.label import LResource
+from knowde.feature.entry.label import LResource
 from knowde.shared.nxutil.edge_type import EdgeType
 
 

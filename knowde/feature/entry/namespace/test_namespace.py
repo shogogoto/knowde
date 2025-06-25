@@ -7,12 +7,12 @@ from textwrap import dedent
 
 import pytest
 
-from knowde.complex.entry import NameSpace, ResourceMeta
-from knowde.complex.entry.category.folder.repo import (
+from knowde.feature.entry import NameSpace, ResourceMeta
+from knowde.feature.entry.category.folder.repo import (
     fetch_namespace,
 )
-from knowde.complex.entry.errors import DuplicatedTitleError
-from knowde.complex.entry.namespace import (
+from knowde.feature.entry.errors import DuplicatedTitleError
+from knowde.feature.entry.namespace import (
     save_or_move_resource,
     save_resource,
     sync_namespace,

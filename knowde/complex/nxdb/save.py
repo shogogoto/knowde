@@ -13,7 +13,7 @@ from more_itertools import collapse
 from neomodel import StructuredNode, db
 from pydantic import BaseModel
 
-from knowde.complex.entry.label import LResource
+from knowde.feature.entry.label import LResource
 from knowde.primitive.term import Term
 from knowde.primitive.time import WhenNode
 from knowde.shared.neoutil import to_uuid

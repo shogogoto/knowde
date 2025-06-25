@@ -5,8 +5,8 @@ from __future__ import annotations  # noqa: I001
 from datetime import datetime
 
 from knowde.complex.__core__.tree2net import parse2net
-from knowde.complex.entry import ResourceMeta
-from knowde.complex.entry.router import ResourceMetas
+from knowde.feature.entry import ResourceMeta
+from knowde.feature.entry.router import ResourceMetas
 from knowde.shared.timeutil import TZ
 
 from pathlib import Path
