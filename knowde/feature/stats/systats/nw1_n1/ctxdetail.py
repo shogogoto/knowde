@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Self
 
 from pydantic import BaseModel
 
-from knowde.complex.systats.nw1_n1 import (
+from knowde.feature.stats.systats.nw1_n1 import (
     Nw1N1Fn,
     get_conclusion,
     get_detail,
@@ -20,7 +20,7 @@ from knowde.complex.systats.nw1_n1 import (
     get_referred,
     recursively_nw1n1,
 )
-from knowde.complex.systats.types import Nw1N1Label, Nw1N1Recursive
+from knowde.feature.stats.systats.types import Nw1N1Label, Nw1N1Recursive
 
 if TYPE_CHECKING:
     from knowde.feature.parsing.sysnet import SysNet

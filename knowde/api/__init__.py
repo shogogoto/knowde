@@ -9,10 +9,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from neomodel import db
 
-from knowde.complex.nxdb.router import nxdb_router
 from knowde.feature.auth.routers import auth_router, user_router
 from knowde.feature.entry.router import entry_router
 from knowde.feature.knowde.router import knowde_router
+from knowde.feature.stats.nxdb.router import nxdb_router
 from knowde.feature.webhook.routers import webhook_router
 from knowde.primitive.config.env import Settings
 from knowde.shared import ErrorHandlingMiddleware

@@ -6,11 +6,11 @@ from typing import IO, TYPE_CHECKING
 
 import click
 
-from knowde.complex.systats.types import Nw1N1Label
+from knowde.feature.stats.systats.types import Nw1N1Label
 
 if TYPE_CHECKING:
-    from knowde.complex.systats.nw1_n0.scorable import LRWTpl
-    from knowde.complex.systats.types import Nw1N1Recursive
+    from knowde.feature.stats.systats.nw1_n0.scorable import LRWTpl
+    from knowde.feature.stats.systats.types import Nw1N1Recursive
 
 
 @click.group("view")

@@ -7,12 +7,12 @@ import neo4j
 import networkx as nx
 from neomodel import db
 
-from knowde.complex.nxdb import LInterval
 from knowde.feature.entry.label import LResource
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.sysnet.sysnode import DUMMY_SENTENCE, Def, KNode
 from knowde.feature.parsing.sysnet.sysnode.merged_def import MergedDef
 from knowde.feature.parsing.tree2net.directed_edge import DirectedEdgeCollection
+from knowde.feature.stats.nxdb import LInterval
 from knowde.primitive.term import Term
 from knowde.primitive.time import WhenNode
 from knowde.shared.neoutil import UUIDy, to_uuid

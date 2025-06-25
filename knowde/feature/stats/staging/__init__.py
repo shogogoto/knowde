@@ -8,10 +8,6 @@ from knowde.feature.parsing.file_io import nxread, nxwrite
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.primitive.config import dir_path
 
-"""
-networkxのCRUD
-"""
-
 
 class Stage(BaseModel, frozen=True):
     """永続化前中間一時ファイル."""

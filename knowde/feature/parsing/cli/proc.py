@@ -8,14 +8,14 @@ from typing import IO, TYPE_CHECKING
 import click
 from tabulate import tabulate
 
-from knowde.complex.systats.nw1_n0 import Nw1N0Label
-from knowde.complex.systats.nw1_n0.scorable import LRWTpl, SyScore
-from knowde.complex.systats.nw1_n1.ctxdetail import Nw1N1Detail
 from knowde.feature.parsing import try_parse2net
+from knowde.feature.stats.systats.nw1_n0 import Nw1N0Label
+from knowde.feature.stats.systats.nw1_n0.scorable import LRWTpl, SyScore
+from knowde.feature.stats.systats.nw1_n1.ctxdetail import Nw1N1Detail
 from knowde.shared.nxutil.edge_type import EdgeType
 
 if TYPE_CHECKING:
-    from knowde.complex.systats.types import Nw1N1Label, Nw1N1Recursive
+    from knowde.feature.stats.systats.types import Nw1N1Label, Nw1N1Recursive
 
 
 def echo_table(ls: list[dict]) -> None:
