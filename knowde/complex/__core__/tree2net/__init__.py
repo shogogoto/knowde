@@ -1,4 +1,4 @@
-"""parse tree to sysnet."""
+"""parsparse2nettsysnet."""
 
 from __future__ import annotations
 

@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import click
 
-from .auth import user_cli
-from .namespace import anchor_cmd, sync_cmd
+from knowde.feature.auth.cli import user_cli
+from knowde.feature.entry.cli import anchor_cmd, sync_cmd
+from knowde.feature.parsing.cli import view_cli
+
 from .options.completion import complete_option
 from .options.help_all import help_all_option
-from .view import view_cli
 
 __version__ = "0.0.0"
 
