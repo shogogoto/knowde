@@ -6,8 +6,8 @@ from uuid import UUID
 import httpx
 from pydantic import BaseModel
 
-from knowde.complex.auth import PREFIX_USER
-from knowde.complex.auth.errors import TokenUnsavedError
+from knowde.feature.auth import PREFIX_USER
+from knowde.feature.auth.errors import TokenUnsavedError
 from knowde.primitive.config import LocalConfig
 from knowde.primitive.config.env import Settings
 

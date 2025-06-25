@@ -5,7 +5,7 @@ from uuid import uuid4
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from knowde.complex.auth.routers import auth_router, user_router
+from knowde.feature.auth.routers import auth_router, user_router
 
 from .client import (
     AuthGet,

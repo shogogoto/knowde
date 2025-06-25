@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, HTTPException, status
 
-from knowde.complex.auth.routers import auth_component
+from knowde.feature.auth.routers import auth_component
 from knowde.feature.webhook import ClerkEventType, ClerkPayload
 from knowde.primitive.user import User
 from knowde.primitive.user.repo import LUser
