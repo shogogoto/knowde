@@ -12,7 +12,7 @@ from knowde.complex.systats.nw1_n0 import Nw1N0Label
 from knowde.complex.systats.nw1_n0.scorable import LRWTpl, SyScore
 from knowde.complex.systats.nw1_n1.ctxdetail import Nw1N1Detail
 from knowde.feature.__core__ import try_parse2net
-from knowde.primitive.__core__.nxutil.edge_type import EdgeType
+from knowde.shared.nxutil.edge_type import EdgeType
 
 if TYPE_CHECKING:
     from knowde.complex.systats.types import Nw1N1Label, Nw1N1Recursive

@@ -15,13 +15,13 @@ from neomodel import (
 from knowde.complex.entry import NameSpace
 from knowde.complex.entry.errors import EntryAlreadyExistsError, EntryNotFoundError
 from knowde.complex.entry.label import LEntry, LFolder, LResource
-from knowde.primitive.__core__.neoutil import to_uuid
 from knowde.primitive.user.repo import LUser
+from knowde.shared.neoutil import to_uuid
 
 if TYPE_CHECKING:
     from datetime import date
 
-    from knowde.primitive.__core__.neoutil import UUIDy
+    from knowde.shared.neoutil import UUIDy
 
 
 def create_folder(user_id: UUIDy, *names: str) -> LFolder:

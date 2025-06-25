@@ -5,7 +5,7 @@ from pathlib import Path
 
 import networkx as nx
 
-from knowde.primitive.__core__.nxutil.edge_type import EdgeType
+from knowde.shared.nxutil.edge_type import EdgeType
 
 from . import NxJsonalyzer, nxread, nxwrite
 

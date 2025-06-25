@@ -8,12 +8,12 @@ from typing import TYPE_CHECKING, Final
 
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.sysnet.sysnode import KNArg, KNode
-from knowde.primitive.__core__.nxutil import (
+from knowde.shared.nxutil import (
     filter_edge_attr,
     to_nodes,
     to_roots,
 )
-from knowde.primitive.__core__.nxutil.edge_type import EdgeType, etype_subgraph
+from knowde.shared.nxutil.edge_type import EdgeType, etype_subgraph
 
 if TYPE_CHECKING:
     import networkx as nx

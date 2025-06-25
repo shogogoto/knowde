@@ -9,8 +9,8 @@ from typing import Annotated, Final, NoReturn, Self
 from pydantic import AfterValidator, BaseModel, Field, PrivateAttr, model_validator
 from regex import regex
 
-from knowde.primitive.__core__.dupchk import DuplicationChecker
 from knowde.primitive.term.const import Marker
+from knowde.shared.dupchk import DuplicationChecker
 
 from .errors import (
     InvalidTemplateNameError,

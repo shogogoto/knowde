@@ -11,7 +11,7 @@ from uuid import UUID
 
 from pydantic import EmailStr, Field
 
-from knowde.primitive.__core__.neoutil import BaseMapper
+from knowde.shared.neoutil import BaseMapper
 
 from .repo import LAccount, LUser
 

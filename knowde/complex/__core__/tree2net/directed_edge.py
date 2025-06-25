@@ -12,7 +12,7 @@ from knowde.complex.__core__.sysnet.sysfn import (
     arg2sentence,
 )
 from knowde.complex.__core__.sysnet.sysnode import KNArg
-from knowde.primitive.__core__.nxutil.edge_type import Direction, EdgeType
+from knowde.shared.nxutil.edge_type import Direction, EdgeType
 
 if TYPE_CHECKING:
     import networkx as nx

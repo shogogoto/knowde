@@ -11,8 +11,8 @@ from lark.visitors import Interpreter
 from knowde.complex.__core__.tree2net.directed_edge import (
     DirectedEdgeCollection,
 )
-from knowde.primitive.__core__.nxutil.edge_type import Direction, EdgeType
-from knowde.primitive.__core__.util import parted
+from knowde.shared.nxutil.edge_type import Direction, EdgeType
+from knowde.shared.util import parted
 
 if TYPE_CHECKING:
     from lark.tree import Branch

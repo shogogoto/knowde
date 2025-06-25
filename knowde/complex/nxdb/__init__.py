@@ -20,7 +20,7 @@ from neomodel import (
 )
 
 from knowde.complex.entry.label import LResource
-from knowde.primitive.__core__.nxutil.edge_type import EdgeType
+from knowde.shared.nxutil.edge_type import EdgeType
 
 
 class LHead(StructuredNode):

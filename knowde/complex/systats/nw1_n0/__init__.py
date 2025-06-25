@@ -16,9 +16,9 @@ from knowde.complex.systats.nw1_n1 import (
     get_parent_or_none,
     has_dependency,
 )
-from knowde.primitive.__core__.nxutil.edge_type import EdgeType, etype_subgraph
-from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.term import Term
+from knowde.shared.nxutil.edge_type import EdgeType, etype_subgraph
+from knowde.shared.types import Duplicable
 
 if TYPE_CHECKING:
     from knowde.complex.__core__.sysnet.sysnode import KNArg

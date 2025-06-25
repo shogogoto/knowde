@@ -12,9 +12,9 @@ from knowde.complex.__core__.sysnet.sysnode import (
     DUMMY_SENTENCE,
     DummySentence,
 )
-from knowde.primitive.__core__.nxutil.edge_type import EdgeType
-from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.term import Term
+from knowde.shared.nxutil.edge_type import EdgeType
+from knowde.shared.types import Duplicable
 
 T_EDGE_KEY: Final = "type"
 

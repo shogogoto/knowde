@@ -26,8 +26,8 @@ from knowde.feature.knowde.cypher import (
     q_stats,
 )
 from knowde.feature.knowde.detail import fetch_knowde_by_ids
-from knowde.primitive.__core__.neoutil import UUIDy, to_uuid
 from knowde.primitive.user.repo import LUser
+from knowde.shared.neoutil import UUIDy, to_uuid
 
 from . import KAdjacency, KStats
 

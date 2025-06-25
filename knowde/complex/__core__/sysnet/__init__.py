@@ -16,12 +16,12 @@ from knowde.complex.__core__.sysnet.sysfn import (
     to_template,
     to_term,
 )
-from knowde.primitive.__core__.nxutil import to_nested
-from knowde.primitive.__core__.nxutil.edge_type import EdgeType
-from knowde.primitive.__core__.types import Duplicable, NXGraph
 from knowde.primitive.heading import get_headings
 from knowde.primitive.template import Templates
 from knowde.primitive.time import Series, WhenNode
+from knowde.shared.nxutil import to_nested
+from knowde.shared.nxutil.edge_type import EdgeType
+from knowde.shared.types import Duplicable, NXGraph
 
 from .errors import SysNetNotFoundError
 from .sysnode import Def, KNArg, KNode, is_meta

@@ -13,11 +13,11 @@ from knowde.complex.__core__.sysnet.sysnode.merged_def import MergedDef
 from knowde.complex.__core__.tree2net.directed_edge import DirectedEdgeCollection
 from knowde.complex.entry.label import LResource
 from knowde.complex.nxdb import LInterval
-from knowde.primitive.__core__.neoutil import UUIDy, to_uuid
-from knowde.primitive.__core__.nxutil.edge_type import Direction, EdgeType
-from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.term import Term
 from knowde.primitive.time import WhenNode
+from knowde.shared.neoutil import UUIDy, to_uuid
+from knowde.shared.nxutil.edge_type import Direction, EdgeType
+from knowde.shared.types import Duplicable
 
 
 @cache

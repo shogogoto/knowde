@@ -6,11 +6,11 @@ from lark import Token, Transformer
 
 from knowde.complex.__core__.sysnet.sysnode import Def, KNArg
 from knowde.complex.__core__.tree2net.lineparse import parse_line
-from knowde.primitive.__core__.nxutil.edge_type import EdgeType
-from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.template import Template
 from knowde.primitive.term import Term
 from knowde.primitive.time import WhenNode
+from knowde.shared.nxutil.edge_type import EdgeType
+from knowde.shared.types import Duplicable
 
 
 def _stoken(tok: Token, erase: str | None = None) -> Token:

@@ -12,8 +12,8 @@ from more_itertools import flatten
 from pydantic import BaseModel, Field, PrivateAttr, field_validator
 
 from knowde.complex.nxdb import LTerm
-from knowde.primitive.__core__.dupchk import DuplicationChecker
 from knowde.primitive.term.const import BRACE_MARKER
+from knowde.shared.dupchk import DuplicationChecker
 
 from .errors import (
     AliasContainsMarkError,

@@ -14,8 +14,8 @@ from knowde.complex.nxdb.router import nxdb_router
 from knowde.feature.auth.routers import auth_router, user_router
 from knowde.feature.knowde.router import knowde_router
 from knowde.feature.webhook.routers import webhook_router
-from knowde.primitive.__core__ import ErrorHandlingMiddleware
 from knowde.primitive.config.env import Settings
+from knowde.shared import ErrorHandlingMiddleware
 
 from .middle import (
     Neo4jTransactionMiddleware,

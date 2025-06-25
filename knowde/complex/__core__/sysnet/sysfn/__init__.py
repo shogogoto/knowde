@@ -18,11 +18,11 @@ from knowde.complex.__core__.sysnet.sysnode import (
     KNArg,
     KNode,
 )
-from knowde.primitive.__core__.nxutil.edge_type import EdgeType
-from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.template import Template
 from knowde.primitive.term import Term
 from knowde.primitive.time import WhenNode
+from knowde.shared.nxutil.edge_type import EdgeType
+from knowde.shared.types import Duplicable
 
 if TYPE_CHECKING:
     import networkx as nx

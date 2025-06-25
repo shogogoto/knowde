@@ -14,18 +14,18 @@ from neomodel import StructuredNode, db
 from pydantic import BaseModel
 
 from knowde.complex.entry.label import LResource
-from knowde.primitive.__core__.neoutil import to_uuid
-from knowde.primitive.__core__.nxutil.edge_type import EdgeType
-from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.term import Term
 from knowde.primitive.time import WhenNode
+from knowde.shared.neoutil import to_uuid
+from knowde.shared.nxutil.edge_type import EdgeType
+from knowde.shared.types import Duplicable
 
 from . import LHead, LInterval, LSentence, LTerm
 
 if TYPE_CHECKING:
     from knowde.complex.__core__.sysnet import SysNet
     from knowde.complex.__core__.sysnet.sysnode import KNode
-    from knowde.primitive.__core__.neoutil import UUIDy
+    from knowde.shared.neoutil import UUIDy
 
 
 def val2str(val: Any) -> str:

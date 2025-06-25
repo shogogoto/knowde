@@ -11,9 +11,9 @@ from lark import LarkError
 from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.__core__.sysnet.errors import InterpreterError
 from knowde.complex.__core__.tree2net import parse2net
-from knowde.primitive.__core__.nxutil.errors import MultiEdgesError
 from knowde.primitive.parser.errors import ParserError
 from knowde.primitive.term.errors import TermError
+from knowde.shared.nxutil.errors import MultiEdgesError
 
 
 def try_parse2net(s: str) -> SysNet:

@@ -10,8 +10,8 @@ import networkx as nx
 from pydantic import BaseModel, Field
 
 from knowde.complex.entry.mapper import Entry, MResource
-from knowde.primitive.__core__.types import NXGraph
 from knowde.primitive.time import parse2dt
+from knowde.shared.types import NXGraph
 
 from .errors import DuplicatedTitleError, EntryNotFoundError
 

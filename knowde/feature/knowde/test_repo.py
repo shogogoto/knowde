@@ -23,8 +23,8 @@ from knowde.feature.knowde.repo import (
     save_text,
     search_knowde,
 )
-from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.user.repo import LUser
+from knowde.shared.nxutil.edge_type import EdgeType
 
 
 @pytest.fixture

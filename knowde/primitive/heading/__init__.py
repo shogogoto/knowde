@@ -7,8 +7,8 @@ from functools import cache
 
 import networkx as nx
 
-from knowde.primitive.__core__.nxutil import to_nodes
-from knowde.primitive.__core__.nxutil.edge_type import EdgeType
+from knowde.shared.nxutil import to_nodes
+from knowde.shared.nxutil.edge_type import EdgeType
 
 
 class HeadingNotFoundError(Exception):

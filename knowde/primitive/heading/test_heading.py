@@ -2,8 +2,8 @@
 
 import networkx as nx
 
-from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.heading import get_heading_path, get_headings
+from knowde.shared.nxutil.edge_type import EdgeType
 
 
 def test_get_headings() -> None:

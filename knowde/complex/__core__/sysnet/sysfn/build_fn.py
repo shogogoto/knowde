@@ -4,10 +4,10 @@ import networkx as nx
 
 from knowde.complex.__core__.sysnet.errors import QuotermNotFoundError
 from knowde.complex.__core__.sysnet.sysnode import Def
-from knowde.primitive.__core__.nxutil import copy_old_edges
-from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.term.errors import TermResolveError
 from knowde.primitive.term.markresolver import MarkResolver
+from knowde.shared.nxutil import copy_old_edges
+from knowde.shared.nxutil.edge_type import EdgeType
 
 from . import get_ifdef, to_quoterm, to_sentence
 

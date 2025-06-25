@@ -10,7 +10,7 @@ import Levenshtein
 from pydantic import BaseModel
 
 from knowde.complex.__core__.sysnet.sysnode import Def
-from knowde.primitive.__core__.nxutil.edge_type import EdgeType
+from knowde.shared.nxutil.edge_type import EdgeType
 
 if TYPE_CHECKING:
     from knowde.complex.__core__.sysnet import SysNet

@@ -8,9 +8,9 @@ from pytest_unordered import unordered
 from knowde.complex.nxdb import LSentence
 from knowde.feature.knowde.detail import detail_knowde
 from knowde.feature.knowde.repo import save_text
-from knowde.primitive.__core__.nxutil import to_leaves, to_roots
-from knowde.primitive.__core__.nxutil.edge_type import EdgeType
 from knowde.primitive.user.repo import LUser
+from knowde.shared.nxutil import to_leaves, to_roots
+from knowde.shared.nxutil.edge_type import EdgeType
 
 
 @pytest.fixture

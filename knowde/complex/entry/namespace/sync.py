@@ -7,7 +7,7 @@ from datetime import datetime
 from knowde.complex.__core__.tree2net import parse2net
 from knowde.complex.entry import ResourceMeta
 from knowde.complex.entry.router import ResourceMetas
-from knowde.primitive.__core__.timeutil import TZ
+from knowde.shared.timeutil import TZ
 
 from pathlib import Path
 

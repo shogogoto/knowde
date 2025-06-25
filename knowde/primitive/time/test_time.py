@@ -23,8 +23,8 @@
 import pytest
 from pytest_unordered import unordered
 
-from knowde.primitive.__core__.types import Duplicable
 from knowde.primitive.time.errors import EndBeforeStartError
+from knowde.shared.types import Duplicable
 
 from . import Series, parse_when
 
