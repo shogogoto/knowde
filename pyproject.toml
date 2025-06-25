@@ -50,6 +50,7 @@ pytest-testmon = "^2.1.3"
 pytest-env = "^1.1.5"
 pyfakefs = "^5.7.4"
 pytest-cov = "^6.0.0"
+pynvim = "^0.5.2"
 
 
 [tool.poetry.group.build.dependencies]
@@ -67,14 +68,15 @@ requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
 build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.taskipy.tasks]
-test = "pytest --cov"
+# test = "pytest --cov"
+test = "pytest"
 ptw = "ptw -- --ff --testmon"                               # ispytest-watch
 lint = "ruff check ."
 lintfix = "ruff check . --fix"
 pre-commit = "pre-commit install"
-dev = "fastapi dev knowde/feature/api/__init__.py --reload"
+dev = "fastapi dev knowde/api/__init__.py --reload"
 # serve      = "uvicorn knowde:api --reload --host 0.0.0.0 --port 8000"
-serve = "fastapi run knowde/feature/api/__init__.py"
+serve = "fastapi run knowde/api/__init__.py"
 build = "pyinstaller --noupx --optimize 1 --collect-all knowde --workpath ./standalone/build --specpath ./standalone --distpath ./standalone/dist  --onefile --name kn knowde/feature/cli/__init__.py"
 compile = "nuitka --standalone --follow-imports --onefile --product-name=kn knowde/feature/cli.py"
 

@@ -9,15 +9,12 @@ from more_itertools import collapse
 from neomodel import db
 from pydantic import BaseModel, PrivateAttr
 
-from knowde.complex.__core__.sysnet import SysNet
-from knowde.complex.__core__.tree2net import parse2net
-from knowde.complex.entry import NameSpace
-from knowde.complex.entry.category.folder.repo import fetch_namespace
-from knowde.complex.entry.label import LFolder
-from knowde.complex.entry.mapper import MResource
-from knowde.complex.entry.namespace import fill_parents, save_resource
-from knowde.complex.entry.namespace.sync import txt2meta
-from knowde.complex.nxdb.save import sn2db
+from knowde.feature.entry import NameSpace
+from knowde.feature.entry.category.folder.repo import fetch_namespace
+from knowde.feature.entry.label import LFolder
+from knowde.feature.entry.mapper import MResource
+from knowde.feature.entry.namespace import fill_parents, save_resource
+from knowde.feature.entry.namespace.sync import txt2meta
 from knowde.feature.knowde.cypher import (
     OrderBy,
     Paging,
@@ -26,8 +23,11 @@ from knowde.feature.knowde.cypher import (
     q_stats,
 )
 from knowde.feature.knowde.detail import fetch_knowde_by_ids
-from knowde.primitive.__core__.neoutil import UUIDy, to_uuid
-from knowde.primitive.user.repo import LUser
+from knowde.feature.parsing.sysnet import SysNet
+from knowde.feature.parsing.tree2net import parse2net
+from knowde.feature.stats.nxdb.save import sn2db
+from knowde.feature.user.repo import LUser
+from knowde.shared.neoutil import UUIDy, to_uuid
 
 from . import KAdjacency, KStats
 

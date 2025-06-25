@@ -9,9 +9,9 @@ import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 
-from knowde.complex.auth.repo.client import AuthPost
-from knowde.feature.api import root_router
-from knowde.primitive.user.repo import LUser
+from knowde.api import root_router
+from knowde.feature.auth.repo.client import AuthPost
+from knowde.feature.user.repo import LUser
 
 
 @cache

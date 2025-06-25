@@ -6,12 +6,12 @@ import networkx as nx
 from more_itertools import first_true
 from neomodel import db
 
-from knowde.complex.entry.mapper import MResource
+from knowde.feature.entry.mapper import MResource
 from knowde.feature.knowde import Knowde, KnowdeDetail, KnowdeLocation, UidStr
-from knowde.primitive.__core__.errors.domain import NotFoundError
-from knowde.primitive.__core__.nxutil.edge_type import EdgeType
-from knowde.primitive.term import Term
-from knowde.primitive.user import User
+from knowde.feature.parsing.primitive.term import Term
+from knowde.feature.user import User
+from knowde.shared.errors.domain import NotFoundError
+from knowde.shared.nxutil.edge_type import EdgeType
 
 
 # うまいクエリの方法が思いつかないので、別クエリに分ける

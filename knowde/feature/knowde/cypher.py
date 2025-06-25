@@ -4,7 +4,7 @@ from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
-from knowde.primitive.__core__.nxutil.edge_type import EdgeType
+from knowde.shared.nxutil.edge_type import EdgeType
 
 
 def q_leaf_path(tgt: str, var: str, t: str) -> str:
