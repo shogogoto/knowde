@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from lark import Token, Transformer
 
-from knowde.complex.__core__.sysnet.sysnode import Def, KNArg
-from knowde.complex.__core__.tree2net.lineparse import parse_line
+from knowde.feature.parsing.sysnet.sysnode import Def, KNArg
+from knowde.feature.parsing.tree2net.lineparse import parse_line
 from knowde.primitive.template import Template
 from knowde.primitive.term import Term
 from knowde.primitive.time import WhenNode

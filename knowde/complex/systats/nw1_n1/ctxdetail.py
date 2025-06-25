@@ -23,8 +23,8 @@ from knowde.complex.systats.nw1_n1 import (
 from knowde.complex.systats.types import Nw1N1Label, Nw1N1Recursive
 
 if TYPE_CHECKING:
-    from knowde.complex.__core__.sysnet import SysNet
-    from knowde.complex.__core__.sysnet.sysnode import KNArg
+    from knowde.feature.parsing.sysnet import SysNet
+    from knowde.feature.parsing.sysnet.sysnode import KNArg
     from knowde.shared.types import Duplicable
 
 

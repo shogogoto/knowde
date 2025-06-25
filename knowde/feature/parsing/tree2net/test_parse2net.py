@@ -1,6 +1,6 @@
 """用語関連."""
 
-from knowde.complex.__core__.tree2net import parse2net
+from knowde.feature.parsing.tree2net import parse2net
 from knowde.primitive.heading import get_heading_path, get_headings
 from knowde.shared.nxutil import to_nested
 from knowde.shared.nxutil.edge_type import EdgeType

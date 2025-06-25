@@ -4,7 +4,7 @@ from __future__ import annotations  # noqa: I001
 
 from datetime import datetime
 
-from knowde.complex.__core__.tree2net import parse2net
+from knowde.feature.parsing.tree2net import parse2net
 from knowde.feature.entry import ResourceMeta
 from knowde.feature.entry.router import ResourceMetas
 from knowde.shared.timeutil import TZ

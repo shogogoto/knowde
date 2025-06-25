@@ -8,7 +8,7 @@ from uuid import UUID
 import networkx as nx
 from pydantic import BaseModel
 
-from knowde.complex.__core__.sysnet.sysnode import (
+from knowde.feature.parsing.sysnet.sysnode import (
     DUMMY_SENTENCE,
     DummySentence,
 )

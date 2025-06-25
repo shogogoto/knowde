@@ -2,7 +2,7 @@
 
 from pytest_unordered import unordered
 
-from knowde.complex.__core__.tree2net import parse2net
+from knowde.feature.parsing.tree2net import parse2net
 
 from . import (
     get_axiom_resolved,

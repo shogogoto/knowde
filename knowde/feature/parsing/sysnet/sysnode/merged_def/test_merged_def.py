@@ -4,15 +4,15 @@ import networkx as nx
 import pytest
 from pytest_unordered import unordered
 
-from knowde.complex.__core__.sysnet.errors import (
+from knowde.feature.parsing.parser import get_leaves, parse2tree
+from knowde.feature.parsing.sysnet.errors import (
     DefSentenceConflictError,
 )
-from knowde.complex.__core__.sysnet.sysfn import (
+from knowde.feature.parsing.sysnet.sysfn import (
     to_def,
 )
-from knowde.complex.__core__.sysnet.sysnode import Def
-from knowde.complex.__core__.tree2net.transformer import TSysArg
-from knowde.feature.parsing.parser import get_leaves, parse2tree
+from knowde.feature.parsing.sysnet.sysnode import Def
+from knowde.feature.parsing.tree2net.transformer import TSysArg
 from knowde.primitive.term import Term
 
 from . import MergedDef

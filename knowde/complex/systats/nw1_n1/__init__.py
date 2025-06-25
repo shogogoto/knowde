@@ -6,8 +6,8 @@ from collections.abc import Callable, Iterable
 from functools import cache
 from typing import TYPE_CHECKING, Final
 
-from knowde.complex.__core__.sysnet import SysNet
-from knowde.complex.__core__.sysnet.sysnode import KNArg, KNode
+from knowde.feature.parsing.sysnet import SysNet
+from knowde.feature.parsing.sysnet.sysnode import KNArg, KNode
 from knowde.shared.nxutil import (
     filter_edge_attr,
     to_nodes,

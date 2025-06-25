@@ -16,7 +16,7 @@ from knowde.shared.types import NXGraph
 from .errors import DuplicatedTitleError, EntryNotFoundError
 
 if TYPE_CHECKING:
-    from knowde.complex.__core__.sysnet import SysNet
+    from knowde.feature.parsing.sysnet import SysNet
 
 
 class NameSpace(BaseModel):

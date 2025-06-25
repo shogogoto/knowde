@@ -9,7 +9,7 @@ import networkx as nx
 from lark import Token
 from pydantic import BaseModel, Field
 
-from knowde.complex.__core__.sysnet.sysfn import (
+from knowde.feature.parsing.sysnet.sysfn import (
     get_ifdef,
     get_ifquote,
     to_sentence,

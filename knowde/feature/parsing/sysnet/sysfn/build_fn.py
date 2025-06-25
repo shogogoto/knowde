@@ -2,8 +2,8 @@
 
 import networkx as nx
 
-from knowde.complex.__core__.sysnet.errors import QuotermNotFoundError
-from knowde.complex.__core__.sysnet.sysnode import Def
+from knowde.feature.parsing.sysnet.errors import QuotermNotFoundError
+from knowde.feature.parsing.sysnet.sysnode import Def
 from knowde.primitive.term.errors import TermResolveError
 from knowde.primitive.term.markresolver import MarkResolver
 from knowde.shared.nxutil import copy_old_edges

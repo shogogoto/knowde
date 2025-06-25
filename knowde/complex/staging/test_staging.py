@@ -2,8 +2,8 @@
 
 import networkx as nx
 
-from knowde.complex.__core__.file_io import nx2json_dump, nxread
-from knowde.complex.__core__.tree2net import parse2net
+from knowde.feature.parsing.file_io import nx2json_dump, nxread
+from knowde.feature.parsing.tree2net import parse2net
 
 
 def test_inout() -> None:

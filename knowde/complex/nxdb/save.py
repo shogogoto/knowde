@@ -23,8 +23,8 @@ from knowde.shared.types import Duplicable
 from . import LHead, LInterval, LSentence, LTerm
 
 if TYPE_CHECKING:
-    from knowde.complex.__core__.sysnet import SysNet
-    from knowde.complex.__core__.sysnet.sysnode import KNode
+    from knowde.feature.parsing.sysnet import SysNet
+    from knowde.feature.parsing.sysnet.sysnode import KNode
     from knowde.shared.neoutil import UUIDy
 
 

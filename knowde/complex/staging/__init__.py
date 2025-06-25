@@ -4,8 +4,8 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from knowde.complex.__core__.file_io import nxread, nxwrite
-from knowde.complex.__core__.sysnet import SysNet
+from knowde.feature.parsing.file_io import nxread, nxwrite
+from knowde.feature.parsing.sysnet import SysNet
 from knowde.primitive.config import dir_path
 
 """

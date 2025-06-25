@@ -10,18 +10,18 @@ from typing import TYPE_CHECKING, Self
 
 import networkx as nx
 
-from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.systats.nw1_n1 import (
     get_detail,
     get_parent_or_none,
     has_dependency,
 )
+from knowde.feature.parsing.sysnet import SysNet
 from knowde.primitive.term import Term
 from knowde.shared.nxutil.edge_type import EdgeType, etype_subgraph
 from knowde.shared.types import Duplicable
 
 if TYPE_CHECKING:
-    from knowde.complex.__core__.sysnet.sysnode import KNArg
+    from knowde.feature.parsing.sysnet.sysnode import KNArg
 
 type NW1N0Fn = Callable[[SysNet], int]
 type NW1N0RatioFn = Callable[[SysNet], float]

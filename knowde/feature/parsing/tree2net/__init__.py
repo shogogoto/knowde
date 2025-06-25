@@ -7,18 +7,18 @@ from typing import TYPE_CHECKING
 
 import networkx as nx
 
-from knowde.complex.__core__.sysnet import SysNet
-from knowde.complex.__core__.sysnet.sysfn import (
+from knowde.feature.parsing.parser import get_leaves, parse2tree
+from knowde.feature.parsing.parser.testing import treeprint
+from knowde.feature.parsing.sysnet import SysNet
+from knowde.feature.parsing.sysnet.sysfn import (
     check_duplicated_sentence,
     to_def,
 )
-from knowde.complex.__core__.sysnet.sysfn.build_fn import (
+from knowde.feature.parsing.sysnet.sysfn.build_fn import (
     add_resolved_edges,
     replace_quoterms,
 )
-from knowde.complex.__core__.sysnet.sysnode.merged_def import MergedDef
-from knowde.feature.parsing.parser import get_leaves, parse2tree
-from knowde.feature.parsing.parser.testing import treeprint
+from knowde.feature.parsing.sysnet.sysnode.merged_def import MergedDef
 from knowde.primitive.term.markresolver import MarkResolver
 
 from .interpreter import SysNetInterpreter
@@ -27,7 +27,7 @@ from .transformer import TSysArg
 if TYPE_CHECKING:
     from lark import Tree
 
-    from knowde.complex.__core__.tree2net.directed_edge import DirectedEdgeCollection
+    from knowde.feature.parsing.tree2net.directed_edge import DirectedEdgeCollection
 
 
 @cache

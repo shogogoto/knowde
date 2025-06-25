@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Self, override
 
 from pydantic import Field
 
-from knowde.complex.__core__.sysnet.sysnode import Def, IDef
+from knowde.feature.parsing.sysnet.sysnode import Def, IDef
 from knowde.primitive.term import MergedTerms, Term, check_and_merge_term, eq_term
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.util import parted

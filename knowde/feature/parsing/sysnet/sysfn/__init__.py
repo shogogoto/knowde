@@ -8,11 +8,11 @@ from typing import TYPE_CHECKING
 
 from lark import Token
 
-from knowde.complex.__core__.sysnet.errors import (
+from knowde.feature.parsing.sysnet.errors import (
     SysNetNotFoundError,
     sentence_dup_checker,
 )
-from knowde.complex.__core__.sysnet.sysnode import (
+from knowde.feature.parsing.sysnet.sysnode import (
     Def,
     DummySentence,
     KNArg,

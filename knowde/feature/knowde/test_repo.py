@@ -14,7 +14,6 @@ import networkx as nx
 import pytest
 from pytest_unordered import unordered
 
-from knowde.complex.__core__.sysnet import SysNet
 from knowde.complex.nxdb.restore import restore_sysnet
 from knowde.complex.nxdb.save import sn2db
 from knowde.feature.knowde.cypher import OrderBy, Paging, WherePhrase
@@ -23,6 +22,7 @@ from knowde.feature.knowde.repo import (
     save_text,
     search_knowde,
 )
+from knowde.feature.parsing.sysnet import SysNet
 from knowde.primitive.user.repo import LUser
 from knowde.shared.nxutil.edge_type import EdgeType
 

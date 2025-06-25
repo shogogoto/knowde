@@ -3,13 +3,13 @@
 import networkx as nx
 import pytest
 
-from knowde.complex.__core__.sysnet.errors import (
+from knowde.feature.parsing.sysnet.errors import (
     SentenceConflictError,
     SysNetNotFoundError,
 )
-from knowde.complex.__core__.sysnet.sysfn import get_ifdef, to_sentence, to_term
-from knowde.complex.__core__.sysnet.sysfn.build_fn import add_resolved_edges
-from knowde.complex.__core__.sysnet.sysnode import Def
+from knowde.feature.parsing.sysnet.sysfn import get_ifdef, to_sentence, to_term
+from knowde.feature.parsing.sysnet.sysfn.build_fn import add_resolved_edges
+from knowde.feature.parsing.sysnet.sysnode import Def
 from knowde.primitive.term import Term, check_and_merge_term
 from knowde.primitive.term.markresolver import MarkResolver
 from knowde.shared.nxutil import to_nested

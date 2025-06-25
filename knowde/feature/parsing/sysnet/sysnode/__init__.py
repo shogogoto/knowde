@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Final, Self, override
 from lark import Token
 from pydantic import BaseModel
 
-from knowde.complex.__core__.sysnet.errors import DefSentenceConflictError
+from knowde.feature.parsing.sysnet.errors import DefSentenceConflictError
 from knowde.primitive.template import Template
 from knowde.primitive.term import Term
 from knowde.primitive.time import WhenNode

@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Final
 from lark import Token, Tree
 from lark.visitors import Interpreter
 
-from knowde.complex.__core__.tree2net.directed_edge import (
+from knowde.feature.parsing.tree2net.directed_edge import (
     DirectedEdgeCollection,
 )
 from knowde.shared.nxutil.edge_type import Direction, EdgeType
@@ -17,7 +17,7 @@ from knowde.shared.util import parted
 if TYPE_CHECKING:
     from lark.tree import Branch
 
-    from knowde.complex.__core__.sysnet.sysnode import KNode
+    from knowde.feature.parsing.sysnet.sysnode import KNode
 
 
 H_TYPES: Final = [f"H{i}" for i in range(2, 7)]

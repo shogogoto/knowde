@@ -2,7 +2,6 @@
 
 from pytest_unordered import unordered
 
-from knowde.complex.__core__.tree2net import parse2net
 from knowde.complex.systats.nw1_n1 import (
     get_conclusion,
     get_detail,
@@ -15,6 +14,7 @@ from knowde.complex.systats.nw1_n1 import (
     has_dependency,
     recursively_nw1n1,
 )
+from knowde.feature.parsing.tree2net import parse2net
 
 
 def test_get_detail_parent() -> None:

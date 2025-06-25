@@ -8,10 +8,10 @@ from typing import TYPE_CHECKING, Any
 from lark import Token
 from pydantic import BaseModel, Field
 
-from knowde.complex.__core__.sysnet.sysfn import (
+from knowde.feature.parsing.sysnet.sysfn import (
     arg2sentence,
 )
-from knowde.complex.__core__.sysnet.sysnode import KNArg
+from knowde.feature.parsing.sysnet.sysnode import KNArg
 from knowde.shared.nxutil.edge_type import Direction, EdgeType
 
 if TYPE_CHECKING:

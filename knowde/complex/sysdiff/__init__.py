@@ -9,11 +9,11 @@ from typing import TYPE_CHECKING, Self, TypeVar
 import Levenshtein
 from pydantic import BaseModel
 
-from knowde.complex.__core__.sysnet.sysnode import Def
+from knowde.feature.parsing.sysnet.sysnode import Def
 from knowde.shared.nxutil.edge_type import EdgeType
 
 if TYPE_CHECKING:
-    from knowde.complex.__core__.sysnet import SysNet
+    from knowde.feature.parsing.sysnet import SysNet
     from knowde.primitive.term import Term
 
 # class TermDifference

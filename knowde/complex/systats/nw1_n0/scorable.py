@@ -8,12 +8,12 @@ from typing import TYPE_CHECKING, NamedTuple, Self
 from more_itertools import collapse
 from pydantic import BaseModel, Field
 
-from knowde.complex.__core__.sysnet.sysnode import KNArg, KNode
 from knowde.complex.systats.nw1_n1 import recursively_nw1n1
 from knowde.complex.systats.nw1_n1.ctxdetail import Nw1N1Ctx, Nw1N1Label
+from knowde.feature.parsing.sysnet.sysnode import KNArg, KNode
 
 if TYPE_CHECKING:
-    from knowde.complex.__core__.sysnet import SysNet
+    from knowde.feature.parsing.sysnet import SysNet
 
 
 class LRWTpl(NamedTuple):

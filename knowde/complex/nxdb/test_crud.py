@@ -3,10 +3,10 @@
 import pytest
 from pytest_unordered import unordered
 
-from knowde.complex.__core__.sysnet import SysNet
-from knowde.complex.__core__.tree2net import parse2net
 from knowde.feature.entry import ResourceMeta
 from knowde.feature.entry.label import LResource
+from knowde.feature.parsing.sysnet import SysNet
+from knowde.feature.parsing.tree2net import parse2net
 
 from .restore import restore_sysnet
 from .save import sn2db
