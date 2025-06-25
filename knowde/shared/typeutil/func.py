@@ -86,7 +86,7 @@ class MappingField2ArgumentError(Exception):
 
 def _lastname(typestr: str) -> str:
     """FQCN -> N. e.g. uuid.UUID -> UUID."""
-    return typestr.split(".")[-1]
+    return list(typestr.split("."))[-1]
 
 
 def eq_fieldparam_type(p: Parameter, f: FieldInfo) -> bool:
