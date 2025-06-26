@@ -2,7 +2,7 @@
 
 from typing import NoReturn
 
-from knowde.shared.dupchk import DuplicationChecker
+from knowde.feature.parsing.primitive.dupchk import DuplicationChecker
 
 
 class InterpreterError(Exception):
