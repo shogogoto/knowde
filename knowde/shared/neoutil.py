@@ -8,7 +8,7 @@ from uuid import UUID
 from neomodel import StringProperty, StructuredNode, UniqueIdProperty
 from pydantic import BaseModel
 
-from knowde.shared.domain.domain import neolabel2model
+from knowde.shared.types import NeoModel
 
 type UUIDy = UUID | str | UniqueIdProperty  # Falsyみたいな
 type STRy = str | StringProperty
@@ -19,7 +19,19 @@ def to_uuid(uidy: UUIDy) -> UUID:
     return UUID(uidy) if isinstance(uidy, (str, UniqueIdProperty)) else uidy
 
 
+T = TypeVar("T", bound=BaseModel)
 L = TypeVar("L", bound=StructuredNode)
+
+
+def neolabel2model[T: BaseModel](
+    t: type[T],
+    lb: NeoModel,
+    attrs: dict | None = None,
+) -> T:
+    """nemodelのlabelからモデルへ変換."""
+    if attrs is None:
+        attrs = {}
+    return t.model_validate({**lb.__properties__, **attrs})
 
 
 class BaseMapper[L: StructuredNode](BaseModel):
