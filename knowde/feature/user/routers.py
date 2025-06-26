@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from knowde.feature.auth.backend import bearer_backend, cookie_backend
-from knowde.feature.auth.oauth.router import google_router
+from knowde.feature.user.backend import bearer_backend, cookie_backend
+from knowde.feature.user.oauth.router import google_router
 
 from . import PREFIX_USER, auth_component
 from .schema import UserCreate, UserRead, UserUpdate

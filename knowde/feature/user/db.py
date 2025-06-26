@@ -9,8 +9,8 @@ from fastapi_users.db import (
     BaseUserDatabase,
 )
 
-from knowde.feature.auth.repo import Account, User
-from knowde.feature.auth.repo.repo import LAccount, LUser
+from knowde.feature.user.repo import Account, User
+from knowde.feature.user.repo.repo import LAccount, LUser
 
 
 class AccountDB(BaseUserDatabase[User, UUID]):

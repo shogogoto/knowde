@@ -9,8 +9,8 @@ from fastapi import Request
 from fastapi_users import BaseUserManager, UUIDIDMixin
 
 from knowde.config.env import Settings
-from knowde.feature.auth.db import AccountDB
-from knowde.feature.auth.repo import User
+from knowde.feature.user.db import AccountDB
+from knowde.feature.user.repo import User
 
 s = Settings()
 

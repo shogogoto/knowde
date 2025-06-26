@@ -19,7 +19,7 @@ def user_cli() -> None:
 @user_cli.command("google-sso")
 def sso_cmd() -> None:
     """Googleによるシングルサインオン."""
-    from knowde.feature.auth.cli.repo.client import AuthGet  # noqa: PLC0415
+    from knowde.feature.user.cli.repo.client import AuthGet  # noqa: PLC0415
 
     from .proc import browse_for_sso  # noqa: PLC0415
 
@@ -34,7 +34,7 @@ def sso_cmd() -> None:
 @click.option("-n", "--name", type=click.STRING, help="表示名")
 def register_cmd(email: str, password: str, name: str) -> None:
     """アカウント作成."""
-    from knowde.feature.auth.cli.repo.client import AuthPost  # noqa: PLC0415
+    from knowde.feature.user.cli.repo.client import AuthPost  # noqa: PLC0415
 
     res = AuthPost().register(email=email, password=password, display_name=name)
     echo_response(res, "登録")
@@ -46,7 +46,7 @@ def register_cmd(email: str, password: str, name: str) -> None:
 @click.password_option(confirmation_prompt=False)
 def login_cmd(email: str, password: str) -> None:
     """ログイン."""
-    from knowde.feature.auth.cli.repo.client import (  # noqa: PLC0415
+    from knowde.feature.user.cli.repo.client import (  # noqa: PLC0415
         AuthPost,
         save_credential,
     )
@@ -59,7 +59,7 @@ def login_cmd(email: str, password: str) -> None:
 @user_cli.command("logout")
 def logout_cmd() -> None:
     """ログアウト."""
-    from knowde.feature.auth.cli.repo.client import AuthPost  # noqa: PLC0415
+    from knowde.feature.user.cli.repo.client import AuthPost  # noqa: PLC0415
 
     res = AuthPost().logout()
     echo_response(res, "ログアウト")
@@ -73,7 +73,7 @@ def change_me_cmd(
     password: str | None,
 ) -> None:
     """ログインしているアカウント情報の変更."""
-    from knowde.feature.auth.cli.repo.client import AuthPatch  # noqa: PLC0415
+    from knowde.feature.user.cli.repo.client import AuthPatch  # noqa: PLC0415
 
     res = AuthPatch().change_me({"email": email, "password": password})
     echo_response(res, "アカウント情報の変更")
@@ -82,7 +82,7 @@ def change_me_cmd(
 @user_cli.command("me")
 def me_cmd() -> None:
     """ログインしているアカウント情報の取得."""
-    from knowde.feature.auth.cli.repo.client import AuthGet  # noqa: PLC0415
+    from knowde.feature.user.cli.repo.client import AuthGet  # noqa: PLC0415
 
     res = AuthGet().me()
     echo_response(res, "ログインアカウント情報の取得")
@@ -100,7 +100,7 @@ def clerk_cmd():
 # @click.argument("uid", type=click.UUID)
 # def get_user_cmd(uid: UUID) -> None:
 #     """スーパーユーザーによるアカウント情報の取得."""
-#     from knowde.feature.auth.cli.repo import AuthGet
+#     from knowde.feature.user.cli.repo import AuthGet
 
 #     res = AuthGet().user(uid)
 #     echo_response(res, "アカウント情報の取得")

@@ -9,7 +9,6 @@ from more_itertools import collapse
 from neomodel import db
 from pydantic import BaseModel, PrivateAttr
 
-from knowde.feature.auth.repo.repo import LUser
 from knowde.feature.entry import NameSpace
 from knowde.feature.entry.category.folder.repo import fetch_namespace
 from knowde.feature.entry.label import LFolder
@@ -27,6 +26,7 @@ from knowde.feature.knowde.detail import fetch_knowde_by_ids
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.tree2net import parse2net
 from knowde.feature.stats.nxdb.save import sn2db
+from knowde.feature.user.repo.repo import LUser
 from knowde.shared.types import UUIDy, to_uuid
 
 from . import KAdjacency, KStats

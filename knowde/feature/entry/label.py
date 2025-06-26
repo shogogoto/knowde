@@ -17,7 +17,7 @@ from neomodel import (
     ZeroOrOne,
 )
 
-from knowde.feature.auth.repo.repo import LUser
+from knowde.feature.user.repo.repo import LUser
 
 from .mapper import Entry, MFolder, MResource
 

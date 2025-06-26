@@ -8,8 +8,8 @@ from pydantic import BaseModel
 
 from knowde.config import LocalConfig
 from knowde.config.env import Settings
-from knowde.feature.auth import PREFIX_USER
-from knowde.feature.auth.errors import TokenUnsavedError
+from knowde.feature.user import PREFIX_USER
+from knowde.feature.user.errors import TokenUnsavedError
 
 s = Settings()
 

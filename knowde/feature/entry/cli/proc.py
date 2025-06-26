@@ -8,8 +8,8 @@ from fastapi import status
 
 from knowde.config import LocalConfig
 from knowde.config.env import Settings
-from knowde.feature.auth.cli.repo.client import AuthGet, auth_header
 from knowde.feature.entry.namespace.sync import Anchor, filter_parsable
+from knowde.feature.user.cli.repo.client import AuthGet, auth_header
 
 
 def link_proc() -> None:

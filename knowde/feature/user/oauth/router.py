@@ -6,8 +6,8 @@ from fastapi import APIRouter
 from httpx_oauth.clients.google import GoogleOAuth2
 
 from knowde.config.env import Settings
-from knowde.feature.auth import auth_component
-from knowde.feature.auth.backend import bearer_backend
+from knowde.feature.user import auth_component
+from knowde.feature.user.backend import bearer_backend
 
 from . import google_cookie_backend
 

@@ -7,11 +7,11 @@ from pathlib import Path
 
 from pydantic import RootModel
 
-from knowde.feature.auth.repo.repo import LUser
 from knowde.feature.entry import NameSpace, ResourceMeta
 from knowde.feature.entry.errors import DuplicatedTitleError, SaveResourceError
 from knowde.feature.entry.label import LFolder, LResource
 from knowde.feature.entry.mapper import MFolder, MResource
+from knowde.feature.user.repo.repo import LUser
 
 
 class ResourceMetas(RootModel[list[ResourceMeta]]):

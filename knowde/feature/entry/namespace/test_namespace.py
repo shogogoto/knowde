@@ -7,7 +7,6 @@ from textwrap import dedent
 
 import pytest
 
-from knowde.feature.auth.repo.repo import LUser
 from knowde.feature.entry import NameSpace, ResourceMeta
 from knowde.feature.entry.category.folder.repo import (
     fetch_namespace,
@@ -18,6 +17,7 @@ from knowde.feature.entry.namespace import (
     save_resource,
     sync_namespace,
 )
+from knowde.feature.user.repo.repo import LUser
 
 from .sync import Anchor
 

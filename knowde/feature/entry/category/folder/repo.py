@@ -12,10 +12,10 @@ from neomodel import (
     db,
 )
 
-from knowde.feature.auth.repo.repo import LUser
 from knowde.feature.entry import NameSpace
 from knowde.feature.entry.errors import EntryAlreadyExistsError, EntryNotFoundError
 from knowde.feature.entry.label import LEntry, LFolder, LResource
+from knowde.feature.user.repo.repo import LUser
 from knowde.shared.types import to_uuid
 
 if TYPE_CHECKING:
