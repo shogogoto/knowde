@@ -3,7 +3,9 @@
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from knowde.shared.errors.errors import DomainError, ErrorHandlingMiddleware
+from knowde.shared.errors.errors import DomainError
+
+from . import ErrorHandlingMiddleware
 
 app = FastAPI()
 app.add_middleware(ErrorHandlingMiddleware)
