@@ -4,11 +4,10 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
+from knowde.feature.user import PREFIX_USER, auth_component
 from knowde.feature.user.backend import bearer_backend, cookie_backend
 from knowde.feature.user.oauth.router import google_router
-
-from . import PREFIX_USER, auth_component
-from .schema import UserCreate, UserRead, UserUpdate
+from knowde.feature.user.schema import UserCreate, UserRead, UserUpdate
 
 ac = auth_component()
 user_router = APIRouter(prefix=PREFIX_USER, tags=["user"])

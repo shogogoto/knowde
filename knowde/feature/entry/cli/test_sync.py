@@ -10,7 +10,7 @@ from knowde.api import api
 from knowde.config.env import Settings
 from knowde.feature.entry.namespace.sync import Anchor
 from knowde.feature.entry.namespace.test_namespace import files  # noqa: F401
-from knowde.feature.user.cli.repo.client import (
+from knowde.feature.user.routers.repo.client import (
     AuthPost,
 )
 
