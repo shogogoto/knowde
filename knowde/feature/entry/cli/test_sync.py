@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 
 from knowde.api import api
 from knowde.config.env import Settings
-from knowde.feature.auth.repo.client import (
+from knowde.feature.auth.cli.repo.client import (
     AuthPost,
 )
 from knowde.feature.entry.namespace.sync import Anchor

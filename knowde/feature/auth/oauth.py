@@ -10,8 +10,7 @@ from fastapi_users.authentication import (
 )
 
 from knowde.config.env import Settings
-
-from .manager import get_cookie_transport, get_strategy
+from knowde.feature.auth.backend import get_cookie_transport, get_strategy
 
 s = Settings()
 

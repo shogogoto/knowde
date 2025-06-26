@@ -10,10 +10,11 @@ from fastapi_users import FastAPIUsers
 from httpx_oauth.clients.google import GoogleOAuth2
 
 from knowde.config.env import Settings
+from knowde.feature.auth.backend import bearer_backend, cookie_backend
 from knowde.feature.user import User
 
 from . import PREFIX_USER
-from .manager import bearer_backend, cookie_backend, get_user_manager
+from .manager import get_user_manager
 from .oauth import google_cookie_backend
 from .schema import UserCreate, UserRead, UserUpdate
 

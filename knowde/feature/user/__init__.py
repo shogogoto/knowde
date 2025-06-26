@@ -24,8 +24,8 @@ class User(NeoMapper):
     email: EmailStr
     hashed_password: str
     is_active: bool
-    is_superuser: bool = False
-    is_verified: bool = False
+    is_superuser: bool
+    is_verified: bool
     oauth_accounts: list[Account] = Field(default_factory=list)
     clerk_id: str | None = None
     display_name: str | None = None
@@ -44,8 +44,8 @@ class Account(NeoMapper):
     __label__ = LAccount
     oauth_name: str
     access_token: str
-    expires_at: int | None = None
-    refresh_token: str | None = None
+    expires_at: int | None
+    refresh_token: str | None
     account_id: str
     account_email: EmailStr
 

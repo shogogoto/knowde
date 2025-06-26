@@ -3,19 +3,11 @@
 from __future__ import annotations
 
 import uuid
-from functools import cache
-from queue import Queue
 from typing import Any, override
 from uuid import UUID
 
 from fastapi import Request
 from fastapi_users import BaseUserManager, UUIDIDMixin
-from fastapi_users.authentication import (
-    AuthenticationBackend,
-    BearerTransport,
-    CookieTransport,
-    JWTStrategy,
-)
 from fastapi_users.db import (
     BaseUserDatabase,
 )
@@ -25,12 +17,6 @@ from knowde.feature.user import Account, User
 from knowde.feature.user.repo import LAccount, LUser
 
 s = Settings()
-
-
-@cache
-def response_queue() -> Queue:
-    """レスポンスを保存するためのグローバルキュー."""
-    return Queue()
 
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
@@ -171,39 +157,3 @@ class AccountDB(BaseUserDatabase[User, UUID]):
 def get_user_manager() -> UserManager:
     """For fastapi-users."""
     return UserManager(AccountDB())
-
-
-def get_strategy() -> JWTStrategy:
-    """共通."""
-    return JWTStrategy(
-        secret=s.KN_AUTH_SECRET,
-        lifetime_seconds=s.KN_TOKEN_LIFETIME_SEC,
-    )
-
-
-def get_cookie_transport() -> CookieTransport:
-    """For fastapi-users."""
-    return CookieTransport(
-        cookie_max_age=s.KN_TOKEN_LIFETIME_SEC,
-        cookie_secure=s.COOKIE_SECURE,
-        cookie_samesite=s.COOKIE_SAMESITE,
-        cookie_domain=s.COOKIE_DOMAIN,
-    )
-
-
-def bearer_backend() -> AuthenticationBackend:
-    """For fastapi-users."""
-    return AuthenticationBackend(
-        name="jwt",
-        transport=BearerTransport(tokenUrl="auth/jwt/login"),
-        get_strategy=get_strategy,
-    )
-
-
-def cookie_backend() -> AuthenticationBackend:
-    """For fastapi-users."""
-    return AuthenticationBackend(
-        name="cookie",
-        transport=get_cookie_transport(),
-        get_strategy=get_strategy,
-    )
