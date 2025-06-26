@@ -13,7 +13,7 @@ from knowde.cli.util.field.model2click import (
     to_clickparam,
 )
 from knowde.cli.util.to_click import ClickDecorator
-from knowde.shared.typeutil import is_nested
+from knowde.cli.util.typeutil import is_nested
 
 if TYPE_CHECKING:
     from knowde.cli.util.to_click import ClickParam

@@ -12,7 +12,7 @@ import click
 from pydantic import BaseModel, Field
 from pydantic_partial.partial import create_partial_model
 
-from knowde.shared.typeutil import inject_signature
+from knowde.cli.util.typeutil import inject_signature
 
 from .func2click import func2clickparams
 

@@ -12,13 +12,13 @@ from knowde.cli.util.to_click import (
     ClickParam,
     to_clicktype,
 )
-from knowde.shared.typeutil import (
+from knowde.cli.util.typeutil import (
     extract_type,
     is_nested,
     is_option,
     is_optional,
 )
-from knowde.shared.typeutil.check import is_generic_alias
+from knowde.cli.util.typeutil.check import is_generic_alias
 
 if TYPE_CHECKING:
     from pydantic import BaseModel

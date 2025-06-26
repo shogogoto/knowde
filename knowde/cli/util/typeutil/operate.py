@@ -5,7 +5,7 @@ from __future__ import annotations
 from types import NoneType, UnionType
 from typing import get_args
 
-from knowde.shared.typeutil.check import is_generic_alias
+from knowde.cli.util.typeutil.check import is_generic_alias
 
 
 def extract_type(t: type | UnionType | None) -> type:

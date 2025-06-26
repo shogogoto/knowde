@@ -12,9 +12,9 @@ from click import Context, Parameter, ParamType
 from click.decorators import FC
 from pydantic import BaseModel
 
+from knowde.cli.util.typeutil.check import is_generic_alias
+from knowde.cli.util.typeutil.operate import extract_generic_alias_type
 from knowde.shared.timeutil import TZ
-from knowde.shared.typeutil.check import is_generic_alias
-from knowde.shared.typeutil.operate import extract_generic_alias_type
 
 
 class DateType(ParamType):

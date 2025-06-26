@@ -14,7 +14,7 @@ from typing import (
 import click
 from pydantic import BaseModel
 
-from knowde.shared.typeutil.func import rename_argument
+from knowde.cli.util.typeutil.func import rename_argument
 
 P = ParamSpec("P")
 T = TypeVar("T")

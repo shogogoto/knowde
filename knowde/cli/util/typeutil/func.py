@@ -17,7 +17,7 @@ from typing import (
 from makefun import create_function
 from pydantic_core import PydanticUndefined
 
-from knowde.shared.typeutil.check import is_option
+from knowde.cli.util.typeutil.check import is_option
 
 if TYPE_CHECKING:
     from pydantic import BaseModel
