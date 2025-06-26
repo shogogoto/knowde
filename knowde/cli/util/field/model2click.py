@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import click
 from pydantic_partial.partial import create_partial_model
 
-from knowde.shared.cli.to_click import (
+from knowde.cli.util.to_click import (
     ClickDecorator,
     ClickParam,
     to_clicktype,

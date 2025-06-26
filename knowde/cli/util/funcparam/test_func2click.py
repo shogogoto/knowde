@@ -17,7 +17,7 @@ from knowde.shared.typeutil import inject_signature
 from .func2click import func2clickparams
 
 if TYPE_CHECKING:
-    from knowde.shared.cli.to_click import ClickParam
+    from knowde.cli.util.to_click import ClickParam
 
 
 class Nest(BaseModel):  # noqa: D101

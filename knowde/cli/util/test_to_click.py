@@ -9,7 +9,7 @@ import pytest
 from pydantic import BaseModel
 from pydantic_partial.partial import create_partial_model
 
-from knowde.shared.cli.to_click import to_clicktype
+from knowde.cli.util.to_click import to_clicktype
 
 
 class NestedModel(BaseModel):  # noqa: D101

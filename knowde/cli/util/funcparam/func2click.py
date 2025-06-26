@@ -8,15 +8,15 @@ from typing import TYPE_CHECKING
 
 from pydantic.fields import FieldInfo
 
-from knowde.shared.cli.field.model2click import (
+from knowde.cli.util.field.model2click import (
     model2decorator,
     to_clickparam,
 )
-from knowde.shared.cli.to_click import ClickDecorator
+from knowde.cli.util.to_click import ClickDecorator
 from knowde.shared.typeutil import is_nested
 
 if TYPE_CHECKING:
-    from knowde.shared.cli.to_click import ClickParam
+    from knowde.cli.util.to_click import ClickParam
 
 
 def fparam2clickparams(p: Parameter) -> list[ClickParam]:  # noqa: D103

@@ -16,7 +16,7 @@ from .model2click import (
 )
 
 if TYPE_CHECKING:
-    from knowde.shared.cli.to_click import ClickDecorator
+    from knowde.cli.util.to_click import ClickDecorator
 
 
 class NestedModel(BaseModel):  # noqa: D101
