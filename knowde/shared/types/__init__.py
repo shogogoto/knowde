@@ -7,7 +7,7 @@ from typing import Annotated, Any
 from uuid import UUID, uuid4
 
 import networkx as nx
-from neomodel import StructuredNode
+from neomodel import StringProperty, StructuredNode, UniqueIdProperty
 from pydantic import (
     BaseModel,
     Field,
@@ -15,6 +15,14 @@ from pydantic import (
     PlainValidator,
     ValidationInfo,
 )
+
+type UUIDy = UUID | str | UniqueIdProperty  # Falsyみたいな
+type STRy = str | StringProperty
+
+
+def to_uuid(uidy: UUIDy) -> UUID:
+    """neomodelのuid propertyがstrを返すからUUIDに補正・統一して扱いたい."""
+    return UUID(uidy) if isinstance(uidy, (str, UniqueIdProperty)) else uidy
 
 
 def _validate_neomodel(
