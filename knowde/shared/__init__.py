@@ -5,7 +5,6 @@ import os
 
 from neomodel import config
 
-from .api import *  # noqa: F403
 from .cli import *  # noqa: F403
 from .domain import Entity  # noqa: F401
 from .errors import *  # noqa: F403
