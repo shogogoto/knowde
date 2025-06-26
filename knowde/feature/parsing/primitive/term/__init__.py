@@ -11,9 +11,9 @@ import networkx as nx
 from more_itertools import flatten
 from pydantic import BaseModel, Field, PrivateAttr, field_validator
 
+from knowde.feature.parsing.primitive.dupchk import DuplicationChecker
 from knowde.feature.parsing.primitive.term.const import BRACE_MARKER
 from knowde.feature.stats.nxdb import LTerm
-from knowde.shared.dupchk import DuplicationChecker
 
 from .errors import (
     AliasContainsMarkError,

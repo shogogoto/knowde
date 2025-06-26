@@ -9,28 +9,28 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from neomodel import db
 
+from knowde.api.middleware.error_handling import ErrorHandlingMiddleware
+from knowde.api.middleware.transaction import (
+    Neo4jTransactionMiddleware,
+    neo4j_logger,
+    set_error_handlers,
+)
 from knowde.config.env import Settings
 from knowde.feature.auth.routers import auth_router, user_router
 from knowde.feature.entry.router import entry_router
 from knowde.feature.knowde.router import knowde_router
 from knowde.feature.stats.nxdb.router import nxdb_router
-from knowde.feature.webhook.routers import webhook_router
-from knowde.shared import ErrorHandlingMiddleware
-
-from .middle import (
-    Neo4jTransactionMiddleware,
-    neo4j_logger,
-    set_error_handlers,
-)
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
 
 
+s = Settings()
+
+
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncGenerator:  # noqa: RUF029
     """Set up DB etc."""
-    s = Settings()
     s.setup_db()
     db.install_all_labels()
     yield
@@ -45,7 +45,6 @@ api.add_middleware(
     exclude_paths=["/health"],
     logger=neo4j_logger(),
 )
-s = Settings()
 api.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
@@ -62,7 +61,6 @@ api.include_router(user_router)
 api.include_router(entry_router())
 api.include_router(nxdb_router())
 api.include_router(knowde_router())
-api.include_router(webhook_router())
 
 
 def root_router() -> FastAPI:  # noqa: D103

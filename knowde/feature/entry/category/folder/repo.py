@@ -16,12 +16,12 @@ from knowde.feature.entry import NameSpace
 from knowde.feature.entry.errors import EntryAlreadyExistsError, EntryNotFoundError
 from knowde.feature.entry.label import LEntry, LFolder, LResource
 from knowde.feature.user.repo import LUser
-from knowde.shared.neoutil import to_uuid
+from knowde.shared.types import to_uuid
 
 if TYPE_CHECKING:
     from datetime import date
 
-    from knowde.shared.neoutil import UUIDy
+    from knowde.shared.types import UUIDy
 
 
 def create_folder(user_id: UUIDy, *names: str) -> LFolder:

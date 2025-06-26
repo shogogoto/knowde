@@ -16,16 +16,15 @@ from pydantic import BaseModel
 from knowde.feature.entry.label import LResource
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.primitive.time import WhenNode
-from knowde.shared.neoutil import to_uuid
 from knowde.shared.nxutil.edge_type import EdgeType
-from knowde.shared.types import Duplicable
+from knowde.shared.types import Duplicable, to_uuid
 
 from . import LHead, LInterval, LSentence, LTerm
 
 if TYPE_CHECKING:
     from knowde.feature.parsing.sysnet import SysNet
     from knowde.feature.parsing.sysnet.sysnode import KNode
-    from knowde.shared.neoutil import UUIDy
+    from knowde.shared.types import UUIDy
 
 
 def val2str(val: Any) -> str:

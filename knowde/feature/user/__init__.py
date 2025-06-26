@@ -11,12 +11,12 @@ from uuid import UUID
 
 from pydantic import EmailStr, Field
 
-from knowde.shared.neoutil import BaseMapper
+from knowde.shared.types.mapper import NeoMapper
 
 from .repo import LAccount, LUser
 
 
-class User(BaseMapper):
+class User(NeoMapper):
     """UserProtocol[UUID]を満たす."""
 
     __label__ = LUser
@@ -38,7 +38,7 @@ class User(BaseMapper):
         return self.uid
 
 
-class Account(BaseMapper):
+class Account(NeoMapper):
     """OAuthAccountProtocol[UUID]を満たす."""
 
     __label__ = LAccount
