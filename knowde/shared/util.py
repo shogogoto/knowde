@@ -4,6 +4,10 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable
 
+import pytz
+
+TZ = pytz.timezone("Asia/Tokyo")  # pytz じゃないとneo4j driverには対応していないっぽい
+
 
 def parted(it: Iterable, f: Callable[..., bool]) -> tuple[list, list]:
     """iterを条件で2分割."""
