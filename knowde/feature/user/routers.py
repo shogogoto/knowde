@@ -22,4 +22,5 @@ pref_auth.include_router(ac.get_register_router(UserRead, UserCreate))
 pref_auth.include_router(ac.get_reset_password_router())
 pref_auth.include_router(ac.get_verify_router(UserRead))
 auth_router.include_router(pref_auth)
+
 auth_router.include_router(google_router())

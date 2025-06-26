@@ -20,8 +20,7 @@ def user_cli() -> None:
 def sso_cmd() -> None:
     """Googleによるシングルサインオン."""
     from knowde.feature.user.cli.repo.client import AuthGet  # noqa: PLC0415
-
-    from .proc import browse_for_sso  # noqa: PLC0415
+    from knowde.feature.user.oauth.browse import browse_for_sso  # noqa: PLC0415
 
     if browse_for_sso():
         res = AuthGet().me()
