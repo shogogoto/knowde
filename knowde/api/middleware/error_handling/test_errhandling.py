@@ -3,7 +3,7 @@
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from knowde.shared.errors.errors import DomainError
+from knowde.shared.errors import DomainError
 
 from . import ErrorHandlingMiddleware
 

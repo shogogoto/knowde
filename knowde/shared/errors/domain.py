@@ -2,7 +2,7 @@
 
 from fastapi import status
 
-from knowde.shared.errors.errors import DomainError
+from . import DomainError
 
 
 class NotExistsAccessError(DomainError):
