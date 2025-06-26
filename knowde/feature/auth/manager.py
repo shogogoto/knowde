@@ -88,21 +88,22 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
 class AccountDB(BaseUserDatabase[User, UUID]):
     """DB adapter for fastapi-users."""
 
-    @staticmethod
-    async def get(id: UUID) -> User | None:  # noqa: A002
+    @override
+    async def get(self, id: UUID) -> User | None:
         """Get a single user by id."""
         # print("---------get")
         return User.get_or_none(uid=id.hex)
 
-    @staticmethod
-    async def get_by_email(email: str) -> User | None:
+    @override
+    async def get_by_email(self, email: str) -> User | None:
         """Get a single user by email."""
         # print("---------get by email")
         return User.get_or_none(email=email)
 
-    @staticmethod
+    @override
     async def get_by_oauth_account(
-        oauth: str,  # noqa: ARG004
+        self,
+        oauth: str,
         account_id: str,
     ) -> User | None:
         """Get a single user by OAuth account id."""
@@ -113,17 +114,17 @@ class AccountDB(BaseUserDatabase[User, UUID]):
         lu = la.user.single()
         return User.from_lb(lu)
 
-    @classmethod
-    async def create(cls, create_dict: dict[str, Any]) -> User:
+    @override
+    async def create(self, create_dict: dict[str, Any]) -> User:
         """Create a user."""
-        if await cls.get_by_email(create_dict["email"]):
+        if await self.get_by_email(create_dict["email"]):
             raise  # noqa: PLE0704
 
         lb = LUser(**create_dict).save()
         return User.from_lb(lb)
 
-    @staticmethod
-    async def update(user: User, update_dict: dict) -> User:
+    @override
+    async def update(self, user: User, update_dict: dict) -> User:
         """Update a user."""
         # print("------------ update")
         lb = LUser.nodes.get(uid=user.id.hex)
@@ -134,16 +135,17 @@ class AccountDB(BaseUserDatabase[User, UUID]):
         lb = lb.save()
         return User.from_lb(lb)
 
-    @staticmethod
-    async def delete(user: User) -> None:
+    @override
+    async def delete(self, user: User) -> None:
         """Delete a user."""
         # print("------------ delete")
         lb = LUser.nodes.get(uid=user.id.hex)
         lb.delete()
 
     # OAUTH
-    @staticmethod
+    @override
     async def add_oauth_account(
+        self,
         user: User,
         create_dict: dict[str, Any],
     ) -> User:
@@ -155,10 +157,11 @@ class AccountDB(BaseUserDatabase[User, UUID]):
         lu.accounts.connect(la)
         return user
 
-    @staticmethod
+    @override
     async def update_oauth_account(
+        self,
         user: User,
-        oauth_account: Account,  # noqa: ARG004
+        oauth_account: Account,
         update_dict: dict[str, Any],
     ) -> User:
         """Update an OAuth account on a user."""
