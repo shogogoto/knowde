@@ -10,7 +10,7 @@ from fastapi_users import FastAPIUsers
 
 from knowde.feature.auth.backend import bearer_backend, cookie_backend
 from knowde.feature.auth.manager import get_user_manager
-from knowde.feature.user import User
+from knowde.feature.auth.repo import User
 
 PREFIX_USER: Final = "/user"
 

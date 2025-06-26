@@ -2,8 +2,8 @@
 
 import pytest
 
+from knowde.feature.auth.repo.repo import LUser
 from knowde.feature.entry.errors import EntryAlreadyExistsError, EntryNotFoundError
-from knowde.feature.user.repo import LUser
 
 from .repo import (
     create_folder,

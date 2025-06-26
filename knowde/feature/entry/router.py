@@ -13,7 +13,7 @@ from knowde.feature.entry.category.folder.repo import fetch_namespace
 from knowde.feature.entry.namespace import ResourceMetas, sync_namespace
 
 if TYPE_CHECKING:
-    from knowde.feature.user import User
+    from knowde.feature.auth.repo import User
 
 router = APIRouter(tags=["entry"])
 

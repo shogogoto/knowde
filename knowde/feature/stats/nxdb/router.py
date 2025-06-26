@@ -16,7 +16,7 @@ from knowde.feature.parsing.tree2net import parse2net
 from knowde.feature.stats.nxdb.save import sn2db
 
 if TYPE_CHECKING:
-    from knowde.feature.user import User
+    from knowde.feature.auth.repo import User
 
 
 @cache
