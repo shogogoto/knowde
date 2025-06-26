@@ -14,7 +14,6 @@ from knowde.feature.auth.routers import auth_router, user_router
 from knowde.feature.entry.router import entry_router
 from knowde.feature.knowde.router import knowde_router
 from knowde.feature.stats.nxdb.router import nxdb_router
-from knowde.feature.webhook.routers import webhook_router
 from knowde.shared import ErrorHandlingMiddleware
 
 from .middle import (
@@ -62,7 +61,6 @@ api.include_router(user_router)
 api.include_router(entry_router())
 api.include_router(nxdb_router())
 api.include_router(knowde_router())
-api.include_router(webhook_router())
 
 
 def root_router() -> FastAPI:  # noqa: D103
