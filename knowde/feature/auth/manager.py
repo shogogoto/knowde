@@ -1,4 +1,4 @@
-"""user manager."""
+"""managerはevent observerのこと."""
 
 from __future__ import annotations
 

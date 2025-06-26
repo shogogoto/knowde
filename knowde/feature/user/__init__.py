@@ -1,8 +1,6 @@
 """ユーザーがシステムにアクセスするための一連の認証情報や権限.
 
 アカウントは、ユーザーに特定の役割や権限を付与するために使用される
-
-follow機能
 """
 
 from __future__ import annotations
@@ -27,7 +25,6 @@ class User(NeoMapper):
     is_superuser: bool
     is_verified: bool
     oauth_accounts: list[Account] = Field(default_factory=list)
-    clerk_id: str | None = None
     display_name: str | None = None
 
     @property

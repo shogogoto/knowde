@@ -29,6 +29,7 @@ class LUser(StructuredNode):
     """Neo4j label."""
 
     __label__ = "User"
+    # 基本属性
     uid = UniqueIdProperty()
     email = LowerEmailProperty(unique_index=True)
     hashed_password = StringProperty(default=None)
@@ -37,9 +38,12 @@ class LUser(StructuredNode):
     is_superuser = BooleanProperty(default=False)
     created = DateTimeNeo4jFormatProperty(default_now=True)
 
-    accounts = RelationshipTo("LAccount", "OAUTH")
-    clerk_id = StringProperty(default=None, unique_index=True)
+    # 追加情報
     display_name = StringProperty(default=None)
+    display_id = StringProperty(default=None)
+
+    # oauth
+    accounts = RelationshipTo("LAccount", "OAUTH")
 
 
 class LAccount(StructuredNode):
