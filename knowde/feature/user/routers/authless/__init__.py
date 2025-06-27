@@ -7,8 +7,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query
 
-from knowde.feature.user.repo.label import LUser
 from knowde.feature.user.schema import UserRead
+from knowde.shared.labels.user import LUser
 
 _r = APIRouter()
 

@@ -17,7 +17,7 @@ from neomodel import (
     ZeroOrOne,
 )
 
-from knowde.feature.user.repo.label import LUser
+from knowde.shared.labels.user import LUser
 
 from .mapper import Entry, MFolder, MResource
 

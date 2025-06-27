@@ -4,8 +4,8 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from knowde.feature.user.repo.label import LUser
 from knowde.feature.user.routers import user_router
+from knowde.shared.labels.user import LUser
 
 
 @pytest.fixture

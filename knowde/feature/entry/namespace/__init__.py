@@ -11,7 +11,7 @@ from knowde.feature.entry import NameSpace, ResourceMeta
 from knowde.feature.entry.errors import DuplicatedTitleError, SaveResourceError
 from knowde.feature.entry.label import LFolder, LResource
 from knowde.feature.entry.mapper import MFolder, MResource
-from knowde.feature.user.repo.label import LUser
+from knowde.shared.labels.user import LUser
 
 
 class ResourceMetas(RootModel[list[ResourceMeta]]):

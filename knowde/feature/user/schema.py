@@ -6,7 +6,7 @@ from typing import Self
 from fastapi_users import schemas
 
 from knowde.feature.user import CommonSchema
-from knowde.feature.user.repo.label import LUser
+from knowde.shared.labels.user import LUser
 
 
 class UserCreate(schemas.BaseUserCreate):
