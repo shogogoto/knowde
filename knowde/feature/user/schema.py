@@ -1,21 +1,26 @@
 """認可の種類."""
 
 import uuid
+from datetime import datetime
 
 from fastapi_users import schemas
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+
+class UserCreate(schemas.BaseUserCreate):
+    """作成."""
 
 
 class CommonSchema(BaseModel):  # noqa: D101
-    display_name: str | None = None
+    display_name: str | None = Field(default=None, max_length=32)
+    avatar_url: str | None = None
+    profile: str | None = Field(default=None, max_length=160)  # twitterと同じらしい
 
 
 class UserRead(CommonSchema, schemas.BaseUser[uuid.UUID]):
     """読み取り."""
 
-
-class UserCreate(CommonSchema, schemas.BaseUserCreate):
-    """作成."""
+    created: datetime
 
 
 class UserUpdate(CommonSchema, schemas.BaseUserUpdate):

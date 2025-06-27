@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any, override
 from uuid import UUID
 
@@ -11,6 +12,8 @@ from fastapi_users.db import (
 
 from knowde.feature.user.repo import Account, User
 from knowde.feature.user.repo.repo import LAccount, LUser
+from knowde.shared.types.mapper import label2model
+from knowde.shared.util import TZ
 
 
 class AccountDB(BaseUserDatabase[User, UUID]):
@@ -20,12 +23,20 @@ class AccountDB(BaseUserDatabase[User, UUID]):
     async def get(self, id: UUID) -> User | None:
         """Get a single user by id."""
         # print("---------get")
-        return User.get_or_none(uid=id.hex)
+        lb = LUser.nodes.get_or_none(uid=id.hex)
+        if lb is None:
+            return None
+        return label2model(User, lb)
 
     @override
     async def get_by_email(self, email: str) -> User | None:
         """Get a single user by email."""
         # print("---------get by email")
+        lb = LUser.nodes.get_or_none(email=email)
+        if lb is None:
+            return None
+        return label2model(User, lb)
+
         return User.get_or_none(email=email)
 
     @override
@@ -40,16 +51,15 @@ class AccountDB(BaseUserDatabase[User, UUID]):
         if la is None:
             return None
         lu = la.user.single()
-        return User.from_lb(lu)
+        return label2model(User, lu)
 
     @override
     async def create(self, create_dict: dict[str, Any]) -> User:
         """Create a user."""
         if await self.get_by_email(create_dict["email"]):
             raise  # noqa: PLE0704
-
         lb = LUser(**create_dict).save()
-        return User.from_lb(lb)
+        return label2model(User, lb)
 
     @override
     async def update(self, user: User, update_dict: dict) -> User:
@@ -60,8 +70,9 @@ class AccountDB(BaseUserDatabase[User, UUID]):
             if value is None:
                 continue
             setattr(lb, key, value)
+        lb.created = datetime.now(tz=TZ)
         lb = lb.save()
-        return User.from_lb(lb)
+        return label2model(User, lb)
 
     @override
     async def delete(self, user: User) -> None:

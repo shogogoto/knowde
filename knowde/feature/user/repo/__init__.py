@@ -5,27 +5,25 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from uuid import UUID
 
-from pydantic import EmailStr, Field
+from fastapi_users.schemas import BaseOAuthAccount, BaseOAuthAccountMixin
+from pydantic import EmailStr
 
-from knowde.shared.types.mapper import NeoMapper
-
-from .repo import LAccount, LUser
+from knowde.feature.user.schema import CommonSchema
 
 
-class User(NeoMapper):
+class User(CommonSchema, BaseOAuthAccountMixin):
     """UserProtocol[UUID]を満たす."""
 
-    __label__ = LUser
     uid: UUID | None = None
     email: EmailStr
     hashed_password: str
     is_active: bool
     is_superuser: bool
     is_verified: bool
-    oauth_accounts: list[Account] = Field(default_factory=list)
-    display_name: str | None = None
+    created: datetime
 
     @property
     def id(self) -> UUID:  # noqa: D102
@@ -35,15 +33,9 @@ class User(NeoMapper):
         return self.uid
 
 
-class Account(NeoMapper):
+class Account(BaseOAuthAccount):
     """OAuthAccountProtocol[UUID]を満たす."""
 
-    __label__ = LAccount
-    oauth_name: str
-    access_token: str
-    expires_at: int | None
-    refresh_token: str | None
-    account_id: str
     account_email: EmailStr
 
     @property
