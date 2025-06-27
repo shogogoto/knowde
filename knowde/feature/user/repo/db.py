@@ -11,7 +11,7 @@ from fastapi_users.db import (
 )
 
 from knowde.feature.user.repo import Account, User
-from knowde.feature.user.repo.repo import LAccount, LUser
+from knowde.feature.user.repo.label import LAccount, LUser
 from knowde.shared.types.mapper import label2model
 from knowde.shared.util import TZ
 
