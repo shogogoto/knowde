@@ -42,7 +42,8 @@ class LUser(StructuredNode):
 
     # 追加情報
     display_name = StringProperty(default=None, max_length=LEN_DISPLAY_NAME)
-    display_id = StringProperty(default=None)
+    profile = StringProperty(default=None)
+    avatar_url = StringProperty(default=None)
 
     # oauth
     accounts = RelationshipTo("LAccount", "OAUTH")
