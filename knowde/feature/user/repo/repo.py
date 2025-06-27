@@ -17,6 +17,8 @@ from neomodel import (
     ZeroOrOne,
 )
 
+from knowde.feature.user.schema import LEN_DISPLAY_NAME
+
 
 class LowerEmailProperty(EmailProperty):  # noqa: D101
     @override
@@ -39,7 +41,7 @@ class LUser(StructuredNode):
     created = DateTimeNeo4jFormatProperty(default_now=True)
 
     # 追加情報
-    display_name = StringProperty(default=None)
+    display_name = StringProperty(default=None, max_length=LEN_DISPLAY_NAME)
     display_id = StringProperty(default=None)
 
     # oauth
