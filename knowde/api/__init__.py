@@ -56,8 +56,8 @@ api.add_middleware(
 set_error_handlers(api)
 
 
-api.include_router(auth_router)
-api.include_router(user_router)
+api.include_router(auth_router())
+api.include_router(user_router())
 api.include_router(entry_router())
 api.include_router(nxdb_router())
 api.include_router(knowde_router())

@@ -1,29 +1,36 @@
 """認可の種類."""
 
-import uuid
 from datetime import datetime
+from typing import Self
 
 from fastapi_users import schemas
-from pydantic import BaseModel, Field
 
-LEN_DISPLAY_NAME = 32
-LEN_PROFILE = 160  # twitterと同じらしい
-
-
-class CommonSchema(BaseModel):  # noqa: D101
-    display_name: str | None = Field(default=None, max_length=LEN_DISPLAY_NAME)
-    profile: str | None = Field(default=None, max_length=LEN_PROFILE)
-    avatar_url: str | None = None
+from knowde.feature.user import CommonSchema
+from knowde.feature.user.repo.label import LUser
 
 
 class UserCreate(schemas.BaseUserCreate):
     """作成."""
 
 
-class UserRead(CommonSchema, schemas.BaseUser[uuid.UUID]):
+class UserRead(CommonSchema, schemas.BaseUser):
     """読み取り."""
 
     created: datetime
+
+    @classmethod
+    def from_label(cls, lb: LUser) -> Self:  # noqa: D102
+        return cls(
+            id=lb.uid,
+            email=lb.email,
+            is_active=lb.is_active,
+            is_verified=lb.is_verified,
+            is_superuser=lb.is_superuser,
+            created=lb.created,
+            display_name=lb.display_name,
+            profile=lb.profile,
+            avatar_url=lb.avatar_url,
+        )
 
 
 class UserUpdate(CommonSchema, schemas.BaseUserUpdate):

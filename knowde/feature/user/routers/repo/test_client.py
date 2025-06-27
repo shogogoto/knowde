@@ -20,8 +20,8 @@ from .client import (
 def client() -> TestClient:
     """Test util."""
     api = FastAPI()
-    api.include_router(auth_router)
-    api.include_router(user_router)
+    api.include_router(auth_router())
+    api.include_router(user_router())
     return TestClient(api)
 
 

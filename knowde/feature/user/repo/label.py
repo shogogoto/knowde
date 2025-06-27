@@ -17,7 +17,7 @@ from neomodel import (
     ZeroOrOne,
 )
 
-from knowde.feature.user.schema import LEN_DISPLAY_NAME
+from knowde.feature.user import LEN_DISPLAY_NAME, LEN_PROFILE
 
 
 class LowerEmailProperty(EmailProperty):  # noqa: D101
@@ -33,7 +33,7 @@ class LUser(StructuredNode):
     __label__ = "User"
     # 基本属性
     uid = UniqueIdProperty()
-    email = LowerEmailProperty(unique_index=True)
+    email = LowerEmailProperty(unique_index=True, required=True)
     hashed_password = StringProperty(default=None)
     is_active = BooleanProperty(default=True)
     is_verified = BooleanProperty(default=False)
@@ -42,7 +42,7 @@ class LUser(StructuredNode):
 
     # 追加情報
     display_name = StringProperty(default=None, max_length=LEN_DISPLAY_NAME)
-    profile = StringProperty(default=None)
+    profile = StringProperty(default=None, max_length=LEN_PROFILE)
     avatar_url = StringProperty(default=None)
 
     # oauth
