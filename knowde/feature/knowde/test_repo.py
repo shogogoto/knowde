@@ -23,7 +23,7 @@ from knowde.feature.knowde.repo import (
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.stats.nxdb.restore import restore_sysnet
 from knowde.feature.stats.nxdb.save import sn2db
-from knowde.feature.user.repo import LUser
+from knowde.shared.labels.user import LUser
 from knowde.shared.nxutil.edge_type import EdgeType
 
 

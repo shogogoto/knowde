@@ -26,7 +26,7 @@ from knowde.feature.knowde.detail import fetch_knowde_by_ids
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.tree2net import parse2net
 from knowde.feature.stats.nxdb.save import sn2db
-from knowde.feature.user.repo import LUser
+from knowde.shared.labels.user import LUser
 from knowde.shared.types import UUIDy, to_uuid
 
 from . import KAdjacency, KStats

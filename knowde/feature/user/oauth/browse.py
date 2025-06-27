@@ -1,4 +1,4 @@
-"""遅延importでCLI補間軽くするための分離."""
+"""google auth by browser from CLI."""
 
 from __future__ import annotations
 

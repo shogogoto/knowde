@@ -8,11 +8,11 @@ from fastapi.testclient import TestClient
 
 from knowde.api import api
 from knowde.config.env import Settings
-from knowde.feature.auth.repo.client import (
-    AuthPost,
-)
 from knowde.feature.entry.namespace.sync import Anchor
 from knowde.feature.entry.namespace.test_namespace import files  # noqa: F401
+from knowde.feature.user.routers.repo.client import (
+    AuthPost,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path

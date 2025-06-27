@@ -13,7 +13,7 @@ from knowde.api import root_router
 from knowde.feature.knowde import KnowdeDetail
 from knowde.feature.knowde.repo import save_text
 from knowde.feature.stats.nxdb import LSentence, LTerm
-from knowde.feature.user.repo import LUser
+from knowde.shared.labels.user import LUser
 
 
 @pytest.fixture

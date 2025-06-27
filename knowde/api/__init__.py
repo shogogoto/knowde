@@ -16,10 +16,10 @@ from knowde.api.middleware.transaction import (
     set_error_handlers,
 )
 from knowde.config.env import Settings
-from knowde.feature.auth.routers import auth_router, user_router
 from knowde.feature.entry.router import entry_router
 from knowde.feature.knowde.router import knowde_router
 from knowde.feature.stats.nxdb.router import nxdb_router
+from knowde.feature.user.routers import auth_router, user_router
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
@@ -56,8 +56,8 @@ api.add_middleware(
 set_error_handlers(api)
 
 
-api.include_router(auth_router)
-api.include_router(user_router)
+api.include_router(auth_router())
+api.include_router(user_router())
 api.include_router(entry_router())
 api.include_router(nxdb_router())
 api.include_router(knowde_router())
