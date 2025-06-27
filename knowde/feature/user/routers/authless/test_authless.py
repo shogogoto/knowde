@@ -27,7 +27,7 @@ def test_search_user_by_name(client: TestClient):
     assert len(res.json()) == 1
     assert res.json()[0]["display_name"] == "aaa"
 
-    res = client.get("/user/search/", params={"name": "a"})  # 大文字小文字は区別しない
+    res = client.get("/user/search/", params={"name": "A"})  # 大文字小文字は区別しない
     assert len(res.json()) == 1
     assert res.json()[0]["display_name"] == "aaa"
 
