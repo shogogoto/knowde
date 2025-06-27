@@ -9,8 +9,8 @@ from uuid import UUID
 from fastapi_users import FastAPIUsers
 
 from knowde.feature.user.backend import bearer_backend, cookie_backend
+from knowde.feature.user.domain import User
 from knowde.feature.user.manager import get_user_manager
-from knowde.feature.user.repo import User
 
 PREFIX_USER: Final = "/user"
 

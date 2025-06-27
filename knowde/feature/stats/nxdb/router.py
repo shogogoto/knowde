@@ -16,7 +16,7 @@ from knowde.feature.stats.nxdb.save import sn2db
 from knowde.feature.user.routers import auth_component
 
 if TYPE_CHECKING:
-    from knowde.feature.user.repo import User
+    from knowde.feature.user.domain import User
 
 
 @cache

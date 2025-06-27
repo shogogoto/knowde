@@ -9,7 +9,7 @@ from neomodel import db
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.knowde import Knowde, KnowdeDetail, KnowdeLocation, UidStr
 from knowde.feature.parsing.primitive.term import Term
-from knowde.feature.user.repo import User
+from knowde.feature.user.domain import User
 from knowde.shared.errors.domain import NotFoundError
 from knowde.shared.nxutil.edge_type import EdgeType
 
