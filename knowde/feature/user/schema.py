@@ -13,7 +13,7 @@ class UserCreate(schemas.BaseUserCreate):
     """作成."""
 
 
-class UserRead(CommonSchema, schemas.BaseUser):
+class UserRead(CommonSchema, schemas.BaseUser[str]):
     """読み取り."""
 
     created: datetime
@@ -35,3 +35,5 @@ class UserRead(CommonSchema, schemas.BaseUser):
 
 class UserUpdate(CommonSchema, schemas.BaseUserUpdate):
     """更新."""
+
+    id: str | None = None

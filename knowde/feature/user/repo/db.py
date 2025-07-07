@@ -66,7 +66,7 @@ class AccountDB(BaseUserDatabase[User, UUID]):
     async def update(self, user: User, update_dict: dict) -> User:
         """Update a user."""
         # print("------------ update")
-        lb = LUser.nodes.get(uid=user.id.hex)
+        lb = LUser.nodes.get(uid=user.id)
         for key, value in update_dict.items():
             if value is None:
                 continue
