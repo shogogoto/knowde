@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Self
 
 from fastapi_users import schemas
+from pydantic import Field
 
 from knowde.feature.user import CommonSchema
 from knowde.shared.labels.user import LUser
@@ -16,6 +17,8 @@ class UserCreate(schemas.BaseUserCreate):
 class UserRead(CommonSchema, schemas.BaseUser[str]):
     """読み取り."""
 
+    # CommonSchemaにまとめたかったが、BaseUserのoverrideに効かないくさい
+    id: str | None = Field(default=None, pattern=r"^[^-]*$")
     created: datetime
 
     @classmethod
@@ -36,4 +39,4 @@ class UserRead(CommonSchema, schemas.BaseUser[str]):
 class UserUpdate(CommonSchema, schemas.BaseUserUpdate):
     """更新."""
 
-    id: str | None = None
+    id: str | None = Field(default=None, pattern=r"^[^-]*$")

@@ -21,7 +21,7 @@ def search_user(
     """認証なしユーザー検索."""
     users = LUser.nodes.filter(
         display_name__icontains=name,
-        uid__istartswith=id,
+        uid__istartswith=id.replace("-", "") if id else "",
     ).order_by("display_name", "uid")
     return [UserRead.from_label(u) for u in users]
 
