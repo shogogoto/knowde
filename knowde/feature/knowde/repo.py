@@ -83,7 +83,7 @@ def search_total(
     """検索文字列にマッチするknowde総数."""
     q_tot = (
         """
-        CALL {
+        CALL () {
         """
         + q_sentence_from_def(wp)
         + """
