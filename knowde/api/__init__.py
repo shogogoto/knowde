@@ -12,7 +12,6 @@ from neomodel import db
 from knowde.api.middleware.error_handling import ErrorHandlingMiddleware
 from knowde.api.middleware.transaction import (
     Neo4jTransactionMiddleware,
-    neo4j_logger,
     set_error_handlers,
 )
 from knowde.config.env import Settings
@@ -43,7 +42,7 @@ api.add_middleware(
     Neo4jTransactionMiddleware,
     # paths=["/api/v1"], 適用パス
     exclude_paths=["/health"],
-    logger=neo4j_logger(),
+    # logger=neo4j_logger(),
 )
 api.add_middleware(
     CORSMiddleware,

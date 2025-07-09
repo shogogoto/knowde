@@ -11,9 +11,9 @@ sync
 """
 
 import networkx as nx
-import pytest
 from pytest_unordered import unordered
 
+from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.knowde.cypher import OrderBy, Paging, WherePhrase
 from knowde.feature.knowde.repo import (
     get_stats_by_id,
@@ -27,12 +27,13 @@ from knowde.shared.labels.user import LUser
 from knowde.shared.nxutil.edge_type import EdgeType
 
 
-@pytest.fixture
-def u() -> LUser:  # noqa: D103
-    return LUser(email="onex@gmail.com").save()
+@async_fixture()
+async def u() -> LUser:  # noqa: D103
+    return await LUser(email="onex@gmail.com").save()
 
 
-def test_get_knowde_attrs(u: LUser):
+@mark_async_test()
+async def test_get_knowde_attrs(u: LUser):
     """文の所属などを取得."""
     s = """
     # titleX
@@ -53,7 +54,7 @@ def test_get_knowde_attrs(u: LUser):
         x: xxx
         y: {x}yy
     """
-    _sn, _ = save_text(u.uid, s)
+    _sn, _ = await save_text(u.uid, s)
     _total, adjs = search_knowde("A1")
     assert [a.center.sentence for a in adjs] == unordered(["a", "ちん", "bA123"])
 
@@ -61,7 +62,8 @@ def test_get_knowde_attrs(u: LUser):
     assert adjs[0].referreds[0].sentence == "{x}yy"
 
 
-def test_stats_from_db(u: LUser):
+@mark_async_test()
+async def test_stats_from_db(u: LUser):
     """systats相当のものをDBから取得する."""
     s = """
     # titleX
@@ -90,8 +92,8 @@ def test_stats_from_db(u: LUser):
                 d31
                 d32
     """
-    _, r = save_text(u.uid, s)
-    _sn, uids = restore_sysnet(r.uid)
+    _, r = await save_text(u.uid, s)
+    _sn, uids = await restore_sysnet(r.uid)
     assert get_stats_by_id(uids["0"]) == [6, 7, 2, 3, 0, 0, 0]
     assert get_stats_by_id(uids["1"]) == [7, 2, 3, 1, 0, 0, 0]
     assert get_stats_by_id(uids["a"]) == [0, 0, 0, 0, 2, 0, 0]
@@ -99,9 +101,10 @@ def test_stats_from_db(u: LUser):
     assert get_stats_by_id(uids["detail"]) == [0, 0, 0, 0, 0, 0, 5]
 
 
-def test_paging(u: LUser):
+@mark_async_test()
+async def test_paging(u: LUser):
     """ページングのテスト."""
-    sn, r = save_text(u.uid, "# titleY\n")
+    sn, r = await save_text(u.uid, "# titleY\n")
     g = nx.balanced_tree(3, 4, create_using=nx.MultiDiGraph)
     g = nx.relabel_nodes(g, {i: str(i) for i in g.nodes})
     nx.set_edge_attributes(g, EdgeType.TO, "type")
@@ -109,7 +112,7 @@ def test_paging(u: LUser):
     EdgeType.BELOW.add_edge(h, sn.root, "0")
     sn = SysNet(root=sn.root, g=h)
     sn2db(sn, r.uid)
-    sn, _uids = restore_sysnet(r.uid)
+    sn, _uids = await restore_sysnet(r.uid)
     n_nodes = len(sn.g.nodes) - 1
     assert n_nodes == 121  # title除いて121の文  # noqa: PLR2004
     total, adjs = search_knowde(".*", WherePhrase.REGEX, Paging(page=1))
@@ -123,14 +126,15 @@ def test_paging(u: LUser):
     assert len(adjs) == 0
 
 
-def test_ordering(u: LUser):
+@mark_async_test()
+async def test_ordering(u: LUser):
     """検索結果の順番を確認.
 
     sortをどう生成するのか
     scoreの定義 weight * var の sumというのだけでいい
     desc asc
     """
-    sn, r = save_text(u.uid, "# titleY\n")
+    sn, r = await save_text(u.uid, "# titleY\n")
     g = nx.path_graph(30, create_using=nx.MultiDiGraph)
     g = nx.relabel_nodes(g, {i: str(i) for i in g.nodes})
     nx.set_edge_attributes(g, EdgeType.TO, "type")
@@ -138,7 +142,7 @@ def test_ordering(u: LUser):
     EdgeType.BELOW.add_edge(h, sn.root, "0")
     sn = SysNet(root=sn.root, g=h)
     sn2db(sn, r.uid)
-    sn, _uids = restore_sysnet(r.uid)
+    sn, _uids = await restore_sysnet(r.uid)
     order_by = OrderBy(
         n_detail=0,
         n_premise=-1,
@@ -156,7 +160,8 @@ def test_ordering(u: LUser):
     assert [a.center.sentence for a in adjs] == [str(i) for i in range(30)]
 
 
-def test_details(u: LUser):
+@mark_async_test()
+async def test_details(u: LUser):
     """詳細の取得が変だったから."""
     s = """
     # titleX
@@ -180,8 +185,8 @@ def test_details(u: LUser):
                     x6
 
     """
-    _, r = save_text(u.uid, s)
-    _sn, _uids = restore_sysnet(r.uid)
+    _, r = await save_text(u.uid, s)
+    _sn, _uids = await restore_sysnet(r.uid)
     _total, adjs = search_knowde(
         "detail",
         WherePhrase.CONTAINS,

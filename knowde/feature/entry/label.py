@@ -6,39 +6,39 @@ from typing import override
 from neomodel import (
     AliasProperty,
     ArrayProperty,
+    AsyncRelationshipManager,
+    AsyncRelationshipTo,
+    AsyncStructuredNode,
+    AsyncZeroOrOne,
     DateProperty,
     DateTimeNeo4jFormatProperty,
     IntegerProperty,
-    RelationshipManager,
-    RelationshipTo,
     StringProperty,
-    StructuredNode,
     UniqueIdProperty,
-    ZeroOrOne,
 )
 
-from knowde.shared.labels.user import LUser
+from knowde.shared.labels.user import LUser  # noqa: F401
 
 from .mapper import Entry, MFolder, MResource
 
 
-class LEntry(StructuredNode):
+class LEntry(AsyncStructuredNode):
     """情報源とその容れ物の同一視."""
 
     __abstract_node__ = True
     __label__ = "Entry"
     uid = UniqueIdProperty()  # parents辿る手間を避けるため
 
-    owner: RelationshipManager = RelationshipTo(
-        LUser,
+    owner: AsyncRelationshipManager = AsyncRelationshipTo(
+        "LUser",
         "OWNED",
-        cardinality=ZeroOrOne,
+        cardinality=AsyncZeroOrOne,
     )
 
-    parent: RelationshipManager = RelationshipTo(
+    parent: AsyncRelationshipManager = AsyncRelationshipTo(
         "LFolder",
         "PARENT",
-        cardinality=ZeroOrOne,
+        cardinality=AsyncZeroOrOne,
     )
 
     @property

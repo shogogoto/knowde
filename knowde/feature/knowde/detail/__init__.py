@@ -136,6 +136,11 @@ def detail_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: F
             continue
         t: EdgeType = getattr(EdgeType, type_)
         t.add_edge(g, start.uid, end.uid)
+
+    if len(g.nodes) == 0:
+        msg = f"{uid} sentence not found"
+        raise NotFoundError(msg)
+
     return KnowdeDetail(
         uid=uid,
         g=g,

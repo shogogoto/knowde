@@ -3,6 +3,7 @@
 import pytest
 from pytest_unordered import unordered
 
+from knowde.conftest import mark_async_test
 from knowde.feature.entry import ResourceMeta
 from knowde.feature.entry.label import LResource
 from knowde.feature.parsing.sysnet import SysNet
@@ -49,12 +50,13 @@ def sn() -> SysNet:  # noqa: D103
     return parse2net(s)
 
 
-def test_save_and_restore(sn: SysNet) -> None:
+@mark_async_test()
+async def test_save_and_restore(sn: SysNet) -> None:
     """永続化して元に戻す."""
     m = ResourceMeta.of(sn)
-    r = LResource(**m.model_dump()).save()
+    r = await LResource(**m.model_dump()).save()
     sn2db(sn, r.uid)
-    r, _ = restore_sysnet(r.uid)
+    r, _ = await restore_sysnet(r.uid)
     assert set(sn.terms) == set(r.terms)
     # assert set(sn.sentences) == set(r.sentences)  # なぜかFalse
     diff_stc = set(sn.sentences) - set(r.sentences)

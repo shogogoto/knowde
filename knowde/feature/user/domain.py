@@ -28,11 +28,13 @@ class User(CommonSchema, BaseOAuthAccountMixin):
     created: Annotated[datetime, BeforeValidator(neo4j_dt_validator)]
 
     @property
-    def id(self) -> UUID:  # noqa: D102
+    def id(self) -> str:  # noqa: D102
         if self.uid is None:
             msg = "uid is None"
             raise ValueError(msg)
-        return self.uid
+        if isinstance(self.uid, UUID):
+            return self.uid.hex
+        return str(self.uid)
 
 
 class Account(BaseOAuthAccount):

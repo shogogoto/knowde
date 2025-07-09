@@ -5,7 +5,7 @@ from uuid import UUID
 
 import neo4j
 import networkx as nx
-from neomodel import db
+from neomodel.async_.core import AsyncDatabase
 
 from knowde.feature.entry.label import LResource
 from knowde.feature.parsing.primitive.term import Term
@@ -39,7 +39,7 @@ def to_sysnode(n: neo4j.graph.Node) -> KNode:
             raise ValueError(props, lb_name)
 
 
-def restore_sysnet(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]]:  # noqa: PLR0914
+async def restore_sysnet(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]]:  # noqa: PLR0914
     """DBからSysNetを復元."""
     various = "|".join([et.name for et in EdgeType if et != EdgeType.HEAD])
     q = f"""
@@ -67,7 +67,10 @@ def restore_sysnet(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]]:  # 
         MATCH (n2)<-[r3:ALIAS]-(m:Term)
         RETURN r3 as r, m as s, n2 as e
     """
-    res = db.cypher_query(q, params={"uid": to_uuid(resource_uid).hex})
+    res = await AsyncDatabase().cypher_query(
+        q,
+        params={"uid": to_uuid(resource_uid).hex},
+    )
     col = DirectedEdgeCollection()
     defs = []
     uids = {}

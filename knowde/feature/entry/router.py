@@ -28,8 +28,8 @@ async def sync_paths(
     user: User = Depends(auth_component().current_user(active=True)),  # noqa: FAST002
 ) -> list[Path]:
     """ファイルシステムと同期."""
-    ns = fetch_namespace(user.id)
-    return sync_namespace(metas, ns)
+    ns = await fetch_namespace(user.id)
+    return await sync_namespace(metas, ns)
 
 
 @router.get("/namespace")
@@ -37,4 +37,4 @@ async def get_namaspace(
     user: User = Depends(auth_component().current_user(active=True)),  # noqa: FAST002
 ) -> NameSpace:
     """ユーザーの名前空間."""
-    return fetch_namespace(user.id)
+    return await fetch_namespace(user.id)

@@ -5,12 +5,12 @@ from __future__ import annotations
 from typing import Any, override
 
 from neomodel import (
+    AsyncStructuredNode,
     BooleanProperty,
     DateTimeNeo4jFormatProperty,
     EmailProperty,
     RelationshipTo,
     StringProperty,
-    StructuredNode,
     UniqueIdProperty,
 )
 
@@ -25,7 +25,7 @@ class LowerEmailProperty(EmailProperty):  # noqa: D101
         return val.lower()
 
 
-class LUser(StructuredNode):
+class LUser(AsyncStructuredNode):
     """Neo4j label."""
 
     __label__ = "User"

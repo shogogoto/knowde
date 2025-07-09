@@ -49,15 +49,15 @@ class NameSpaceRepo(BaseModel, arbitrary_types_allowed=True):
         finally:
             self._ns = None
 
-    def add_folders(self, *names: str) -> LFolder:
+    async def add_folders(self, *names: str) -> LFolder:
         """Return tail folder."""
         if self._ns is not None:
-            return fill_parents(self._ns, *names)
+            return await fill_parents(self._ns, *names)
         with self.ns_scope() as ns:
-            return fill_parents(ns, *names)
+            return await fill_parents(ns, *names)
 
 
-def save_text(
+async def save_text(
     user_id: UUIDy,
     s: str,
     path: tuple[str, ...] | None = None,
@@ -68,8 +68,8 @@ def save_text(
     meta = txt2meta(s)
     meta.updated = updated
     meta.path = path
-    ns = fetch_namespace(to_uuid(user_id))
-    save_resource(meta, ns)
+    ns = await fetch_namespace(to_uuid(user_id))
+    await save_resource(meta, ns)
     r = ns.get_resource(meta.title)
     sn = parse2net(s)
     sn2db(sn, r.uid, do_print=do_print)
@@ -83,7 +83,7 @@ def search_total(
     """検索文字列にマッチするknowde総数."""
     q_tot = (
         """
-        CALL {
+        CALL () {
         """
         + q_sentence_from_def(wp)
         + """
