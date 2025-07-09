@@ -24,7 +24,7 @@ class AccountDB(BaseUserDatabase[User, UUID]):
     async def get(self, id: UUID) -> User | None:
         """Get a single user by id."""
         # print("---------get")
-        lb = LUser.nodes.get_or_none(uid=id.hex)
+        lb = await LUser.nodes.get_or_none(uid=id.hex)
         if lb is None:
             return None
         return label2model(User, lb)
@@ -33,12 +33,10 @@ class AccountDB(BaseUserDatabase[User, UUID]):
     async def get_by_email(self, email: str) -> User | None:
         """Get a single user by email."""
         # print("---------get by email")
-        lb = LUser.nodes.get_or_none(email=email)
+        lb = await LUser.nodes.get_or_none(email=email)
         if lb is None:
             return None
         return label2model(User, lb)
-
-        return User.get_or_none(email=email)
 
     @override
     async def get_by_oauth_account(
@@ -59,28 +57,28 @@ class AccountDB(BaseUserDatabase[User, UUID]):
         """Create a user."""
         if await self.get_by_email(create_dict["email"]):
             raise  # noqa: PLE0704
-        lb = LUser(**create_dict).save()
+        lb = await LUser(**create_dict).save()
         return label2model(User, lb)
 
     @override
     async def update(self, user: User, update_dict: dict) -> User:
         """Update a user."""
         # print("------------ update")
-        lb = LUser.nodes.get(uid=user.id)
+        lb = await LUser.nodes.get(uid=user.id)
         for key, value in update_dict.items():
             if value is None:
                 continue
             setattr(lb, key, value)
         lb.created = datetime.now(tz=TZ)
-        lb = lb.save()
+        lb = await lb.save()
         return label2model(User, lb)
 
     @override
     async def delete(self, user: User) -> None:
         """Delete a user."""
         # print("------------ delete")
-        lb = LUser.nodes.get(uid=user.id.hex)
-        lb.delete()
+        lb = await LUser.nodes.get(uid=user.id.hex)
+        await lb.delete()
 
     # OAUTH
     @override
@@ -93,7 +91,7 @@ class AccountDB(BaseUserDatabase[User, UUID]):
         # print("------------ add oauth account")
         account = Account.model_validate(create_dict)
         la = account.tolabel().save()
-        lu = LUser.nodes.get(uid=user.id.hex)
+        lu = await LUser.nodes.get(uid=user.id.hex)
         lu.accounts.connect(la)
         return user
 

@@ -2,9 +2,10 @@
 
 from uuid import UUID
 
-import pytest
+import pytest_asyncio
 from pytest_unordered import unordered
 
+from knowde.conftest import mark_async_test
 from knowde.feature.knowde.detail import detail_knowde
 from knowde.feature.knowde.repo import save_text
 from knowde.feature.stats.nxdb import LSentence
@@ -13,12 +14,13 @@ from knowde.shared.nxutil import to_leaves, to_roots
 from knowde.shared.nxutil.edge_type import EdgeType
 
 
-@pytest.fixture
-def u() -> LUser:  # noqa: D103
-    return LUser(email="onex@gmail.com", hashed_password="xxx").save()  # noqa: S106
+@pytest_asyncio.fixture
+async def u() -> LUser:  # noqa: D103
+    return await LUser(email="onex@gmail.com", hashed_password="xxx").save()  # noqa: S106
 
 
-def test_detail_networks_to_or_resolved_edges(u: LUser):
+@mark_async_test()
+async def test_detail_networks_to_or_resolved_edges(u: LUser):
     """IDによる詳細 TO/RESOLVED関係."""
     s = """
     # titleX
@@ -60,7 +62,11 @@ def test_detail_networks_to_or_resolved_edges(u: LUser):
         C: c{B}c
             -> ccc
     """
-    _sn, _r = save_text(u.uid, s, path=("A", "B", "C.txt"))  # C.txtはDBには格納されない
+    _sn, _r = await save_text(
+        u.uid,
+        s,
+        path=("A", "B", "C.txt"),
+    )  # C.txtはDBには格納されない
     s = LSentence.nodes.get(val="0")
     detail = detail_knowde(UUID(s.uid))
     assert [k.sentence for k in detail.succ("0", EdgeType.TO)] == unordered(["1", "2"])
@@ -116,13 +122,14 @@ def test_detail_networks_to_or_resolved_edges(u: LUser):
     ]
 
 
-def test_detail_no_below_no_header(u: LUser):
+@mark_async_test()
+async def test_detail_no_below_no_header(u: LUser):
     """belowなしでも取得できるか."""
     s = """
     # titleX
         a
     """
-    _sn, _r = save_text(u.uid, s)
+    _sn, _r = await save_text(u.uid, s)
     s = LSentence.nodes.get(val="a")
     d = detail_knowde(UUID(s.uid))
     assert [k.sentence for k in d.part("a")] == ["a"]
@@ -131,14 +138,15 @@ def test_detail_no_below_no_header(u: LUser):
     assert d.location.user.uid.hex == u.uid
 
 
-def test_detail_no_below_no_header_with_parent(u: LUser):
+@mark_async_test()
+async def test_detail_no_below_no_header_with_parent(u: LUser):
     """belowなしでも取得できるか."""
     s = """
     # titleX
         parent
             a
     """
-    _sn, _r = save_text(u.uid, s)
+    _sn, _r = await save_text(u.uid, s)
     s = LSentence.nodes.get(val="a")
     d = detail_knowde(UUID(s.uid))
     assert [k.sentence for k in d.part("a")] == ["a"]
@@ -147,7 +155,8 @@ def test_detail_no_below_no_header_with_parent(u: LUser):
     assert d.location.user.uid.hex == u.uid
 
 
-def test_detail_no_header(u: LUser):
+@mark_async_test()
+async def test_detail_no_header(u: LUser):
     """headerなし."""
     s = """
     # titleX
@@ -158,10 +167,14 @@ def test_detail_no_header(u: LUser):
         e
             f
     """
-    _sn, _r = save_text(u.uid, s)
+    _sn, _r = await save_text(u.uid, s)
     s = LSentence.nodes.get(val="a")
     d = detail_knowde(UUID(s.uid))
     assert [k.sentence for k in d.part("a")] == unordered(["a", "b", "c"])
     assert d.location.parents == []
     assert d.location.headers == []
     assert d.location.user.uid.hex == u.uid
+
+
+# def test_not_found_should_not_raise_error():
+#     detail_knowde(UUID("00000000-0000-0000-0000-000000000000"))

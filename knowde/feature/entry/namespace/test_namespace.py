@@ -7,6 +7,7 @@ from textwrap import dedent
 
 import pytest
 
+from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.entry import NameSpace, ResourceMeta
 from knowde.feature.entry.category.folder.repo import (
     fetch_namespace,
@@ -86,26 +87,23 @@ def files(tmp_path: Path) -> tuple[Anchor, list[Path]]:  # noqa: D103
     return create_test_files(tmp_path)
 
 
-@pytest.fixture
-def u() -> LUser:  # noqa: D103
-    return LUser().save()
-
-
 type Fixture = tuple[LUser, Anchor, list[Path], NameSpace]
 
 
-@pytest.fixture
-def setup(u: LUser, tmp_path: Path) -> Fixture:  # noqa: D103
+@async_fixture()
+async def setup(tmp_path: Path) -> Fixture:  # noqa: D103
+    u = await LUser().save()
     anchor, paths = create_test_files(tmp_path)
     meta = anchor.to_metas(paths)
-    ns = fetch_namespace(u.uid)
+    ns = await fetch_namespace(u.uid)
     for m in meta.root:
-        save_resource(m, ns)
-    ns = fetch_namespace(u.uid)
+        await save_resource(m, ns)
+    ns = await fetch_namespace(u.uid)
     return u, anchor, paths, ns
 
 
-def test_save_new(setup: Fixture) -> None:
+@mark_async_test()
+async def test_save_new(setup: Fixture) -> None:  # noqa: RUF029
     """全て新規."""
     _, _, _, ns = setup
     assert ns.get_or_none("sub1")
@@ -115,7 +113,8 @@ def test_save_new(setup: Fixture) -> None:
     assert ns.get_or_none("# direct")
 
 
-def test_save_halfway_exists_folder(setup: Fixture) -> None:
+@mark_async_test()
+async def test_save_halfway_exists_folder(setup: Fixture) -> None:
     """途中のフォルダまで既存."""
     u, anchor, paths, ns = setup  # 既存作成
     sub = paths[0].parent  # anchor / sub1 / sub11
@@ -134,10 +133,10 @@ def test_save_halfway_exists_folder(setup: Fixture) -> None:
         """,
     )
     meta = anchor.to_metas([*paths, new])
-    ns = fetch_namespace(u.uid)
+    ns = await fetch_namespace(u.uid)
     for m in meta.root:
-        save_resource(m, ns)
-    ns = fetch_namespace(u.uid)
+        await save_resource(m, ns)
+    ns = await fetch_namespace(u.uid)
     assert ns.get_or_none("sub1")
     assert ns.get_or_none("sub1", "sub11")
     assert ns.get_or_none("sub1", "sub11", "# title1")
@@ -145,7 +144,8 @@ def test_save_halfway_exists_folder(setup: Fixture) -> None:
     assert ns.get_or_none("sub1", "sub11", "new1", "new2", "# added")
 
 
-def test_save_update_exists(setup: Fixture) -> None:
+@mark_async_test()
+async def test_save_update_exists(setup: Fixture) -> None:
     """既存リソースの更新."""
     u, anchor, paths, ns = setup
     tgt = paths[0]
@@ -165,50 +165,53 @@ def test_save_update_exists(setup: Fixture) -> None:
     paths[0] = tgt
     meta = anchor.to_metas(paths)
     for m in meta.root:
-        save_resource(m, ns)
+        await save_resource(m, ns)
     ns = fetch_namespace(u.uid)
     assert ns.get("sub1", "sub11", "# title1").txt_hash == hash(tgt.read_text())
 
 
-def test_sync_move(setup: Fixture) -> None:
+@mark_async_test()
+async def test_sync_move(setup: Fixture) -> None:
     """移動したResourceを検知."""
     u, anchor, paths, ns = setup
     tgt = paths[0]
     paths[0] = tgt.rename(tgt.parent.parent / tgt.name)  # 2階上に移動
     meta = anchor.to_metas(paths)
     assert ns.get_or_none("sub1", "sub11", "# title1")
-    uplist = sync_namespace(meta, ns)
+    uplist = await sync_namespace(meta, ns)
 
-    ns = fetch_namespace(u.uid)
+    ns = await fetch_namespace(u.uid)
     assert ns.get_or_none("sub1", "sub11", "# title1") is None  # たまに失敗
     assert ns.get_or_none("sub1", "# title1")
     assert [anchor / p for p in uplist] == [paths[0]]
 
 
-def test_move_resource(setup: Fixture) -> None:
+@mark_async_test()
+async def test_move_resource(setup: Fixture) -> None:
     """重複したタイトルの追加は失敗させる."""
     _u, _anchor, _paths, ns = setup
     m = ResourceMeta(title="# title3")  # 新規タイトルをuser直下へ
-    save_or_move_resource(m, ns)
+    await save_or_move_resource(m, ns)
     assert ns.get_or_none("# title3")
     # 既存タイトルを違う場所に追加
     m = ResourceMeta(title="# title3", path=("sub1", "xxx"))
-    save_or_move_resource(m, ns)
+    await save_or_move_resource(m, ns)
     assert not ns.get_or_none("# title3")
     assert ns.get_or_none("sub1", "# title3")
 
     m = ResourceMeta(title="# title3", path=("sub1", "sub2", "xxx"))
-    save_or_move_resource(m, ns)
+    await save_or_move_resource(m, ns)
     assert not ns.get_or_none("sub1", "# title3")
     assert ns.get_or_none("sub1", "sub2", "# title3")
 
     m = ResourceMeta(title="# title3")  # 新規タイトルをuser直下へ
-    save_or_move_resource(m, ns)
+    await save_or_move_resource(m, ns)
     assert not ns.get_or_none("sub1", "sub2", "# title3")
     assert ns.get_or_none("# title3")
 
 
-def test_duplicate_title(setup: Fixture) -> None:
+@mark_async_test()
+async def test_duplicate_title(setup: Fixture) -> None:
     """重複したタイトルの追加は失敗させる."""
     _u, anchor, paths, ns = setup
 
@@ -221,4 +224,4 @@ def test_duplicate_title(setup: Fixture) -> None:
     )
 
     with pytest.raises(DuplicatedTitleError):
-        sync_namespace(metas, ns)
+        await sync_namespace(metas, ns)

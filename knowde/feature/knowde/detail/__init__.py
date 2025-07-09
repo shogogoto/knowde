@@ -56,13 +56,14 @@ def locate_knowde(uid: UUID, do_print: bool = False) -> KnowdeLocation:  # noqa:
     """knowdeの親~userまでを返す."""
     q = """
         MATCH (sent: Sentence {uid: $uid})
-            , p2 = (r:Resource)-[:SIBLING|BELOW|HEAD]->*(sent)
             , p = (user:User)-[:OWNED|PARENT]-*(r)
+        OPTIONAL MATCH p2 = (r:Resource)-[:SIBLING|BELOW|HEAD]->*(sent)
         RETURN nodes(p) + nodes(p2)[0..-1] as nodes
     """
     if do_print:
         print(q)  # noqa: T201
     res = db.cypher_query(q, params={"uid": uid.hex})
+
     if len(res[0]) == 0:
         msg = f"{uid} sentence location not found"
         raise NotFoundError(msg)
@@ -136,9 +137,18 @@ def detail_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: F
             continue
         t: EdgeType = getattr(EdgeType, type_)
         t.add_edge(g, start.uid, end.uid)
+
+    if len(g.nodes) == 0:
+        msg = f"{uid} sentence not found"
+        raise NotFoundError(msg)
+
     return KnowdeDetail(
         uid=uid,
         g=g,
-        knowdes=fetch_knowde_by_ids(list(g.nodes)),
+        # knowdes=fetch_knowde_by_ids(list(g.nodes)),
         location=locate_knowde(uid),
+        knowdes={},
+        # location=None,
+        # knowdes=fetch_knowde_by_ids(list(g.nodes)),
+        # location=locate_knowde(uid),
     )

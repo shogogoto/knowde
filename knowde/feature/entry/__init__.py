@@ -60,7 +60,7 @@ class NameSpace(BaseModel):
         tgt = self.get_or_none(root, *names)
         if tgt is None:
             return []
-        return sorted([str(s) for s in self.g.successors(tgt)])
+        return sorted([s.name for s in self.g.successors(tgt)])
 
     @property
     def roots(self) -> list[str]:

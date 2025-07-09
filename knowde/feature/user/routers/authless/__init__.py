@@ -14,12 +14,12 @@ _r = APIRouter()
 
 
 @_r.get("/search")
-def search_user(
+async def search_user(
     name: Annotated[str | None, Query()] = "",
     id: Annotated[str | None, Query()] = "",  # noqa: A002
 ) -> list[UserRead]:
     """認証なしユーザー検索."""
-    users = LUser.nodes.filter(
+    users = await LUser.nodes.filter(
         display_name__icontains=name,
         uid__istartswith=id.replace("-", "") if id else "",
     ).order_by("display_name", "uid")
