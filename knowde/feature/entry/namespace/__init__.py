@@ -33,10 +33,10 @@ async def fill_parents(ns: NameSpace, *names: str) -> LFolder | None:
     tail = next((p for p in reversed(path) if p is not None), None)
     match tail:
         case None:  # 新規作成 = tail なし = 既存親なし
-            u = await LUser.nodes.get(uid=ns.user_id.hex)
+            u: LUser = await LUser.nodes.get(uid=ns.user_id.hex)
             folders = await LFolder.create(*[{"name": name} for name in names])
-            head = folders[0]
-            head.owner.connect(u)
+            head: LFolder = folders[0]
+            await head.owner.connect(u)
             ns.add_root(head.frozen)
             for f1, f2 in pairwise(folders):
                 await f2.parent.connect(f1)

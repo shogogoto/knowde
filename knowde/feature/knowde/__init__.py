@@ -124,7 +124,7 @@ class KnowdeDetail(BaseModel):
     uid: UUID
     g: NXGraph
     knowdes: dict[UUID, Knowde]
-    location: KnowdeLocation | None
+    location: KnowdeLocation
 
     # テスト用メソッド
     def get(self, sentence: str) -> UUID:  # noqa: D102
