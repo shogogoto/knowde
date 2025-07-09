@@ -11,10 +11,9 @@ sync
 """
 
 import networkx as nx
-import pytest_asyncio
 from pytest_unordered import unordered
 
-from knowde.conftest import mark_async_test
+from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.knowde.cypher import OrderBy, Paging, WherePhrase
 from knowde.feature.knowde.repo import (
     get_stats_by_id,
@@ -28,7 +27,7 @@ from knowde.shared.labels.user import LUser
 from knowde.shared.nxutil.edge_type import EdgeType
 
 
-@pytest_asyncio.fixture
+@async_fixture()
 async def u() -> LUser:  # noqa: D103
     return await LUser(email="onex@gmail.com").save()
 
@@ -94,7 +93,7 @@ async def test_stats_from_db(u: LUser):
                 d32
     """
     _, r = await save_text(u.uid, s)
-    _sn, uids = restore_sysnet(r.uid)
+    _sn, uids = await restore_sysnet(r.uid)
     assert get_stats_by_id(uids["0"]) == [6, 7, 2, 3, 0, 0, 0]
     assert get_stats_by_id(uids["1"]) == [7, 2, 3, 1, 0, 0, 0]
     assert get_stats_by_id(uids["a"]) == [0, 0, 0, 0, 2, 0, 0]
@@ -113,7 +112,7 @@ async def test_paging(u: LUser):
     EdgeType.BELOW.add_edge(h, sn.root, "0")
     sn = SysNet(root=sn.root, g=h)
     sn2db(sn, r.uid)
-    sn, _uids = restore_sysnet(r.uid)
+    sn, _uids = await restore_sysnet(r.uid)
     n_nodes = len(sn.g.nodes) - 1
     assert n_nodes == 121  # title除いて121の文  # noqa: PLR2004
     total, adjs = search_knowde(".*", WherePhrase.REGEX, Paging(page=1))
@@ -143,7 +142,7 @@ async def test_ordering(u: LUser):
     EdgeType.BELOW.add_edge(h, sn.root, "0")
     sn = SysNet(root=sn.root, g=h)
     sn2db(sn, r.uid)
-    sn, _uids = restore_sysnet(r.uid)
+    sn, _uids = await restore_sysnet(r.uid)
     order_by = OrderBy(
         n_detail=0,
         n_premise=-1,
@@ -187,7 +186,7 @@ async def test_details(u: LUser):
 
     """
     _, r = await save_text(u.uid, s)
-    _sn, _uids = restore_sysnet(r.uid)
+    _sn, _uids = await restore_sysnet(r.uid)
     _total, adjs = search_knowde(
         "detail",
         WherePhrase.CONTAINS,

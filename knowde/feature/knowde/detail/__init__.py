@@ -144,10 +144,6 @@ def detail_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: F
     return KnowdeDetail(
         uid=uid,
         g=g,
-        # knowdes=fetch_knowde_by_ids(list(g.nodes)),
+        knowdes=fetch_knowde_by_ids(list(g.nodes)),
         location=locate_knowde(uid),
-        knowdes={},
-        # location=None,
-        # knowdes=fetch_knowde_by_ids(list(g.nodes)),
-        # location=locate_knowde(uid),
     )

@@ -2,10 +2,9 @@
 
 from uuid import UUID
 
-import pytest_asyncio
 from pytest_unordered import unordered
 
-from knowde.conftest import mark_async_test
+from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.knowde.detail import detail_knowde
 from knowde.feature.knowde.repo import save_text
 from knowde.feature.stats.nxdb import LSentence
@@ -14,7 +13,7 @@ from knowde.shared.nxutil import to_leaves, to_roots
 from knowde.shared.nxutil.edge_type import EdgeType
 
 
-@pytest_asyncio.fixture
+@async_fixture()
 async def u() -> LUser:  # noqa: D103
     return await LUser(email="onex@gmail.com", hashed_password="xxx").save()  # noqa: S106
 

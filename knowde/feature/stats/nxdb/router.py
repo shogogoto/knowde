@@ -37,15 +37,15 @@ async def read_file(
     user: User = Depends(auth_component().current_user(active=True)),
 ) -> None:
     """ファイルからsysnetを読み取って永続化."""
-    ns = fetch_namespace(user.id)
+    ns = await fetch_namespace(user.id)
     for f in files:
         txt = await read_content(f)
         sn = parse2net(txt)
         meta = ResourceMeta.of(sn)
         r = ns.get_resource_or_none(meta.title)
         if r is None:
-            lb = LResource(**meta.model_dump()).save()
+            lb = await LResource(**meta.model_dump()).save()
         else:
             lb = LResource(**r.model_dump())
-            lb.refresh()
+            await lb.refresh()
         sn2db(sn, lb.uid)

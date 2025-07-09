@@ -166,7 +166,7 @@ async def test_save_update_exists(setup: Fixture) -> None:
     meta = anchor.to_metas(paths)
     for m in meta.root:
         await save_resource(m, ns)
-    ns = fetch_namespace(u.uid)
+    ns = await fetch_namespace(u.uid)
     assert ns.get("sub1", "sub11", "# title1").txt_hash == hash(tgt.read_text())
 
 
