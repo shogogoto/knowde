@@ -7,7 +7,6 @@ import pytest
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.entry.errors import EntryAlreadyExistsError, EntryNotFoundError
 from knowde.shared.labels.user import LUser
-from knowde.shared.nxutil import nxprint
 
 from .repo import (
     create_folder,
@@ -87,19 +86,15 @@ async def test_fetch_subfolders(u: LUser) -> None:
     f2 = await create_folder(u.uid, "f1", "f2")
     f21 = await create_folder(u.uid, "f1", "f21")
     f3 = await create_folder(u.uid, "f1", "f2", "f3")
-    assert f1 == fetch_subfolders(u.uid, "f1")[0]
-    assert f2 == fetch_subfolders(u.uid, "f1", "f2")[0]
-    assert f21 == fetch_subfolders(u.uid, "f1", "f21")[0]
-    assert f3 == fetch_subfolders(u.uid, "f1", "f2", "f3")[0]
 
     f1_ = await fetch_subfolders(u.uid, "f1")
     assert f1 == f1_[0]
-    # f2_ = await fetch_subfolders(u.uid, "f1", "f2")
-    # assert f2 == f2_[0]
-    # f21_ = await fetch_subfolders(u.uid, "f1", "f21")
-    # assert f21 == f21_[0]
-    # f3_ = await fetch_subfolders(u.uid, "f1", "f2", "f3")
-    # assert f3 == f3_[0]
+    f2_ = await fetch_subfolders(u.uid, "f1", "f2")
+    assert f2 == f2_[0]
+    f21_ = await fetch_subfolders(u.uid, "f1", "f21")
+    assert f21 == f21_[0]
+    f3_ = await fetch_subfolders(u.uid, "f1", "f2", "f3")
+    assert f3 == f3_[0]
 
 
 @mark_async_test()
@@ -127,10 +122,8 @@ async def test_create_resource(u: LUser) -> None:
     await create_sub_resource(u.uid, "f1", "r1")  # 階層が違えば同名でも登録できる
     # -> 登録できないように変更
     ns = await fetch_namespace(u.uid)
-    nxprint(ns.g)
-    # assert ns.roots == ["f1", "r1"]
-    # assert ns.children("f1") == ["r1"]
-    raise AssertionError
+    assert ns.roots == ["f1", "r1"]
+    assert ns.children("f1") == ["r1"]
 
 
 # def test_delete_folder(u: LUser) -> None:

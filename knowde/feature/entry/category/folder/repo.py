@@ -210,18 +210,19 @@ async def move_folder(
     if not (target.is_absolute() and to.is_absolute()):
         msg = "絶対パスで指定して"
         raise ValueError(msg, target, to)
-    fs = fetch_namespace(user_id)
+    fs = await fetch_namespace(user_id)
     tgt = LFolder(**fs.get(*target.parts[1:]).model_dump())
-    tgt.parent.disconnect(tgt.parent.get())
+    p = await tgt.parent.get()
+    await tgt.parent.disconnect(p)
     to_names = to.parts[1:]
     if len(to_names) == 0:  # rootへ
         luser = await LUser.nodes.get(uid=user_id)
-        tgt.owner.connect(luser)
+        await tgt.owner.connect(luser)
         return tgt
     parent_to_move = LFolder(**fs.get(*to_names[:-1]).model_dump())
-    tgt.parent.connect(parent_to_move)
+    await tgt.parent.connect(parent_to_move)
     tgt.name = to_names[-1]
-    return tgt.save()
+    return await tgt.save()
 
 
 # def delete_entry(user_id: UUIDy, *names: str) -> None:
