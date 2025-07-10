@@ -15,13 +15,7 @@ from knowde.feature.entry.label import LFolder
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.entry.namespace import fill_parents, save_resource
 from knowde.feature.entry.namespace.sync import txt2meta
-from knowde.feature.knowde.cypher import (
-    OrderBy,
-    Paging,
-    WherePhrase,
-    q_sentence_from_def,
-    q_stats,
-)
+from knowde.feature.knowde import KAdjacency, KStats
 from knowde.feature.knowde.detail import fetch_knowde_by_ids
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.tree2net import parse2net
@@ -29,7 +23,13 @@ from knowde.feature.stats.nxdb.save import sn2db
 from knowde.shared.labels.user import LUser
 from knowde.shared.types import UUIDy, to_uuid
 
-from . import KAdjacency, KStats
+from .cypher import (
+    OrderBy,
+    Paging,
+    WherePhrase,
+    q_sentence_from_def,
+    q_stats,
+)
 
 
 # fsと独
@@ -102,7 +102,7 @@ def search_knowde(
     s: str,
     wp: WherePhrase = WherePhrase.CONTAINS,
     paging: Paging = Paging(),
-    order_by: OrderBy = OrderBy(),
+    order_by: OrderBy | None = OrderBy(),
     do_print: bool = False,  # noqa: FBT001, FBT002
 ) -> tuple[int, list[KAdjacency]]:
     """用語、文のいずれかでマッチするものを返す."""

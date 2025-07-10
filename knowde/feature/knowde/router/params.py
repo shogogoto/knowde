@@ -4,7 +4,7 @@ from fastapi import Query
 from pydantic import BaseModel, Field
 
 from knowde.feature.knowde import KAdjacency
-from knowde.feature.knowde.cypher import OrderBy, Paging, WherePhrase
+from knowde.feature.knowde.repo.cypher import OrderBy, Paging, WherePhrase
 
 
 class SearchParam(BaseModel):

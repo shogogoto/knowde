@@ -14,7 +14,6 @@ import networkx as nx
 from pytest_unordered import unordered
 
 from knowde.conftest import async_fixture, mark_async_test
-from knowde.feature.knowde.cypher import OrderBy, Paging, WherePhrase
 from knowde.feature.knowde.repo import (
     get_stats_by_id,
     save_text,
@@ -25,6 +24,8 @@ from knowde.feature.stats.nxdb.restore import restore_sysnet
 from knowde.feature.stats.nxdb.save import sn2db
 from knowde.shared.labels.user import LUser
 from knowde.shared.nxutil.edge_type import EdgeType
+
+from .cypher import OrderBy, Paging, WherePhrase
 
 
 @async_fixture()
