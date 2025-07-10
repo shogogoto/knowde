@@ -27,6 +27,7 @@ from .cypher import (
     OrderBy,
     Paging,
     WherePhrase,
+    q_adjacent,
     q_sentence_from_def,
     q_stats,
 )
@@ -114,7 +115,7 @@ def search_knowde(
         + """
         }
         WITH sent // 中間結果のサイズダウン
-        CALL (sent){
+        CALL (sent) {
         """
         + q_stats("sent")
         + """
@@ -132,22 +133,8 @@ def search_knowde(
         + (order_by.score_prop() if order_by else "")
         + """
             } AS stats
-        OPTIONAL MATCH (sent)<-[:TO]-(premise:Sentence)
-        OPTIONAL MATCH (sent)-[:TO]->(conclusion:Sentence)
-        OPTIONAL MATCH (sent)<-[:RESOLVED]-(referred:Sentence)
-        OPTIONAL MATCH (sent)-[:RESOLVED]->(refer:Sentence)
-        OPTIONAL MATCH (sent)-[:BELOW]->(detail1:Sentence)
-        // 近接1階層分だか SIB or BELOW で全てを辿るのではない
-        OPTIONAL MATCH (detail1)-[:SIBLING]->*(detail2:Sentence)
-        UNWIND [detail1, detail2] as detail
-        WITH sent
-            , COLLECT(DISTINCT premise.uid) as premises
-            , COLLECT(DISTINCT conclusion.uid) as conclusions
-            , COLLECT(DISTINCT referred.uid) as referreds
-            , COLLECT(DISTINCT refer.uid) as refers
-            , COLLECT(DISTINCT detail.uid) as details
-            , stats
-            """
+        """
+        + q_adjacent("sent")
         + (order_by.phrase() if order_by else "")
         + paging.phrase()
         + """

@@ -147,3 +147,25 @@ class OrderBy(BaseModel):
         return f"""
         ORDER BY stats.score {"DESC" if self.desc else "ASC"}
         """
+
+
+def q_adjacent(sent_var: str) -> str:
+    """隣接する文を返す."""
+    return f"""
+        CALL ({sent_var}) {{
+            OPTIONAL MATCH ({sent_var})<-[:TO]-(premise:Sentence)
+            OPTIONAL MATCH ({sent_var})-[:TO]->(conclusion:Sentence)
+            OPTIONAL MATCH ({sent_var})<-[:RESOLVED]-(referred:Sentence)
+            OPTIONAL MATCH ({sent_var})-[:RESOLVED]->(refer:Sentence)
+            OPTIONAL MATCH ({sent_var})-[:BELOW]->(detail1:Sentence)
+            // 近接1階層分だか SIB or BELOW で全てを辿るのではない
+            OPTIONAL MATCH (detail1)-[:SIBLING]->*(detail2:Sentence)
+            UNWIND [detail1, detail2] as detail
+            RETURN
+                COLLECT(DISTINCT premise.uid) as premises
+                , COLLECT(DISTINCT conclusion.uid) as conclusions
+                , COLLECT(DISTINCT referred.uid) as referreds
+                , COLLECT(DISTINCT refer.uid) as refers
+                , COLLECT(DISTINCT detail.uid) as details
+        }}
+    """
