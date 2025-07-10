@@ -16,6 +16,7 @@ from knowde.feature.entry.mapper import MResource
 from knowde.feature.entry.namespace import fill_parents, save_resource
 from knowde.feature.entry.namespace.sync import txt2meta
 from knowde.feature.knowde import KAdjacency, KStats
+from knowde.feature.knowde.repo.clause import OrderBy, Paging, WherePhrase
 from knowde.feature.knowde.repo.detail import fetch_knowde_by_ids
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.tree2net import parse2net
@@ -24,16 +25,12 @@ from knowde.shared.labels.user import LUser
 from knowde.shared.types import UUIDy, to_uuid
 
 from .cypher import (
-    OrderBy,
-    Paging,
-    WherePhrase,
     q_adjacent,
     q_sentence_from_def,
     q_stats,
 )
 
 
-# fsと独
 class NameSpaceRepo(BaseModel, arbitrary_types_allowed=True):
     """user namespace."""
 
@@ -117,23 +114,8 @@ def search_knowde(
         WITH sent // 中間結果のサイズダウン
         CALL (sent) {
         """
-        + q_stats("sent")
-        + """
-        }
-        WITH sent
-            , {
-                n_premise: n_premise,
-                n_conclusion: n_conclusion,
-                dist_axiom: dist_axiom,
-                dist_leaf: dist_leaf,
-                n_referred: n_referred,
-                n_refer: n_refer,
-                n_detail: n_detail
-                """
-        + (order_by.score_prop() if order_by else "")
-        + """
-            } AS stats
-        """
+        + q_stats("sent", order_by)
+        + "}"
         + q_adjacent("sent")
         + (order_by.phrase() if order_by else "")
         + paging.phrase()
@@ -186,8 +168,20 @@ def search_knowde(
 def get_stats_by_id(uid: UUIDy) -> list[int] | None:
     """systats相当のものをDBから取得する(用)."""
     q = rf"""
+        CALL () {{
+
         MATCH (tgt:Sentence) WHERE tgt.uid= $uid
         {q_stats("tgt")}
+        }}
+        WITH stats AS st
+        RETURN
+            st.n_premise
+            , st.n_conclusion
+            , st.dist_axiom
+            , st.dist_leaf
+            , st.n_referred
+            , st.n_refer
+            , st.n_detail
     """
     res = db.cypher_query(
         q,

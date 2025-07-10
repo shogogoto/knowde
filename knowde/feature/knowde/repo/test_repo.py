@@ -25,7 +25,7 @@ from knowde.feature.stats.nxdb.save import sn2db
 from knowde.shared.labels.user import LUser
 from knowde.shared.nxutil.edge_type import EdgeType
 
-from .cypher import OrderBy, Paging, WherePhrase
+from .clause import OrderBy, Paging, WherePhrase
 
 
 @async_fixture()
