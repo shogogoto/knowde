@@ -176,10 +176,13 @@ async def fetch_namespace(user_id: UUIDy) -> NameSpace:
         OPTIONAL MATCH (user)<-[:OWNED]-(root:Entry)
         RETURN root as f1, null as f2
         UNION
-        OPTIONAL MATCH (root)<-[:PARENT]-(sub:Entry)
+        MATCH (user:User {uid: $uid})
+            <-[:OWNED]-(root:Entry)<-[:PARENT]-(sub:Entry)
         RETURN root as f1, sub as f2
         UNION
-        OPTIONAL MATCH (sub)<-[:PARENT]-+(f1:Folder)<-[:PARENT]-(f2:Entry)
+        MATCH (user:User {uid: $uid})
+            <-[:OWNED]-(root:Entry)<-[:PARENT]-(sub:Entry)
+            <-[:PARENT]-*(f1:Folder)<-[:PARENT]-(f2:Entry)
         RETURN f1, f2
     """
     uid = to_uuid(user_id)
@@ -188,6 +191,7 @@ async def fetch_namespace(user_id: UUIDy) -> NameSpace:
         params={"uid": uid.hex},
         resolve_objects=True,
     )
+
     g = nx.DiGraph()
     ns = NameSpace(roots_={}, g=g, user_id=uid)
     for f1, f2 in res[0]:

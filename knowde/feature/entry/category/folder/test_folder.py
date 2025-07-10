@@ -126,6 +126,22 @@ async def test_create_resource(u: LUser) -> None:
     assert ns.children("f1") == ["r1"]
 
 
+@mark_async_test()
+async def test_namespce_each_user(u: LUser):
+    """ユーザーごとのnamespaceが取得できる."""
+    # test_create_resource と同じ
+    await create_folder(u.uid, "f1")
+    await create_root_resource(u.uid, "r1")
+    await create_sub_resource(u.uid, "f1", "r1")  # 階層が違えば同名でも登録できる
+
+    # 別のユーザーには追加されない
+    u2 = await LUser(email="two@gmail.com").save()
+    ns = await fetch_namespace(u.uid)
+    ns2 = await fetch_namespace(u2.uid)
+    assert len(ns.g.nodes) == 3  # noqa: PLR2004
+    assert len(ns2.g.nodes) == 0
+
+
 # def test_delete_folder(u: LUser) -> None:
 #     """フォルダの削除(配下ごと)."""
 #     create_folder(u.uid, "f1")
