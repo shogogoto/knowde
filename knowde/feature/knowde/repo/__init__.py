@@ -16,7 +16,7 @@ from knowde.feature.entry.mapper import MResource
 from knowde.feature.entry.namespace import fill_parents, save_resource
 from knowde.feature.entry.namespace.sync import txt2meta
 from knowde.feature.knowde import KAdjacency, KStats
-from knowde.feature.knowde.detail import fetch_knowde_by_ids
+from knowde.feature.knowde.repo.detail import fetch_knowde_by_ids
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.tree2net import parse2net
 from knowde.feature.stats.nxdb.save import sn2db
@@ -147,11 +147,7 @@ def search_knowde(
     )
     if do_print:
         print(q)  # noqa: T201
-    res = db.cypher_query(
-        q,
-        params={"s": s},
-        resolve_objects=True,
-    )
+    res = db.cypher_query(q, params={"s": s}, resolve_objects=True)
 
     def is_valid_uuid(uuid_string) -> bool:
         try:

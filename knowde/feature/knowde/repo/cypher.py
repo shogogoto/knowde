@@ -169,3 +169,11 @@ def q_adjacent(sent_var: str) -> str:
                 , COLLECT(DISTINCT detail.uid) as details
         }}
     """
+
+
+# def res2adjacent(res: dict[str, Any]) -> KAdjacency:
+#     return KAdjacency(
+#         uid=res["uid"],
+#         n_premise=len(res["premises"]),
+#         n_conclusion=len(res["conclusions"]),
+#         n_refer=len(res["refers"]),

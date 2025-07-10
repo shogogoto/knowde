@@ -6,9 +6,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 
 from knowde.feature.knowde import KnowdeDetail
-from knowde.feature.knowde.detail import detail_knowde
 from knowde.feature.knowde.repo import search_knowde
 from knowde.feature.knowde.repo.cypher import WherePhrase
+from knowde.feature.knowde.repo.detail import detail_knowde
 
 from .params import (
     KnowdeSearchResult,
