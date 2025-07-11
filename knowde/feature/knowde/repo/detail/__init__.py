@@ -8,6 +8,7 @@ from neomodel import db
 
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.knowde import Knowde, KnowdeDetail, KnowdeLocation, UidStr
+from knowde.feature.knowde.repo.cypher import q_call_sent_names
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.user.domain import User
 from knowde.shared.errors.domain import NotFoundError
@@ -17,16 +18,10 @@ from knowde.shared.nxutil.edge_type import EdgeType
 # うまいクエリの方法が思いつかないので、別クエリに分ける
 def fetch_knowde_by_ids(uids: list[str]) -> dict[UUID, Knowde]:
     """文のuuidリストから名前などの付属情報を返す."""
-    q = """
+    q = f"""
         UNWIND $uids as uid
-        MATCH (sent: Sentence {uid: uid})
-        CALL (sent) {
-            OPTIONAL MATCH p = (sent)-[:DEF|ALIAS]-*(:Term)
-            WITH p, LENGTH(p) as len
-            ORDER BY len DESC
-            LIMIT 1
-            RETURN nodes(p) as names
-        }
+        MATCH (sent: Sentence {{uid: uid}})
+        {q_call_sent_names("sent")}
         OPTIONAL MATCH (intv: Interval)<-[:WHEN]-(sent)
         RETURN sent
             , names[1..]

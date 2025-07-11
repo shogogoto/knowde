@@ -36,7 +36,7 @@ async def u() -> LUser:  # noqa: D103
 
 
 @mark_async_test()
-async def test_get_knowde_attrs(u: LUser):
+async def test_search_knowde_by_txt(u: LUser):
     """文の所属などを取得."""
     s = """
     # titleX
@@ -222,3 +222,4 @@ async def test_details(u: LUser):
 
     assert [str(k) for k in adjs[0].details] == ["d1T(114)", "d2", "d3"]
     assert [str(k) for k in adjs[1].details] == ["x1", "x2[X2]", "x3[X3(X31)]T(514)"]
+    # 旧nameクエリでは x2[X2] が取得できなかった x2 だけで名前取得できなかった

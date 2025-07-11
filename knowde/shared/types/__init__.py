@@ -71,7 +71,7 @@ NXGraph = Annotated[
     PlainValidator(_validate_graph),
     PlainSerializer(
         lambda x: nx.node_link_data(x, edges="edges"),
-        return_type=GraphData,
+        return_type=dict,
     ),
 ]
 

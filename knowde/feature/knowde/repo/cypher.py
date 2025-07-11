@@ -77,6 +77,19 @@ def q_stats(tgt: str, order_by: OrderBy | None = None) -> str:
     )
 
 
+def q_call_sent_names(var: str) -> str:
+    """単文の名前を取得."""
+    return f"""
+    CALL ({var}) {{
+        OPTIONAL MATCH p = ({var})-[:DEF|ALIAS]-*(:Term)
+        WITH p, LENGTH(p) as len
+        ORDER BY len DESC
+        LIMIT 1
+        RETURN nodes(p) as names
+    }}
+    """
+
+
 @q_indent
 def q_where_knowde(p: WherePhrase = WherePhrase.CONTAINS) -> str:
     """検索文字列が含まれている文と用語に紐づく文を返す."""
@@ -84,9 +97,8 @@ def q_where_knowde(p: WherePhrase = WherePhrase.CONTAINS) -> str:
     return f"""
         // 検索文字列が含まれる文
         MATCH (sent1: Sentence WHERE sent1.val {where_phrase})
-        OPTIONAL MATCH (term1: Term)-[:DEF|ALIAS]->(sent1)
-        OPTIONAL MATCH (term1)-[:ALIAS]->*(name1: Term)
-        RETURN sent1 as sent,  COLLECT(name1) as names
+        {q_call_sent_names("sent1")}
+        RETURN sent1 as sent, names
         UNION
         // 検索文字列が含まれる用語
         MATCH (term2: Term WHERE term2.val {where_phrase}),
@@ -117,11 +129,3 @@ def q_adjaceny(sent_var: str) -> str:
                 , COLLECT(DISTINCT detail.uid) as details
         }}
     """
-
-
-# def res2adjacent(res: dict[str, Any]) -> KAdjacency:
-#     return KAdjacency(
-#         uid=res["uid"],
-#         n_premise=len(res["premises"]),
-#         n_conclusion=len(res["conclusions"]),
-#         n_refer=len(res["refers"]),
