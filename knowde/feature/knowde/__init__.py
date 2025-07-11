@@ -88,9 +88,10 @@ class KStats(BaseModel):
         return str(ls)
 
 
-class KnowdeWithStats(Knowde):
+class KnowdeWithStats(BaseModel):
     """統計情報付きknowde."""
 
+    knowde: Knowde
     stats: KStats
 
 

@@ -1,5 +1,6 @@
 """detail repo."""
 
+from collections.abc import Iterable
 from uuid import UUID
 
 import networkx as nx
@@ -16,7 +17,7 @@ from knowde.shared.nxutil.edge_type import EdgeType
 
 
 # うまいクエリの方法が思いつかないので、別クエリに分ける
-def fetch_knowde_by_ids(uids: list[str]) -> dict[UUID, Knowde]:
+def fetch_knowde_additionals_by_ids(uids: Iterable[str]) -> dict[UUID, Knowde]:
     """文のuuidリストから名前などの付属情報を返す."""
     q = f"""
         UNWIND $uids as uid
@@ -24,10 +25,10 @@ def fetch_knowde_by_ids(uids: list[str]) -> dict[UUID, Knowde]:
         {q_call_sent_names("sent")}
         OPTIONAL MATCH (intv: Interval)<-[:WHEN]-(sent)
         RETURN sent
-            , names[1..]
+            , names
             , intv
     """
-    res = db.cypher_query(q, params={"uids": uids})
+    res = db.cypher_query(q, params={"uids": list(uids)})
     d = {}
     for row in res[0]:
         sent, names, when = row
@@ -76,7 +77,7 @@ def locate_knowde(uid: UUID, do_print: bool = False) -> KnowdeLocation:  # noqa:
             UidStr(val=e.get("val"), uid=e.get("uid")) for e in row[r_i + 1 : s_i]
         ]
         uids = [e.get("uid") for e in row[s_i:]] if s_i != -1 else []
-        knowdes = fetch_knowde_by_ids(uids)
+        knowdes = fetch_knowde_additionals_by_ids(uids)
         parents = [knowdes[uid] for uid in uids]
         return KnowdeLocation(
             user=user,
@@ -88,7 +89,7 @@ def locate_knowde(uid: UUID, do_print: bool = False) -> KnowdeLocation:  # noqa:
     raise ValueError
 
 
-def detail_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: FBT001, FBT002
+def chains_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: FBT001, FBT002
     """knowdeの依存chain全てを含めた詳細."""
     q = """
         MATCH (sent: Sentence {uid: $uid})
@@ -139,6 +140,6 @@ def detail_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: F
     return KnowdeDetail(
         uid=uid,
         g=g,
-        knowdes=fetch_knowde_by_ids(list(g.nodes)),
+        knowdes=fetch_knowde_additionals_by_ids(list(g.nodes)),
         location=locate_knowde(uid),
     )

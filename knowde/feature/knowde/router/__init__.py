@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends
 from knowde.feature.knowde import KnowdeDetail
 from knowde.feature.knowde.repo import search_knowde
 from knowde.feature.knowde.repo.cypher import WherePhrase
-from knowde.feature.knowde.repo.detail import detail_knowde
+from knowde.feature.knowde.repo.detail import chains_knowde
 
 from .params import (
     KnowdeSearchResult,
@@ -36,4 +36,4 @@ def search_by_text(
 @knowde_router().get("/sentence/{sentence_id}")
 def detail(sentence_id: UUID) -> KnowdeDetail:
     """knowde詳細."""
-    return detail_knowde(sentence_id)
+    return chains_knowde(sentence_id)

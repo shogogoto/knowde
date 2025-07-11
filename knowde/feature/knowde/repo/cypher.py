@@ -85,7 +85,7 @@ def q_call_sent_names(var: str) -> str:
         WITH p, LENGTH(p) as len
         ORDER BY len DESC
         LIMIT 1
-        RETURN nodes(p) as names
+        RETURN nodes(p)[1..] as names
     }}
     """
 
@@ -109,8 +109,8 @@ def q_where_knowde(p: WherePhrase = WherePhrase.CONTAINS) -> str:
     """
 
 
-def q_adjaceny(sent_var: str) -> str:
-    """隣接する文を返す."""
+def q_adjaceny_uids(sent_var: str) -> str:
+    """隣接する文のIDを返す."""
     return f"""
         CALL ({sent_var}) {{
             OPTIONAL MATCH ({sent_var})<-[:TO]-(premise:Sentence)
