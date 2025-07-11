@@ -1,19 +1,15 @@
 """repo."""
 
-from collections.abc import Generator
-from contextlib import contextmanager
 from datetime import datetime
 from uuid import UUID
 
+from fastapi import status
 from more_itertools import collapse
 from neomodel import db
-from pydantic import BaseModel, PrivateAttr
 
-from knowde.feature.entry import NameSpace
 from knowde.feature.entry.category.folder.repo import fetch_namespace
-from knowde.feature.entry.label import LFolder
 from knowde.feature.entry.mapper import MResource
-from knowde.feature.entry.namespace import fill_parents, save_resource
+from knowde.feature.entry.namespace import save_resource
 from knowde.feature.entry.namespace.sync import txt2meta
 from knowde.feature.knowde import KAdjacency, KStats
 from knowde.feature.knowde.repo.clause import OrderBy, Paging, WherePhrase
@@ -21,7 +17,7 @@ from knowde.feature.knowde.repo.detail import fetch_knowde_by_ids
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.tree2net import parse2net
 from knowde.feature.stats.nxdb.save import sn2db
-from knowde.shared.labels.user import LUser
+from knowde.shared.errors import DomainError
 from knowde.shared.types import UUIDy, to_uuid
 
 from .cypher import (
@@ -29,30 +25,6 @@ from .cypher import (
     q_sentence_from_def,
     q_stats,
 )
-
-
-class NameSpaceRepo(BaseModel, arbitrary_types_allowed=True):
-    """user namespace."""
-
-    user: LUser
-    _ns: NameSpace | None = PrivateAttr(default=None)
-
-    @contextmanager
-    def ns_scope(self) -> Generator[NameSpace]:
-        """何度もfetchしたくない."""  # noqa: DOC402
-        ns = fetch_namespace(self.user.uid)
-        try:
-            self._ns = ns
-            yield ns
-        finally:
-            self._ns = None
-
-    async def add_folders(self, *names: str) -> LFolder:
-        """Return tail folder."""
-        if self._ns is not None:
-            return await fill_parents(self._ns, *names)
-        with self.ns_scope() as ns:
-            return await fill_parents(ns, *names)
 
 
 async def save_text(
@@ -93,7 +65,12 @@ def search_total(
         q_tot,
         params={"s": s},
     )
-    return res[0][0][0]
+
+    try:
+        return res[0][0][0]
+    except IndexError as e:
+        msg = "Failed to get total count from query result."
+        raise DomainError(msg=msg, status_code=status.HTTP_502_BAD_GATEWAY) from e
 
 
 def search_knowde(
@@ -163,29 +140,3 @@ def search_knowde(
         ls.append(adj)
     total = search_total(s, wp)
     return total, ls
-
-
-def get_stats_by_id(uid: UUIDy) -> list[int] | None:
-    """systats相当のものをDBから取得する(用)."""
-    q = rf"""
-        CALL () {{
-
-        MATCH (tgt:Sentence) WHERE tgt.uid= $uid
-        {q_stats("tgt")}
-        }}
-        WITH stats AS st
-        RETURN
-            st.n_premise
-            , st.n_conclusion
-            , st.dist_axiom
-            , st.dist_leaf
-            , st.n_referred
-            , st.n_refer
-            , st.n_detail
-    """
-    res = db.cypher_query(
-        q,
-        params={"uid": to_uuid(uid).hex},
-        resolve_objects=True,
-    )
-    return res[0][0] if res else None

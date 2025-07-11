@@ -11,19 +11,21 @@ sync
 """
 
 import networkx as nx
+from neomodel import db
 from pytest_unordered import unordered
 
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.knowde.repo import (
-    get_stats_by_id,
     save_text,
     search_knowde,
 )
+from knowde.feature.knowde.repo.cypher import q_stats
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.stats.nxdb.restore import restore_sysnet
 from knowde.feature.stats.nxdb.save import sn2db
 from knowde.shared.labels.user import LUser
 from knowde.shared.nxutil.edge_type import EdgeType
+from knowde.shared.types import UUIDy, to_uuid
 
 from .clause import OrderBy, Paging, WherePhrase
 
@@ -61,6 +63,32 @@ async def test_get_knowde_attrs(u: LUser):
 
     _total, adjs = search_knowde("xxx")
     assert adjs[0].referreds[0].sentence == "{x}yy"
+
+
+def get_stats_by_id(uid: UUIDy) -> list[int] | None:
+    """systats相当のものをDBから取得する(動作確認用)."""
+    q = rf"""
+        CALL () {{
+
+        MATCH (tgt:Sentence) WHERE tgt.uid= $uid
+        {q_stats("tgt")}
+        }}
+        WITH stats AS st
+        RETURN
+            st.n_premise
+            , st.n_conclusion
+            , st.dist_axiom
+            , st.dist_leaf
+            , st.n_referred
+            , st.n_refer
+            , st.n_detail
+    """
+    res = db.cypher_query(
+        q,
+        params={"uid": to_uuid(uid).hex},
+        resolve_objects=True,
+    )
+    return res[0][0] if res else None
 
 
 @mark_async_test()
