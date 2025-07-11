@@ -31,48 +31,47 @@ def q_root_path(tgt: str, var: str, t: str) -> str:
             WHERE NOT (:Sentence)-[:TO]->(axiom_{var}:Sentence)"""
 
 
-@q_indent
 def q_stats(tgt: str, order_by: OrderBy | None = None) -> str:
     """関係統計の取得cypher."""
     return (
         f"""
-        OPTIONAL MATCH ({tgt})<-[:TO]-{{1,}}(premise:Sentence)
-        OPTIONAL MATCH ({tgt})-[:TO]->{{1,}}(conclusion:Sentence)
-        """
+        CALL ({tgt}) {{
+            OPTIONAL MATCH ({tgt})<-[:TO]-{{1,}}(premise:Sentence)
+            OPTIONAL MATCH ({tgt})-[:TO]->{{1,}}(conclusion:Sentence)
+            """
         + q_leaf_path(tgt, "p_leaf", EdgeType.TO.name)
         + q_root_path(tgt, "p_axiom", EdgeType.TO.name)
         + f"""
-        OPTIONAL MATCH ({tgt})<-[:RESOLVED]-{{1,}}(referred:Sentence)
-        OPTIONAL MATCH ({tgt})-[:RESOLVED]->{{1,}}(refer:Sentence)
-        OPTIONAL MATCH ({tgt})-[:BELOW]->(:Sentence)
-            -[:SIBLING|BELOW]->*(detail:Sentence)
-        WITH COLLECT(DISTINCT premise) as premises
-            , COLLECT(DISTINCT conclusion) as conclusions
-            , COLLECT(DISTINCT referred) as referreds
-            , COLLECT(DISTINCT refer) as refers
-            , COLLECT(DISTINCT detail) as details
-            , p_axiom
-            , p_leaf
-        WITH
-          SIZE(premises) AS n_premise
-        , SIZE(conclusions) AS n_conclusion
-        , MAX(coalesce(length(p_axiom), 0)) AS dist_axiom
-        , MAX(coalesce(length(p_leaf), 0)) AS dist_leaf
-        , SIZE(referreds) AS n_referred
-        , SIZE(refers) AS n_refer
-        , SIZE(details) AS n_detail
-        RETURN {{
-            n_premise: n_premise,
-            n_conclusion: n_conclusion,
-            dist_axiom: dist_axiom,
-            dist_leaf: dist_leaf,
-            n_referred: n_referred,
-            n_refer: n_refer,
-            n_detail: n_detail
-        """
-        + (order_by.score_prop() if order_by else "")
-        + """
-        } AS stats
+            OPTIONAL MATCH ({tgt})<-[:RESOLVED]-{{1,}}(referred:Sentence)
+            OPTIONAL MATCH ({tgt})-[:RESOLVED]->{{1,}}(refer:Sentence)
+            OPTIONAL MATCH ({tgt})-[:BELOW]->(:Sentence)
+                -[:SIBLING|BELOW]->*(detail:Sentence)
+            WITH COLLECT(DISTINCT premise) as premises
+                , COLLECT(DISTINCT conclusion) as conclusions
+                , COLLECT(DISTINCT referred) as referreds
+                , COLLECT(DISTINCT refer) as refers
+                , COLLECT(DISTINCT detail) as details
+                , p_axiom
+                , p_leaf
+            WITH
+              SIZE(premises) AS n_premise
+            , SIZE(conclusions) AS n_conclusion
+            , MAX(coalesce(length(p_axiom), 0)) AS dist_axiom
+            , MAX(coalesce(length(p_leaf), 0)) AS dist_leaf
+            , SIZE(referreds) AS n_referred
+            , SIZE(refers) AS n_refer
+            , SIZE(details) AS n_detail
+            RETURN {{
+                n_premise: n_premise,
+                n_conclusion: n_conclusion,
+                dist_axiom: dist_axiom,
+                dist_leaf: dist_leaf,
+                n_referred: n_referred,
+                n_refer: n_refer,
+                n_detail: n_detail
+                {(order_by.score_prop() if order_by else "")}
+            }} AS stats
+        }}
         """
     )
 

@@ -8,8 +8,15 @@ from more_itertools import first_true
 from neomodel import db
 
 from knowde.feature.entry.mapper import MResource
-from knowde.feature.knowde import Knowde, KnowdeDetail, KnowdeLocation, UidStr
-from knowde.feature.knowde.repo.cypher import q_call_sent_names
+from knowde.feature.knowde import (
+    Knowde,
+    KnowdeDetail,
+    KnowdeLocation,
+    KnowdeWithStats,
+    UidStr,
+)
+from knowde.feature.knowde.repo.clause import OrderBy
+from knowde.feature.knowde.repo.cypher import q_call_sent_names, q_stats
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.user.domain import User
 from knowde.shared.errors.domain import NotFoundError
@@ -17,28 +24,36 @@ from knowde.shared.nxutil.edge_type import EdgeType
 
 
 # うまいクエリの方法が思いつかないので、別クエリに分ける
-def fetch_knowde_additionals_by_ids(uids: Iterable[str]) -> dict[UUID, Knowde]:
+def fetch_knowde_additionals_by_ids(
+    uids: Iterable[str],
+    order_by: OrderBy | None = OrderBy(),
+) -> dict[UUID, KnowdeWithStats]:
     """文のuuidリストから名前などの付属情報を返す."""
     q = f"""
         UNWIND $uids as uid
         MATCH (sent: Sentence {{uid: uid}})
         {q_call_sent_names("sent")}
+        {q_stats("sent", order_by)}
         OPTIONAL MATCH (intv: Interval)<-[:WHEN]-(sent)
         RETURN sent
             , names
             , intv
+            , stats
     """
     res = db.cypher_query(q, params={"uids": list(uids)})
     d = {}
     for row in res[0]:
-        sent, names, when = row
+        sent, names, when, stats = row
         uid = sent.get("uid")
         names = [n.get("val") for n in names] if names is not None else []
-        d[uid] = Knowde(
-            sentence=sent.get("val"),
-            uid=uid,
-            term=Term.create(*names) if names else None,
-            when=when.get("val") if when is not None else None,
+        d[uid] = KnowdeWithStats(
+            knowde=Knowde(
+                sentence=sent.get("val"),
+                uid=uid,
+                term=Term.create(*names) if names else None,
+                when=when.get("val") if when is not None else None,
+            ),
+            stats=stats,
         )
 
     diff = set(uids) - set(d.keys())

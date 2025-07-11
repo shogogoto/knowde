@@ -56,11 +56,8 @@ async def test_search_knowde_by_txt(u: LUser):
 def get_stats_by_id(uid: UUIDy) -> list[int] | None:
     """systats相当のものをDBから取得する(動作確認用)."""
     q = rf"""
-        CALL () {{
-
         MATCH (tgt:Sentence) WHERE tgt.uid= $uid
         {q_stats("tgt")}
-        }}
         WITH stats AS st
         RETURN
             st.n_premise

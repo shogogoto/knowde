@@ -11,7 +11,7 @@ from knowde.feature.entry.category.folder.repo import fetch_namespace
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.entry.namespace import save_resource
 from knowde.feature.entry.namespace.sync import txt2meta
-from knowde.feature.knowde import KnowdeWithStats, KStats
+from knowde.feature.knowde import KnowdeWithStats
 from knowde.feature.knowde.repo.clause import OrderBy, Paging, WherePhrase
 from knowde.feature.knowde.repo.detail import (
     fetch_knowde_additionals_by_ids,
@@ -22,7 +22,7 @@ from knowde.feature.stats.nxdb.save import sn2db
 from knowde.shared.errors import DomainError
 from knowde.shared.types import UUIDy, to_uuid
 
-from .cypher import q_adjaceny_uids, q_call_sent_names, q_stats, q_where_knowde
+from .cypher import q_stats, q_where_knowde
 
 
 async def save_text(
@@ -80,17 +80,11 @@ def search_knowde(
         {q_where_knowde(where)}
         }}
         WITH sent // 中間結果のサイズダウン
-        CALL (sent) {{
         {q_stats("sent", order_by)}
-        }}
-        // {q_adjaceny_uids("sent")}
         {(order_by.phrase() if order_by else "")}
         {paging.phrase()}
-        {q_call_sent_names("sent")}
-        OPTIONAL MATCH (intv: Interval)<-[:WHEN]-(sent)
         RETURN
             sent.uid AS sent_uid
-            , stats
         """
     if do_print:
         print(q)  # noqa: T201
@@ -99,11 +93,8 @@ def search_knowde(
     d = fetch_knowde_additionals_by_ids(uids)
     ls = []
     for row in res[0]:
-        sent_uid, stats = row
-        kst = KnowdeWithStats(
-            knowde=d[sent_uid],
-            stats=KStats.model_validate(stats),
-        )
+        sent_uid = row[0]
+        kst = d[sent_uid]
         ls.append(kst)
     total = search_total(s, where)
     return total, ls
@@ -165,10 +156,8 @@ def res2uidstrs(res: tuple) -> set[str]:
 #         {q_call_sent_names("sent")}
 #         OPTIONAL MATCH (intv: Interval)<-[:WHEN]-(sent)
 #         RETURN
-#             sent
-#             , names
-#             , intv
-#             , stats
+#             premises
+#             , conclusions
 #         """
 #     res = db.cypher_query(q, params={"s": s})
 #     return res2adjacency(res)

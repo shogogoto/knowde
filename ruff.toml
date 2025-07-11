@@ -38,3 +38,4 @@ unfixable = [
   "T201", # print
   "F841", # unused local variable
 ]
+extend-unsafe-fixes = ["F401"]

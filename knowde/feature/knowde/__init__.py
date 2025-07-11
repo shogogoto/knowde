@@ -51,17 +51,7 @@ class UidStr(BaseModel):
     uid: UUID
 
 
-class KnowdeLocation(BaseModel):
-    """knowdeの位置情報."""
-
-    user: User
-    folders: list[UidStr]
-    resource: MResource
-    headers: list[UidStr]
-    parents: list[Knowde]
-
-
-class KStats(BaseModel):
+class KStats(BaseModel, frozen=True):
     """知識の関係統計."""
 
     # frontendのモック自動生成で数値の範囲を制限したい
@@ -88,11 +78,21 @@ class KStats(BaseModel):
         return str(ls)
 
 
-class KnowdeWithStats(BaseModel):
+class KnowdeWithStats(BaseModel, frozen=True):
     """統計情報付きknowde."""
 
     knowde: Knowde
     stats: KStats
+
+
+class KnowdeLocation(BaseModel):
+    """knowdeの位置情報."""
+
+    user: User
+    folders: list[UidStr]
+    resource: MResource
+    headers: list[UidStr]
+    parents: list[KnowdeWithStats]
 
 
 class KAdjacency(BaseModel):
@@ -130,24 +130,24 @@ class KnowdeDetail(BaseModel):
 
     uid: UUID
     g: NXGraph
-    knowdes: dict[UUID, Knowde]
+    knowdes: dict[UUID, KnowdeWithStats]
     location: KnowdeLocation
 
     # テスト用メソッド
     def get(self, sentence: str) -> UUID:  # noqa: D102
         for k, v in self.knowdes.items():
-            if v.sentence == sentence:
-                if v.uid.hex not in self.g:
+            if v.knowde.sentence == sentence:
+                if v.knowde.uid.hex not in self.g:
                     raise ValueError
                 return k
         raise ValueError
 
-    def succ(self, sentence: str, t: EdgeType) -> list[Knowde]:  # noqa: D102
+    def succ(self, sentence: str, t: EdgeType) -> list[KnowdeWithStats]:  # noqa: D102
         uid = self.get(sentence)
         succs = list(t.succ(self.g, uid.hex))
         return [self.knowdes[UUID(s)] for s in succs]
 
-    def part(self, tgt: str) -> set[Knowde]:
+    def part(self, tgt: str) -> set[KnowdeWithStats]:
         """targetも含めて返す."""
         uid = self.get(tgt)
 
