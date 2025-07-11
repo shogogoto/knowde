@@ -88,6 +88,12 @@ class KStats(BaseModel):
         return str(ls)
 
 
+class KnowdeWithStats(Knowde):
+    """統計情報付きknowde."""
+
+    stats: KStats
+
+
 class KAdjacency(BaseModel):
     """周辺情報も含める."""
 

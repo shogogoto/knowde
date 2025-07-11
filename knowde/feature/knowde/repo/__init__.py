@@ -20,11 +20,7 @@ from knowde.feature.stats.nxdb.save import sn2db
 from knowde.shared.errors import DomainError
 from knowde.shared.types import UUIDy, to_uuid
 
-from .cypher import (
-    q_adjacent,
-    q_sentence_from_def,
-    q_stats,
-)
+from .cypher import q_adjaceny, q_stats, q_where_knowde
 
 
 async def save_text(
@@ -55,7 +51,7 @@ def search_total(
         """
         CALL () {
         """
-        + q_sentence_from_def(wp)
+        + q_where_knowde(wp)
         + """
         }
         RETURN COUNT(sent)
@@ -85,7 +81,7 @@ def search_knowde(
         r"""
         CALL () {
         """
-        + q_sentence_from_def(wp)
+        + q_where_knowde(wp)
         + """
         }
         WITH sent // 中間結果のサイズダウン
@@ -93,7 +89,7 @@ def search_knowde(
         """
         + q_stats("sent", order_by)
         + "}"
-        + q_adjacent("sent")
+        + q_adjaceny("sent")
         + (order_by.phrase() if order_by else "")
         + paging.phrase()
         + """
@@ -140,3 +136,25 @@ def search_knowde(
         ls.append(adj)
     total = search_total(s, wp)
     return total, ls
+
+
+def res2adjacency(row: list):
+    """dbレスポンスからpydanticに変換."""
+    (
+        sent,
+        premises,
+        conclusions,
+        refers,
+        referreds,
+        details,
+        stats,
+    ) = row
+    return KAdjacency(
+        center=sent,
+        details=details,
+        premises=premises,
+        conclusions=conclusions,
+        refers=refers,
+        referreds=referreds,
+        stats=KStats.model_validate(stats),
+    )

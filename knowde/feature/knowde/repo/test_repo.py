@@ -40,8 +40,6 @@ async def test_get_knowde_attrs(u: LUser):
     """文の所属などを取得."""
     s = """
     # titleX
-        @author John Due
-        @published H20/11/1
     ## h11
         A, A1, A2: a
             when. 20C

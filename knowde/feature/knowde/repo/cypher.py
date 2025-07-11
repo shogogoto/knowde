@@ -1,7 +1,19 @@
 """cypherの組立て."""
 
+from collections.abc import Callable
+from textwrap import indent
+
 from knowde.feature.knowde.repo.clause import OrderBy, WherePhrase
 from knowde.shared.nxutil.edge_type import EdgeType
+
+
+def q_indent(f: Callable) -> Callable:
+    """インデントデコレータ."""
+
+    def wrapper(*args, **kwargs):
+        return indent(f(*args, **kwargs), " " * 2)
+
+    return wrapper
 
 
 def q_leaf_path(tgt: str, var: str, t: str) -> str:
@@ -19,6 +31,7 @@ def q_root_path(tgt: str, var: str, t: str) -> str:
             WHERE NOT (:Sentence)-[:TO]->(axiom_{var}:Sentence)"""
 
 
+@q_indent
 def q_stats(tgt: str, order_by: OrderBy | None = None) -> str:
     """関係統計の取得cypher."""
     return (
@@ -64,14 +77,15 @@ def q_stats(tgt: str, order_by: OrderBy | None = None) -> str:
     )
 
 
-def q_sentence_from_def(p: WherePhrase = WherePhrase.CONTAINS) -> str:
+@q_indent
+def q_where_knowde(p: WherePhrase = WherePhrase.CONTAINS) -> str:
     """検索文字列が含まれている文と用語に紐づく文を返す."""
     where_phrase = f"{p.value} $s"
     return f"""
         // 検索文字列が含まれる文
         MATCH (sent1: Sentence WHERE sent1.val {where_phrase})
         OPTIONAL MATCH (term1: Term)-[:DEF|ALIAS]->(sent1)
-        OPTIONAL MATCH (term1)-[:ALIAS]-*(name1: Term)
+        OPTIONAL MATCH (term1)-[:ALIAS]->*(name1: Term)
         RETURN sent1 as sent,  COLLECT(name1) as names
         UNION
         // 検索文字列が含まれる用語
@@ -83,7 +97,7 @@ def q_sentence_from_def(p: WherePhrase = WherePhrase.CONTAINS) -> str:
     """
 
 
-def q_adjacent(sent_var: str) -> str:
+def q_adjaceny(sent_var: str) -> str:
     """隣接する文を返す."""
     return f"""
         CALL ({sent_var}) {{
