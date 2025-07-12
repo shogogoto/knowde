@@ -1,30 +1,25 @@
-"""test.
-
-誰でも見れる
-
-
-register user
-knowde search
-
-
-sync
-"""
+"""test."""
 
 import networkx as nx
+from neomodel import db
 from pytest_unordered import unordered
 
 from knowde.conftest import async_fixture, mark_async_test
-from knowde.feature.knowde.cypher import OrderBy, Paging, WherePhrase
 from knowde.feature.knowde.repo import (
-    get_stats_by_id,
+    adjacency_knowde,
     save_text,
     search_knowde,
 )
+from knowde.feature.knowde.repo.cypher import q_stats
 from knowde.feature.parsing.sysnet import SysNet
+from knowde.feature.stats.nxdb import LSentence
 from knowde.feature.stats.nxdb.restore import restore_sysnet
 from knowde.feature.stats.nxdb.save import sn2db
 from knowde.shared.labels.user import LUser
 from knowde.shared.nxutil.edge_type import EdgeType
+from knowde.shared.types import UUIDy, to_uuid
+
+from .clause import OrderBy, Paging, WherePhrase
 
 
 @async_fixture()
@@ -33,12 +28,10 @@ async def u() -> LUser:  # noqa: D103
 
 
 @mark_async_test()
-async def test_get_knowde_attrs(u: LUser):
+async def test_search_knowde_by_txt(u: LUser):
     """文の所属などを取得."""
     s = """
     # titleX
-        @author John Due
-        @published H20/11/1
     ## h11
         A, A1, A2: a
             when. 20C
@@ -56,10 +49,34 @@ async def test_get_knowde_attrs(u: LUser):
     """
     _sn, _ = await save_text(u.uid, s)
     _total, adjs = search_knowde("A1")
-    assert [a.center.sentence for a in adjs] == unordered(["a", "ちん", "bA123"])
+    assert [a.knowde.sentence for a in adjs] == unordered(["a", "ちん", "bA123"])
 
-    _total, adjs = search_knowde("xxx")
-    assert adjs[0].referreds[0].sentence == "{x}yy"
+    a = LSentence.nodes.get(val="xxx")
+    adjs = adjacency_knowde(a.uid)
+    assert adjs[0].referreds[0].knowde.sentence == "{x}yy"
+
+
+def get_stats_by_id(uid: UUIDy) -> list[int] | None:
+    """systats相当のものをDBから取得する(動作確認用)."""
+    q = rf"""
+        MATCH (tgt:Sentence) WHERE tgt.uid= $uid
+        {q_stats("tgt")}
+        WITH stats AS st
+        RETURN
+            st.n_premise
+            , st.n_conclusion
+            , st.dist_axiom
+            , st.dist_leaf
+            , st.n_referred
+            , st.n_refer
+            , st.n_detail
+    """
+    res = db.cypher_query(
+        q,
+        params={"uid": to_uuid(uid).hex},
+        resolve_objects=True,
+    )
+    return res[0][0] if res else None
 
 
 @mark_async_test()
@@ -157,7 +174,7 @@ async def test_ordering(u: LUser):
         WherePhrase.REGEX,
         order_by=order_by,
     )
-    assert [a.center.sentence for a in adjs] == [str(i) for i in range(30)]
+    assert [a.knowde.sentence for a in adjs] == [str(i) for i in range(30)]
 
 
 @mark_async_test()
@@ -187,11 +204,20 @@ async def test_details(u: LUser):
     """
     _, r = await save_text(u.uid, s)
     _sn, _uids = await restore_sysnet(r.uid)
-    _total, adjs = search_knowde(
+    _total, _adjs = search_knowde(
         "detail",
         WherePhrase.CONTAINS,
         # do_print=True,
     )
+    d1 = LSentence.nodes.get(val="detail1")
+    adjs1 = adjacency_knowde(d1.uid)
+    d2 = LSentence.nodes.get(val="detail2")
+    adjs2 = adjacency_knowde(d2.uid)
 
-    assert [str(k) for k in adjs[0].details] == ["d1T(114)", "d2", "d3"]
-    assert [str(k) for k in adjs[1].details] == ["x1", "x2[X2]", "x3[X3(X31)]T(514)"]
+    assert [str(k.knowde) for k in adjs1[0].details] == ["d1T(114)", "d2", "d3"]
+    assert [str(k.knowde) for k in adjs2[0].details] == [
+        "x1",
+        "x2[X2]",
+        "x3[X3(X31)]T(514)",
+    ]
+    # 旧nameクエリでは x2[X2] が取得できなかった x2 だけで名前取得できなかった

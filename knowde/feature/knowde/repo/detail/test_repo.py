@@ -7,12 +7,13 @@ from pytest_unordered import unordered
 
 from knowde.api import root_router
 from knowde.conftest import async_fixture, mark_async_test
-from knowde.feature.knowde.detail import detail_knowde
 from knowde.feature.knowde.repo import save_text
 from knowde.feature.stats.nxdb import LSentence
 from knowde.shared.labels.user import LUser
 from knowde.shared.nxutil import to_leaves, to_roots
 from knowde.shared.nxutil.edge_type import EdgeType
+
+from . import chains_knowde
 
 
 @async_fixture()
@@ -69,17 +70,20 @@ async def test_detail_networks_to_or_resolved_edges(u: LUser):
         path=("A", "B", "C.txt"),
     )  # C.txtはDBには格納されない
     s = LSentence.nodes.get(val="0")
-    detail = detail_knowde(UUID(s.uid))
-    assert [k.sentence for k in detail.succ("0", EdgeType.TO)] == unordered(["1", "2"])
+    detail = chains_knowde(UUID(s.uid))
+    assert [k.knowde.sentence for k in detail.succ("0", EdgeType.TO)] == unordered([
+        "1",
+        "2",
+    ])
     roots_to = to_roots(detail.g, EdgeType.TO)
-    assert [detail.knowdes[UUID(s)].sentence for s in roots_to] == unordered([
+    assert [detail.knowdes[UUID(s)].knowde.sentence for s in roots_to] == unordered([
         "-11",
         "-12",
         "-21",
         "-22",
     ])
     leaves_to = to_leaves(detail.g, EdgeType.TO)
-    assert [detail.knowdes[UUID(s)].sentence for s in leaves_to] == unordered([
+    assert [detail.knowdes[UUID(s)].knowde.sentence for s in leaves_to] == unordered([
         "11",
         "12",
         "21",
@@ -87,16 +91,16 @@ async def test_detail_networks_to_or_resolved_edges(u: LUser):
     ])
     roots_ref = to_roots(detail.g, EdgeType.RESOLVED)
     leaves_ref = to_leaves(detail.g, EdgeType.RESOLVED)
-    assert [detail.knowdes[UUID(s)].sentence for s in roots_ref] == unordered([
+    assert [detail.knowdes[UUID(s)].knowde.sentence for s in roots_ref] == unordered([
         "c{B}c",
     ])
 
-    assert [detail.knowdes[UUID(s)].sentence for s in leaves_ref] == unordered([
+    assert [detail.knowdes[UUID(s)].knowde.sentence for s in leaves_ref] == unordered([
         "0",
         "a",
     ])
 
-    assert [p.sentence for p in detail.part("0")] == unordered([
+    assert [p.knowde.sentence for p in detail.part("0")] == unordered([
         "0",
         "xxx",
         "x1",
@@ -116,7 +120,7 @@ async def test_detail_networks_to_or_resolved_edges(u: LUser):
     assert [f.val for f in loc.folders] == ["A", "B"]
     assert loc.resource.name == "# titleX"
     assert [f.val for f in loc.headers] == ["## head1", "### head2"]
-    assert [str(p) for p in loc.parents] == [
+    assert [str(p.knowde) for p in loc.parents] == [
         "parentT(19C)",
         "p1",
         "p2",
@@ -132,8 +136,8 @@ async def test_detail_no_below_no_header(u: LUser):
     """
     _sn, _r = await save_text(u.uid, s)
     s = LSentence.nodes.get(val="a")
-    d = detail_knowde(UUID(s.uid))
-    assert [k.sentence for k in d.part("a")] == ["a"]
+    d = chains_knowde(UUID(s.uid))
+    assert [k.knowde.sentence for k in d.part("a")] == ["a"]
     assert d.location.parents == []
     assert d.location.headers == []
     assert d.location.user.uid.hex == u.uid
@@ -149,9 +153,9 @@ async def test_detail_no_below_no_header_with_parent(u: LUser):
     """
     _sn, _r = await save_text(u.uid, s)
     s = LSentence.nodes.get(val="a")
-    d = detail_knowde(UUID(s.uid))
-    assert [k.sentence for k in d.part("a")] == ["a"]
-    assert [k.sentence for k in d.location.parents] == ["parent"]
+    d = chains_knowde(UUID(s.uid))
+    assert [k.knowde.sentence for k in d.part("a")] == ["a"]
+    assert [k.knowde.sentence for k in d.location.parents] == ["parent"]
     assert d.location.headers == []
     assert d.location.user.uid.hex == u.uid
 
@@ -170,8 +174,8 @@ async def test_detail_no_header(u: LUser):
     """
     _sn, _r = await save_text(u.uid, s)
     s = LSentence.nodes.get(val="a")
-    d = detail_knowde(UUID(s.uid))
-    assert [k.sentence for k in d.part("a")] == unordered(["a", "b", "c"])
+    d = chains_knowde(UUID(s.uid))
+    assert [k.knowde.sentence for k in d.part("a")] == unordered(["a", "b", "c"])
     assert d.location.parents == []
     assert d.location.headers == []
     assert d.location.user.uid.hex == u.uid
