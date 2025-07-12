@@ -1,7 +1,6 @@
 """knowde router test."""
 
 from datetime import datetime
-from pprint import pp
 from uuid import UUID
 
 import pytz
@@ -110,6 +109,4 @@ async def test_search(u: LUser, caplog):
     s = LTerm.nodes.get(val="アルキメデス").sentence.single()
     url = "/knowde/?q=%E6%95%B0%E5%AD%A6&type=CONTAINS&page=1&size=100&n_detail=1&n_premise=3&n_conclusion=3&n_refer=3&n_referred=3&dist_axiom=1&dist_leaf=1&desc=true"  # noqa: E501
     res = client.get(url)
-
-    pp(res.json())
     assert res.status_code == status.HTTP_200_OK
