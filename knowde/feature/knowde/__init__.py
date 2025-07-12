@@ -98,14 +98,12 @@ class KnowdeLocation(BaseModel):
 class KAdjacency(BaseModel):
     """周辺情報も含める."""
 
-    center: Knowde
-    when: str | None = None
-    details: list[Knowde]
-    premises: list[Knowde]
-    conclusions: list[Knowde]
-    refers: list[Knowde]
-    referreds: list[Knowde]
-    stats: KStats | None = None
+    center: KnowdeWithStats
+    details: list[KnowdeWithStats]
+    premises: list[KnowdeWithStats]
+    conclusions: list[KnowdeWithStats]
+    refers: list[KnowdeWithStats]
+    referreds: list[KnowdeWithStats]
 
     def __str__(self) -> str:
         """For display in CLI."""

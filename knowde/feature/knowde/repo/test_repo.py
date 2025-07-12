@@ -6,11 +6,13 @@ from pytest_unordered import unordered
 
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.knowde.repo import (
+    adjacency_knowde,
     save_text,
     search_knowde,
 )
 from knowde.feature.knowde.repo.cypher import q_stats
 from knowde.feature.parsing.sysnet import SysNet
+from knowde.feature.stats.nxdb import LSentence
 from knowde.feature.stats.nxdb.restore import restore_sysnet
 from knowde.feature.stats.nxdb.save import sn2db
 from knowde.shared.labels.user import LUser
@@ -49,8 +51,9 @@ async def test_search_knowde_by_txt(u: LUser):
     _total, adjs = search_knowde("A1")
     assert [a.knowde.sentence for a in adjs] == unordered(["a", "ちん", "bA123"])
 
-    # _total, adjs = search_knowde("xxx")
-    # assert adjs[0].referreds[0].sentence == "{x}yy"
+    a = LSentence.nodes.get(val="xxx")
+    adjs = adjacency_knowde(a.uid)
+    assert adjs[0].referreds[0].knowde.sentence == "{x}yy"
 
 
 def get_stats_by_id(uid: UUIDy) -> list[int] | None:
@@ -206,7 +209,15 @@ async def test_details(u: LUser):
         WherePhrase.CONTAINS,
         # do_print=True,
     )
+    d1 = LSentence.nodes.get(val="detail1")
+    adjs1 = adjacency_knowde(d1.uid)
+    d2 = LSentence.nodes.get(val="detail2")
+    adjs2 = adjacency_knowde(d2.uid)
 
-    # assert [str(k) for k in adjs[0].details] == ["d1T(114)", "d2", "d3"]
-    # assert [str(k) for k in adjs[1].details] == ["x1", "x2[X2]", "x3[X3(X31)]T(514)"]
+    assert [str(k.knowde) for k in adjs1[0].details] == ["d1T(114)", "d2", "d3"]
+    assert [str(k.knowde) for k in adjs2[0].details] == [
+        "x1",
+        "x2[X2]",
+        "x3[X3(X31)]T(514)",
+    ]
     # 旧nameクエリでは x2[X2] が取得できなかった x2 だけで名前取得できなかった

@@ -11,7 +11,7 @@ from knowde.feature.entry.category.folder.repo import fetch_namespace
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.entry.namespace import save_resource
 from knowde.feature.entry.namespace.sync import txt2meta
-from knowde.feature.knowde import KnowdeWithStats
+from knowde.feature.knowde import KAdjacency, KnowdeWithStats
 from knowde.feature.knowde.repo.clause import OrderBy, Paging, WherePhrase
 from knowde.feature.knowde.repo.detail import (
     fetch_knowde_additionals_by_ids,
@@ -22,7 +22,7 @@ from knowde.feature.stats.nxdb.save import sn2db
 from knowde.shared.errors import DomainError
 from knowde.shared.types import UUIDy, to_uuid
 
-from .cypher import q_stats, q_where_knowde
+from .cypher import q_adjaceny_uids, q_stats, q_where_knowde
 
 
 async def save_text(
@@ -105,8 +105,6 @@ def res2uidstrs(res: tuple) -> set[str]:
 
     def is_valid_uuid(uuid_string) -> bool:
         try:
-            # print("#" * 80)
-            # print(uuid_string)
             UUID(uuid_string)
             return True  # noqa: TRY300
         except ValueError:
@@ -117,47 +115,39 @@ def res2uidstrs(res: tuple) -> set[str]:
     return set(filter(is_valid_uuid, collapse(res, base_type=UUID)))
 
 
-# def res2adjacency(res: tuple):
-#     """dbレスポンスからpydanticに変換."""
-#     uids = res2uidstrs(res)
-#     knowdes = fetch_knowde_additionals_by_ids(list(uids))
-#     ls = []
-#     for row in res[0]:
-#         (
-#             sent,
-#             premises,
-#             conclusions,
-#             refers,
-#             referreds,
-#             details,
-#             stats,
-#         ) = row
-#         adj = KAdjacency(
-#             center=knowdes[sent],
-#             details=[knowdes[d] for d in details[0]],
-#             premises=[knowdes[p] for p in premises[0]],
-#             conclusions=[knowdes[c] for c in conclusions[0]],
-#             refers=[knowdes[r] for r in refers[0]],
-#             referreds=[knowdes[r] for r in referreds[0]],
-#             stats=KStats.model_validate(stats),
-#         )
-#         ls.append(adj)
-#     total = search_total(s, wp)
-#     return total, ls
-
-
-# def get_adjacency(
-#     s: str,
-#     where: WherePhrase = WherePhrase.CONTAINS,
-# ):
-#     q = rf"""
-#         MATCH (sent: Sentence {{uid: $uid}})
-#         {q_adjaceny_uids("sent")}
-#         {q_call_sent_names("sent")}
-#         OPTIONAL MATCH (intv: Interval)<-[:WHEN]-(sent)
-#         RETURN
-#             premises
-#             , conclusions
-#         """
-#     res = db.cypher_query(q, params={"s": s})
-#     return res2adjacency(res)
+def adjacency_knowde(sent_uid: str) -> list[KAdjacency]:
+    """隣接knowdeを返す."""
+    q = rf"""
+        MATCH (sent: Sentence {{uid: $uid}})
+        {q_adjaceny_uids("sent")}
+        RETURN
+            sent.uid as sent_uid
+            , premises
+            , conclusions
+            , refers
+            , referreds
+            , details
+        """
+    res = db.cypher_query(q, params={"uid": sent_uid})
+    uids = res2uidstrs(res)
+    knowdes = fetch_knowde_additionals_by_ids(list(uids))
+    ls = []
+    for row in res[0]:
+        (
+            sent,
+            premises,
+            conclusions,
+            refers,
+            referreds,
+            details,
+        ) = row
+        adj = KAdjacency(
+            center=knowdes[sent],
+            details=[knowdes[d] for d in details],
+            premises=[knowdes[p] for p in premises],
+            conclusions=[knowdes[c] for c in conclusions],
+            refers=[knowdes[r] for r in refers],
+            referreds=[knowdes[r] for r in referreds],
+        )
+        ls.append(adj)
+    return ls
