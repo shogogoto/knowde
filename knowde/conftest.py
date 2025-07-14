@@ -66,7 +66,7 @@ async def setup():  # noqa: D103
     await AsyncDatabase().close_connection()
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(autouse=False)
 def control_app_logging(request: pytest.FixtureRequest) -> Generator[None, None, None]:
     """Enable application logging for tests marked with 'enable_app_logging'."""
     marker = request.node.get_closest_marker("enable_app_logging")

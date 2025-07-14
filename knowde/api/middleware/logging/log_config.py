@@ -37,21 +37,13 @@ def clear_logging() -> logging.Logger:
     root = logging.getLogger()
     for h in root.handlers[:]:
         root.removeHandler(h)
+    root.setLevel(logging.WARNING)  # defaultに戻す
     return root
 
 
-def setup_logging() -> None:
-    """fastapiログ用."""
-    # Remove any existing handlers
-    root_logger = clear_logging()
-
-    # Create a handler and add the filter
-    handler = logging.StreamHandler(sys.stdout)
-    handler.addFilter(ContextFilter())
-    handler.addFilter(Neo4jDeprecationWarningFilter())
-
-    # Create a formatter with the request_id and user_id
-    formatter = logging.Formatter(
+def log_formatter() -> logging.Formatter:
+    """Log formatter."""
+    return logging.Formatter(
         (
             "%(asctime)s.%(msecs)03d - %(levelname)s - "
             "[%(request_id)s] [%(user_id)s] - "
@@ -59,13 +51,20 @@ def setup_logging() -> None:
         ),
         datefmt="%Y-%m-%d %H:%M:%S",
     )
-    handler.setFormatter(formatter)
 
+
+def setup_logging() -> None:
+    """fastapiログ用."""
+    root_logger = clear_logging()
+    handler = logging.StreamHandler(sys.stdout)
+    handler.addFilter(ContextFilter())
+    handler.addFilter(Neo4jDeprecationWarningFilter())
+    handler.setFormatter(log_formatter())
     root_logger.addHandler(handler)
     root_logger.setLevel(logging.INFO)
 
     # Configure uvicorn loggers to use the root logger's handlers
-    for log_name in ["uvicorn", "uvicorn.error", "uvicorn.access"]:
-        log = logging.getLogger(log_name)
-        log.propagate = True
-        log.handlers = []
+    # for log_name in ["uvicorn", "uvicorn.error", "uvicorn.access"]:
+    #     log = logging.getLogger(log_name)
+    #     log.propagate = True
+    #     log.handlers = []

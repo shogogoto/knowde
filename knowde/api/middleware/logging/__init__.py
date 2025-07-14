@@ -8,13 +8,7 @@ from typing import override
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from knowde.config.env import Settings
-
 from .context import request_id_var
-from .log_config import setup_logging
-
-s = Settings()
-setup_logging()
 
 
 class LoggingMiddleware(BaseHTTPMiddleware):
@@ -46,6 +40,5 @@ class LoggingMiddleware(BaseHTTPMiddleware):
             },
         )
 
-        # Clear context var
-        request_id_var.set(None)
+        request_id_var.set(None)  # Clear context var
         return response

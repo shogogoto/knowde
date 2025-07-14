@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING
 
@@ -13,6 +14,7 @@ from knowde.api.middleware.error_handling import ErrorHandlingMiddleware
 from knowde.api.middleware.logging import LoggingMiddleware
 from knowde.api.middleware.logging.log_config import setup_logging
 from knowde.api.middleware.transaction import Neo4jTransactionMiddleware
+from knowde.api.middleware.user_tracking import UserTrackingMiddleware
 from knowde.config.env import Settings
 from knowde.feature.entry.router import entry_router
 from knowde.feature.knowde.router import knowde_router
@@ -51,6 +53,7 @@ api.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+api.add_middleware(UserTrackingMiddleware)
 api.add_middleware(LoggingMiddleware)
 
 api.include_router(auth_router())
@@ -58,7 +61,14 @@ api.include_router(user_router())
 api.include_router(entry_router())
 api.include_router(nxdb_router())
 api.include_router(knowde_router())
-setup_logging()
+
+
+def is_pytest_running() -> bool:  # noqa: D103
+    return "pytest" in sys.modules
+
+
+if not is_pytest_running():
+    setup_logging()
 
 
 def root_router() -> FastAPI:  # noqa: D103
