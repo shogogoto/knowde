@@ -11,6 +11,7 @@ from neomodel.async_.core import AsyncDatabase
 
 from knowde.api.middleware.error_handling import ErrorHandlingMiddleware
 from knowde.api.middleware.logging import LoggingMiddleware
+from knowde.api.middleware.logging.log_config import setup_logging
 from knowde.api.middleware.transaction import Neo4jTransactionMiddleware
 from knowde.config.env import Settings
 from knowde.feature.entry.router import entry_router
@@ -57,6 +58,7 @@ api.include_router(user_router())
 api.include_router(entry_router())
 api.include_router(nxdb_router())
 api.include_router(knowde_router())
+setup_logging()
 
 
 def root_router() -> FastAPI:  # noqa: D103

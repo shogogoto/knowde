@@ -37,7 +37,6 @@ class Settings(BaseSettings):
     COOKIE_DOMAIN: str | None = None
     KN_REDIRECT_URL: str | None = None
     FRONTEND_URL: str | None = None
-
     CONFIG_PATH: str = ".config/knowde"
 
     @property
