@@ -7,13 +7,11 @@ from typing import TYPE_CHECKING
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from neomodel import db
+from neomodel.async_.core import AsyncDatabase
 
 from knowde.api.middleware.error_handling import ErrorHandlingMiddleware
-from knowde.api.middleware.transaction import (
-    Neo4jTransactionMiddleware,
-    set_error_handlers,
-)
+from knowde.api.middleware.logging import LoggingMiddleware
+from knowde.api.middleware.transaction import Neo4jTransactionMiddleware
 from knowde.config.env import Settings
 from knowde.feature.entry.router import entry_router
 from knowde.feature.knowde.router import knowde_router
@@ -28,15 +26,16 @@ s = Settings()
 
 
 @asynccontextmanager
-async def lifespan(_app: FastAPI) -> AsyncGenerator:  # noqa: RUF029
+async def lifespan(_app: FastAPI) -> AsyncGenerator:
     """Set up DB etc."""
     s.setup_db()
-    db.install_all_labels()
+    await AsyncDatabase().install_all_labels()
     yield
-    s.terdown_db()
+    await AsyncDatabase().close_connection()
 
 
 api = FastAPI(lifespan=lifespan)
+
 api.add_middleware(ErrorHandlingMiddleware)
 api.add_middleware(
     Neo4jTransactionMiddleware,
@@ -51,9 +50,7 @@ api.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-set_error_handlers(api)
-
+api.add_middleware(LoggingMiddleware)
 
 api.include_router(auth_router())
 api.include_router(user_router())

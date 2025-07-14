@@ -36,7 +36,11 @@ class Knowde(BaseModel, frozen=True):
     sentence: str
     uid: UUID
     term: Term | None = None
+
+    # additional
     when: str | None = None
+    where: str | None = None
+    by: str | None = None
 
     def __str__(self) -> str:  # noqa: D105
         t = f"[{self.term}]" if self.term else ""
