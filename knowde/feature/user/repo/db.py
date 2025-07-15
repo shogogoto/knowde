@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, override
+from typing import override
 from uuid import UUID
 
 from fastapi_users.db import (
@@ -21,7 +21,7 @@ class AccountDB(BaseUserDatabase[User, UUID]):
     """DB adapter for fastapi-users."""
 
     @override
-    async def get(self, id: UUID) -> User | None:
+    async def get(self, id):
         """Get a single user by id."""
         # print("---------get")
         lb = await LUser.nodes.get_or_none(uid=id.hex)
@@ -30,7 +30,7 @@ class AccountDB(BaseUserDatabase[User, UUID]):
         return label2model(User, lb)
 
     @override
-    async def get_by_email(self, email: str) -> User | None:
+    async def get_by_email(self, email):
         """Get a single user by email."""
         # print("---------get by email")
         lb = await LUser.nodes.get_or_none(email=email)
@@ -39,11 +39,7 @@ class AccountDB(BaseUserDatabase[User, UUID]):
         return label2model(User, lb)
 
     @override
-    async def get_by_oauth_account(
-        self,
-        oauth: str,
-        account_id: str,
-    ) -> User | None:
+    async def get_by_oauth_account(self, oauth, account_id):
         """Get a single user by OAuth account id."""
         # print("---------get by oauth")
         la = LAccount.nodes.get_or_none(account_id=account_id)
@@ -53,7 +49,7 @@ class AccountDB(BaseUserDatabase[User, UUID]):
         return label2model(User, lu)
 
     @override
-    async def create(self, create_dict: dict[str, Any]) -> User:
+    async def create(self, create_dict):
         """Create a user."""
         if await self.get_by_email(create_dict["email"]):
             raise  # noqa: PLE0704
@@ -61,7 +57,7 @@ class AccountDB(BaseUserDatabase[User, UUID]):
         return label2model(User, lb)
 
     @override
-    async def update(self, user: User, update_dict: dict) -> User:
+    async def update(self, user, update_dict):
         """Update a user."""
         # print("------------ update")
         lb = await LUser.nodes.get(uid=user.id)
@@ -74,7 +70,7 @@ class AccountDB(BaseUserDatabase[User, UUID]):
         return label2model(User, lb)
 
     @override
-    async def delete(self, user: User) -> None:
+    async def delete(self, user):
         """Delete a user."""
         # print("------------ delete")
         lb = await LUser.nodes.get(uid=user.id.hex)
@@ -82,11 +78,7 @@ class AccountDB(BaseUserDatabase[User, UUID]):
 
     # OAUTH
     @override
-    async def add_oauth_account(
-        self,
-        user: User,
-        create_dict: dict[str, Any],
-    ) -> User:
+    async def add_oauth_account(self, user, create_dict):
         """Create an OAuth account and add it to the user."""
         # print("------------ add oauth account")
         account = Account.model_validate(create_dict)
@@ -96,11 +88,7 @@ class AccountDB(BaseUserDatabase[User, UUID]):
         return user
 
     @override
-    async def update_oauth_account(
-        self,
-        user: User,
-        oauth_account: Account,
-        update_dict: dict[str, Any],
-    ) -> User:
+    async def update_oauth_account(self, user, oauth_account, update_dict):
         """Update an OAuth account on a user."""
         print("------------ update oauth account", user, update_dict)  # noqa: T201
+        return user
