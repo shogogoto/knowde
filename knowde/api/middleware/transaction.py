@@ -5,9 +5,9 @@ from __future__ import annotations
 import logging
 from typing import override
 
-from fastapi import Request, Response, status
+from fastapi import status
 from neomodel.async_.core import AsyncDatabase
-from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from knowde.config.env import Settings
 
@@ -16,11 +16,7 @@ class Neo4jTransactionMiddleware(BaseHTTPMiddleware):
     """API失敗時にロールバック."""
 
     @override
-    async def dispatch(
-        self,
-        request: Request,
-        call_next: RequestResponseEndpoint,
-    ) -> Response:
+    async def dispatch(self, request, call_next):
         if self._should_skip(request.url.path):
             return await call_next(request)
         db = AsyncDatabase()

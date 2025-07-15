@@ -4,7 +4,9 @@ import logging
 import sys
 from typing import override
 
-from .context import request_id_var, user_id_var
+from pythonjsonlogger.json import JsonFormatter
+
+from .context import request_id_var, url_var, user_id_var
 
 
 class Neo4jDeprecationWarningFilter(logging.Filter):
@@ -28,6 +30,7 @@ class ContextFilter(logging.Filter):
     def filter(self, record) -> bool:
         record.request_id = request_id_var.get() or "-"
         record.user_id = user_id_var.get() or "-"
+        record.url = url_var.get() or "-"
         return True
 
 
@@ -42,15 +45,13 @@ def clear_logging() -> logging.Logger:
 
 
 def log_formatter() -> logging.Formatter:
-    """Log formatter."""
-    return logging.Formatter(
-        (
-            "%(asctime)s.%(msecs)03d - %(levelname)s - "
-            "[%(request_id)s] [%(user_id)s] - "
-            "%(name)s - %(message)s"
-        ),
-        datefmt="%Y-%m-%d %H:%M:%S",
+    """Log formatter for JSON."""
+    # The fields to include in the JSON log.
+    format_str = (
+        "%(asctime)s %(msecs)03d %(levelname)s %(name)s "
+        "%(request_id)s %(url)s %(user_id)s %(message)s"
     )
+    return JsonFormatter(format_str, datefmt="%Y-%m-%d %H:%M:%S")
 
 
 def setup_logging() -> None:
@@ -64,7 +65,12 @@ def setup_logging() -> None:
     root_logger.setLevel(logging.INFO)
 
     # Configure uvicorn loggers to use the root logger's handlers
-    # for log_name in ["uvicorn", "uvicorn.error", "uvicorn.access"]:
-    #     log = logging.getLogger(log_name)
-    #     log.propagate = True
-    #     log.handlers = []
+    for log_name in ["uvicorn", "uvicorn.error", "uvicorn.access"]:
+        log = logging.getLogger(log_name)
+        log.propagate = True
+        log.handlers = []
+
+    # knowde以下のロガーがルートに伝播するようにする
+    knowde_logger = logging.getLogger("knowde")
+    knowde_logger.propagate = True
+    knowde_logger.handlers = []
