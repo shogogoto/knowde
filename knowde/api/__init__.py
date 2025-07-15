@@ -43,8 +43,6 @@ api.add_middleware(ErrorHandlingMiddleware)
 api.add_middleware(
     Neo4jTransactionMiddleware,
     # paths=["/api/v1"], 適用パス
-    exclude_paths=["/health"],
-    # logger=neo4j_logger(),
 )
 api.add_middleware(
     CORSMiddleware,
