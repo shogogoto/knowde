@@ -44,6 +44,8 @@ class Settings(BaseSettings):
     CONFIG_PATH: str = ".config/knowde"
 
     NEO4J_TRANSACTION_EXCLUDE_PATHS: str = "/health"  # カンマ区切り
+    LOGGING_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
+    LOGGING_FORMAT: Literal["json", "text"] = "json"
 
     @property
     def neo4j_transaction_exclude_paths(self) -> list[str]:  # noqa: D102

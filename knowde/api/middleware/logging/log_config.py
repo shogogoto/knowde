@@ -6,6 +6,8 @@ from typing import override
 
 from pythonjsonlogger.json import JsonFormatter
 
+from knowde.config.env import Settings
+
 from .context import request_id_var, url_var, user_id_var
 
 
@@ -13,7 +15,7 @@ class Neo4jDeprecationWarningFilter(logging.Filter):
     """Filter out specific Neo4j deprecation warnings."""
 
     @override
-    def filter(self, record: logging.LogRecord) -> bool:
+    def filter(self, record):
         """Allow record if it's not the specific deprecation warning."""
         msg = record.getMessage()
         suppress_msg = "CALL subquery without a variable scope clause is now deprecated"
@@ -27,7 +29,7 @@ class ContextFilter(logging.Filter):
     """イベントIDやユーザーIDをログに含める."""
 
     @override
-    def filter(self, record) -> bool:
+    def filter(self, record):
         record.request_id = request_id_var.get() or "-"
         record.user_id = user_id_var.get() or "-"
         record.url = url_var.get() or "-"
@@ -58,7 +60,7 @@ def json_formatter() -> logging.Formatter:
     return JsonFormatter(format_str, datefmt=_datefmt)
 
 
-def line_formatter() -> logging.Formatter:
+def text_formatter() -> logging.Formatter:
     """Log formatter for line."""
     return logging.Formatter(
         (
@@ -69,23 +71,18 @@ def line_formatter() -> logging.Formatter:
     )
 
 
+s = Settings()
+
+
 def setup_logging() -> None:
     """fastapiログ用."""
     root_logger = clear_logging()
     handler = logging.StreamHandler(sys.stdout)
     handler.addFilter(ContextFilter())
     handler.addFilter(Neo4jDeprecationWarningFilter())
-    handler.setFormatter(json_formatter())
+    if s.LOGGING_FORMAT == "json":
+        handler.setFormatter(json_formatter())
+    else:
+        handler.setFormatter(text_formatter())
     root_logger.addHandler(handler)
-    root_logger.setLevel(logging.INFO)
-
-    # Configure uvicorn loggers to use the root logger's handlers
-    for log_name in ["uvicorn", "uvicorn.error", "uvicorn.access"]:
-        log = logging.getLogger(log_name)
-        log.propagate = True
-        log.handlers = []
-
-    # knowde以下のロガーがルートに伝播するようにする
-    knowde_logger = logging.getLogger("knowde")
-    knowde_logger.propagate = True
-    knowde_logger.handlers = []
+    root_logger.setLevel(s.LOGGING_LEVEL)
