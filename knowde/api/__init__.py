@@ -14,7 +14,6 @@ from knowde.api.middleware.error_handling import ErrorHandlingMiddleware
 from knowde.api.middleware.logging import LoggingMiddleware
 from knowde.api.middleware.logging.log_config import setup_logging
 from knowde.api.middleware.transaction import Neo4jTransactionMiddleware
-from knowde.api.middleware.user_tracking import UserTrackingMiddleware
 from knowde.config.env import Settings
 from knowde.feature.entry.router import entry_router
 from knowde.feature.knowde.router import knowde_router
@@ -51,7 +50,6 @@ api.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-api.add_middleware(UserTrackingMiddleware)
 api.add_middleware(LoggingMiddleware)
 
 api.include_router(auth_router())

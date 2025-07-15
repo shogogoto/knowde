@@ -44,14 +44,29 @@ def clear_logging() -> logging.Logger:
     return root
 
 
-def log_formatter() -> logging.Formatter:
+_datefmt = "%Y-%m-%d %H:%M:%S"
+
+
+def json_formatter() -> logging.Formatter:
     """Log formatter for JSON."""
     # The fields to include in the JSON log.
     format_str = (
-        "%(asctime)s %(msecs)03d %(levelname)s %(name)s "
-        "%(request_id)s %(url)s %(user_id)s %(message)s"
+        "%(asctime)s %(msecs)03d %(levelname)s "
+        "%(request_id)s %(user_id)s %(url)s "
+        "%(name)s %(lineno) %(message)s"
     )
-    return JsonFormatter(format_str, datefmt="%Y-%m-%d %H:%M:%S")
+    return JsonFormatter(format_str, datefmt=_datefmt)
+
+
+def line_formatter() -> logging.Formatter:
+    """Log formatter for line."""
+    return logging.Formatter(
+        (
+            "%(asctime)s.%(msecs)03d [%(levelname)-8s] "
+            "(%(request_id)s %(user_id)s %(url)s) %(name)s %(lineno)s: %(message)s"
+        ),
+        datefmt=_datefmt,
+    )
 
 
 def setup_logging() -> None:
@@ -60,7 +75,7 @@ def setup_logging() -> None:
     handler = logging.StreamHandler(sys.stdout)
     handler.addFilter(ContextFilter())
     handler.addFilter(Neo4jDeprecationWarningFilter())
-    handler.setFormatter(log_formatter())
+    handler.setFormatter(json_formatter())
     root_logger.addHandler(handler)
     root_logger.setLevel(logging.INFO)
 
