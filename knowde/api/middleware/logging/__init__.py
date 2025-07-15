@@ -11,7 +11,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from knowde.feature.user.backend import get_strategy
 from knowde.feature.user.manager import get_user_manager
 
-from .context import request_id_var, url_var, user_id_var
+from .context import method_var, request_id_var, url_var, user_id_var
 
 
 async def req2user_id(request: Request) -> str | None:  # noqa: D103
@@ -37,9 +37,11 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         # Set request_id to context
         req_id = str(uuid.uuid4())
         url_path = request.url.path
+        method = request.method
         user_id = await req2user_id(request)
         rid_token = request_id_var.set(req_id)
         url_token = url_var.set(url_path)
+        method_token = method_var.set(method)
         user_id_token = user_id_var.set(user_id)
         try:
             start_time = time.time()
@@ -58,4 +60,5 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         finally:
             request_id_var.reset(rid_token)
             url_var.reset(url_token)
+            method_var.reset(method_token)
             user_id_var.reset(user_id_token)

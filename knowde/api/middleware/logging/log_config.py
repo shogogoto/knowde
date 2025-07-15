@@ -8,7 +8,7 @@ from pythonjsonlogger.json import JsonFormatter
 
 from knowde.config.env import Settings
 
-from .context import request_id_var, url_var, user_id_var
+from .context import method_var, request_id_var, url_var, user_id_var
 
 
 class Neo4jDeprecationWarningFilter(logging.Filter):
@@ -33,6 +33,7 @@ class ContextFilter(logging.Filter):
         record.request_id = request_id_var.get() or "-"
         record.user_id = user_id_var.get() or "-"
         record.url = url_var.get() or "-"
+        record.method = method_var.get() or "-"
         return True
 
 
@@ -54,7 +55,7 @@ def json_formatter() -> logging.Formatter:
     # The fields to include in the JSON log.
     format_str = (
         "%(asctime)s %(msecs)03d %(levelname)s "
-        "%(request_id)s %(user_id)s %(url)s "
+        "%(request_id)s %(user_id)s %(method)s %(url)s "
         "%(name)s %(lineno) %(message)s"
     )
     return JsonFormatter(format_str, datefmt=_datefmt)
@@ -65,7 +66,8 @@ def text_formatter() -> logging.Formatter:
     return logging.Formatter(
         (
             "%(asctime)s.%(msecs)03d [%(levelname)-8s] "
-            "(%(request_id)s %(user_id)s %(url)s) %(name)s %(lineno)s: %(message)s"
+            "(%(request_id)s %(user_id)s %(method)s %(url)s) "
+            "%(name)s %(lineno)s: %(message)s"
         ),
         datefmt=_datefmt,
     )
