@@ -14,6 +14,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 TIMEOUT: Final = 3.0
 
 
+def _split_comma(s: str) -> list[str]:
+    return [o.strip() for o in s.split(",") if o.strip()]
+
+
 class Settings(BaseSettings):
     """環境変数."""
 
@@ -37,8 +41,15 @@ class Settings(BaseSettings):
     COOKIE_DOMAIN: str | None = None
     KN_REDIRECT_URL: str | None = None
     FRONTEND_URL: str | None = None
-
     CONFIG_PATH: str = ".config/knowde"
+
+    NEO4J_TRANSACTION_EXCLUDE_PATHS: str = "/health"  # カンマ区切り
+    LOGGING_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
+    LOGGING_FORMAT: Literal["json", "text"] = "json"
+
+    @property
+    def neo4j_transaction_exclude_paths(self) -> list[str]:  # noqa: D102
+        return _split_comma(self.NEO4J_TRANSACTION_EXCLUDE_PATHS)
 
     @property
     def config_file(self) -> Path:  # noqa: D102
@@ -52,8 +63,7 @@ class Settings(BaseSettings):
 
     @property
     def allow_origins(self) -> list[str]:  # noqa: D102
-        s = self.ALLOW_ORIGINS
-        return [o.strip() for o in s.split(",") if o.strip()]
+        return _split_comma(self.ALLOW_ORIGINS)
 
     def setup_db(self) -> None:
         """DB設定."""

@@ -5,78 +5,43 @@ from __future__ import annotations
 import logging
 from typing import override
 
-from fastapi import FastAPI, Request, Response, status
-from neomodel import db
-from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from fastapi import status
+from neomodel.async_.core import AsyncDatabase
+from starlette.middleware.base import BaseHTTPMiddleware
+
+from knowde.config.env import Settings
 
 
 class Neo4jTransactionMiddleware(BaseHTTPMiddleware):
     """API失敗時にロールバック."""
 
     @override
-    def __init__(
-        self,
-        app: FastAPI,
-        paths: list[str] | None = None,  # トランザクション管理を適用するパスのリスト
-        exclude_paths: list[str] | None = None,  # 除外するパスのリスト
-        logger: logging.Logger | None = None,
-    ) -> None:
-        super().__init__(app)
-        self.paths = paths or []
-        self.exclude_paths = exclude_paths or []
-        self.logger = logger or logging.getLogger(__name__)
-
-    @override
-    async def dispatch(
-        self,
-        request: Request,
-        call_next: RequestResponseEndpoint,
-    ) -> Response:
-        # パスが除外リストに含まれている場合はトランザクション管理をスキップ
+    async def dispatch(self, request, call_next):
         if self._should_skip(request.url.path):
             return await call_next(request)
-
-        # トランザクション開始
-        db.begin()
+        db = AsyncDatabase()
+        await db.begin()
         try:
-            # リクエスト処理
             res = await call_next(request)
             if status.HTTP_200_OK <= res.status_code < status.HTTP_300_MULTIPLE_CHOICES:
-                db.commit()
+                await db.commit()
             else:
-                db.rollback()
-                self.logger.warning(
+                await db.rollback()
+                logger = logging.getLogger("neo4j_transaction")
+                logger.warning(
                     "Transaction rolled back due to response status %s",
                     res.status_code,
                 )
         except Exception:
-            db.rollback()
+            await db.rollback()
             logging.exception("Transaction rolled back due to error")  # noqa: LOG015
             raise
         return res
 
-    def _should_skip(self, path: str) -> bool:
-        """トランザクション管理をスキップすべきかどうかを判定."""
-        # 除外パスに含まれている場合はスキップ
-        if any(path.startswith(exclude_path) for exclude_path in self.exclude_paths):
-            return True
-        # パスが指定されている場合、該当するパスのみ処理
-        return bool(
-            self.paths and not any(path.startswith(route) for route in self.paths),
+    @classmethod
+    def _should_skip(cls, path: str) -> bool:
+        s = Settings()
+        return any(
+            path.startswith(exclude_path)
+            for exclude_path in s.neo4j_transaction_exclude_paths
         )
-
-
-def neo4j_logger() -> logging.Logger:
-    """カスタムロガーの設定例."""
-    logger = logging.getLogger("neo4j_transaction")
-    logger.setLevel(logging.INFO)
-    handler = logging.StreamHandler()
-    handler.setFormatter(
-        logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"),
-    )
-    logger.addHandler(handler)
-    return logger
-
-
-def set_error_handlers(app: FastAPI):
-    """独自のエラーハンドリング."""

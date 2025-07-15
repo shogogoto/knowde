@@ -1434,14 +1434,14 @@ pyarrow = ["pyarrow (>=1.0.0)"]
 
 [[package]]
 name = "neomodel"
-version = "5.4.4"
+version = "5.5.0"
 description = "An object mapper for the neo4j graph database."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "neomodel-5.4.4-py3-none-any.whl", hash = "sha256:de1474675b091b9f718e0554192e25696fefb1949dea6a1b78d372f14946f0a8"},
-    {file = "neomodel-5.4.4.tar.gz", hash = "sha256:ce2e017d8f242af4df7148d862eba3bb662e614c1f88a1295f6fd858cbd860ff"},
+    {file = "neomodel-5.5.0-py3-none-any.whl", hash = "sha256:47eadac6767c1db826bd3a3674e56e203c70142a70907239a56ee141a1bd42b6"},
+    {file = "neomodel-5.5.0.tar.gz", hash = "sha256:b324b9ff46140d1efcff488584a87ddf3d9f2e991cb0b1e5810d6223a3f5b09e"},
 ]
 
 [package.dependencies]
@@ -2152,6 +2152,21 @@ files = [
 
 [package.extras]
 cli = ["click (>=5.0)"]
+
+[[package]]
+name = "python-json-logger"
+version = "3.3.0"
+description = "JSON Log Formatter for the Python Logging Package"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "python_json_logger-3.3.0-py3-none-any.whl", hash = "sha256:dd980fae8cffb24c13caf6e158d3d61c0d6d22342f932cb6e9deedab3d35eec7"},
+    {file = "python_json_logger-3.3.0.tar.gz", hash = "sha256:12b7e74b17775e7d565129296105bbe3910842d9d0eb083fc83a6a617aa8df84"},
+]
+
+[package.extras]
+dev = ["backports.zoneinfo ; python_version < \"3.9\"", "black", "build", "freezegun", "mdx_truly_sane_lists", "mike", "mkdocs", "mkdocs-awesome-pages-plugin", "mkdocs-gen-files", "mkdocs-literate-nav", "mkdocs-material (>=8.5)", "mkdocstrings[python]", "msgspec ; implementation_name != \"pypy\"", "mypy", "orjson ; implementation_name != \"pypy\"", "pylint", "pytest", "tzdata", "validate-pyproject[all]"]
 
 [[package]]
 name = "python-multipart"
@@ -3220,4 +3235,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">3.11.0,<3.14"
-content-hash = "ef63832e06bd7eac01e034fbf4eabe2853b1a3d95c3463c290a0f10900ac4ee2"
+content-hash = "9255a37d58346bf2f0e61f1a460412db2ce5c9efd8173ee0ce3d8b975c983eb1"
