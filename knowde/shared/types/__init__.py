@@ -70,7 +70,8 @@ NXGraph = Annotated[
     nx.DiGraph,
     PlainValidator(_validate_graph, json_schema_input_type=dict),
     PlainSerializer(
-        lambda x: GraphData.model_validate(nx.node_link_data(x, edges="edges")),
+        lambda x: nx.node_link_data(x, edges="edges"),
+        # lambda x: GraphData.model_validate(nx.node_link_data(x, edges="edges")),
         return_type=GraphData,
     ),
 ]
