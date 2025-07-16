@@ -8,6 +8,7 @@ from typing import Annotated
 from fastapi import APIRouter, Query
 from neomodel import Q
 
+from knowde.feature.user.errors import UserNotFoundError
 from knowde.feature.user.schema import UserReadPublic
 from knowde.shared.user.label import LUser
 from knowde.shared.user.router_util import TrackUser
@@ -34,14 +35,18 @@ async def search_user(
 
 
 @_r.get("/profile/{username}")
-async def get_profile(
-    username: Annotated[str, Query()] = "",
-    user: TrackUser = None,
-) -> UserReadPublic:
+async def user_profile(username: str, user: TrackUser = None) -> UserReadPublic:
     """公開ユーザー情報."""
-    q = Q()
-    if id:
-        q |= Q(uid__istartswith=id.replace("-", "")) | Q(username__icontains=id)
+    q = Q(uid=username.replace("-", "")) | Q(username=username)
+    lbs = await LUser.nodes.filter(q)
+    if len(lbs) == 0:
+        msg = f"user not found, {username}"
+        raise UserNotFoundError(msg)
+    if len(lbs) > 1:
+        msg = f"user not unique, {username}"
+        raise UserNotFoundError(msg)
+    lb = lbs[0]
+    return UserReadPublic.model_validate(lb.__properties__)
 
 
 def public_user_router() -> APIRouter:  # noqa: D103

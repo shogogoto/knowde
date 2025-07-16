@@ -2,12 +2,13 @@
 
 from uuid import UUID
 
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from fastapi.testclient import TestClient
 
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.user.routers import user_router
 from knowde.shared.user.label import LUser
+from knowde.shared.user.schema import UserReadPublic
 
 
 @async_fixture()
@@ -71,3 +72,15 @@ async def test_search_uuid_hyphenless_or_not(client: TestClient):
 #
 #     res = client.get("/user/search/", params={"id": "aa"})
 #     assert len(res.json()) == 1
+
+
+@mark_async_test()
+async def test_search_username_or_id(client: TestClient):
+    """ユーザーをusername または id で検索できる."""
+    await LUser(uid="a0", email="u1@example.com", username="aaa").save()
+    res = client.get("/user/profile/a")
+    assert res.status_code == status.HTTP_404_NOT_FOUND
+    res = client.get("/user/profile/aaa")
+    assert res.is_success
+    u = UserReadPublic.model_validate(res.json())
+    assert u.username == "aaa"
