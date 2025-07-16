@@ -42,6 +42,6 @@ class LUser(AsyncStructuredNode):
     display_name = StringProperty(default=None, max_length=LEN_DISPLAY_NAME)
     profile = StringProperty(default=None, max_length=LEN_PROFILE)
     avatar_url = StringProperty(default=None)
-
+    username = StringProperty(default=None, pattern=r"^[^-]*$")
     # oauth
     accounts = RelationshipTo(LAccount, "OAUTH")

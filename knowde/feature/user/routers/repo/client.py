@@ -76,8 +76,14 @@ class AuthPatch(BaseModel):
         email: str | None = None,
         password: str | None = None,
         display_name: str | None = None,
+        user_id: str | None = None,
     ) -> httpx.Response:
-        d = {"email": email, "password": password, "display_name": display_name}
+        d = {
+            "email": email,
+            "password": password,
+            "display_name": display_name,
+            "id": user_id,
+        }
         d = {k: v for k, v in d.items() if v is not None}
         return self.client(f"{PREFIX_USER}/me", headers=auth_header(), json=d)
 
