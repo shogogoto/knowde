@@ -13,11 +13,14 @@ class UserCreate(schemas.BaseUserCreate):
     """作成."""
 
 
-class UserRead(CommonSchema, schemas.BaseUser[str]):
-    """読み取り."""
+class UserReadPublic(CommonSchema):
+    """公開ユーザー情報."""
 
-    # CommonSchemaにまとめたかったが、BaseUserのoverrideに効かないくさい
     created: datetime
+
+
+class UserRead(UserReadPublic, schemas.BaseUser[str]):
+    """読み取り."""
 
     @classmethod
     def from_label(cls, lb: LUser) -> Self:  # noqa: D102
@@ -31,6 +34,7 @@ class UserRead(CommonSchema, schemas.BaseUser[str]):
             display_name=lb.display_name,
             profile=lb.profile,
             avatar_url=lb.avatar_url,
+            username=lb.username,
         )
 
 

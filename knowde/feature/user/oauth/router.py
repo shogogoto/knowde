@@ -7,7 +7,7 @@ from httpx_oauth.clients.google import GoogleOAuth2
 
 from knowde.config.env import Settings
 from knowde.feature.user.backend import bearer_backend
-from knowde.shared.user import auth_component
+from knowde.shared.user.router_util import auth_component
 
 from . import google_cookie_backend
 

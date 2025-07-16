@@ -14,7 +14,7 @@ from neomodel import (
     UniqueIdProperty,
 )
 
-from knowde.feature.user import LEN_DISPLAY_NAME, LEN_PROFILE
+from knowde.feature.user import LEN_DISPLAY_NAME, LEN_PROFILE, MAX_LEN_USERNAME
 from knowde.feature.user.repo.label import LAccount
 
 
@@ -42,6 +42,11 @@ class LUser(AsyncStructuredNode):
     display_name = StringProperty(default=None, max_length=LEN_DISPLAY_NAME)
     profile = StringProperty(default=None, max_length=LEN_PROFILE)
     avatar_url = StringProperty(default=None)
-    username = StringProperty(default=None, pattern=r"^[^-]*$")
+    username = StringProperty(
+        default=None,
+        pattern=r"^[^-]*$",
+        unique_index=True,
+        max_lenght=MAX_LEN_USERNAME,
+    )
     # oauth
     accounts = RelationshipTo(LAccount, "OAUTH")

@@ -9,7 +9,7 @@ from knowde.feature.knowde import KnowdeDetail
 from knowde.feature.knowde.repo import search_knowde
 from knowde.feature.knowde.repo.cypher import WherePhrase
 from knowde.feature.knowde.repo.detail import chains_knowde
-from knowde.shared.user import TrackUser
+from knowde.shared.user.router_util import TrackUser
 
 from .params import (
     KnowdeSearchResult,
