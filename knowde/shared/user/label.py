@@ -14,8 +14,9 @@ from neomodel import (
     UniqueIdProperty,
 )
 
-from knowde.feature.user import LEN_DISPLAY_NAME, LEN_PROFILE, MAX_LEN_USERNAME
 from knowde.feature.user.repo.label import LAccount
+
+from . import LEN_DISPLAY_NAME, LEN_PROFILE, MAX_LEN_USERNAME
 
 
 class LowerEmailProperty(EmailProperty):  # noqa: D101

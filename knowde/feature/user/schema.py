@@ -1,22 +1,15 @@
 """認可の種類."""
 
-from datetime import datetime
 from typing import Self
 
 from fastapi_users import schemas
 
-from knowde.feature.user import CommonSchema
 from knowde.shared.user.label import LUser
+from knowde.shared.user.schema import CommonSchema, UserReadPublic
 
 
 class UserCreate(schemas.BaseUserCreate):
     """作成."""
-
-
-class UserReadPublic(CommonSchema):
-    """公開ユーザー情報."""
-
-    created: datetime
 
 
 class UserRead(UserReadPublic, schemas.BaseUser[str]):
