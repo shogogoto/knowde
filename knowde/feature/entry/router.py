@@ -11,7 +11,7 @@ from knowde.feature.entry import NameSpace
 from knowde.feature.entry.category.folder.repo import fetch_namespace
 from knowde.feature.entry.namespace import ResourceMetas, sync_namespace
 from knowde.feature.user.domain import User
-from knowde.shared.user import auth_component
+from knowde.shared.user.router_util import auth_component
 
 router = APIRouter(tags=["entry"])
 

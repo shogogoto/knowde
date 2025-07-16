@@ -17,7 +17,7 @@ from neomodel import (
     UniqueIdProperty,
 )
 
-from knowde.shared.labels.user import LUser  # noqa: F401
+from knowde.shared.user.label import LUser  # noqa: F401
 
 from .mapper import Entry, MFolder, MResource
 

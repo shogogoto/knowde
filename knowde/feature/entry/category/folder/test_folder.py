@@ -6,7 +6,7 @@ import pytest
 
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.entry.errors import EntryAlreadyExistsError, EntryNotFoundError
-from knowde.shared.labels.user import LUser
+from knowde.shared.user.label import LUser
 
 from .repo import (
     create_folder,

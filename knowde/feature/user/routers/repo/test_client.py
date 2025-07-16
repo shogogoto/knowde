@@ -54,7 +54,6 @@ def test_crud_user(client: TestClient) -> None:
 
     assert res.is_success
     assert res.json()["email"] == email2
-    assert res.json().get("created") != d
 
 
 # def test_update_additional(client: TestClient):

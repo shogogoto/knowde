@@ -12,7 +12,7 @@ from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.knowde import KnowdeDetail
 from knowde.feature.knowde.repo import save_text
 from knowde.feature.stats.nxdb import LSentence, LTerm
-from knowde.shared.labels.user import LUser
+from knowde.shared.user.label import LUser
 
 
 @async_fixture()

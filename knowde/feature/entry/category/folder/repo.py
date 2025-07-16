@@ -15,8 +15,8 @@ from neomodel.async_.core import AsyncDatabase
 from knowde.feature.entry import NameSpace
 from knowde.feature.entry.errors import EntryAlreadyExistsError, EntryNotFoundError
 from knowde.feature.entry.label import LEntry, LFolder, LResource
-from knowde.shared.labels.user import LUser
 from knowde.shared.types import to_uuid
+from knowde.shared.user.label import LUser
 
 if TYPE_CHECKING:
     from datetime import date

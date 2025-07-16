@@ -41,6 +41,10 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     async def on_after_request_verify(self, user, token, request=None):
         logger.info("User has requested email verification. %s", user.id)
 
+    @override
+    async def on_after_update(self, user, update_dict, request=None):
+        logger.info("User has been updated. %s", update_dict)
+
 
 def get_user_manager() -> UserManager:
     """For fastapi-users."""
