@@ -7,7 +7,7 @@ from fastapi import APIRouter
 from knowde.feature.user import PREFIX_USER
 from knowde.feature.user.backend import bearer_backend, cookie_backend
 from knowde.feature.user.oauth.router import google_router
-from knowde.feature.user.routers.public import public_user_router
+from knowde.feature.user.public import public_user_router
 from knowde.feature.user.schema import UserCreate, UserRead, UserUpdate
 from knowde.shared.user.router_util import auth_component
 
