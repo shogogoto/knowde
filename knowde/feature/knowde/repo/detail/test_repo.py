@@ -9,9 +9,9 @@ from knowde.api import root_router
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.knowde.repo import save_text
 from knowde.feature.stats.nxdb import LSentence
-from knowde.shared.labels.user import LUser
 from knowde.shared.nxutil import to_leaves, to_roots
 from knowde.shared.nxutil.edge_type import EdgeType
+from knowde.shared.user.label import LUser
 
 from . import chains_knowde
 

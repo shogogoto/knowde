@@ -15,9 +15,9 @@ from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.stats.nxdb import LSentence
 from knowde.feature.stats.nxdb.restore import restore_sysnet
 from knowde.feature.stats.nxdb.save import sn2db
-from knowde.shared.labels.user import LUser
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import UUIDy, to_uuid
+from knowde.shared.user.label import LUser
 
 from .clause import OrderBy, Paging, WherePhrase
 

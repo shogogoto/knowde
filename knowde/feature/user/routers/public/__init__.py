@@ -9,7 +9,7 @@ from fastapi import APIRouter, Query
 from neomodel import Q
 
 from knowde.feature.user.schema import UserRead, UserReadPublic
-from knowde.shared.labels.user import LUser
+from knowde.shared.user.label import LUser
 from knowde.shared.user.router_util import TrackUser
 
 _r = APIRouter(tags=["public_user"])

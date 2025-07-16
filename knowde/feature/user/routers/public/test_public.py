@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.user.routers import user_router
-from knowde.shared.labels.user import LUser
+from knowde.shared.user.label import LUser
 
 
 @async_fixture()

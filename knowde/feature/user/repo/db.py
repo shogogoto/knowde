@@ -11,8 +11,8 @@ from fastapi_users.db import (
 
 from knowde.feature.user.domain import Account, User
 from knowde.feature.user.repo.label import LAccount
-from knowde.shared.labels.user import LUser
 from knowde.shared.types.mapper import label2model
+from knowde.shared.user.label import LUser
 
 
 class AccountDB(BaseUserDatabase[User, UUID]):
