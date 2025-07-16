@@ -9,6 +9,7 @@ from fastapi import APIRouter, Query
 
 from knowde.feature.user.schema import UserRead
 from knowde.shared.labels.user import LUser
+from knowde.shared.user import TrackUser
 
 _r = APIRouter()
 
@@ -17,6 +18,7 @@ _r = APIRouter()
 async def search_user(
     name: Annotated[str | None, Query()] = "",
     id: Annotated[str | None, Query()] = "",  # noqa: A002
+    user: TrackUser = None,
 ) -> list[UserRead]:
     """認証なしユーザー検索."""
     users = await LUser.nodes.filter(
