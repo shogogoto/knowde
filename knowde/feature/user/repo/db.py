@@ -67,9 +67,9 @@ class AccountDB(BaseUserDatabase[User, UUID]):
     # OAUTH
     @override
     async def add_oauth_account(self, user, create_dict):
-        la = await LAccount(create_dict).save()
-        lu = await LUser.nodes.get(uid=user.id.hex)
-        await lu.accounts.connect(la)
+        la = await LAccount(**create_dict).save()
+        lu: LUser = await LUser.nodes.get(uid=user.id.hex)
+        await la.user.connect(lu)
         return user
 
     @override

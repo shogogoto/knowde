@@ -9,7 +9,6 @@ from neomodel import (
     BooleanProperty,
     DateTimeNeo4jFormatProperty,
     EmailProperty,
-    RelationshipTo,
     StringProperty,
     UniqueIdProperty,
 )
@@ -47,5 +46,3 @@ class LUser(AsyncStructuredNode):
         unique_index=True,
         max_lenght=MAX_LEN_USERNAME,
     )
-    # oauth
-    accounts = RelationshipTo("LAccount", "OAUTH")

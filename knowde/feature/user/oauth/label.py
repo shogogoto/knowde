@@ -11,7 +11,7 @@ from neomodel import (
     StringProperty,
 )
 
-from knowde.shared.user.label import LUser  # noqa: F401
+from knowde.shared.user.label import LUser
 
 
 class LAccount(AsyncStructuredNode):
@@ -25,4 +25,4 @@ class LAccount(AsyncStructuredNode):
     account_id = StringProperty()
     account_email = EmailProperty()
 
-    user = AsyncRelationshipFrom("LUser", "OAUTH", cardinality=AsyncZeroOrOne)
+    user = AsyncRelationshipFrom(LUser, "OAUTH", cardinality=AsyncZeroOrOne)
