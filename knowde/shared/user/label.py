@@ -14,8 +14,6 @@ from neomodel import (
     UniqueIdProperty,
 )
 
-from knowde.feature.user.repo.label import LAccount
-
 from . import LEN_DISPLAY_NAME, LEN_PROFILE, MAX_LEN_USERNAME
 
 
@@ -50,4 +48,4 @@ class LUser(AsyncStructuredNode):
         max_lenght=MAX_LEN_USERNAME,
     )
     # oauth
-    accounts = RelationshipTo(LAccount, "OAUTH")
+    accounts = RelationshipTo("LAccount", "OAUTH")

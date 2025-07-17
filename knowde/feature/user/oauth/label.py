@@ -3,17 +3,19 @@
 from __future__ import annotations
 
 from neomodel import (
+    AsyncRelationshipFrom,
+    AsyncStructuredNode,
+    AsyncZeroOrOne,
     EmailProperty,
     IntegerProperty,
-    RelationshipFrom,
     StringProperty,
-    StructuredNode,
-    ZeroOrOne,
 )
 
+from knowde.shared.user.label import LUser  # noqa: F401
 
-class LAccount(StructuredNode):
-    """Neo4j label."""
+
+class LAccount(AsyncStructuredNode):
+    """for fastapi-users Single Sign On."""
 
     __label__ = "Account"
     oauth_name = StringProperty()
@@ -23,4 +25,4 @@ class LAccount(StructuredNode):
     account_id = StringProperty()
     account_email = EmailProperty()
 
-    user = RelationshipFrom("LUser", "OAUTH", cardinality=ZeroOrOne)
+    user = AsyncRelationshipFrom("LUser", "OAUTH", cardinality=AsyncZeroOrOne)
