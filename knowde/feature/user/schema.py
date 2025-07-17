@@ -1,6 +1,7 @@
 """認可の種類."""
 
 from typing import Self
+from uuid import UUID
 
 from fastapi_users import schemas
 
@@ -12,7 +13,7 @@ class UserCreate(schemas.BaseUserCreate):
     """作成."""
 
 
-class UserRead(UserReadPublic, schemas.BaseUser[str]):
+class UserRead(UserReadPublic, schemas.BaseUser[UUID]):
     """読み取り."""
 
     @classmethod

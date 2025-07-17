@@ -1,8 +1,12 @@
 """shared user schema."""
 
 from datetime import datetime
+from typing import Annotated
+from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, BeforeValidator, Field
+
+from knowde.shared.types import to_uuid
 
 from . import LEN_DISPLAY_NAME, LEN_PROFILE, MAX_LEN_USERNAME
 
@@ -21,4 +25,5 @@ class CommonSchema(BaseModel):  # noqa: D101
 class UserReadPublic(CommonSchema):
     """公開ユーザー情報."""
 
+    id: Annotated[UUID, BeforeValidator(to_uuid)] = Field(alias="uid")
     created: datetime
