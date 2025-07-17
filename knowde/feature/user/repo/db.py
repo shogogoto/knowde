@@ -51,7 +51,7 @@ class AccountDB(BaseUserDatabase[User, UUID]):
 
     @override
     async def update(self, user, update_dict):
-        lb = await LUser.nodes.get(uid=user.id)
+        lb = await LUser.nodes.get(uid=user.id.hex)
         for k, v in update_dict.items():
             if v is None:
                 continue

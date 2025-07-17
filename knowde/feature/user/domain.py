@@ -19,7 +19,7 @@ from knowde.shared.util import neo4j_dt_validator
 class User(CommonSchema, BaseOAuthAccountMixin):
     """UserProtocol[UUID]を満たす."""
 
-    uid: UUID | None = None
+    uid: UUID
     email: EmailStr
     hashed_password: str
     is_active: bool
@@ -28,13 +28,8 @@ class User(CommonSchema, BaseOAuthAccountMixin):
     created: Annotated[datetime, BeforeValidator(neo4j_dt_validator)]
 
     @property
-    def id(self) -> str:  # noqa: D102
-        if self.uid is None:
-            msg = "uid is None"
-            raise ValueError(msg)
-        if isinstance(self.uid, UUID):
-            return self.uid.hex
-        return str(self.uid)
+    def id(self) -> UUID:  # noqa: D102
+        return self.uid
 
 
 class Account(BaseOAuthAccount):

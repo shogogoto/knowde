@@ -25,7 +25,7 @@ async def req2user_id(request: Request) -> str | None:  # noqa: D103
     if jwt:
         user = await get_strategy().read_token(jwt, get_user_manager())
         if user:
-            return user.id
+            return user.id.hex
     return None
 
 
@@ -34,7 +34,6 @@ class LoggingMiddleware(BaseHTTPMiddleware):
 
     @override
     async def dispatch(self, request, call_next):
-        # Set request_id to context
         req_id = str(uuid.uuid4())
         url_path = request.url.path
         method = request.method
