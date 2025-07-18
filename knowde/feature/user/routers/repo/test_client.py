@@ -56,6 +56,14 @@ def test_crud_user(client: TestClient) -> None:
     assert res.json()["email"] == email2
 
 
+def test_update_duplicated_id():
+    """既存のidに変更したときエラー."""
+
+
+def test_update_duplicated_email():
+    """既存のemailに変更したときエラー."""
+
+
 # def test_update_additional(client: TestClient):
 #     """登録後にユーザー属性を更新する."""
 #     email = f"user-{uuid4()}@example.com"

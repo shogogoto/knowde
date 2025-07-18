@@ -29,6 +29,9 @@ async def req2user_id(request: Request) -> str | None:  # noqa: D103
     return None
 
 
+logger = logging.getLogger(__name__)
+
+
 class LoggingMiddleware(BaseHTTPMiddleware):
     """ログ用."""
 
@@ -53,7 +56,6 @@ class LoggingMiddleware(BaseHTTPMiddleware):
             if user_id:
                 response.headers["X-User-Id"] = user_id
 
-            logger = logging.getLogger(__name__)
             logger.info("Success in %.4fs", process_time)
             return response
         finally:
