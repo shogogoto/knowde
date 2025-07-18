@@ -1,6 +1,7 @@
 """test logging."""
 
 import pytest
+from fastapi import status
 from fastapi.testclient import TestClient
 
 from knowde.api import root_router
@@ -53,3 +54,26 @@ def test_api_call_logging(caplog: pytest.LogCaptureFixture):
         headers=auth,
     )
     assert "x-user-id" in res.headers
+
+
+@pytest.mark.enable_app_logging
+def test_logging_exception(caplog: pytest.LogCaptureFixture):
+    """例外発生をログに書き出す."""
+    caplog.set_level("INFO")
+    handler = caplog.handler
+    handler.addFilter(ContextFilter())
+    # handler.setFormatter(json_formatter())
+    handler.setFormatter(text_formatter())
+    r = root_router()
+
+    error_msg = "test for logging"
+
+    @r.get("/test/error")
+    def _error() -> None:
+        raise Exception(error_msg)  # noqa: TRY002
+
+    client = TestClient(r)
+    res = client.get("/test/error")
+    assert res.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+    assert error_msg in res.text
+    assert error_msg in caplog.text

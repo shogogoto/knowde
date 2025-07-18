@@ -5,18 +5,39 @@ from __future__ import annotations
 from typing import Any, override
 
 from neomodel import (
+    AsyncRelationshipFrom,
+    AsyncRelationshipManager,
+    AsyncRelationshipTo,
     AsyncStructuredNode,
+    AsyncZeroOrOne,
     BooleanProperty,
     DateTimeNeo4jFormatProperty,
     EmailProperty,
-    RelationshipTo,
+    IntegerProperty,
     StringProperty,
     UniqueIdProperty,
 )
 
-from knowde.feature.user.repo.label import LAccount
-
 from . import LEN_DISPLAY_NAME, LEN_PROFILE, MAX_LEN_USERNAME
+
+
+# cyclic import を避けるためにここに置かざるを得ず
+class LAccount(AsyncStructuredNode):
+    """for fastapi-users Single Sign On."""
+
+    __label__ = "Account"
+    oauth_name = StringProperty()
+    access_token = StringProperty()
+    expires_at = IntegerProperty()
+    refresh_token = StringProperty()
+    account_id = StringProperty()
+    account_email = EmailProperty()
+
+    user: AsyncRelationshipManager = AsyncRelationshipFrom(
+        "LUser",
+        "OAUTH",
+        cardinality=AsyncZeroOrOne,
+    )
 
 
 class LowerEmailProperty(EmailProperty):  # noqa: D101
@@ -49,5 +70,4 @@ class LUser(AsyncStructuredNode):
         unique_index=True,
         max_lenght=MAX_LEN_USERNAME,
     )
-    # oauth
-    accounts = RelationshipTo(LAccount, "OAUTH")
+    accounts: AsyncRelationshipManager = AsyncRelationshipTo(LAccount, "OAUTH")
