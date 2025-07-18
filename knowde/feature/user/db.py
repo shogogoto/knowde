@@ -74,4 +74,10 @@ class AccountDB(BaseUserDatabase[User, UUID]):
 
     @override
     async def update_oauth_account(self, user, oauth_account, update_dict):
+        la = LAccount.nodes.get(account_id=oauth_account.account_id)
+        for k, v in update_dict.items():
+            if v is None:
+                continue
+            setattr(la, k, v)
+        la.save()
         return user

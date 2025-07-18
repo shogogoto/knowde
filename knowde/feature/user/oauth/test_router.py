@@ -79,6 +79,10 @@ async def test_google_callback(
     assert len(created_user.oauth_accounts) == 1
     assert created_user.oauth_accounts[0].account_id == f"people/{account_id}"
 
-    # res = client.get(f"/google/callback?state={state}&code=test_code")
-    # print(res.text)
-    # raise AssertionError
+    # 2度目でもいける
+    res = client.get(f"/google/callback?state={state}&code=test_code")
+    created_user = await user_repo.get_by_email(account_email)
+    assert isinstance(created_user, User)
+    assert created_user.email == account_email
+    assert len(created_user.oauth_accounts) == 1
+    assert created_user.oauth_accounts[0].account_id == f"people/{account_id}"
