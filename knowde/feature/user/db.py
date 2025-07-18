@@ -36,7 +36,7 @@ class AccountDB(BaseUserDatabase[User, UUID]):
 
     @override
     async def get_by_oauth_account(self, oauth, account_id):
-        la: LAccount = await LAccount.nodes.get_or_none(account_id=account_id)
+        la: LAccount | None = await LAccount.nodes.get_or_none(account_id=account_id)
         if la is None:
             return None
         lu: LUser = await la.user.single()
@@ -70,7 +70,6 @@ class AccountDB(BaseUserDatabase[User, UUID]):
         la = await LAccount(**create_dict).save()
         lu: LUser = await LUser.nodes.get(uid=user.id.hex)
         await lu.accounts.connect(la)
-        # await la.user.connect(lu)
         return user
 
     @override

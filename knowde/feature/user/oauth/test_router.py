@@ -10,8 +10,8 @@ from httpx import Response
 
 from knowde.api import root_router
 from knowde.conftest import mark_async_test
+from knowde.feature.user.db import AccountDB
 from knowde.feature.user.domain import User
-from knowde.feature.user.repo.db import AccountDB
 
 if TYPE_CHECKING:
     from pytest_mock import MockerFixture
