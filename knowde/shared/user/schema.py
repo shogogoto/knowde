@@ -17,8 +17,10 @@ class CommonSchema(BaseModel):  # noqa: D101
     avatar_url: str | None = None
     username: str | None = Field(
         default=None,
-        pattern=r"^[^-]*$",
+        pattern=r"^[a-zA-Z0-9_-]+$",
         max_length=MAX_LEN_USERNAME,
+        title="ユーザー名",
+        description="半角英数字とハイフン、アンダースコアのみが使用できます。",
     )
 
 

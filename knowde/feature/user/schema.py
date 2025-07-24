@@ -4,12 +4,25 @@ from typing import Self
 from uuid import UUID
 
 from fastapi_users import schemas
+from pydantic import BaseModel, Field
 
 from knowde.shared.user.label import LUser
 from knowde.shared.user.schema import CommonSchema, UserReadPublic
 
 
-class UserCreate(schemas.BaseUserCreate):
+class SecurityFields(BaseModel):
+    """パスワードなどの共通設定."""
+
+    password: str = Field(
+        default=...,
+        min_length=8,
+        max_length=100,
+        title="パスワード",
+        description="8文字以上100文字以内で入力してください",
+    )
+
+
+class UserCreate(SecurityFields, schemas.BaseUserCreate):
     """作成."""
 
 
@@ -32,5 +45,5 @@ class UserRead(UserReadPublic, schemas.BaseUser[UUID]):
         )
 
 
-class UserUpdate(CommonSchema, schemas.BaseUserUpdate):
+class UserUpdate(SecurityFields, CommonSchema, schemas.BaseUserUpdate):
     """更新."""
