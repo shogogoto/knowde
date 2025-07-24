@@ -17,7 +17,6 @@ def test_update_user(caplog: pytest.LogCaptureFixture):
     handler.setFormatter(text_formatter())
 
     client = TestClient(root_router())
-
     email = "log@test.com"
     pwd = "password"  # noqa: S105
     res = client.post("/auth/register", json={"email": email, "password": pwd})

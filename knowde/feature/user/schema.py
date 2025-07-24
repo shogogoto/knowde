@@ -5,6 +5,7 @@ from uuid import UUID
 
 from fastapi_users import schemas
 from pydantic import BaseModel, Field
+from pydantic_partial import create_partial_model
 
 from knowde.shared.user.label import LUser
 from knowde.shared.user.schema import CommonSchema, UserReadPublic
@@ -45,5 +46,9 @@ class UserRead(UserReadPublic, schemas.BaseUser[UUID]):
         )
 
 
-class UserUpdate(SecurityFields, CommonSchema, schemas.BaseUserUpdate):
+class UserUpdate(
+    create_partial_model(SecurityFields),
+    CommonSchema,
+    schemas.BaseUserUpdate,
+):
     """更新."""
