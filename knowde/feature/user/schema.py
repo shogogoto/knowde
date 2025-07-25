@@ -16,10 +16,10 @@ class SecurityFields(BaseModel):
 
     password: str = Field(
         default=...,
-        min_length=8,
+        min_length=3,  # fastapi-users minが3となっていたのでそれに合わせる
         max_length=100,
         title="パスワード",
-        description="8文字以上100文字以内で入力してください",
+        description="3文字以上100文字以内で入力してください",
     )
 
 
