@@ -13,7 +13,6 @@ from knowde.feature.knowde import (
     Knowde,
     KnowdeDetail,
     KnowdeLocation,
-    KnowdeWithStats,
     UidStr,
 )
 from knowde.feature.knowde.repo.clause import OrderBy
@@ -28,7 +27,7 @@ from knowde.shared.nxutil.edge_type import EdgeType
 def fetch_knowde_additionals_by_ids(
     uids: Iterable[str],
     order_by: OrderBy | None = OrderBy(),
-) -> dict[UUID, KnowdeWithStats]:
+) -> dict[UUID, Knowde]:
     """文のuuidリストから名前などの付属情報を返す."""
     q = f"""
         UNWIND $uids as uid
@@ -47,16 +46,14 @@ def fetch_knowde_additionals_by_ids(
         sent, names, when, stats = row
         uid = sent.get("uid")
         names = [n.get("val") for n in names] if names is not None else []
-        d[uid] = KnowdeWithStats(
-            knowde=Knowde(
-                sentence=sent.get("val"),
-                uid=uid,
-                term=Term.create(*names) if names else None,
-                additional=Additional(
-                    when=when.get("val") if when is not None else None,
-                ),
-            ),
+        d[uid] = Knowde(
+            sentence=sent.get("val"),
+            uid=uid,
+            term=Term.create(*names) if names else None,
             stats=stats,
+            additional=Additional(
+                when=when.get("val") if when is not None else None,
+            ),
         )
 
     diff = set(uids) - set(d.keys())

@@ -38,28 +38,6 @@ class Additional(BaseModel, frozen=True):
     by: str | None = None
 
 
-class Knowde(BaseModel, frozen=True):
-    """知識の最小単位."""
-
-    sentence: str
-    uid: UUID
-    term: Term | None = None
-    additional: Additional | None = None
-
-    def __str__(self) -> str:  # noqa: D105
-        a = self.additional
-        t = f"[{self.term}]" if self.term else ""
-        when = f"T({a.when})" if a is not None and a.when else ""
-        return f"{self.sentence}{t}{when}"
-
-
-class UidStr(BaseModel):
-    """UUID付き文章."""
-
-    val: str
-    uid: UUID
-
-
 class KStats(BaseModel, frozen=True):
     """知識の関係統計."""
 
@@ -87,11 +65,31 @@ class KStats(BaseModel, frozen=True):
         return str(ls)
 
 
-class KnowdeWithStats(BaseModel, frozen=True):
-    """統計情報付きknowde."""
+class Knowde(BaseModel, frozen=True):
+    """知識の最小単位."""
 
-    knowde: Knowde
+    sentence: str
+    uid: UUID
+    term: Term | None = None
+    additional: Additional | None = None
     stats: KStats
+
+    def __str__(self) -> str:  # noqa: D105
+        a = self.additional
+        t = f"[{self.term}]" if self.term else ""
+        when = f"T({a.when})" if a is not None and a.when else ""
+        return f"{self.sentence}{t}{when}"
+
+    def when(self) -> str:  # noqa: D102
+        a = self.additional
+        return f"T({a.when})" if a is not None and a.when else ""
+
+
+class UidStr(BaseModel):
+    """UUID付き文章."""
+
+    val: str
+    uid: UUID
 
 
 class KnowdeLocation(BaseModel):
@@ -101,24 +99,24 @@ class KnowdeLocation(BaseModel):
     folders: list[UidStr]
     resource: MResource
     headers: list[UidStr]
-    parents: list[KnowdeWithStats]
+    parents: list[Knowde]
 
 
 class KAdjacency(BaseModel):
     """周辺情報も含める."""
 
-    center: KnowdeWithStats
-    details: list[KnowdeWithStats]
-    premises: list[KnowdeWithStats]
-    conclusions: list[KnowdeWithStats]
-    refers: list[KnowdeWithStats]
-    referreds: list[KnowdeWithStats]
+    center: Knowde
+    details: list[Knowde]
+    premises: list[Knowde]
+    conclusions: list[Knowde]
+    refers: list[Knowde]
+    referreds: list[Knowde]
 
     def __str__(self) -> str:
         """For display in CLI."""
         s = str(self.center)
-        s += f"@{self.when}" if self.when else ""
-        s += "\n" + str(self.stats) if self.stats else ""
+        s += f"@{self.center.when()}"
+        s += "\n" + str(self.center.stats) if self.center.stats else ""
         if self.details:
             s += f"  {{ {', '.join(map(str, self.details))} }}"
         if self.premises:
@@ -137,24 +135,24 @@ class KnowdeDetail(BaseModel):
 
     uid: UUID
     g: NXGraph
-    knowdes: dict[UUID, KnowdeWithStats]
+    knowdes: dict[UUID, Knowde]
     location: KnowdeLocation
 
     # テスト用メソッド
     def get(self, sentence: str) -> UUID:  # noqa: D102
         for k, v in self.knowdes.items():
-            if v.knowde.sentence == sentence:
-                if v.knowde.uid.hex not in self.g:
+            if v.sentence == sentence:
+                if v.uid.hex not in self.g:
                     raise ValueError
                 return k
         raise ValueError
 
-    def succ(self, sentence: str, t: EdgeType) -> list[KnowdeWithStats]:  # noqa: D102
+    def succ(self, sentence: str, t: EdgeType) -> list[Knowde]:  # noqa: D102
         uid = self.get(sentence)
         succs = list(t.succ(self.g, uid.hex))
         return [self.knowdes[UUID(s)] for s in succs]
 
-    def part(self, tgt: str) -> set[KnowdeWithStats]:
+    def part(self, tgt: str) -> set[Knowde]:
         """targetも含めて返す."""
         uid = self.get(tgt)
 

@@ -49,11 +49,11 @@ async def test_search_knowde_by_txt(u: LUser):
     """
     _sn, _ = await save_text(u.uid, s)
     _total, adjs = search_knowde("A1")
-    assert [a.knowde.sentence for a in adjs] == unordered(["a", "ちん", "bA123"])
+    assert [a.sentence for a in adjs] == unordered(["a", "ちん", "bA123"])
 
     a = LSentence.nodes.get(val="xxx")
     adjs = adjacency_knowde(a.uid)
-    assert adjs[0].referreds[0].knowde.sentence == "{x}yy"
+    assert adjs[0].referreds[0].sentence == "{x}yy"
 
 
 def get_stats_by_id(uid: UUIDy) -> list[int] | None:
@@ -174,7 +174,7 @@ async def test_ordering(u: LUser):
         WherePhrase.REGEX,
         order_by=order_by,
     )
-    assert [a.knowde.sentence for a in adjs] == [str(i) for i in range(30)]
+    assert [a.sentence for a in adjs] == [str(i) for i in range(30)]
 
 
 @mark_async_test()
@@ -214,8 +214,8 @@ async def test_details(u: LUser):
     d2 = LSentence.nodes.get(val="detail2")
     adjs2 = adjacency_knowde(d2.uid)
 
-    assert [str(k.knowde) for k in adjs1[0].details] == ["d1T(114)", "d2", "d3"]
-    assert [str(k.knowde) for k in adjs2[0].details] == [
+    assert [str(k) for k in adjs1[0].details] == ["d1T(114)", "d2", "d3"]
+    assert [str(k) for k in adjs2[0].details] == [
         "x1",
         "x2[X2]",
         "x3[X3(X31)]T(514)",

@@ -11,7 +11,7 @@ from knowde.feature.entry.category.folder.repo import fetch_namespace
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.entry.namespace import save_resource
 from knowde.feature.entry.namespace.sync import txt2meta
-from knowde.feature.knowde import KAdjacency, KnowdeWithStats
+from knowde.feature.knowde import KAdjacency, Knowde
 from knowde.feature.knowde.repo.clause import OrderBy, Paging, WherePhrase
 from knowde.feature.knowde.repo.detail import (
     fetch_knowde_additionals_by_ids,
@@ -73,7 +73,7 @@ def search_knowde(
     paging: Paging = Paging(),
     order_by: OrderBy | None = OrderBy(),
     do_print: bool = False,  # noqa: FBT001, FBT002
-) -> tuple[int, list[KnowdeWithStats]]:
+) -> tuple[int, list[Knowde]]:
     """用語、文のいずれかでマッチするものを返す."""
     q = rf"""
         CALL () {{

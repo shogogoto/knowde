@@ -3,7 +3,7 @@
 from fastapi import Query
 from pydantic import BaseModel, Field
 
-from knowde.feature.knowde import KnowdeWithStats
+from knowde.feature.knowde import Knowde
 from knowde.feature.knowde.repo.clause import OrderBy, Paging, WherePhrase
 
 
@@ -49,4 +49,4 @@ class KnowdeSearchResult(BaseModel):
     """knowde検索結果."""
 
     total: int
-    data: list[KnowdeWithStats]
+    data: list[Knowde]
