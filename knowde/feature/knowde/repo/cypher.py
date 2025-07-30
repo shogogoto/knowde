@@ -1,14 +1,13 @@
 """cypherの組立て."""
 
-from collections.abc import Callable, Iterable
+from collections.abc import Callable
 from textwrap import indent
 from typing import Any
-from uuid import UUID
 
 from more_itertools import first_true
 
 from knowde.feature.entry.mapper import MResource
-from knowde.feature.knowde import Knowde, KnowdeLocation, UidStr
+from knowde.feature.knowde import LocationWithoutParents, UidStr
 from knowde.feature.knowde.repo.clause import OrderBy, WherePhrase
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.user.schema import UserReadPublic
@@ -140,17 +139,14 @@ def q_adjaceny_uids(sent_var: str) -> str:
 def q_location(sent_var: str) -> str:
     """位置情報."""
     return f"""
-        , p2 = (r:Resource)
+         p2 = (r:Resource)
             -[:SIBLING|BELOW|HEAD|NUM|EXAMPLE|TO|BT|REF]->*({sent_var})
         , p = (user:User)-[:OWNED|PARENT]-*(r)
         RETURN nodes(p) + nodes(p2)[0..-1] as location
     """
 
 
-def build_location_res(
-    row: Any,
-    fetcher: Callable[[Iterable[str], OrderBy | None], dict[UUID, Knowde]],
-) -> KnowdeLocation:
+def build_location_res(row: Any) -> tuple[LocationWithoutParents, list[str]]:
     """locationのレコードからmodelを組み立てる."""
     row = list(dict.fromkeys(row))
     user = UserReadPublic.model_validate(dict(row[0]), by_alias=True)
@@ -163,12 +159,9 @@ def build_location_res(
     s_i = row.index(first_sent) if first_sent is not None else -1
     headers = [UidStr(val=e.get("val"), uid=e.get("uid")) for e in row[r_i + 1 : s_i]]
     uids = [e.get("uid") for e in row[s_i:]] if s_i != -1 else []
-    knowdes = fetcher(uids)
-    parents = [knowdes[uid] for uid in uids]
-    return KnowdeLocation(
+    return LocationWithoutParents(
         user=user,
         folders=folders,
         resource=resource,
         headers=headers,
-        parents=parents,
-    )
+    ), uids

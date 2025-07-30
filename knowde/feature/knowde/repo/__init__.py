@@ -14,7 +14,7 @@ from knowde.feature.entry.namespace.sync import txt2meta
 from knowde.feature.knowde import KAdjacency, Knowde
 from knowde.feature.knowde.repo.clause import OrderBy, Paging, WherePhrase
 from knowde.feature.knowde.repo.detail import (
-    fetch_knowde_additionals_by_ids,
+    fetch_knowdes_with_detail,
 )
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.tree2net import parse2net
@@ -90,7 +90,7 @@ def search_knowde(
         print(q)  # noqa: T201
     res = db.cypher_query(q, params={"s": s})
     uids = res2uidstrs(res)
-    d = fetch_knowde_additionals_by_ids(uids)
+    d = fetch_knowdes_with_detail(uids)
     ls = []
     for row in res[0]:
         sent_uid = row[0]
@@ -130,7 +130,7 @@ def adjacency_knowde(sent_uid: str) -> list[KAdjacency]:
         """
     res = db.cypher_query(q, params={"uid": sent_uid})
     uids = res2uidstrs(res)
-    knowdes = fetch_knowde_additionals_by_ids(list(uids))
+    knowdes = fetch_knowdes_with_detail(list(uids))
     ls = []
     for row in res[0]:
         (

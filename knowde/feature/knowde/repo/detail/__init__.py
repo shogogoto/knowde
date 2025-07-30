@@ -1,6 +1,7 @@
 """detail repo."""
 
 from collections.abc import Iterable
+from typing import Literal
 from uuid import UUID
 
 import networkx as nx
@@ -22,29 +23,40 @@ from knowde.feature.knowde.repo.cypher import (
 from knowde.feature.parsing.primitive.term import Term
 from knowde.shared.errors.domain import NotFoundError
 from knowde.shared.nxutil.edge_type import EdgeType
-
+from knowde.shared.types import to_uuid
 
 # うまいクエリの方法が思いつかないので、別クエリに分ける
-def fetch_knowde_additionals_by_ids(
+
+
+def fetch_knowdes_with_detail(
     uids: Iterable[str],
     order_by: OrderBy | None = OrderBy(),
-) -> dict[UUID, Knowde]:
+    method: Literal["location"] | None = None,
+) -> dict[str, Knowde]:
     """文のuuidリストから名前などの付属情報を返す."""
+    is_location = method == "location"
+    q_loc = q_location() if is_location else ""
     q = f"""
         UNWIND $uids as uid
         MATCH (sent: Sentence {{uid: uid}})
         {q_call_sent_names("sent")}
         {q_stats("sent", order_by)}
         OPTIONAL MATCH (intv: Interval)<-[:WHEN]-(sent)
+        {q_loc}
         RETURN sent
             , names
             , intv
             , stats
+            {", location" if is_location else ""}
     """
     res = db.cypher_query(q, params={"uids": list(uids)})
     d = {}
     for row in res[0]:
-        sent, names, when, stats = row
+        if is_location:
+            sent, names, when, stats, _location = row
+            # location = build_location_res(location_, fetch_knowdes_with_detail)
+        else:
+            sent, names, when, stats = row
         uid = sent.get("uid")
         names = [n.get("val") for n in names] if names is not None else []
         d[uid] = Knowde(
@@ -68,7 +80,7 @@ def locate_knowde(uid: UUID, do_print: bool = False) -> KnowdeLocation:  # noqa:
     """knowdeの親~userまでを返す."""
     q = f"""
         MATCH (sent: Sentence {{uid: $uid}})
-        {q_location("sent")}
+        , {q_location("sent")}
     """
     if do_print:
         print(q)  # noqa: T201
@@ -77,7 +89,15 @@ def locate_knowde(uid: UUID, do_print: bool = False) -> KnowdeLocation:  # noqa:
         msg = f"{uid} sentence location not found"
         raise NotFoundError(msg)
     for row in res[0][0]:
-        return build_location_res(row, fetch_knowde_additionals_by_ids)
+        wl, parent_uids = build_location_res(row)
+        d = fetch_knowdes_with_detail(parent_uids)
+        return KnowdeLocation(
+            parents=[d[uid] for uid in parent_uids],
+            user=wl.user,
+            folders=wl.folders,
+            resource=wl.resource,
+            headers=wl.headers,
+        )
     raise ValueError
 
 
@@ -129,9 +149,10 @@ def chains_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: F
         msg = f"{uid} sentence not found"
         raise NotFoundError(msg)
 
+    d = fetch_knowdes_with_detail(list(g.nodes))
     return KnowdeDetail(
         uid=uid,
         g=g,
-        knowdes=fetch_knowde_additionals_by_ids(list(g.nodes)),
+        knowdes={to_uuid(k): v for k, v in d.items()},
         location=locate_knowde(uid),
     )

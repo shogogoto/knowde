@@ -92,13 +92,18 @@ class UidStr(BaseModel):
     uid: UUID
 
 
-class KnowdeLocation(BaseModel):
-    """knowdeの位置情報."""
+class LocationWithoutParents(BaseModel):
+    """親なしknowdeの位置情報."""
 
     user: UserReadPublic
     folders: list[UidStr]
     resource: MResource
     headers: list[UidStr]
+
+
+class KnowdeLocation(LocationWithoutParents):
+    """knowdeの位置情報."""
+
     parents: list[Knowde]
 
 
