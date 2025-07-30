@@ -16,6 +16,8 @@ from pydantic import (
     ValidationInfo,
 )
 
+from knowde.shared.nxutil.edge_type import EdgeType
+
 type UUIDy = UUID | str | UniqueIdProperty  # Falsyみたいな
 type STRy = str | StringProperty
 
@@ -52,8 +54,10 @@ def _validate_graph(v: Any, info: ValidationInfo) -> nx.DiGraph:
 class EdgeData(BaseModel):
     """for fastapi schema."""
 
+    type: EdgeType
     source: str
     target: str
+    key: int
 
 
 class GraphData(BaseModel):
