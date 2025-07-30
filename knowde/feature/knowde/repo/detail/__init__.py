@@ -1,10 +1,10 @@
 """detail repo."""
 
 from collections.abc import Iterable
-from typing import Literal
 from uuid import UUID
 
 import networkx as nx
+from more_itertools import flatten
 from neomodel import db
 
 from knowde.feature.knowde import (
@@ -25,18 +25,14 @@ from knowde.shared.errors.domain import NotFoundError
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import to_uuid
 
-# うまいクエリの方法が思いつかないので、別クエリに分ける
 
-
-def fetch_knowdes_with_detail(
-    uids: Iterable[str],
+def q_detail_location(
+    is_location: bool = False,  # noqa: FBT001, FBT002
     order_by: OrderBy | None = OrderBy(),
-    method: Literal["location"] | None = None,
-) -> dict[str, Knowde]:
-    """文のuuidリストから名前などの付属情報を返す."""
-    is_location = method == "location"
-    q_loc = q_location() if is_location else ""
-    q = f"""
+) -> str:
+    """Detail with location or not Query."""
+    q_loc = q_location("sent") if is_location else ""
+    return f"""
         UNWIND $uids as uid
         MATCH (sent: Sentence {{uid: uid}})
         {q_call_sent_names("sent")}
@@ -49,14 +45,18 @@ def fetch_knowdes_with_detail(
             , stats
             {", location" if is_location else ""}
     """
+
+
+def fetch_knowdes_with_detail(
+    uids: Iterable[str],
+    order_by: OrderBy | None = OrderBy(),
+) -> dict[str, Knowde]:
+    """文のuuidリストから名前などの付属情報を返す."""
+    q = q_detail_location(order_by=order_by)
     res = db.cypher_query(q, params={"uids": list(uids)})
     d = {}
     for row in res[0]:
-        if is_location:
-            sent, names, when, stats, _location = row
-            # location = build_location_res(location_, fetch_knowdes_with_detail)
-        else:
-            sent, names, when, stats = row
+        sent, names, when, stats = row
         uid = sent.get("uid")
         names = [n.get("val") for n in names] if names is not None else []
         d[uid] = Knowde(
@@ -76,11 +76,59 @@ def fetch_knowdes_with_detail(
     return d
 
 
+def fetch_knowdes_with_detail_and_location(
+    uids: Iterable[str],
+    order_by: OrderBy | None = OrderBy(),
+) -> dict[str, tuple[Knowde, KnowdeLocation]]:
+    """詳細とlocation付きで返す."""
+    q = q_detail_location(is_location=True, order_by=order_by)
+    res = db.cypher_query(q, params={"uids": list(uids)})
+
+    d = {}
+    d_loc = {}
+    d_parents = {}
+    for row in res[0]:
+        sent, names, when, stats, location = row
+        uid = sent.get("uid")
+        names = [n.get("val") for n in names] if names is not None else []
+        d[uid] = Knowde(
+            sentence=sent.get("val"),
+            uid=uid,
+            term=Term.create(*names) if names else None,
+            stats=stats,
+            additional=Additional(
+                when=when.get("val") if when is not None else None,
+            ),
+        )
+        d_loc[uid], d_parents[uid] = build_location_res(location)
+
+    # それぞれの parents を集めてい一括 parent detial取得
+    puids = set(flatten(d_parents.values()))
+    parent_dk = fetch_knowdes_with_detail(puids)
+    res = {}
+    for k, v in d.items():
+        parents = [parent_dk[uid] for uid in d_parents[k]]
+        res[k] = (
+            v,
+            KnowdeLocation(
+                parents=parents,
+                user=d_loc[k].user,
+                folders=d_loc[k].folders,
+                resource=d_loc[k].resource,
+                headers=d_loc[k].headers,
+            ),
+        )
+    return res
+
+
 def locate_knowde(uid: UUID, do_print: bool = False) -> KnowdeLocation:  # noqa: FBT001, FBT002
     """knowdeの親~userまでを返す."""
+    d = fetch_knowdes_with_detail_and_location([uid.hex])
+    return d[uid.hex][1]
     q = f"""
         MATCH (sent: Sentence {{uid: $uid}})
-        , {q_location("sent")}
+        {q_location("sent")}
+        RETURN location
     """
     if do_print:
         print(q)  # noqa: T201
