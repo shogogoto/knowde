@@ -9,6 +9,7 @@ from neomodel import db
 
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.knowde import (
+    Additional,
     Knowde,
     KnowdeDetail,
     KnowdeLocation,
@@ -51,7 +52,9 @@ def fetch_knowde_additionals_by_ids(
                 sentence=sent.get("val"),
                 uid=uid,
                 term=Term.create(*names) if names else None,
-                when=when.get("val") if when is not None else None,
+                additional=Additional(
+                    when=when.get("val") if when is not None else None,
+                ),
             ),
             stats=stats,
         )

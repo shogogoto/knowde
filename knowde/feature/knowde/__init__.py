@@ -30,21 +30,26 @@ from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import NXGraph
 
 
+class Additional(BaseModel, frozen=True):
+    """knowde付加情報."""
+
+    when: str | None = None
+    where: str | None = None
+    by: str | None = None
+
+
 class Knowde(BaseModel, frozen=True):
     """知識の最小単位."""
 
     sentence: str
     uid: UUID
     term: Term | None = None
-
-    # additional
-    when: str | None = None
-    where: str | None = None
-    by: str | None = None
+    additional: Additional | None = None
 
     def __str__(self) -> str:  # noqa: D105
+        a = self.additional
         t = f"[{self.term}]" if self.term else ""
-        when = f"T({self.when})" if self.when else ""
+        when = f"T({a.when})" if a is not None and a.when else ""
         return f"{self.sentence}{t}{when}"
 
 
