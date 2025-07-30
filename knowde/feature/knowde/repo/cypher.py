@@ -1,10 +1,17 @@
 """cypherの組立て."""
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from textwrap import indent
+from typing import Any
+from uuid import UUID
 
+from more_itertools import first_true
+
+from knowde.feature.entry.mapper import MResource
+from knowde.feature.knowde import Knowde, KnowdeLocation, UidStr
 from knowde.feature.knowde.repo.clause import OrderBy, WherePhrase
 from knowde.shared.nxutil.edge_type import EdgeType
+from knowde.shared.user.schema import UserReadPublic
 
 
 def q_indent(f: Callable) -> Callable:
@@ -128,3 +135,40 @@ def q_adjaceny_uids(sent_var: str) -> str:
                 , COLLECT(DISTINCT detail.uid) as details
         }}
     """
+
+
+def q_location(sent_var: str) -> str:
+    """位置情報."""
+    return f"""
+        , p2 = (r:Resource)
+            -[:SIBLING|BELOW|HEAD|NUM|EXAMPLE|TO|BT|REF]->*({sent_var})
+        , p = (user:User)-[:OWNED|PARENT]-*(r)
+        RETURN nodes(p) + nodes(p2)[0..-1] as location
+    """
+
+
+def build_location_res(
+    row: Any,
+    fetcher: Callable[[Iterable[str], OrderBy | None], dict[UUID, Knowde]],
+) -> KnowdeLocation:
+    """locationのレコードからmodelを組み立てる."""
+    row = list(dict.fromkeys(row))
+    user = UserReadPublic.model_validate(dict(row[0]), by_alias=True)
+    r = first_true(row[1:], pred=lambda n: "Resource" in n.labels)
+    r_i = row.index(r)
+    folders = [UidStr(val=e.get("name"), uid=e.get("uid")) for e in row[1:r_i]]
+    resource = MResource.freeze_dict(dict(r))
+
+    first_sent = first_true(row, pred=lambda n: "Sentence" in n.labels)
+    s_i = row.index(first_sent) if first_sent is not None else -1
+    headers = [UidStr(val=e.get("val"), uid=e.get("uid")) for e in row[r_i + 1 : s_i]]
+    uids = [e.get("uid") for e in row[s_i:]] if s_i != -1 else []
+    knowdes = fetcher(uids)
+    parents = [knowdes[uid] for uid in uids]
+    return KnowdeLocation(
+        user=user,
+        folders=folders,
+        resource=resource,
+        headers=headers,
+        parents=parents,
+    )

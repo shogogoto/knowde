@@ -4,23 +4,24 @@ from collections.abc import Iterable
 from uuid import UUID
 
 import networkx as nx
-from more_itertools import first_true
 from neomodel import db
 
-from knowde.feature.entry.mapper import MResource
 from knowde.feature.knowde import (
     Additional,
     Knowde,
     KnowdeDetail,
     KnowdeLocation,
-    UidStr,
 )
 from knowde.feature.knowde.repo.clause import OrderBy
-from knowde.feature.knowde.repo.cypher import q_call_sent_names, q_stats
+from knowde.feature.knowde.repo.cypher import (
+    build_location_res,
+    q_call_sent_names,
+    q_location,
+    q_stats,
+)
 from knowde.feature.parsing.primitive.term import Term
 from knowde.shared.errors.domain import NotFoundError
 from knowde.shared.nxutil.edge_type import EdgeType
-from knowde.shared.user.schema import UserReadPublic
 
 
 # うまいクエリの方法が思いつかないので、別クエリに分ける
@@ -65,11 +66,9 @@ def fetch_knowde_additionals_by_ids(
 
 def locate_knowde(uid: UUID, do_print: bool = False) -> KnowdeLocation:  # noqa: FBT001, FBT002
     """knowdeの親~userまでを返す."""
-    q = """
-        MATCH (sent: Sentence {uid: $uid})
-            , p2 = (r:Resource)-[:SIBLING|BELOW|HEAD|NUM|EXAMPLE|TO|BT|REF]->*(sent)
-            , p = (user:User)-[:OWNED|PARENT]-*(r)
-        RETURN nodes(p) + nodes(p2)[0..-1] as nodes
+    q = f"""
+        MATCH (sent: Sentence {{uid: $uid}})
+        {q_location("sent")}
     """
     if do_print:
         print(q)  # noqa: T201
@@ -77,30 +76,8 @@ def locate_knowde(uid: UUID, do_print: bool = False) -> KnowdeLocation:  # noqa:
     if len(res[0]) == 0:
         msg = f"{uid} sentence location not found"
         raise NotFoundError(msg)
-
     for row in res[0][0]:
-        row = list(dict.fromkeys(row))  # noqa: PLW2901 重複削除
-        user = UserReadPublic.model_validate(dict(row[0]), by_alias=True)
-        r = first_true(row[1:], pred=lambda n: "Resource" in n.labels)
-        r_i = row.index(r)
-        folders = [UidStr(val=e.get("name"), uid=e.get("uid")) for e in row[1:r_i]]
-        resource = MResource.freeze_dict(dict(r))
-
-        first_sent = first_true(row, pred=lambda n: "Sentence" in n.labels)
-        s_i = row.index(first_sent) if first_sent is not None else -1
-        headers = [
-            UidStr(val=e.get("val"), uid=e.get("uid")) for e in row[r_i + 1 : s_i]
-        ]
-        uids = [e.get("uid") for e in row[s_i:]] if s_i != -1 else []
-        knowdes = fetch_knowde_additionals_by_ids(uids)
-        parents = [knowdes[uid] for uid in uids]
-        return KnowdeLocation(
-            user=user,
-            folders=folders,
-            resource=resource,
-            headers=headers,
-            parents=parents,
-        )
+        return build_location_res(row, fetch_knowde_additionals_by_ids)
     raise ValueError
 
 
