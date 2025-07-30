@@ -18,9 +18,9 @@ from knowde.feature.knowde import (
 from knowde.feature.knowde.repo.clause import OrderBy
 from knowde.feature.knowde.repo.cypher import q_call_sent_names, q_stats
 from knowde.feature.parsing.primitive.term import Term
-from knowde.feature.user.domain import User
 from knowde.shared.errors.domain import NotFoundError
 from knowde.shared.nxutil.edge_type import EdgeType
+from knowde.shared.user.schema import UserReadPublic
 
 
 # うまいクエリの方法が思いつかないので、別クエリに分ける
@@ -80,7 +80,7 @@ def locate_knowde(uid: UUID, do_print: bool = False) -> KnowdeLocation:  # noqa:
 
     for row in res[0][0]:
         row = list(dict.fromkeys(row))  # noqa: PLW2901 重複削除
-        user = User.model_validate(dict(row[0]))
+        user = UserReadPublic.model_validate(dict(row[0]), by_alias=True)
         r = first_true(row[1:], pred=lambda n: "Resource" in n.labels)
         r_i = row.index(r)
         folders = [UidStr(val=e.get("name"), uid=e.get("uid")) for e in row[1:r_i]]

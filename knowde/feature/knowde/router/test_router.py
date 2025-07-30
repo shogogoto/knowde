@@ -56,7 +56,7 @@ async def test_detail_router(u: LUser, caplog):
     d = KnowdeDetail.model_validate(res.json())
 
     assert d.location.resource.updated == t
-    assert d.location.user.uid.hex == u.uid
+    assert d.location.user.id.hex == u.uid
     assert [f.val for f in d.location.folders] == ["A", "B"]
 
 

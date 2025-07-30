@@ -116,7 +116,7 @@ async def test_detail_networks_to_or_resolved_edges(u: LUser):
     ])
 
     loc = detail.location
-    assert loc.user.uid == UUID(u.uid)
+    assert loc.user.id == UUID(u.uid)
     assert [f.val for f in loc.folders] == ["A", "B"]
     assert loc.resource.name == "# titleX"
     assert [f.val for f in loc.headers] == ["## head1", "### head2"]
@@ -140,7 +140,7 @@ async def test_detail_no_below_no_header(u: LUser):
     assert [k.sentence for k in d.part("a")] == ["a"]
     assert d.location.parents == []
     assert d.location.headers == []
-    assert d.location.user.uid.hex == u.uid
+    assert d.location.user.id.hex == u.uid
 
 
 @mark_async_test()
@@ -157,7 +157,7 @@ async def test_detail_no_below_no_header_with_parent(u: LUser):
     assert [k.sentence for k in d.part("a")] == ["a"]
     assert [k.sentence for k in d.location.parents] == ["parent"]
     assert d.location.headers == []
-    assert d.location.user.uid.hex == u.uid
+    assert d.location.user.id.hex == u.uid
 
 
 @mark_async_test()
@@ -178,7 +178,7 @@ async def test_detail_no_header(u: LUser):
     assert [k.sentence for k in d.part("a")] == unordered(["a", "b", "c"])
     assert d.location.parents == []
     assert d.location.headers == []
-    assert d.location.user.uid.hex == u.uid
+    assert d.location.user.id.hex == u.uid
 
 
 @mark_async_test()

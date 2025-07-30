@@ -24,10 +24,10 @@ from pydantic import BaseModel, Field
 
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.parsing.primitive.term import Term
-from knowde.feature.user.domain import User
 from knowde.shared.nxutil import to_nodes
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import NXGraph
+from knowde.shared.user.schema import UserReadPublic
 
 
 class Additional(BaseModel, frozen=True):
@@ -95,7 +95,7 @@ class UidStr(BaseModel):
 class KnowdeLocation(BaseModel):
     """knowdeの位置情報."""
 
-    user: User
+    user: UserReadPublic
     folders: list[UidStr]
     resource: MResource
     headers: list[UidStr]
