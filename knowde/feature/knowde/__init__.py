@@ -73,6 +73,7 @@ class Knowde(BaseModel, frozen=True):
     term: Term | None = None
     additional: Additional | None = None
     stats: KStats
+    resource_uid: UUID
 
     def __str__(self) -> str:  # noqa: D105
         a = self.additional
