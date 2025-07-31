@@ -173,7 +173,8 @@ def q_location(sent_var: str) -> str:
             WHEN IS NULL THEN {sent_var}
             ELSE upper
         END as _upper
-        OPTIONAL MATCH p2 = (r:Resource)-[:{STREAM}]->*(_upper)
+        OPTIONAL MATCH p2 = (r:Resource {{uid: {sent_var}.resource_uid}})
+            -[:{STREAM}]->*(_upper)
         , p = (user:User)-[:OWNED|PARENT]-*(r)
         RETURN CASE _upper
             WHEN {sent_var} THEN nodes(p) + nodes(p2)[1..-1] // 自身はparentsから除く
