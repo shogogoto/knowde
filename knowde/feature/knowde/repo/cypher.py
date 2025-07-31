@@ -138,16 +138,17 @@ def q_adjaceny_uids(sent_var: str) -> str:
 
 def q_upper(sent_var: str) -> str:
     """parentの末尾 upper を取得する."""
-    e = "EXAMPLE|TO|RESOLVED|SIBLING"
+    complex_ = "TO|RESOLVED|EXAMPLE"  # resourceに近づくとは限らない方向
+    stream = "BELOW|HEAD|NUM|SIBLING"
     return f"""
         CALL ({sent_var}) {{
-            OPTIONAL MATCH (_upper:Sentence)
-                -[:BELOW]->(up:Sentence)-[:{e}]->*({sent_var})
-            RETURN
-                CASE
-                    WHEN _upper IS NULL THEN {sent_var}
-                    ELSE _upper
-                END as upper
+            MATCH p = (upper:Sentence)-[:{stream}]->
+                (up:Sentence)-[:{complex_}]-*({sent_var})
+                , (r)-[:{stream}]->(upper)
+            WITH p, LENGTH(p) as len, upper
+            ORDER BY len ASC // 最短
+            LIMIT 1
+            RETURN upper
         }}
     """
 

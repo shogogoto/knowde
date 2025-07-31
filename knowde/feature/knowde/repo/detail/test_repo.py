@@ -51,6 +51,8 @@ async def setup(u: LUser) -> SysNet:  # noqa: D103
                     <- -2
                         <- -21
                         <- -22
+                            -> complex1
+                                <- complex2
                     -> 1
                         -> 11
                         -> 12
@@ -83,23 +85,29 @@ async def test_get_upper(u: LUser):
         assert upper.val == expected
 
     s_assert("0", "p2")
-    s_assert("p2", "parent")
-    s_assert("x23", "x2")
+    s_assert("p2", "p1")
+    s_assert("x23", "x22")
     s_assert("x231", "x23")
-    s_assert("yyy", "0")
-    s_assert("zzz", "0")
+    s_assert("yyy", "xxx")
+    s_assert("zzz", "yyy")
     # upperがない場合は自身を返す
-    s_assert("a", "a")
-    s_assert("c{B}c", "c{B}c")
+    s_assert("a", "parent")
+    s_assert("c{B}c", "b{A}b{zero}")
     # -> の upperも辿れる
-    # s_assert("1", "0")
-    # s_assert("1", "0")
+    s_assert("1", "p2")
+    s_assert("2", "p2")
+    s_assert("11", "p2")
+    s_assert("22", "p2")
+    s_assert("221", "p2")
 
     # <- の upperも辿れる
-
-    # -> <- の混在
-
-    # <- -> の混在
+    s_assert("-1", "p2")
+    s_assert("-2", "p2")
+    s_assert("-11", "p2")
+    s_assert("-22", "p2")
+    # ->と<- の混在
+    s_assert("complex1", "p2")
+    s_assert("complex2", "p2")
 
 
 @mark_async_test()
@@ -118,6 +126,7 @@ async def test_detail_networks_to_or_resolved_edges(u: LUser):
         "-12",
         "-21",
         "-22",
+        "complex2",
     ])
     leaves_to = to_leaves(detail.g, EdgeType.TO)
     assert [detail.knowdes[UUID(s)].sentence for s in leaves_to] == unordered([
@@ -125,6 +134,7 @@ async def test_detail_networks_to_or_resolved_edges(u: LUser):
         "12",
         "21",
         "221",
+        "complex1",
     ])
     roots_ref = to_roots(detail.g, EdgeType.RESOLVED)
     leaves_ref = to_leaves(detail.g, EdgeType.RESOLVED)
