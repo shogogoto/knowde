@@ -3,7 +3,6 @@
 from fastapi import Query
 from pydantic import BaseModel, Field
 
-from knowde.feature.knowde import Knowde
 from knowde.feature.knowde.repo.clause import OrderBy, Paging, WherePhrase
 
 
@@ -43,10 +42,3 @@ def get_search_param(  # noqa: PLR0917
         desc=desc,
     )
     return SearchParam(q=q, type=type, paging=paging, order=order)
-
-
-class KnowdeSearchResult(BaseModel):
-    """knowde検索結果."""
-
-    total: int
-    data: list[Knowde]

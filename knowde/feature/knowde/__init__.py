@@ -86,6 +86,21 @@ class Knowde(BaseModel, frozen=True):
         return f"T({a.when})" if a is not None and a.when else ""
 
 
+class ResourceOwnsers(BaseModel):
+    """リソースの所有者."""
+
+    user: UserReadPublic
+    resource: MResource
+
+
+class KnowdeSearchResult(BaseModel):
+    """knowde検索結果."""
+
+    total: int
+    data: list[Knowde]
+    owners: dict[UUID, ResourceOwnsers]
+
+
 class UidStr(BaseModel):
     """UUID付き文章."""
 
