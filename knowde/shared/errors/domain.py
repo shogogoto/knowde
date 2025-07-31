@@ -17,7 +17,7 @@ class CompleteNotFoundError(DomainError):
     status_code = status.HTTP_404_NOT_FOUND
 
 
-class MultiHitError(DomainError):
+class NotUniqueError(DomainError):
     """１つが見つかるべきとき."""
 
     status_code = status.HTTP_409_CONFLICT

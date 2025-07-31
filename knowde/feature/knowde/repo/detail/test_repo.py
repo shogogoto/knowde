@@ -8,22 +8,21 @@ from pytest_unordered import unordered
 from knowde.api import root_router
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.knowde.repo import save_text
+from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.stats.nxdb import LSentence
 from knowde.shared.nxutil import to_leaves, to_roots
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.user.label import LUser
 
-from . import chains_knowde
+from . import chains_knowde, knowde_upper
 
 
 @async_fixture()
 async def u() -> LUser:  # noqa: D103
-    return await LUser(email="onex@gmail.com", hashed_password="xxx").save()  # noqa: S106
+    return await LUser(email="one@gmail.com", username="one").save()
 
 
-@mark_async_test()
-async def test_detail_networks_to_or_resolved_edges(u: LUser):
-    """IDによる詳細 TO/RESOLVED関係."""
+async def setup(u: LUser) -> SysNet:  # noqa: D103
     s = """
     # titleX
     ## head1
@@ -52,6 +51,8 @@ async def test_detail_networks_to_or_resolved_edges(u: LUser):
                     <- -2
                         <- -21
                         <- -22
+                            -> complex1
+                                <- complex2
                     -> 1
                         -> 11
                         -> 12
@@ -64,43 +65,88 @@ async def test_detail_networks_to_or_resolved_edges(u: LUser):
         C: c{B}c
             -> ccc
     """
-    _sn, _r = await save_text(
+    sn, _r = await save_text(
         u.uid,
         s,
         path=("A", "B", "C.txt"),
     )  # C.txtはDBには格納されない
+    return sn
+
+
+@mark_async_test()
+async def test_get_upper(u: LUser):
+    """parentの末尾 upper を取得する."""
+    _sn = await setup(u)
+
+    def s_assert(val: str, expected: str):
+        s = LSentence.nodes.get(val=val)
+        upper = knowde_upper(UUID(s.uid))
+        assert upper.val == expected
+
+    s_assert("0", "p2")
+    s_assert("p2", "p1")
+    s_assert("x23", "x22")
+    s_assert("x231", "x23")
+    s_assert("yyy", "xxx")
+    s_assert("zzz", "yyy")
+    # upperがない場合は自身を返す
+    s_assert("a", "parent")
+    s_assert("c{B}c", "b{A}b{zero}")
+    # -> の upperも辿れる
+    s_assert("1", "p2")
+    s_assert("2", "p2")
+    s_assert("11", "p2")
+    s_assert("22", "p2")
+    s_assert("221", "p2")
+
+    # <- の upperも辿れる
+    s_assert("-1", "p2")
+    s_assert("-2", "p2")
+    s_assert("-11", "p2")
+    s_assert("-22", "p2")
+    # ->と<- の混在
+    s_assert("complex1", "p2")
+    s_assert("complex2", "p2")
+
+
+@mark_async_test()
+async def test_detail_networks_to_or_resolved_edges(u: LUser):
+    """IDによる詳細 TO/RESOLVED関係."""
+    await setup(u)
     s = LSentence.nodes.get(val="0")
     detail = chains_knowde(UUID(s.uid))
-    assert [k.knowde.sentence for k in detail.succ("0", EdgeType.TO)] == unordered([
+    assert [k.sentence for k in detail.succ("0", EdgeType.TO)] == unordered([
         "1",
         "2",
     ])
     roots_to = to_roots(detail.g, EdgeType.TO)
-    assert [detail.knowdes[UUID(s)].knowde.sentence for s in roots_to] == unordered([
+    assert [detail.knowdes[UUID(s)].sentence for s in roots_to] == unordered([
         "-11",
         "-12",
         "-21",
         "-22",
+        "complex2",
     ])
     leaves_to = to_leaves(detail.g, EdgeType.TO)
-    assert [detail.knowdes[UUID(s)].knowde.sentence for s in leaves_to] == unordered([
+    assert [detail.knowdes[UUID(s)].sentence for s in leaves_to] == unordered([
         "11",
         "12",
         "21",
         "221",
+        "complex1",
     ])
     roots_ref = to_roots(detail.g, EdgeType.RESOLVED)
     leaves_ref = to_leaves(detail.g, EdgeType.RESOLVED)
-    assert [detail.knowdes[UUID(s)].knowde.sentence for s in roots_ref] == unordered([
+    assert [detail.knowdes[UUID(s)].sentence for s in roots_ref] == unordered([
         "c{B}c",
     ])
 
-    assert [detail.knowdes[UUID(s)].knowde.sentence for s in leaves_ref] == unordered([
+    assert [detail.knowdes[UUID(s)].sentence for s in leaves_ref] == unordered([
         "0",
         "a",
     ])
 
-    assert [p.knowde.sentence for p in detail.part("0")] == unordered([
+    assert [p.sentence for p in detail.part("0")] == unordered([
         "0",
         "xxx",
         "x1",
@@ -116,11 +162,11 @@ async def test_detail_networks_to_or_resolved_edges(u: LUser):
     ])
 
     loc = detail.location
-    assert loc.user.uid == UUID(u.uid)
+    assert loc.user.id == UUID(u.uid)
     assert [f.val for f in loc.folders] == ["A", "B"]
     assert loc.resource.name == "# titleX"
     assert [f.val for f in loc.headers] == ["## head1", "### head2"]
-    assert [str(p.knowde) for p in loc.parents] == [
+    assert [str(p) for p in loc.parents] == [
         "parentT(19C)",
         "p1",
         "p2",
@@ -137,10 +183,10 @@ async def test_detail_no_below_no_header(u: LUser):
     _sn, _r = await save_text(u.uid, s)
     s = LSentence.nodes.get(val="a")
     d = chains_knowde(UUID(s.uid))
-    assert [k.knowde.sentence for k in d.part("a")] == ["a"]
-    assert d.location.parents == []
+    assert [k.sentence for k in d.part("a")] == ["a"]
     assert d.location.headers == []
-    assert d.location.user.uid.hex == u.uid
+    assert d.location.user.id.hex == u.uid
+    assert d.location.parents == []
 
 
 @mark_async_test()
@@ -154,10 +200,10 @@ async def test_detail_no_below_no_header_with_parent(u: LUser):
     _sn, _r = await save_text(u.uid, s)
     s = LSentence.nodes.get(val="a")
     d = chains_knowde(UUID(s.uid))
-    assert [k.knowde.sentence for k in d.part("a")] == ["a"]
-    assert [k.knowde.sentence for k in d.location.parents] == ["parent"]
+    assert [k.sentence for k in d.part("a")] == ["a"]
+    assert [k.sentence for k in d.location.parents] == ["parent"]
     assert d.location.headers == []
-    assert d.location.user.uid.hex == u.uid
+    assert d.location.user.id.hex == u.uid
 
 
 @mark_async_test()
@@ -175,10 +221,10 @@ async def test_detail_no_header(u: LUser):
     _sn, _r = await save_text(u.uid, s)
     s = LSentence.nodes.get(val="a")
     d = chains_knowde(UUID(s.uid))
-    assert [k.knowde.sentence for k in d.part("a")] == unordered(["a", "b", "c"])
+    assert [k.sentence for k in d.part("a")] == unordered(["a", "b", "c"])
     assert d.location.parents == []
     assert d.location.headers == []
-    assert d.location.user.uid.hex == u.uid
+    assert d.location.user.id.hex == u.uid
 
 
 @mark_async_test()
@@ -230,18 +276,6 @@ async def test_not_found_should_not_raise_error(u: LUser):
             「数論を戦争に役立たせる道は誰も見出していない」
               <-> 暗号に応用され
           ! nameの区切り文字を","に変えるべきか
-          ハーディ=ワインベルクの法則: 進化の基本原理を説明する数学的モデル
-            以下を満たす大規模の遺伝子恒星は世代間で変化しない
-              無作為に交配する
-              個体の流出なし
-              突然変異なし
-              自然選択が発生しない
-          楕円の研究
-            by. メナイクモス
-              when. BC50
-            太陽系の惑星の軌道の記述へ応用された
-              by. ケプラー
-              by. ニュートン
     """
     _sn, _r = await save_text(u.uid, s)
     tgt = LSentence.nodes.first(val="物理的実在の世界")

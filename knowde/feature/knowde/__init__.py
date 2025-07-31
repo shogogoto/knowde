@@ -24,35 +24,18 @@ from pydantic import BaseModel, Field
 
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.parsing.primitive.term import Term
-from knowde.feature.user.domain import User
 from knowde.shared.nxutil import to_nodes
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import NXGraph
+from knowde.shared.user.schema import UserReadPublic
 
 
-class Knowde(BaseModel, frozen=True):
-    """知識の最小単位."""
+class Additional(BaseModel, frozen=True):
+    """knowde付加情報."""
 
-    sentence: str
-    uid: UUID
-    term: Term | None = None
-
-    # additional
     when: str | None = None
     where: str | None = None
     by: str | None = None
-
-    def __str__(self) -> str:  # noqa: D105
-        t = f"[{self.term}]" if self.term else ""
-        when = f"T({self.when})" if self.when else ""
-        return f"{self.sentence}{t}{when}"
-
-
-class UidStr(BaseModel):
-    """UUID付き文章."""
-
-    val: str
-    uid: UUID
 
 
 class KStats(BaseModel, frozen=True):
@@ -82,38 +65,67 @@ class KStats(BaseModel, frozen=True):
         return str(ls)
 
 
-class KnowdeWithStats(BaseModel, frozen=True):
-    """統計情報付きknowde."""
+class Knowde(BaseModel, frozen=True):
+    """知識の最小単位."""
 
-    knowde: Knowde
+    sentence: str
+    uid: UUID
+    term: Term | None = None
+    additional: Additional | None = None
     stats: KStats
 
+    def __str__(self) -> str:  # noqa: D105
+        a = self.additional
+        t = f"[{self.term}]" if self.term else ""
+        when = f"T({a.when})" if a is not None and a.when else ""
+        return f"{self.sentence}{t}{when}"
 
-class KnowdeLocation(BaseModel):
-    """knowdeの位置情報."""
+    def when(self) -> str:  # noqa: D102
+        a = self.additional
+        return f"T({a.when})" if a is not None and a.when else ""
 
-    user: User
+
+class UidStr(BaseModel):
+    """UUID付き文章."""
+
+    val: str
+    uid: UUID
+
+
+class LocationWithoutParents(BaseModel):
+    """親なしknowdeの位置情報."""
+
+    user: UserReadPublic
     folders: list[UidStr]
     resource: MResource
     headers: list[UidStr]
-    parents: list[KnowdeWithStats]
+
+    # for debug
+    def __str__(self) -> str:  # noqa: D105
+        return f"{self.user.username} {'>'.join([h.val for h in self.headers])}"
+
+
+class KnowdeLocation(LocationWithoutParents):
+    """knowdeの位置情報."""
+
+    parents: list[Knowde]
 
 
 class KAdjacency(BaseModel):
     """周辺情報も含める."""
 
-    center: KnowdeWithStats
-    details: list[KnowdeWithStats]
-    premises: list[KnowdeWithStats]
-    conclusions: list[KnowdeWithStats]
-    refers: list[KnowdeWithStats]
-    referreds: list[KnowdeWithStats]
+    center: Knowde
+    details: list[Knowde]
+    premises: list[Knowde]
+    conclusions: list[Knowde]
+    refers: list[Knowde]
+    referreds: list[Knowde]
 
     def __str__(self) -> str:
         """For display in CLI."""
         s = str(self.center)
-        s += f"@{self.when}" if self.when else ""
-        s += "\n" + str(self.stats) if self.stats else ""
+        s += f"@{self.center.when()}"
+        s += "\n" + str(self.center.stats) if self.center.stats else ""
         if self.details:
             s += f"  {{ {', '.join(map(str, self.details))} }}"
         if self.premises:
@@ -132,24 +144,24 @@ class KnowdeDetail(BaseModel):
 
     uid: UUID
     g: NXGraph
-    knowdes: dict[UUID, KnowdeWithStats]
+    knowdes: dict[UUID, Knowde]
     location: KnowdeLocation
 
     # テスト用メソッド
     def get(self, sentence: str) -> UUID:  # noqa: D102
         for k, v in self.knowdes.items():
-            if v.knowde.sentence == sentence:
-                if v.knowde.uid.hex not in self.g:
+            if v.sentence == sentence:
+                if v.uid.hex not in self.g:
                     raise ValueError
                 return k
         raise ValueError
 
-    def succ(self, sentence: str, t: EdgeType) -> list[KnowdeWithStats]:  # noqa: D102
+    def succ(self, sentence: str, t: EdgeType) -> list[Knowde]:  # noqa: D102
         uid = self.get(sentence)
         succs = list(t.succ(self.g, uid.hex))
         return [self.knowdes[UUID(s)] for s in succs]
 
-    def part(self, tgt: str) -> set[KnowdeWithStats]:
+    def part(self, tgt: str) -> set[Knowde]:
         """targetも含めて返す."""
         uid = self.get(tgt)
 
