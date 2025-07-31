@@ -49,7 +49,7 @@ async def test_search_knowde_by_txt(u: LUser):
     """
     _sn, _ = await save_text(u.uid, s)
     _total, adjs = search_knowde("A1")
-    assert [a.sentence for a in adjs] == unordered(["a", "ちん", "bA123"])
+    assert [a[0].sentence for a in adjs] == unordered(["a", "ちん", "bA123"])
 
     a = LSentence.nodes.get(val="xxx")
     adjs = adjacency_knowde(a.uid)
@@ -143,14 +143,8 @@ async def test_paging(u: LUser):
     assert len(adjs) == 0
 
 
-@mark_async_test()
-async def test_ordering(u: LUser):
-    """検索結果の順番を確認.
-
-    sortをどう生成するのか
-    scoreの定義 weight * var の sumというのだけでいい
-    desc asc
-    """
+async def to_chain(u: LUser) -> SysNet:
+    """Set up fixture."""
     sn, r = await save_text(u.uid, "# titleY\n")
     g = nx.path_graph(30, create_using=nx.MultiDiGraph)
     g = nx.relabel_nodes(g, {i: str(i) for i in g.nodes})
@@ -160,6 +154,13 @@ async def test_ordering(u: LUser):
     sn = SysNet(root=sn.root, g=h)
     sn2db(sn, r.uid)
     sn, _uids = await restore_sysnet(r.uid)
+    return sn
+
+
+@mark_async_test()
+async def test_ordering(u: LUser):
+    """検索結果の順番を確認."""
+    _sn = await to_chain(u)
     order_by = OrderBy(
         n_detail=0,
         n_premise=-1,
@@ -174,7 +175,7 @@ async def test_ordering(u: LUser):
         WherePhrase.REGEX,
         order_by=order_by,
     )
-    assert [a.sentence for a in adjs] == [str(i) for i in range(30)]
+    assert [a[0].sentence for a in adjs] == [str(i) for i in range(30)]
 
 
 @mark_async_test()

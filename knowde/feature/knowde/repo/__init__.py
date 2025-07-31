@@ -11,10 +11,11 @@ from knowde.feature.entry.category.folder.repo import fetch_namespace
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.entry.namespace import save_resource
 from knowde.feature.entry.namespace.sync import txt2meta
-from knowde.feature.knowde import KAdjacency, Knowde
+from knowde.feature.knowde import KAdjacency, Knowde, KnowdeLocation
 from knowde.feature.knowde.repo.clause import OrderBy, Paging, WherePhrase
 from knowde.feature.knowde.repo.detail import (
     fetch_knowdes_with_detail,
+    fetch_knowdes_with_detail_and_location,
 )
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.tree2net import parse2net
@@ -73,7 +74,7 @@ def search_knowde(
     paging: Paging = Paging(),
     order_by: OrderBy | None = OrderBy(),
     do_print: bool = False,  # noqa: FBT001, FBT002
-) -> tuple[int, list[Knowde]]:
+) -> tuple[int, list[tuple[Knowde, KnowdeLocation]]]:
     """用語、文のいずれかでマッチするものを返す."""
     q = rf"""
         CALL () {{
@@ -88,16 +89,15 @@ def search_knowde(
         """
     if do_print:
         print(q)  # noqa: T201
-    res = db.cypher_query(q, params={"s": s})
-    uids = res2uidstrs(res)
-    d = fetch_knowdes_with_detail(uids)
-    ls = []
-    for row in res[0]:
+    rows, _ = db.cypher_query(q, params={"s": s})
+    uids = res2uidstrs(rows)
+    d = fetch_knowdes_with_detail_and_location(uids)
+    ls: list[tuple[Knowde, KnowdeLocation]] = []
+    for row in rows:
         sent_uid = row[0]
         kst = d[sent_uid]
         ls.append(kst)
-    total = search_total(s, where)
-    return total, ls
+    return search_total(s, where), ls
 
 
 def res2uidstrs(res: tuple) -> set[str]:

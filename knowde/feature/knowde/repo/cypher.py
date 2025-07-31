@@ -153,7 +153,8 @@ def q_upper(sent_var: str) -> str:
     complex_ = "TO|RESOLVED|EXAMPLE"  # resourceに近づくとは限らない方向
     return f"""
         CALL ({sent_var}) {{
-            OPTIONAL MATCH p = (upper:Sentence|Head)-[:{STREAM}]->
+            // Resource直下でも許容
+            OPTIONAL MATCH p = (upper:Sentence|Head|Resource)-[:{STREAM}]->
                 (up:Sentence)-[:{complex_}]-*({sent_var})
             WITH p, LENGTH(p) as len, upper
             ORDER BY len ASC // 最短

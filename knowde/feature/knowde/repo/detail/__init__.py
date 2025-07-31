@@ -92,8 +92,7 @@ def fetch_knowdes_with_detail_and_location(
         d_parents = {}
         for row in rows:
             sent, names, when, stats, location = row
-            s = sent.get("val")
-            uid = sent.get("uid")
+            s, uid = sent.get("val"), sent.get("uid")
             if location is None:
                 msg = f"location not found: {s} @{uid}"
                 raise NotFoundError(msg)
