@@ -8,22 +8,21 @@ from pytest_unordered import unordered
 from knowde.api import root_router
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.knowde.repo import save_text
+from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.stats.nxdb import LSentence
-from knowde.shared.nxutil import to_leaves, to_roots
+from knowde.shared.nxutil import nxprint, to_leaves, to_roots
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.user.label import LUser
 
-from . import chains_knowde
+from . import chains_knowde, knowde_upper
 
 
 @async_fixture()
 async def u() -> LUser:  # noqa: D103
-    return await LUser(email="onex@gmail.com", hashed_password="xxx").save()  # noqa: S106
+    return await LUser(email="one@gmail.com", username="one").save()
 
 
-@mark_async_test()
-async def test_detail_networks_to_or_resolved_edges(u: LUser):
-    """IDによる詳細 TO/RESOLVED関係."""
+async def setup(u: LUser) -> SysNet:  # noqa: D103
     s = """
     # titleX
     ## head1
@@ -64,11 +63,49 @@ async def test_detail_networks_to_or_resolved_edges(u: LUser):
         C: c{B}c
             -> ccc
     """
-    _sn, _r = await save_text(
+    sn, _r = await save_text(
         u.uid,
         s,
         path=("A", "B", "C.txt"),
     )  # C.txtはDBには格納されない
+    return sn
+
+
+@mark_async_test()
+async def test_get_upper(u: LUser):
+    """parentの末尾 upper を取得する."""
+    sn = await setup(u)
+    nxprint(sn.g, detail=True)
+
+    def s_assert(val: str, expected: str):
+        s = LSentence.nodes.get(val=val)
+        upper = knowde_upper(UUID(s.uid))
+        assert upper.val == expected
+
+    s_assert("0", "p2")
+    s_assert("p2", "parent")
+    s_assert("x23", "x2")
+    s_assert("x231", "x23")
+    s_assert("yyy", "0")
+    s_assert("zzz", "0")
+    # upperがない場合は自身を返す
+    s_assert("a", "a")
+    s_assert("c{B}c", "c{B}c")
+    # -> の upperも辿れる
+    # s_assert("1", "0")
+    # s_assert("1", "0")
+
+    # <- の upperも辿れる
+
+    # -> <- の混在
+
+    # <- -> の混在
+
+
+@mark_async_test()
+async def test_detail_networks_to_or_resolved_edges(u: LUser):
+    """IDによる詳細 TO/RESOLVED関係."""
+    await setup(u)
     s = LSentence.nodes.get(val="0")
     detail = chains_knowde(UUID(s.uid))
     assert [k.sentence for k in detail.succ("0", EdgeType.TO)] == unordered([

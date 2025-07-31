@@ -19,9 +19,11 @@ from knowde.feature.knowde.repo.cypher import (
     q_call_sent_names,
     q_location,
     q_stats,
+    q_upper,
 )
 from knowde.feature.parsing.primitive.term import Term
-from knowde.shared.errors.domain import NotFoundError
+from knowde.feature.stats.nxdb import LSentence
+from knowde.shared.errors.domain import NotFoundError, NotUniqueError
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import to_uuid
 
@@ -102,13 +104,13 @@ def fetch_knowdes_with_detail_and_location(
         )
         d_loc[uid], d_parents[uid] = build_location_res(location)
 
-    # それぞれの parents を集めてい一括 parent detial取得
+    # それぞれの parents を集めて一括 parent detial取得
     puids = set(flatten(d_parents.values()))
     parent_dk = fetch_knowdes_with_detail(puids)
-    res = {}
+    retval = {}
     for k, v in d.items():
         parents = [parent_dk[uid] for uid in d_parents[k]]
-        res[k] = (
+        retval[k] = (
             v,
             KnowdeLocation(
                 parents=parents,
@@ -118,7 +120,7 @@ def fetch_knowdes_with_detail_and_location(
                 headers=d_loc[k].headers,
             ),
         )
-    return res
+    return retval
 
 
 def locate_knowde(uid: UUID, do_print: bool = False) -> KnowdeLocation:  # noqa: FBT001, FBT002
@@ -147,6 +149,21 @@ def locate_knowde(uid: UUID, do_print: bool = False) -> KnowdeLocation:  # noqa:
             headers=wl.headers,
         )
     raise ValueError
+
+
+def knowde_upper(uid: UUID) -> LSentence:
+    """knowdeの親を返す."""
+    q = f"""
+        MATCH (sent: Sentence {{uid: $uid}})
+        {q_upper("sent")}
+        RETURN upper
+    """
+
+    rows, _ = db.cypher_query(q, params={"uid": uid.hex})
+    if len(rows) != 1:
+        msg = f"{uid} sentence location not found"
+        raise NotUniqueError(msg)
+    return LSentence(**rows[0][0]._properties)  # noqa: SLF001
 
 
 def chains_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: FBT001, FBT002
@@ -196,6 +213,14 @@ def chains_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: F
     if len(g.nodes) == 0:
         msg = f"{uid} sentence not found"
         raise NotFoundError(msg)
+
+    # d = fetch_knowdes_with_detail_and_location(g.nodes)
+    # return KnowdeDetail(
+    #     uid=uid,
+    #     g=g,
+    #     knowdes={to_uuid(k): v[0] for k, v in d.items()},
+    #     location=d[uid.hex][1],
+    # )
 
     d = fetch_knowdes_with_detail(list(g.nodes))
     return KnowdeDetail(

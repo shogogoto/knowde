@@ -100,6 +100,10 @@ class LocationWithoutParents(BaseModel):
     resource: MResource
     headers: list[UidStr]
 
+    # for debug
+    def __str__(self) -> str:  # noqa: D105
+        return f"{self.user.username} {'>'.join([h.val for h in self.headers])}"
+
 
 class KnowdeLocation(LocationWithoutParents):
     """knowdeの位置情報."""

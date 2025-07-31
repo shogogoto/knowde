@@ -136,12 +136,40 @@ def q_adjaceny_uids(sent_var: str) -> str:
     """
 
 
+def q_upper(sent_var: str) -> str:
+    """parentの末尾 upper を取得する."""
+    e = "EXAMPLE|TO|RESOLVED|SIBLING"
+    return f"""
+        CALL ({sent_var}) {{
+            OPTIONAL MATCH (_upper:Sentence)
+                -[:BELOW]->(up:Sentence)-[:{e}]->*({sent_var})
+            RETURN
+                CASE
+                    WHEN _upper IS NULL THEN {sent_var}
+                    ELSE _upper
+                END as upper
+        }}
+    """
+
+
 def q_location(sent_var: str) -> str:
     """位置情報."""
+    # ->* 向きのみしか取得できておらず
+    #  locationがあるのにNoneを返してしまう場合があった
+    #  アプリでたまにdetailを辿ってエラーにまってたのもこれが原因か?
+    #  locationを辿るパターンを全て出してテストすべし
+    #    単文sent から登る(->方向, 今書いてある奴)だけではダメ
+    #      一旦下って(<- 方法)、登るパターンが必要
+    e = "EXAMPLE|TO|RESOLVED|SIBLING"
     return f"""
     CALL ({sent_var}) {{
+        CALL ({sent_var}) {{
+            MATCH (parent:Sentence)-[:{e}]->*({sent_var})
+            RETURN parent
+        }}
+
         MATCH p2 = (r:Resource)
-            -[:SIBLING|BELOW|HEAD|NUM|EXAMPLE|TO|BT|REF]->*({sent_var})
+            -[:SIBLING|BELOW|HEAD|NUM|TO]->*({sent_var})
         , p = (user:User)-[:OWNED|PARENT]-*(r)
         RETURN nodes(p) + nodes(p2)[0..-1] as location
     }}
