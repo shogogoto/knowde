@@ -49,7 +49,7 @@ async def test_search_knowde_by_txt(u: LUser):
     """
     _sn, _ = await save_text(u.uid, s)
     _total, adjs = search_knowde("A1")
-    assert [a[0].sentence for a in adjs] == unordered(["a", "ちん", "bA123"])
+    assert [a.sentence for a in adjs] == unordered(["a", "ちん", "bA123"])
 
     a = LSentence.nodes.get(val="xxx")
     adjs = adjacency_knowde(a.uid)
@@ -175,7 +175,7 @@ async def test_ordering(u: LUser):
         WherePhrase.REGEX,
         order_by=order_by,
     )
-    assert [a[0].sentence for a in adjs] == [str(i) for i in range(30)]
+    assert [a.sentence for a in adjs] == [str(i) for i in range(30)]
 
 
 @mark_async_test()
