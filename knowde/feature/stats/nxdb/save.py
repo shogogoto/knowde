@@ -61,7 +61,10 @@ def t2labels(t: type[StructuredNode]) -> str:
     return ":".join(t.inherited_labels())
 
 
-def node2q(n: KNode, nvars: dict[KNode, str]) -> str | list[str] | None:
+def q_create_node(
+    n: KNode,
+    nvars: dict[KNode, str],
+) -> str | list[str] | None:
     """nodeからcreate可能な文字列に変換."""
     var = nvars.get(n)
     if var is None:
@@ -85,7 +88,7 @@ def node2q(n: KNode, nvars: dict[KNode, str]) -> str | list[str] | None:
             return f"CREATE ({var}:{t2labels(LInterval)} {propstr(d)})"
         case str() | Duplicable():
             uid = getattr(n, "uid", uuid4()).hex
-            return f"CREATE ({var}:{t2labels(LSentence)} {{val: '{n}', uid: '{uid}'}})"
+            return f"CREATE ({var}:{t2labels(LSentence)} {{val: '{n}', uid: '{uid}', resource_uid: $uid}})"  # noqa: E501
         case _:
             return None
     return None
@@ -138,9 +141,8 @@ def sysnet2cypher(sn: SysNet) -> str:
     varnames = {n: f"n{i}" for i, n in enumerate(nodes)}
     root_var = "root"
     varnames[sn.root] = root_var
-
     q_root = [f"MATCH ({root_var}:{t2labels(LResource)} {{uid: $uid}})"]
-    q_create = q_root + [node2q(n, varnames) for n in nodes]
+    q_create = q_root + [q_create_node(n, varnames) for n in nodes]
     g = nx.subgraph_view(
         sn.g,
         filter_node=lambda n: n not in sn.meta,

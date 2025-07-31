@@ -1,5 +1,6 @@
 """repo."""
 
+from collections.abc import Iterable
 from datetime import datetime
 from uuid import UUID
 
@@ -11,17 +12,20 @@ from knowde.feature.entry.category.folder.repo import fetch_namespace
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.entry.namespace import save_resource
 from knowde.feature.entry.namespace.sync import txt2meta
-from knowde.feature.knowde import KAdjacency, Knowde, KnowdeLocation
-from knowde.feature.knowde.repo.clause import OrderBy, Paging, WherePhrase
-from knowde.feature.knowde.repo.detail import (
-    fetch_knowdes_with_detail,
-    fetch_knowdes_with_detail_and_location,
+from knowde.feature.knowde import (
+    KAdjacency,
+    Knowde,
+    KnowdeSearchResult,
+    ResourceOwnsers,
 )
+from knowde.feature.knowde.repo.clause import OrderBy, Paging, WherePhrase
+from knowde.feature.knowde.repo.detail import fetch_knowdes_with_detail
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.tree2net import parse2net
 from knowde.feature.stats.nxdb.save import sn2db
 from knowde.shared.errors import DomainError
 from knowde.shared.types import UUIDy, to_uuid
+from knowde.shared.user.schema import UserReadPublic
 
 from .cypher import q_adjaceny_uids, q_stats, q_where_knowde
 
@@ -74,7 +78,7 @@ def search_knowde(
     paging: Paging = Paging(),
     order_by: OrderBy | None = OrderBy(),
     do_print: bool = False,  # noqa: FBT001, FBT002
-) -> tuple[int, list[tuple[Knowde, KnowdeLocation]]]:
+) -> KnowdeSearchResult:
     """用語、文のいずれかでマッチするものを返す."""
     q = rf"""
         CALL () {{
@@ -91,13 +95,17 @@ def search_knowde(
         print(q)  # noqa: T201
     rows, _ = db.cypher_query(q, params={"s": s})
     uids = res2uidstrs(rows)
-    d = fetch_knowdes_with_detail_and_location(uids)
-    ls: list[tuple[Knowde, KnowdeLocation]] = []
+    d = fetch_knowdes_with_detail(uids)
+    ls: list[Knowde] = []
     for row in rows:
         sent_uid = row[0]
         kst = d[sent_uid]
         ls.append(kst)
-    return search_total(s, where), ls
+    return KnowdeSearchResult(
+        total=search_total(s, where),
+        data=ls,
+        owners=knowde_owners({k.resource_uid for k in ls}),
+    )
 
 
 def res2uidstrs(res: tuple) -> set[str]:
@@ -151,3 +159,22 @@ def adjacency_knowde(sent_uid: str) -> list[KAdjacency]:
         )
         ls.append(adj)
     return ls
+
+
+def knowde_owners(resource_uids: Iterable[UUID]) -> dict[UUID, ResourceOwnsers]:
+    """knowdeの所有者を返す."""
+    q = """
+        UNWIND $uids as uid
+        MATCH (user:User)<-[:OWNED|PARENT]-*(r:Resource {uid: uid})
+        RETURN DISTINCT user, r
+        """
+    rows, _ = db.cypher_query(
+        q,
+        params={"uids": list({uid.hex for uid in resource_uids})},
+    )
+    d = {}
+    for row in rows:
+        user = UserReadPublic.model_validate(row[0])
+        r = MResource.freeze_dict(row[1])
+        d[r.uid] = ResourceOwnsers(user=user, resource=r)
+    return d

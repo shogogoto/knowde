@@ -102,9 +102,6 @@ async def test_search(u: LUser, caplog):
         抽象数学の美を名誉とし、それ以外の機械など技術一般は実用目的の卑賤なもの
     """
     client = TestClient(root_router())
-
-    # p = Path(__file__).parent.parent / "fixture" / "test.txt"
-    # s = p.read_text()
     _sn, _r = await save_text(u.uid, s)
     s = LTerm.nodes.get(val="アルキメデス").sentence.single()
     url = "/knowde/?q=%E6%95%B0%E5%AD%A6&type=CONTAINS&page=1&size=100&n_detail=1&n_premise=3&n_conclusion=3&n_refer=3&n_referred=3&dist_axiom=1&dist_leaf=1&desc=true"  # noqa: E501

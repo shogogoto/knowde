@@ -69,6 +69,7 @@ def fetch_knowdes_with_detail(
             additional=Additional(
                 when=when.get("val") if when is not None else None,
             ),
+            resource_uid=to_uuid(sent.get("resource_uid")),
         )
 
     diff = set(uids) - set(d.keys())
@@ -105,6 +106,7 @@ def fetch_knowdes_with_detail_and_location(
                 additional=Additional(
                     when=when.get("val") if when is not None else None,
                 ),
+                resource_uid=to_uuid(sent.get("resource_uid")),
             )
             d_loc[uid], d_parents[uid] = build_location_res(location)
         return d, d_loc, d_parents

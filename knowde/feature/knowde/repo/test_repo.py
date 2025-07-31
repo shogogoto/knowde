@@ -48,8 +48,8 @@ async def test_search_knowde_by_txt(u: LUser):
         y: {x}yy
     """
     _sn, _ = await save_text(u.uid, s)
-    _total, adjs = search_knowde("A1")
-    assert [a[0].sentence for a in adjs] == unordered(["a", "ちん", "bA123"])
+    res = search_knowde("A1")
+    assert [a.sentence for a in res.data] == unordered(["a", "ちん", "bA123"])
 
     a = LSentence.nodes.get(val="xxx")
     adjs = adjacency_knowde(a.uid)
@@ -132,15 +132,15 @@ async def test_paging(u: LUser):
     sn, _uids = await restore_sysnet(r.uid)
     n_nodes = len(sn.g.nodes) - 1
     assert n_nodes == 121  # title除いて121の文  # noqa: PLR2004
-    total, adjs = search_knowde(".*", WherePhrase.REGEX, Paging(page=1))
-    assert total == n_nodes
-    assert len(adjs) == 100  # noqa: PLR2004
+    res = search_knowde(".*", WherePhrase.REGEX, Paging(page=1))
+    assert res.total == n_nodes
+    assert len(res.data) == 100  # noqa: PLR2004
 
-    total, adjs = search_knowde(".*", WherePhrase.REGEX, Paging(page=2))
-    assert len(adjs) == 21  # noqa: PLR2004
+    res = search_knowde(".*", WherePhrase.REGEX, Paging(page=2))
+    assert len(res.data) == 21  # noqa: PLR2004
 
-    total, adjs = search_knowde(".*", WherePhrase.REGEX, Paging(page=3))
-    assert len(adjs) == 0
+    res = search_knowde(".*", WherePhrase.REGEX, Paging(page=3))
+    assert len(res.data) == 0
 
 
 async def to_chain(u: LUser) -> SysNet:
@@ -170,12 +170,12 @@ async def test_ordering(u: LUser):
         dist_axiom=0,
         dist_leaf=0,
     )
-    _total, adjs = search_knowde(
+    res = search_knowde(
         ".*",
         WherePhrase.REGEX,
         order_by=order_by,
     )
-    assert [a[0].sentence for a in adjs] == [str(i) for i in range(30)]
+    assert [a.sentence for a in res.data] == [str(i) for i in range(30)]
 
 
 @mark_async_test()
@@ -205,7 +205,7 @@ async def test_details(u: LUser):
     """
     _, r = await save_text(u.uid, s)
     _sn, _uids = await restore_sysnet(r.uid)
-    _total, _adjs = search_knowde(
+    _res = search_knowde(
         "detail",
         WherePhrase.CONTAINS,
         # do_print=True,

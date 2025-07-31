@@ -26,7 +26,6 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
         case_sensitive=True,  # 追加
-        # env_prefix=
     )
 
     NEO4J_URL: str

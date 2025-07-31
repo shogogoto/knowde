@@ -73,6 +73,7 @@ class Knowde(BaseModel, frozen=True):
     term: Term | None = None
     additional: Additional | None = None
     stats: KStats
+    resource_uid: UUID
 
     def __str__(self) -> str:  # noqa: D105
         a = self.additional
@@ -83,6 +84,21 @@ class Knowde(BaseModel, frozen=True):
     def when(self) -> str:  # noqa: D102
         a = self.additional
         return f"T({a.when})" if a is not None and a.when else ""
+
+
+class ResourceOwnsers(BaseModel):
+    """リソースの所有者."""
+
+    user: UserReadPublic
+    resource: MResource
+
+
+class KnowdeSearchResult(BaseModel):
+    """knowde検索結果."""
+
+    total: int
+    data: list[Knowde]
+    owners: dict[UUID, ResourceOwnsers]
 
 
 class UidStr(BaseModel):
