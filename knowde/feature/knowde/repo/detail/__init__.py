@@ -84,26 +84,33 @@ def fetch_knowdes_with_detail_and_location(
 ) -> dict[str, tuple[Knowde, KnowdeLocation]]:
     """詳細とlocation付きで返す."""
     q = q_detail_location(is_location=True, order_by=order_by)
-    res = db.cypher_query(q, params={"uids": list(uids)})
+    rows, _ = db.cypher_query(q, params={"uids": list(uids)})
 
-    d = {}
-    d_loc = {}
-    d_parents = {}
-    for row in res[0]:
-        sent, names, when, stats, location = row
-        uid = sent.get("uid")
-        names = [n.get("val") for n in names] if names is not None else []
-        d[uid] = Knowde(
-            sentence=sent.get("val"),
-            uid=uid,
-            term=Term.create(*names) if names else None,
-            stats=stats,
-            additional=Additional(
-                when=when.get("val") if when is not None else None,
-            ),
-        )
-        d_loc[uid], d_parents[uid] = build_location_res(location)
+    def _to_knowde():
+        d = {}
+        d_loc = {}
+        d_parents = {}
+        for row in rows:
+            sent, names, when, stats, location = row
+            s = sent.get("val")
+            uid = sent.get("uid")
+            if location is None:
+                msg = f"location not found: {s} @{uid}"
+                raise NotFoundError(msg)
+            names = [n.get("val") for n in names] if names is not None else []
+            d[uid] = Knowde(
+                sentence=s,
+                uid=uid,
+                term=Term.create(*names) if names else None,
+                stats=stats,
+                additional=Additional(
+                    when=when.get("val") if when is not None else None,
+                ),
+            )
+            d_loc[uid], d_parents[uid] = build_location_res(location)
+        return d, d_loc, d_parents
 
+    d, d_loc, d_parents = _to_knowde()
     # それぞれの parents を集めて一括 parent detial取得
     puids = set(flatten(d_parents.values()))
     parent_dk = fetch_knowdes_with_detail(puids)
@@ -121,34 +128,6 @@ def fetch_knowdes_with_detail_and_location(
             ),
         )
     return retval
-
-
-def locate_knowde(uid: UUID, do_print: bool = False) -> KnowdeLocation:  # noqa: FBT001, FBT002
-    """knowdeの親~userまでを返す."""
-    d = fetch_knowdes_with_detail_and_location([uid.hex])
-    return d[uid.hex][1]
-    q = f"""
-        MATCH (sent: Sentence {{uid: $uid}})
-        {q_location("sent")}
-        RETURN location
-    """
-    if do_print:
-        print(q)  # noqa: T201
-    res = db.cypher_query(q, params={"uid": uid.hex})
-    if len(res[0]) == 0:
-        msg = f"{uid} sentence location not found"
-        raise NotFoundError(msg)
-    for row in res[0][0]:
-        wl, parent_uids = build_location_res(row)
-        d = fetch_knowdes_with_detail(parent_uids)
-        return KnowdeLocation(
-            parents=[d[uid] for uid in parent_uids],
-            user=wl.user,
-            folders=wl.folders,
-            resource=wl.resource,
-            headers=wl.headers,
-        )
-    raise ValueError
 
 
 def knowde_upper(uid: UUID) -> LSentence:
@@ -214,18 +193,11 @@ def chains_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: F
         msg = f"{uid} sentence not found"
         raise NotFoundError(msg)
 
-    # d = fetch_knowdes_with_detail_and_location(g.nodes)
-    # return KnowdeDetail(
-    #     uid=uid,
-    #     g=g,
-    #     knowdes={to_uuid(k): v[0] for k, v in d.items()},
-    #     location=d[uid.hex][1],
-    # )
-
-    d = fetch_knowdes_with_detail(list(g.nodes))
+    d = fetch_knowdes_with_detail(g.nodes)
+    d2 = fetch_knowdes_with_detail_and_location([uid.hex])
     return KnowdeDetail(
         uid=uid,
         g=g,
         knowdes={to_uuid(k): v for k, v in d.items()},
-        location=locate_knowde(uid),
+        location=d2[uid.hex][1],
     )

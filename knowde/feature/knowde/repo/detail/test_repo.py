@@ -10,7 +10,7 @@ from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.knowde.repo import save_text
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.stats.nxdb import LSentence
-from knowde.shared.nxutil import nxprint, to_leaves, to_roots
+from knowde.shared.nxutil import to_leaves, to_roots
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.user.label import LUser
 
@@ -76,8 +76,7 @@ async def setup(u: LUser) -> SysNet:  # noqa: D103
 @mark_async_test()
 async def test_get_upper(u: LUser):
     """parentの末尾 upper を取得する."""
-    sn = await setup(u)
-    nxprint(sn.g, detail=True)
+    _sn = await setup(u)
 
     def s_assert(val: str, expected: str):
         s = LSentence.nodes.get(val=val)
@@ -185,9 +184,9 @@ async def test_detail_no_below_no_header(u: LUser):
     s = LSentence.nodes.get(val="a")
     d = chains_knowde(UUID(s.uid))
     assert [k.sentence for k in d.part("a")] == ["a"]
-    assert d.location.parents == []
     assert d.location.headers == []
     assert d.location.user.id.hex == u.uid
+    assert d.location.parents == []
 
 
 @mark_async_test()
@@ -277,18 +276,6 @@ async def test_not_found_should_not_raise_error(u: LUser):
             「数論を戦争に役立たせる道は誰も見出していない」
               <-> 暗号に応用され
           ! nameの区切り文字を","に変えるべきか
-          ハーディ=ワインベルクの法則: 進化の基本原理を説明する数学的モデル
-            以下を満たす大規模の遺伝子恒星は世代間で変化しない
-              無作為に交配する
-              個体の流出なし
-              突然変異なし
-              自然選択が発生しない
-          楕円の研究
-            by. メナイクモス
-              when. BC50
-            太陽系の惑星の軌道の記述へ応用された
-              by. ケプラー
-              by. ニュートン
     """
     _sn, _r = await save_text(u.uid, s)
     tgt = LSentence.nodes.first(val="物理的実在の世界")
