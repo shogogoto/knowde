@@ -150,11 +150,15 @@ STREAM: Final = "SIBLING|BELOW|HEAD|NUM"
 
 def q_upper(sent_var: str) -> str:
     """parentの末尾 upper を取得する."""
-    complex_ = "TO|RESOLVED|EXAMPLE"  # resourceに近づくとは限らない方向
+    # RESOUVED は含めない ブロックを飛び越えて広範囲に探索することになって
+    #   応答が返ってこなくなる
+    complex_ = "TO|EXAMPLE"  # resourceに近づくとは限らない方向
     return f"""
         CALL ({sent_var}) {{
             // Resource直下でも許容
-            OPTIONAL MATCH p = (upper:Sentence|Head|Resource)-[:{STREAM}]->
+            MATCH (r:Resource {{uid: {sent_var}.resource_uid}})
+            OPTIONAL MATCH p = (r)-[:{STREAM}]->*
+                (upper:Sentence|Head)-[:{STREAM}]->
                 (up:Sentence)-[:{complex_}]-*({sent_var})
             WITH p, LENGTH(p) as len, upper
             ORDER BY len ASC // 最短

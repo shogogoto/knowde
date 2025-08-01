@@ -48,7 +48,7 @@ class LSentence(StructuredNode):
         fulltext_index=FulltextIndex(),
     )  # , max_length=MAX_CHARS)
     term = RelationshipTo("LTerm", "TERM", cardinality=ZeroOrOne)
-    resource_uid = StringProperty(require=True)  # 作成ユーザーID
+    resource_uid = StringProperty(require=True, index=True)  # 作成ユーザーID
     # 各文からlocationを取得しようとしたが、探索に時間がかかりすぎるのか応答しなくなった
     # 探索コストを削減するために、元からIDを持たせることにした
 

@@ -141,7 +141,7 @@ def knowde_upper(uid: UUID) -> LSentence:
 
     rows, _ = db.cypher_query(q, params={"uid": uid.hex})
     if len(rows) != 1:
-        msg = f"{uid} sentence location not found"
+        msg = f"{uid} sentence location is not unique: {len(rows)}"
         raise NotUniqueError(msg)
     return LSentence(**rows[0][0]._properties)  # noqa: SLF001
 
