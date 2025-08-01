@@ -50,7 +50,7 @@ class LSentence(StructuredNode):
     term = RelationshipTo("LTerm", "TERM", cardinality=ZeroOrOne)
     resource_uid = StringProperty(require=True, index=True)  # 作成ユーザーID
     # 各文からlocationを取得しようとしたが、探索に時間がかかりすぎるのか応答しなくなった
-    # 探索コストを削減するために、元からIDを持たせることにした
+    # 探索コストを削減するために、元からIDを持たせる
 
     resource = RelationshipFrom(LResource, "BELOW")
 
