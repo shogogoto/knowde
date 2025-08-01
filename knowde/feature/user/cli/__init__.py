@@ -37,7 +37,7 @@ def register_cmd(email: str, password: str, name: str) -> None:
 
     res = AuthPost().register(email=email, password=password, display_name=name)
     echo_response(res, "登録")
-    click.echo("ログインしてください")
+    login_proc(email, password)
 
 
 @user_cli.command("login")
@@ -45,6 +45,10 @@ def register_cmd(email: str, password: str, name: str) -> None:
 @click.password_option(confirmation_prompt=False)
 def login_cmd(email: str, password: str) -> None:
     """ログイン."""
+    login_proc(email, password)
+
+
+def login_proc(email: str, password: str) -> None:  # noqa: D103
     from knowde.feature.user.routers.repo.client import (  # noqa: PLC0415
         AuthPost,
         save_credential,
