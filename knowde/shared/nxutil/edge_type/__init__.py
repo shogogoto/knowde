@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Hashable
-from enum import Enum, auto
+from enum import Enum, StrEnum, auto
 from functools import cache, cached_property, reduce
 from typing import TYPE_CHECKING, Self
 
@@ -24,7 +24,7 @@ class Direction(Enum):
     BOTH = auto()
 
 
-class EdgeType(Enum):
+class EdgeType(StrEnum):
     """グラフ関係の種類."""
 
     # 文章構成

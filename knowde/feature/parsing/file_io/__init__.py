@@ -37,7 +37,7 @@ class NxJsonalyzer(json.JSONEncoder):
     def restore(cls, d: object) -> object:
         """For json load."""
         if T_EDGE_KEY in d:
-            d[T_EDGE_KEY] = EdgeType[d[T_EDGE_KEY]]
+            d[T_EDGE_KEY] = EdgeType(d[T_EDGE_KEY])
         if "names" in d:
             d = Term.model_validate(d)
         if "uid" in d:
@@ -56,7 +56,7 @@ def nx2json_dump(g: nx.DiGraph, indent: int = 2) -> str:
 
 def nxwrite(g: nx.DiGraph, write_to: Path) -> None:
     """Graph -> file."""
-    write_to.write_text(nx2json_dump(g))
+    write_to.write_text(nx2json_dump(g), encoding="utf-8")
 
 
 def nxread(txt: str) -> nx.DiGraph:
