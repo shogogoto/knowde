@@ -160,11 +160,11 @@ class KnowdeDetail(BaseModel):
 
     uid: UUID
     g: NXGraph
-    knowdes: dict[UUID, Knowde]
+    knowdes: dict[str, Knowde]
     location: KnowdeLocation
 
     # テスト用メソッド
-    def get(self, sentence: str) -> UUID:  # noqa: D102
+    def get(self, sentence: str) -> str:  # noqa: D102
         for k, v in self.knowdes.items():
             if v.sentence == sentence:
                 if v.uid.hex not in self.g:
@@ -174,8 +174,8 @@ class KnowdeDetail(BaseModel):
 
     def succ(self, sentence: str, t: EdgeType) -> list[Knowde]:  # noqa: D102
         uid = self.get(sentence)
-        succs = list(t.succ(self.g, uid.hex))
-        return [self.knowdes[UUID(s)] for s in succs]
+        succs = list(t.succ(self.g, uid))
+        return [self.knowdes[s] for s in succs]
 
     def part(self, tgt: str) -> set[Knowde]:
         """targetも含めて返す."""
@@ -192,16 +192,16 @@ class KnowdeDetail(BaseModel):
             is_first = False
             return it
 
-        ns = to_nodes(self.g, uid.hex, succ)
-        return {self.knowdes.get(UUID(s)) for s in ns if s is not None}
+        ns = to_nodes(self.g, uid, succ)
+        return {self.knowdes.get(s) for s in ns if s is not None}
 
     @property
     def graph(self) -> DiGraph:  # noqa: D102
         g = DiGraph()
 
         for u, v, attr in self.g.edges(data=True):
-            uu = self.knowdes.get(UUID(u))
-            vv = self.knowdes.get(UUID(v))
+            uu = self.knowdes.get(u)
+            vv = self.knowdes.get(v)
             if uu is not None and vv is not None:
                 g.add_edge(uu, vv, **attr)
         return g

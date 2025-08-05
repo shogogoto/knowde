@@ -120,7 +120,7 @@ async def test_detail_networks_to_or_resolved_edges(u: LUser):
         "2",
     ])
     roots_to = to_roots(detail.g, EdgeType.TO)
-    assert [detail.knowdes[UUID(s)].sentence for s in roots_to] == unordered([
+    assert [detail.knowdes[s].sentence for s in roots_to] == unordered([
         "-11",
         "-12",
         "-21",
@@ -128,7 +128,7 @@ async def test_detail_networks_to_or_resolved_edges(u: LUser):
         "complex2",
     ])
     leaves_to = to_leaves(detail.g, EdgeType.TO)
-    assert [detail.knowdes[UUID(s)].sentence for s in leaves_to] == unordered([
+    assert [detail.knowdes[s].sentence for s in leaves_to] == unordered([
         "11",
         "12",
         "21",
@@ -137,11 +137,11 @@ async def test_detail_networks_to_or_resolved_edges(u: LUser):
     ])
     roots_ref = to_roots(detail.g, EdgeType.RESOLVED)
     leaves_ref = to_leaves(detail.g, EdgeType.RESOLVED)
-    assert [detail.knowdes[UUID(s)].sentence for s in roots_ref] == unordered([
+    assert [detail.knowdes[s].sentence for s in roots_ref] == unordered([
         "c{B}c",
     ])
 
-    assert [detail.knowdes[UUID(s)].sentence for s in leaves_ref] == unordered([
+    assert [detail.knowdes[s].sentence for s in leaves_ref] == unordered([
         "0",
         "a",
     ])

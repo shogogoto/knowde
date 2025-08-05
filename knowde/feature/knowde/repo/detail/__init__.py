@@ -199,6 +199,6 @@ def chains_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: F
     return KnowdeDetail(
         uid=uid,
         g=g,
-        knowdes={to_uuid(k): v for k, v in d.items()},
+        knowdes=d,
         location=d2[uid.hex][1],
     )
