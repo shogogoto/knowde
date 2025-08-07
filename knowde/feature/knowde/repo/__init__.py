@@ -95,7 +95,7 @@ def search_knowde(
         print(q)  # noqa: T201
     rows, _ = db.cypher_query(q, params={"s": s})
     uids = res2uidstrs(rows)
-    d = fetch_knowdes_with_detail(uids)
+    d = fetch_knowdes_with_detail(uids, order_by=order_by)
     ls: list[Knowde] = []
     for row in rows:
         sent_uid = row[0]
