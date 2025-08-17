@@ -152,13 +152,13 @@ def q_upper(sent_var: str) -> str:
     """parentの末尾 upper を取得する."""
     # RESOUVED は含めない ブロックを飛び越えて広範囲に探索することになって
     #   応答が返ってこなくなる
-    complex_ = "TO|EXAMPLE"  # resourceに近づくとは限らない方向
+    complex_ = "TO|EXAMPLE|BY"  # resourceに近づくとは限らない方向
     return f"""
         CALL ({sent_var}) {{
             // Resource直下でも許容
             MATCH (r:Resource {{uid: {sent_var}.resource_uid}})
             OPTIONAL MATCH p = (r)-[:{STREAM}]->*
-                (upper:Sentence|Head)-[:{STREAM}]->
+                (upper:Sentence|Head)-[:{STREAM}|BY]->
                 (up:Sentence)-[:{complex_}]-*({sent_var})
             WITH p, LENGTH(p) as len, upper
             ORDER BY len ASC // 最短

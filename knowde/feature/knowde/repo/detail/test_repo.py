@@ -285,3 +285,30 @@ async def test_not_found_should_not_raise_error(u: LUser):
     uid = UUID(tgt.uid)
     res = client.get(f"/knowde/sentence/{uid}")
     assert res.is_success
+
+
+@mark_async_test()
+async def test_location_by_by_regression(u: LUser):
+    """<- by. の連鎖ではlocationが not foundになっていたので修正."""
+    s = """
+    # title
+      ZF公理系, ツェルメロ=フレンケルの公理系: 集合論を矛盾なく公理化・再現した
+        by. エルンスト・ツェルメロ: ドイツの数学者
+          when. 1871 ~ 1953
+      選択公理: 空でない集合各々から要素を選び出して新しい集合を作れる
+      連続体仮説: 自然数の濃度と実数の濃度の中間は存在しない
+      複数の妥当な集合論が成立
+        <- {選択公理}と{連続体仮説}は{ZF公理系}と矛盾しない
+          by. クルト・ゲーテル, ゲーテル: 最も偉大な論理学者の一人
+            when. 1906 ~ 1978
+    """
+
+    _sn, _r = await save_text(u.uid, s)
+    client = TestClient(root_router())
+    tgt = LSentence.nodes.first(val="最も偉大な論理学者の一人")
+    res = client.get(f"/knowde/sentence/{tgt.uid}")
+    assert res.is_success
+
+    tgt = LSentence.nodes.first(val="ドイツの数学者")
+    res = client.get(f"/knowde/sentence/{tgt.uid}")
+    assert res.is_success
