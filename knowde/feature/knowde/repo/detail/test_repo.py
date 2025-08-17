@@ -75,7 +75,7 @@ async def setup(u: LUser) -> SysNet:  # noqa: D103
 
 @mark_async_test()
 async def test_get_upper(u: LUser):
-    """parentの末尾 upper を取得する."""
+    """parent(resourceに辿れる)の末尾 upper を取得する."""
     _sn = await setup(u)
 
     def s_assert(val: str, expected: str):
@@ -83,30 +83,36 @@ async def test_get_upper(u: LUser):
         upper = knowde_upper(UUID(s.uid))
         assert upper.val == expected
 
-    s_assert("0", "p2")
-    s_assert("p2", "p1")
-    s_assert("x23", "x22")
-    s_assert("x231", "x23")
-    s_assert("yyy", "xxx")
-    s_assert("zzz", "yyy")
+    # そのまま辿れるなら自身を返す
+    s_assert("0", "0")
+    s_assert("p2", "p2")
+    s_assert("x23", "x23")
+    s_assert("x231", "x231")
+    s_assert("yyy", "yyy")
+    s_assert("zzz", "zzz")
     # upperがない場合は自身を返す
-    s_assert("a", "parent")
-    s_assert("c{B}c", "b{A}b{zero}")
+    s_assert("a", "a")
+    s_assert("c{B}c", "c{B}c")
     # -> の upperも辿れる
-    s_assert("1", "p2")
-    s_assert("2", "p2")
-    s_assert("11", "p2")
-    s_assert("22", "p2")
-    s_assert("221", "p2")
+    s_assert("1", "0")
+    s_assert("2", "0")
+    s_assert("11", "0")
+    s_assert("22", "0")
+    s_assert("221", "0")
 
     # <- の upperも辿れる
-    s_assert("-1", "p2")
-    s_assert("-2", "p2")
-    s_assert("-11", "p2")
-    s_assert("-22", "p2")
+    s_assert("-1", "0")
+    s_assert("-2", "0")
+    s_assert("-11", "0")
+    s_assert("-22", "0")
     # ->と<- の混在
-    s_assert("complex1", "p2")
-    s_assert("complex2", "p2")
+    s_assert("complex1", "0")
+    s_assert("complex2", "0")
+
+
+@mark_async_test()
+async def test_parents(u: LUser):
+    """parentを取得(upstreamのbelow関係のみ、siblingは含まない."""
 
 
 @mark_async_test()
@@ -114,39 +120,39 @@ async def test_detail_networks_to_or_resolved_edges(u: LUser):
     """IDによる詳細 TO/RESOLVED関係."""
     await setup(u)
     s = LSentence.nodes.get(val="0")
-    detail = chains_knowde(UUID(s.uid))
-    assert [k.sentence for k in detail.succ("0", EdgeType.TO)] == unordered([
+    detail_0 = chains_knowde(UUID(s.uid))
+    assert [k.sentence for k in detail_0.succ("0", EdgeType.TO)] == unordered([
         "1",
         "2",
     ])
-    roots_to = to_roots(detail.g, EdgeType.TO)
-    assert [detail.knowdes[s].sentence for s in roots_to] == unordered([
+    roots_to = to_roots(detail_0.g, EdgeType.TO)
+    assert [detail_0.knowdes[s].sentence for s in roots_to] == unordered([
         "-11",
         "-12",
         "-21",
         "-22",
         "complex2",
     ])
-    leaves_to = to_leaves(detail.g, EdgeType.TO)
-    assert [detail.knowdes[s].sentence for s in leaves_to] == unordered([
+    leaves_to = to_leaves(detail_0.g, EdgeType.TO)
+    assert [detail_0.knowdes[s].sentence for s in leaves_to] == unordered([
         "11",
         "12",
         "21",
         "221",
         "complex1",
     ])
-    roots_ref = to_roots(detail.g, EdgeType.RESOLVED)
-    leaves_ref = to_leaves(detail.g, EdgeType.RESOLVED)
-    assert [detail.knowdes[s].sentence for s in roots_ref] == unordered([
+    roots_ref = to_roots(detail_0.g, EdgeType.RESOLVED)
+    leaves_ref = to_leaves(detail_0.g, EdgeType.RESOLVED)
+    assert [detail_0.knowdes[s].sentence for s in roots_ref] == unordered([
         "c{B}c",
     ])
 
-    assert [detail.knowdes[s].sentence for s in leaves_ref] == unordered([
+    assert [detail_0.knowdes[s].sentence for s in leaves_ref] == unordered([
         "0",
         "a",
     ])
 
-    assert [p.sentence for p in detail.part("0")] == unordered([
+    assert [p.sentence for p in detail_0.part("0")] == unordered([
         "0",
         "xxx",
         "x1",
@@ -161,14 +167,13 @@ async def test_detail_networks_to_or_resolved_edges(u: LUser):
         "zzz",
     ])
 
-    loc = detail.location
+    loc = detail_0.location
     assert loc.user.id == UUID(u.uid)
     assert [f.val for f in loc.folders] == ["A", "B"]
     assert loc.resource.name == "# titleX"
     assert [f.val for f in loc.headers] == ["## head1", "### head2"]
     assert [str(p) for p in loc.parents] == [
         "parentT(19C)",
-        "p1",
         "p2",
     ]
 
@@ -284,4 +289,32 @@ async def test_not_found_should_not_raise_error(u: LUser):
     assert res.is_success
     uid = UUID(tgt.uid)
     res = client.get(f"/knowde/sentence/{uid}")
+    assert res.is_success
+
+
+@mark_async_test()
+async def test_location_by_by_regression(u: LUser):
+    """<- by. の連鎖ではlocationが not foundになっていたので修正."""
+    s = """
+    # title
+      ZF公理系, ツェルメロ=フレンケルの公理系: 集合論を矛盾なく公理化・再現した
+        by. エルンスト・ツェルメロ: ドイツの数学者
+          when. 1871 ~ 1953
+      選択公理: 空でない集合各々から要素を選び出して新しい集合を作れる
+      連続体仮説: 自然数の濃度と実数の濃度の中間は存在しない
+      複数の妥当な集合論が成立
+        <- {選択公理}と{連続体仮説}は{ZF公理系}と矛盾しない
+          by. クルト・ゲーテル, ゲーテル: 最も偉大な論理学者の一人
+            when. 1906 ~ 1978
+    """
+
+    _sn, _r = await save_text(u.uid, s)
+    client = TestClient(root_router())
+
+    tgt = LSentence.nodes.first(val="ドイツの数学者")
+    res = client.get(f"/knowde/sentence/{tgt.uid}")
+    assert res.is_success
+
+    tgt = LSentence.nodes.first(val="最も偉大な論理学者の一人")
+    res = client.get(f"/knowde/sentence/{tgt.uid}")
     assert res.is_success

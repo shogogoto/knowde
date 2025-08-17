@@ -5,6 +5,7 @@ from textwrap import indent
 from typing import Any, Final
 
 from more_itertools import first_true
+from neo4j.graph import Path
 
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.knowde import LocationWithoutParents, UidStr
@@ -145,7 +146,7 @@ def q_adjaceny_uids(sent_var: str) -> str:
 # (:Resource)--*(sent) ではコスト高すぎるかも
 #
 
-STREAM: Final = "SIBLING|BELOW|HEAD|NUM"
+STREAM: Final = "SIBLING|BELOW|HEAD|NUM|BY"
 
 
 def q_upper(sent_var: str) -> str:
@@ -158,12 +159,18 @@ def q_upper(sent_var: str) -> str:
             // Resource直下でも許容
             MATCH (r:Resource {{uid: {sent_var}.resource_uid}})
             OPTIONAL MATCH p = (r)-[:{STREAM}]->*
-                (upper:Sentence|Head)-[:{STREAM}]->
-                (up:Sentence)-[:{complex_}]-*({sent_var})
-            WITH p, LENGTH(p) as len, upper
+                (_upper:Sentence|Head)-[:{STREAM}]->
+                (up:Sentence)
+                , (up)-[:{complex_}|NUM|BY]-*({sent_var})
+            WITH p, LENGTH(p) as len, up, _upper, r
             ORDER BY len ASC // 最短
             LIMIT 1
-            RETURN upper
+            RETURN CASE
+                WHEN up IS NOT NULL THEN up
+                WHEN _upper IS NOT NULL THEN _upper
+                ELSE {sent_var}
+            END AS upper
+                , r AS resource
         }}
     """
 
@@ -173,34 +180,36 @@ def q_location(sent_var: str) -> str:
     return f"""
     CALL ({sent_var}) {{
         {q_upper(sent_var)}
-        WITH CASE upper // null だとpathを辿れない
-            WHEN IS NULL THEN {sent_var}
-            ELSE upper
-        END as _upper
-        OPTIONAL MATCH p2 = (r:Resource {{uid: {sent_var}.resource_uid}})
-            -[:{STREAM}]->*(_upper)
-        , p = (user:User)<-[:OWNED|PARENT]-*(r)
-        RETURN CASE _upper
-            WHEN {sent_var} THEN nodes(p) + nodes(p2)[1..-1] // 自身はparentsから除く
-            ELSE nodes(p) + nodes(p2)
-        END AS location
+        OPTIONAL MATCH p2 = (resource)-[:{STREAM}]->*(upper)
+        , p = (user:User)<-[:OWNED|PARENT]-*(resource)
+        RETURN nodes(p) + p2 AS location
     }}
     """
 
 
-def build_location_res(row: Any) -> tuple[LocationWithoutParents, list[str]]:
+def build_location_res(
+    row: Any,
+    self_uid: str,
+) -> tuple[LocationWithoutParents, list[str]]:
     """locationのレコードからmodelを組み立てる."""
     row = list(dict.fromkeys(row))
     user = UserReadPublic.model_validate(dict(row[0]), by_alias=True)
     r = first_true(row[1:], pred=lambda n: "Resource" in n.labels)
     i_r = row.index(r)
-    i_sent = first_true(row, pred=lambda n: "Sentence" in n.labels)
-    s_i = row.index(i_sent) if i_sent is not None else -1
-    headers = [UidStr(val=e.get("val"), uid=e.get("uid")) for e in row[i_r + 1 : s_i]]
-    parent_uids = [e.get("uid") for e in row[s_i:]] if s_i != -1 else []
+
+    path: Path = row[i_r + 1]  # リソース ~ 文のパス
+    heads = [rel.end_node for rel in path.relationships if rel.type == "HEAD"]
+    headers = [UidStr(val=e.get("val"), uid=e.get("uid")) for e in heads]
+    parent_uids = [
+        rel.start_node.get("uid")
+        for rel in path.relationships
+        if rel.type == "BELOW" and "Sentence" in rel.start_node.labels
+    ]
+    if self_uid in parent_uids:
+        parent_uids.remove(self_uid)
     return LocationWithoutParents(
         user=user,
         folders=[UidStr(val=e.get("name"), uid=e.get("uid")) for e in row[1:i_r]],
         resource=MResource.freeze_dict(dict(r)),
         headers=headers,
-    ), parent_uids
+    ), list(dict.fromkeys(parent_uids))
