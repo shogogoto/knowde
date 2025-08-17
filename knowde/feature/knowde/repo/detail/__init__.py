@@ -108,7 +108,7 @@ def fetch_knowdes_with_detail_and_location(
                 ),
                 resource_uid=to_uuid(sent.get("resource_uid")),
             )
-            d_loc[uid], d_parents[uid] = build_location_res(location)
+            d_loc[uid], d_parents[uid] = build_location_res(location, uid)
         return d, d_loc, d_parents
 
     d, d_loc, d_parents = _to_knowde()
