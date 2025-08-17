@@ -1,7 +1,6 @@
 """cypherの組立て."""
 
 from collections.abc import Callable
-from pprint import pp
 from textwrap import indent
 from typing import Any, Final
 
@@ -161,8 +160,9 @@ def q_upper(sent_var: str) -> str:
             MATCH (r:Resource {{uid: {sent_var}.resource_uid}})
             OPTIONAL MATCH p = (r)-[:{STREAM}]->*
                 (_upper:Sentence|Head)-[:{STREAM}]->
-                (up:Sentence)-[:{complex_}|BY]-*({sent_var})
-            WITH p, LENGTH(p) as len, up, _upper
+                (up:Sentence)
+                , (up)-[:{complex_}|NUM|BY]-*({sent_var})
+            WITH p, LENGTH(p) as len, up, _upper, r
             ORDER BY len ASC // 最短
             LIMIT 1
             RETURN CASE
@@ -170,6 +170,7 @@ def q_upper(sent_var: str) -> str:
                 WHEN _upper IS NOT NULL THEN _upper
                 ELSE {sent_var}
             END AS upper
+                , r AS resource
         }}
     """
 
@@ -179,9 +180,8 @@ def q_location(sent_var: str) -> str:
     return f"""
     CALL ({sent_var}) {{
         {q_upper(sent_var)}
-        OPTIONAL MATCH p2 = (r:Resource {{uid: {sent_var}.resource_uid}})
-            -[:{STREAM}]->*(upper)
-        , p = (user:User)<-[:OWNED|PARENT]-*(r)
+        OPTIONAL MATCH p2 = (resource)-[:{STREAM}]->*(upper)
+        , p = (user:User)<-[:OWNED|PARENT]-*(resource)
         RETURN nodes(p) + p2 AS location
     }}
     """
@@ -198,7 +198,6 @@ def build_location_res(
     i_r = row.index(r)
 
     path: Path = row[i_r + 1]  # リソース ~ 文のパス
-    pp(path.relationships)
     heads = [rel.end_node for rel in path.relationships if rel.type == "HEAD"]
     headers = [UidStr(val=e.get("val"), uid=e.get("uid")) for e in heads]
     parent_uids = [

@@ -75,7 +75,7 @@ async def setup(u: LUser) -> SysNet:  # noqa: D103
 
 @mark_async_test()
 async def test_get_upper(u: LUser):
-    """parentの末尾 upper を取得する."""
+    """parent(resourceに辿れる)の末尾 upper を取得する."""
     _sn = await setup(u)
 
     def s_assert(val: str, expected: str):
