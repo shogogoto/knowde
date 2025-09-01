@@ -12,6 +12,7 @@ from knowde.feature.entry.category.folder.repo import fetch_namespace
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.entry.namespace import save_resource
 from knowde.feature.entry.namespace.sync import txt2meta
+from knowde.feature.entry.resource.repo.save import sn2db
 from knowde.feature.knowde import (
     KAdjacency,
     Knowde,
@@ -22,7 +23,6 @@ from knowde.feature.knowde.repo.clause import OrderBy, Paging, WherePhrase
 from knowde.feature.knowde.repo.detail import fetch_knowdes_with_detail
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.tree2net import parse2net
-from knowde.feature.stats.nxdb.save import sn2db
 from knowde.shared.errors import DomainError
 from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.user.schema import UserReadPublic

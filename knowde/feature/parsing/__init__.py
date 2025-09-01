@@ -1,4 +1,4 @@
-"""common."""
+"""file -> sentnet 変換が責務."""
 
 import sys
 import time

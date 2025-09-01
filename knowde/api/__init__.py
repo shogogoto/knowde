@@ -15,9 +15,9 @@ from knowde.api.middleware.logging import LoggingMiddleware
 from knowde.api.middleware.logging.log_config import setup_logging
 from knowde.api.middleware.transaction import Neo4jTransactionMiddleware
 from knowde.config.env import Settings
+from knowde.feature.entry.resource.repo.router import nxdb_router
 from knowde.feature.entry.router import entry_router
 from knowde.feature.knowde.router import knowde_router
-from knowde.feature.stats.nxdb.router import nxdb_router
 from knowde.feature.user.routers import auth_router, user_router
 
 if TYPE_CHECKING:

@@ -11,8 +11,8 @@ from fastapi import APIRouter, Depends, UploadFile
 from knowde.feature.entry import ResourceMeta
 from knowde.feature.entry.category.folder.repo import fetch_namespace
 from knowde.feature.entry.label import LResource
+from knowde.feature.entry.resource.repo.save import sn2db
 from knowde.feature.parsing.tree2net import parse2net
-from knowde.feature.stats.nxdb.save import sn2db
 from knowde.shared.user.router_util import auth_component
 
 if TYPE_CHECKING:

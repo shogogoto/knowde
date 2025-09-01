@@ -36,3 +36,25 @@ async def get_namaspace(
 ) -> NameSpace:
     """ユーザーの名前空間."""
     return await fetch_namespace(user.id)
+
+
+@router.get("/resource/{resource_id}")
+async def get_resource_detail(
+    resource_id: str,
+    user: Annotated[User, Depends(auth_component().current_user(active=True))],
+) -> None:
+    """リソース詳細.
+
+    aaaa
+    ディレクトリ構成を整備
+        file
+            -> resource meta
+            -> header
+        parsing
+        sentnet
+
+
+
+
+
+    """
