@@ -50,7 +50,7 @@ async def test_sync_router(files: tuple[Anchor, list[Path]]) -> None:  # noqa: F
         op.append(f)
         reqfiles.append(("files", (p.name, f, "application/octet-stream")))
     res = client.post(
-        s.url("/upload"),
+        s.url("/resource"),
         headers=h,
         files=reqfiles,
     )

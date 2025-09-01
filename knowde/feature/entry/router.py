@@ -49,7 +49,7 @@ async def read_content(file: UploadFile) -> str:
     return content.decode(encoding)
 
 
-@router.post("/upload")
+@router.post("/resource")
 async def read_file(
     files: list[UploadFile],
     user: Annotated[User, Depends(auth_component().current_user(active=True))],

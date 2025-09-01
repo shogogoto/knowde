@@ -23,5 +23,5 @@ class Stage(BaseModel, frozen=True):
     @staticmethod
     def read(p: Path) -> SysNet:
         """File -> SysNet."""
-        g = nxread(p.read_text())
+        g = nxread(p.read_text(encoding="utf-8"))
         return SysNet(root=p.name, g=g)

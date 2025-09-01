@@ -24,7 +24,7 @@ from .sync import Anchor
 
 
 def write_text(p: Path, txt: str) -> Path:  # noqa: D103
-    p.write_text(dedent(txt))
+    p.write_text(dedent(txt), encoding="utf-8")
     return p
 
 
