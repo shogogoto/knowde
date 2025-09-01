@@ -78,16 +78,6 @@ async def get_resource_detail(
     resource_id: str,
     user: Annotated[User, Depends(auth_component().current_user(active=True))],
 ) -> list[SysNet, dict[KNode, UUID]]:
-    """リソース詳細.
-
-    aaaa
-    ディレクトリ構成を整備
-        file
-            -> resource meta
-            -> header
-        parsing
-        sentnet
-    """
+    """リソース詳細."""
     sn, _ = await restore_sysnet(resource_id)
-
     return sn

@@ -1,4 +1,4 @@
-"""sync router test."""
+"""router test."""
 
 from __future__ import annotations
 
@@ -56,3 +56,9 @@ async def test_sync_router(files: tuple[Anchor, list[Path]]) -> None:  # noqa: F
     )
     [f.close() for f in op]
     assert res.is_success
+
+
+# @mark_async_test()
+# async def test_fetch_resource_detail():
+#     """fetch_resource_detailのテスト."""
+#     assert 1
