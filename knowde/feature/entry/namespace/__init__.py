@@ -5,12 +5,16 @@ from __future__ import annotations
 from itertools import pairwise
 from pathlib import Path
 
+import neo4j
+import networkx as nx
+from neomodel.async_.core import AsyncDatabase
 from pydantic import RootModel
 
 from knowde.feature.entry import NameSpace, ResourceMeta
 from knowde.feature.entry.errors import DuplicatedTitleError, SaveResourceError
 from knowde.feature.entry.label import LFolder, LResource
 from knowde.feature.entry.mapper import MFolder, MResource
+from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.user.label import LUser
 
 
@@ -23,6 +27,33 @@ class ResourceMetas(RootModel[list[ResourceMeta]]):
         if len(titles) != len(set(titles)):
             msg = "titleが重複しています"
             raise DuplicatedTitleError(msg, titles)
+
+
+async def fetch_namespace(user_id: UUIDy) -> NameSpace:
+    """ユーザー配下のサブフォルダ."""
+    q = """
+        MATCH (user:User {uid: $uid})
+            , p = (user)<-[:OWNED|PARENT]-*(:Entry)
+        RETURN p
+    """
+    uid = to_uuid(user_id)
+    res = await AsyncDatabase().cypher_query(
+        q,
+        params={"uid": uid.hex},
+        resolve_objects=True,
+    )
+
+    g = nx.DiGraph()
+    ns = NameSpace(roots_={}, g=g, user_id=uid)
+
+    for p in res[0]:
+        path: neo4j.graph.Path = p[0]
+        for e1, e2 in pairwise(path.nodes):
+            if isinstance(e1, LUser):
+                ns.add_root(e2.frozen)
+            else:
+                ns.add_edge(e1.frozen, e2.frozen)
+    return ns
 
 
 async def fill_parents(ns: NameSpace, *names: str) -> LFolder | None:

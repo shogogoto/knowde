@@ -9,11 +9,9 @@ import pytest
 
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.entry import NameSpace, ResourceMeta
-from knowde.feature.entry.category.folder.repo import (
-    fetch_namespace,
-)
 from knowde.feature.entry.errors import DuplicatedTitleError
 from knowde.feature.entry.namespace import (
+    fetch_namespace,
     save_or_move_resource,
     save_resource,
     sync_namespace,

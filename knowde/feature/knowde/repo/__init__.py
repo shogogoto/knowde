@@ -8,9 +8,8 @@ from fastapi import status
 from more_itertools import collapse
 from neomodel import db
 
-from knowde.feature.entry.category.folder.repo import fetch_namespace
 from knowde.feature.entry.mapper import MResource
-from knowde.feature.entry.namespace import save_resource
+from knowde.feature.entry.namespace import fetch_namespace, save_resource
 from knowde.feature.entry.namespace.sync import txt2meta
 from knowde.feature.entry.resource.repo.save import sn2db
 from knowde.feature.knowde import (

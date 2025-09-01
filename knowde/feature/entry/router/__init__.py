@@ -10,9 +10,12 @@ import chardet  # 文字エンコーディング検出用
 from fastapi import APIRouter, Depends, UploadFile
 
 from knowde.feature.entry import NameSpace, ResourceMeta
-from knowde.feature.entry.category.folder.repo import fetch_namespace
 from knowde.feature.entry.label import LResource
-from knowde.feature.entry.namespace import ResourceMetas, sync_namespace
+from knowde.feature.entry.namespace import (
+    ResourceMetas,
+    fetch_namespace,
+    sync_namespace,
+)
 from knowde.feature.entry.resource.repo.restore import restore_sysnet
 from knowde.feature.entry.resource.repo.save import sn2db
 from knowde.feature.parsing.sysnet import SysNet

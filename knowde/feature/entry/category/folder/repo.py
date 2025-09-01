@@ -2,26 +2,21 @@
 
 from __future__ import annotations
 
+from datetime import date
 from pathlib import PurePath
 from typing import TYPE_CHECKING
 
-import networkx as nx
-from neomodel import (
-    INCOMING,
-    AsyncTraversal,
-)
+from neomodel import INCOMING, AsyncTraversal
 from neomodel.async_.core import AsyncDatabase
 
-from knowde.feature.entry import NameSpace
 from knowde.feature.entry.errors import EntryAlreadyExistsError, EntryNotFoundError
 from knowde.feature.entry.label import LEntry, LFolder, LResource
-from knowde.shared.types import to_uuid
+from knowde.feature.entry.namespace import fetch_namespace
+from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.user.label import LUser
 
 if TYPE_CHECKING:
-    from datetime import date
-
-    from knowde.shared.types import UUIDy
+    pass
 
 
 async def create_folder(user_id: UUIDy, *names: str) -> LFolder:
@@ -74,16 +69,16 @@ async def create_root_folder(user_id: UUIDy, name: str) -> LFolder:
 
 async def create_root_resource(
     user_id: UUIDy,
-    name: str,
+    title: str,
     authors: list[str] | None = None,
     published: date | None = None,
     urls: list[str] | None = None,
 ) -> LResource:
     """ユーザー直下のリソース."""
     u: LUser = await LUser.nodes.get(uid=to_uuid(user_id).hex)
-    await check_already_root(u, name)
+    await check_already_root(u, title)
     d = {
-        "title": name,
+        "title": title,
         "authors": authors,
         "published": published,
         "urls": urls,
@@ -167,40 +162,6 @@ async def fetch_subfolders(
 
     targets, subs = zip(*res, strict=False)
     return targets[0], subs
-
-
-async def fetch_namespace(user_id: UUIDy) -> NameSpace:
-    """ユーザー配下のサブフォルダ."""
-    q = """
-        MATCH (user:User {uid: $uid})
-        OPTIONAL MATCH (user)<-[:OWNED]-(root:Entry)
-        RETURN root as f1, null as f2
-        UNION
-        MATCH (user:User {uid: $uid})
-            <-[:OWNED]-(root:Entry)<-[:PARENT]-(sub:Entry)
-        RETURN root as f1, sub as f2
-        UNION
-        MATCH (user:User {uid: $uid})
-            <-[:OWNED]-(root:Entry)<-[:PARENT]-(sub:Entry)
-            <-[:PARENT]-*(f1:Folder)<-[:PARENT]-(f2:Entry)
-        RETURN f1, f2
-    """
-    uid = to_uuid(user_id)
-    res = await AsyncDatabase().cypher_query(
-        q,
-        params={"uid": uid.hex},
-        resolve_objects=True,
-    )
-
-    g = nx.DiGraph()
-    ns = NameSpace(roots_={}, g=g, user_id=uid)
-    for f1, f2 in res[0]:
-        if f2 is None:
-            if f1 is not None:
-                ns.add_root(f1.frozen)
-            continue
-        ns.g.add_edge(f1.frozen, f2.frozen)
-    return ns
 
 
 async def move_folder(

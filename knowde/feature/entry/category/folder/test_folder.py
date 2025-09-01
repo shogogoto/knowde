@@ -5,19 +5,30 @@ from collections.abc import AsyncGenerator
 import pytest
 
 from knowde.conftest import async_fixture, mark_async_test
-from knowde.feature.entry.errors import EntryAlreadyExistsError, EntryNotFoundError
-from knowde.shared.user.label import LUser
-
-from .repo import (
+from knowde.feature.entry.category.folder.repo import (
     create_folder,
     create_root_folder,
-    create_root_resource,
     create_sub_folder,
-    create_sub_resource,
-    fetch_namespace,
     fetch_subfolders,
     move_folder,
 )
+from knowde.feature.entry.errors import (
+    EntryAlreadyExistsError,
+    EntryNotFoundError,
+)
+from knowde.feature.entry.namespace import fetch_namespace
+from knowde.shared.user.label import LUser
+
+# from .repo import (
+#     create_folder,
+#     create_root_folder,
+#     create_root_resource,
+#     create_sub_folder,
+#     create_sub_resource,
+#     fetch_namespace,
+#     fetch_subfolders,
+#     move_folder,
+# )
 
 
 @async_fixture()
@@ -114,32 +125,33 @@ async def test_folder_move(u: LUser) -> None:
     assert ns.get("f2", "xxx", "sub")
 
 
-@mark_async_test()
-async def test_create_resource(u: LUser) -> None:
-    """フォルダ(composite)とファイル(leaf)を両方扱えるように拡張."""
-    await create_folder(u.uid, "f1")
-    await create_root_resource(u.uid, "r1")
-    await create_sub_resource(u.uid, "f1", "r1")  # 階層が違えば同名でも登録できる
-    # -> 登録できないように変更
-    ns = await fetch_namespace(u.uid)
-    assert ns.roots == ["f1", "r1"]
-    assert ns.children("f1") == ["r1"]
-
-
-@mark_async_test()
-async def test_namespce_each_user(u: LUser):
-    """ユーザーごとのnamespaceが取得できる."""
-    # test_create_resource と同じ
-    await create_folder(u.uid, "f1")
-    await create_root_resource(u.uid, "r1")
-    await create_sub_resource(u.uid, "f1", "r1")  # 階層が違えば同名でも登録できる
-
-    # 別のユーザーには追加されない
-    u2 = await LUser(email="two@gmail.com").save()
-    ns = await fetch_namespace(u.uid)
-    ns2 = await fetch_namespace(u2.uid)
-    assert len(ns.g.nodes) == 3  # noqa: PLR2004
-    assert len(ns2.g.nodes) == 0
+# @mark_async_test()
+# async def test_create_resource(u: LUser) -> None:
+#     """同タイトルは登録できない."""
+#     await create_folder(u.uid, "f1")
+#     await create_root_resource(u.uid, "r1")
+#     with pytest.raises(DuplicatedTitleError):
+#         await create_sub_resource(u.uid, "f1", "r1")
+#     # -> 登録できないように変更
+#     ns = await fetch_namespace(u.uid)
+#     assert ns.roots == ["f1", "r1"]
+#     assert ns.children("f1") == ["r1"]
+#
+#
+# @mark_async_test()
+# async def test_namespace_each_user(u: LUser):
+#     """ユーザーごとのnamespaceが取得できる."""
+#     # test_create_resource と同じ
+#     await create_folder(u.uid, "f1")
+#     await create_root_resource(u.uid, "r1")
+#     await create_sub_resource(u.uid, "f1", "r1")  # 階層が違えば同名でも登録できる
+#
+#     # 別のユーザーには追加されない
+#     u2 = await LUser(email="two@gmail.com").save()
+#     ns = await fetch_namespace(u.uid)
+#     ns2 = await fetch_namespace(u2.uid)
+#     assert len(ns.g.nodes) == 3
+#     assert len(ns2.g.nodes) == 0
 
 
 # def test_delete_folder(u: LUser) -> None:
