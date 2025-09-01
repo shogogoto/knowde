@@ -7,7 +7,6 @@ import networkx as nx
 from more_itertools import flatten
 from neomodel import db
 
-from knowde.feature.entry.resource.repo import LSentence
 from knowde.feature.knowde import (
     Additional,
     Knowde,
@@ -24,6 +23,7 @@ from knowde.feature.knowde.repo.cypher import (
 )
 from knowde.feature.parsing.primitive.term import Term
 from knowde.shared.errors.domain import NotFoundError, NotUniqueError
+from knowde.shared.knowde.label import LSentence
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import to_uuid
 

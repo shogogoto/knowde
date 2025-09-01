@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Annotated
+from uuid import UUID
 
 import chardet  # 文字エンコーディング検出用
 from fastapi import APIRouter, Depends, UploadFile
@@ -12,7 +13,10 @@ from knowde.feature.entry import NameSpace, ResourceMeta
 from knowde.feature.entry.category.folder.repo import fetch_namespace
 from knowde.feature.entry.label import LResource
 from knowde.feature.entry.namespace import ResourceMetas, sync_namespace
+from knowde.feature.entry.resource.repo.restore import restore_sysnet
 from knowde.feature.entry.resource.repo.save import sn2db
+from knowde.feature.parsing.sysnet import SysNet
+from knowde.feature.parsing.sysnet.sysnode import KNode
 from knowde.feature.parsing.tree2net import parse2net
 from knowde.feature.user.domain import User
 from knowde.shared.user.router_util import auth_component
@@ -73,7 +77,7 @@ async def read_file(
 async def get_resource_detail(
     resource_id: str,
     user: Annotated[User, Depends(auth_component().current_user(active=True))],
-) -> None:
+) -> list[SysNet, dict[KNode, UUID]]:
     """リソース詳細.
 
     aaaa
@@ -83,9 +87,7 @@ async def get_resource_detail(
             -> header
         parsing
         sentnet
-
-
-
-
-
     """
+    sn, _ = await restore_sysnet(resource_id)
+
+    return sn

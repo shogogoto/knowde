@@ -5,7 +5,6 @@ from neomodel import db
 from pytest_unordered import unordered
 
 from knowde.conftest import async_fixture, mark_async_test
-from knowde.feature.entry.resource.repo import LSentence
 from knowde.feature.entry.resource.repo.restore import restore_sysnet
 from knowde.feature.entry.resource.repo.save import sn2db
 from knowde.feature.knowde.repo import (
@@ -15,6 +14,7 @@ from knowde.feature.knowde.repo import (
 )
 from knowde.feature.knowde.repo.cypher import q_stats
 from knowde.feature.parsing.sysnet import SysNet
+from knowde.shared.knowde.label import LSentence
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.user.label import LUser

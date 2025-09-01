@@ -13,13 +13,12 @@ from more_itertools import collapse
 from neomodel import StructuredNode, db
 from pydantic import BaseModel
 
-from knowde.feature.entry.label import LResource
+from knowde.feature.entry.label import LHead, LResource
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.primitive.time import WhenNode
+from knowde.shared.knowde.label import LInterval, LSentence, LTerm
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import Duplicable, to_uuid
-
-from . import LHead, LInterval, LSentence, LTerm
 
 if TYPE_CHECKING:
     from knowde.feature.parsing.sysnet import SysNet

@@ -148,3 +148,9 @@ class ResourceMeta(BaseModel):
             published=pub,
             title=sn.root,
         )
+
+
+class ResourceDetail(BaseModel):
+    """リソース詳細(API Return Type用)."""
+
+    network: SysNet
