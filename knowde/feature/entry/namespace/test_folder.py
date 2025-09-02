@@ -5,16 +5,17 @@ from collections.abc import AsyncGenerator
 import pytest
 
 from knowde.conftest import async_fixture, mark_async_test
-from knowde.feature.entry.category.folder.repo import (
-    create_folder,
-    create_resource,
-    move_folder,
-)
 from knowde.feature.entry.errors import (
     EntryAlreadyExistsError,
 )
 from knowde.feature.entry.namespace import fetch_namespace
 from knowde.shared.user.label import LUser
+
+from . import (
+    create_folder,
+    create_resource,
+    move_folder,
+)
 
 
 @async_fixture()
