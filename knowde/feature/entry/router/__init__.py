@@ -4,23 +4,18 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Annotated
-from uuid import UUID
 
 import chardet  # 文字エンコーディング検出用
 from fastapi import APIRouter, Depends, UploadFile
 
-from knowde.feature.entry import NameSpace, ResourceMeta
-from knowde.feature.entry.label import LResource
+from knowde.feature.entry import NameSpace, ResourceDetail
 from knowde.feature.entry.namespace import (
     ResourceMetas,
     fetch_namespace,
     sync_namespace,
+    text2resource,
 )
 from knowde.feature.entry.resource.repo.restore import restore_sysnet
-from knowde.feature.entry.resource.repo.save import sn2db
-from knowde.feature.parsing.sysnet import SysNet
-from knowde.feature.parsing.sysnet.sysnode import KNode
-from knowde.feature.parsing.tree2net import parse2net
 from knowde.feature.user.domain import User
 from knowde.shared.user.router_util import auth_component
 
@@ -62,25 +57,16 @@ async def read_file(
     user: Annotated[User, Depends(auth_component().current_user(active=True))],
 ) -> None:
     """ファイルからsysnetを読み取って永続化."""
-    ns = await fetch_namespace(user.id)
-    for f in files:
-        txt = await read_content(f)
-        sn = parse2net(txt)
-        meta = ResourceMeta.of(sn)
-        r = ns.get_resource_or_none(meta.title)
-        if r is None:
-            lb = await LResource(**meta.model_dump()).save()
-        else:
-            lb = LResource(**r.model_dump())
-            await lb.refresh()
-        sn2db(sn, lb.uid)
+    txts = (await read_content(f) for f in files)
+    await text2resource(user.id, txts)
 
 
 @router.get("/resource/{resource_id}")
 async def get_resource_detail(
     resource_id: str,
     user: Annotated[User, Depends(auth_component().current_user(active=True))],
-) -> list[SysNet, dict[KNode, UUID]]:
+) -> ResourceDetail:
     """リソース詳細."""
     sn, _ = await restore_sysnet(resource_id)
-    return sn
+
+    return ResourceDetail(network=sn)

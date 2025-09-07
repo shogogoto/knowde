@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import TYPE_CHECKING, Self
+from typing import Self
 from uuid import UUID
 
 import networkx as nx
@@ -11,12 +11,11 @@ from pydantic import BaseModel, Field
 
 from knowde.feature.entry.mapper import Entry, MResource
 from knowde.feature.parsing.primitive.time import parse2dt
+from knowde.feature.parsing.sysnet import SysNet
 from knowde.shared.types import NXGraph
+from knowde.shared.user.schema import UserReadPublic
 
 from .errors import DuplicatedTitleError, EntryNotFoundError
-
-if TYPE_CHECKING:
-    from knowde.feature.parsing.sysnet import SysNet
 
 
 class NameSpace(BaseModel):
@@ -150,4 +149,6 @@ class ResourceMeta(BaseModel):
 class ResourceDetail(BaseModel):
     """リソース詳細(API Return Type用)."""
 
-    network: SysNet
+    network: SysNet  # Headを含む単文ネット
+    meta: MResource  # リソースメタ情報
+    user: UserReadPublic  # リソース所有者

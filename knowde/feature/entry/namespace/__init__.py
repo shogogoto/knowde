@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterable
 from datetime import date
 from itertools import pairwise
 from pathlib import Path, PurePath
@@ -19,6 +20,8 @@ from knowde.feature.entry.errors import (
 )
 from knowde.feature.entry.label import LFolder, LResource
 from knowde.feature.entry.mapper import MFolder, MResource
+from knowde.feature.entry.resource.repo.save import sn2db
+from knowde.feature.parsing.tree2net import parse2net
 from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.user.label import LUser
 
@@ -217,3 +220,18 @@ async def move_folder(
     await tgt.parent.connect(parent_to_move)
     tgt.name = to_names[-1]
     return await tgt.save()
+
+
+async def text2resource(user_id: UUIDy, texts: AsyncIterable[str]) -> None:
+    """テキストからResource内のKnowdeネットワークを永続化."""
+    ns = await fetch_namespace(user_id)
+    async for txt in texts:
+        sn = parse2net(txt)
+        meta = ResourceMeta.of(sn)
+        r = ns.get_resource_or_none(meta.title)
+        if r is None:
+            lb = await LResource(**meta.model_dump()).save()
+        else:
+            lb = LResource(**r.model_dump())
+            await lb.refresh()
+        sn2db(sn, lb.uid)
