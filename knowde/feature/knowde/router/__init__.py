@@ -21,13 +21,13 @@ def knowde_router() -> APIRouter:
 
 
 @knowde_router().get("/")
-def search_by_text(
+async def search_by_text(
     param: SearchParam = Depends(get_search_param),
     user: TrackUser = None,
 ) -> KnowdeSearchResult:
     """文字列検索."""
     t = WherePhrase[param.type]
-    return search_knowde(param.q, t, param.paging, param.order)
+    return await search_knowde(param.q, t, param.paging, param.order)
 
 
 @knowde_router().get("/sentence/{sentence_id}")

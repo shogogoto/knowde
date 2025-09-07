@@ -4,9 +4,11 @@ from collections.abc import Iterable
 from datetime import datetime
 from uuid import UUID
 
+import neo4j
 from fastapi import status
 from more_itertools import collapse
 from neomodel import db
+from neomodel.async_.core import AsyncDatabase
 
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.entry.namespace import fetch_namespace, save_resource
@@ -16,7 +18,7 @@ from knowde.feature.knowde import (
     KAdjacency,
     Knowde,
     KnowdeSearchResult,
-    ResourceOwnsers,
+    ResourceOwner,
 )
 from knowde.feature.knowde.repo.clause import OrderBy, Paging, WherePhrase
 from knowde.feature.knowde.repo.detail import fetch_knowdes_with_detail
@@ -71,7 +73,7 @@ def search_total(
         raise DomainError(msg=msg, status_code=status.HTTP_502_BAD_GATEWAY) from e
 
 
-def search_knowde(
+async def search_knowde(
     s: str,
     where: WherePhrase = WherePhrase.CONTAINS,
     paging: Paging = Paging(),
@@ -103,7 +105,7 @@ def search_knowde(
     return KnowdeSearchResult(
         total=search_total(s, where),
         data=ls,
-        owners=knowde_owners({k.resource_uid for k in ls}),
+        owners=await resource_owners_by_knowde_uid({k.resource_uid for k in ls}),
     )
 
 
@@ -160,20 +162,28 @@ def adjacency_knowde(sent_uid: str) -> list[KAdjacency]:
     return ls
 
 
-def knowde_owners(resource_uids: Iterable[UUID]) -> dict[UUID, ResourceOwnsers]:
+async def resource_owners_by_knowde_uid(
+    resource_uids: Iterable[UUID],
+) -> dict[UUID, ResourceOwner]:
     """knowdeの所有者を返す."""
     q = """
         UNWIND $uids as uid
-        MATCH (user:User)<-[:OWNED|PARENT]-*(r:Resource {uid: uid})
-        RETURN DISTINCT user, r
+        MATCH p = (user:User)<-[:OWNED|PARENT]-*(r:Resource {uid: uid})
+        RETURN DISTINCT p
         """
-    rows, _ = db.cypher_query(
+    rows, _ = await AsyncDatabase().cypher_query(
         q,
         params={"uids": list({uid.hex for uid in resource_uids})},
     )
     d = {}
     for row in rows:
-        user = UserReadPublic.model_validate(row[0])
-        r = MResource.freeze_dict(row[1])
-        d[r.uid] = ResourceOwnsers(user=user, resource=r)
+        path: neo4j.graph.Path = row[0]
+        resource_path = [p.get("name") for p in path.nodes[1:]]
+        r = MResource.freeze_dict(path.end_node)
+        d[r.uid] = ResourceOwner(
+            user=UserReadPublic.model_validate(path.start_node),
+            resource=r.model_copy(
+                update={"path": tuple(e for e in resource_path if e is not None)},
+            ),
+        )
     return d

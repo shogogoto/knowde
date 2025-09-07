@@ -8,6 +8,7 @@ from uuid import UUID
 
 import networkx as nx
 from pydantic import BaseModel, Field
+from pydantic_core import Url
 
 from knowde.feature.entry.mapper import Entry, MResource
 from knowde.feature.parsing.primitive.time import parse2dt
@@ -111,7 +112,7 @@ class ResourceMeta(BaseModel):
     title: str
     authors: list[str] = Field(default_factory=list)
     published: date | None = None
-    urls: list[str] = Field(default_factory=list)
+    urls: list[Url] = Field(default_factory=list)
 
     # ファイル由来
     path: tuple[str, ...] | None = Field(default=None, min_length=1)
