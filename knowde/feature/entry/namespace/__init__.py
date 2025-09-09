@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterable
+from collections.abc import Iterable
 from datetime import date
 from itertools import pairwise
 from pathlib import Path, PurePath
+from uuid import UUID
 
 import neo4j
 import networkx as nx
@@ -21,9 +22,11 @@ from knowde.feature.entry.errors import (
 from knowde.feature.entry.label import LFolder, LResource
 from knowde.feature.entry.mapper import MFolder, MResource
 from knowde.feature.entry.resource.repo.save import sn2db
+from knowde.feature.knowde import ResourceOwner
 from knowde.feature.parsing.tree2net import parse2net
 from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.user.label import LUser
+from knowde.shared.user.schema import UserReadPublic
 
 
 class ResourceMetas(RootModel[list[ResourceMeta]]):
@@ -222,16 +225,49 @@ async def move_folder(
     return await tgt.save()
 
 
-async def text2resource(user_id: UUIDy, texts: AsyncIterable[str]) -> None:
+async def text2resource(ns: NameSpace, txt: str) -> str:
     """テキストからResource内のKnowdeネットワークを永続化."""
-    ns = await fetch_namespace(user_id)
-    async for txt in texts:
-        sn = parse2net(txt)
-        meta = ResourceMeta.of(sn)
-        r = ns.get_resource_or_none(meta.title)
-        if r is None:
-            lb = await LResource(**meta.model_dump()).save()
-        else:
-            lb = LResource(**r.model_dump())
-            await lb.refresh()
-        sn2db(sn, lb.uid)
+    sn = parse2net(txt)
+    meta = ResourceMeta.of(sn)
+    r = ns.get_resource_or_none(meta.title)
+    if r is None:
+        lb = await LResource(**meta.model_dump()).save()
+    else:
+        lb = LResource(**r.model_dump())
+        await lb.refresh()
+    sn2db(sn, lb.uid)
+    return lb.uid
+
+
+async def resource_owners_by_resource_uids(
+    resource_uids: Iterable[UUID],
+) -> dict[UUID, ResourceOwner]:
+    """resource_uidの各々のリソースの所有者を返す."""
+    q = """
+        UNWIND $uids as uid
+        MATCH p = (user:User)<-[:OWNED|PARENT]-*(r:Resource {uid: uid})
+        RETURN DISTINCT p
+        """
+    rows, _ = await AsyncDatabase().cypher_query(
+        q,
+        params={"uids": list({uid.hex for uid in resource_uids})},
+    )
+    d = {}
+    for row in rows:
+        path: neo4j.graph.Path = row[0]
+        resource_path = [p.get("name") for p in path.nodes[1:]]
+        r = MResource.freeze_dict(path.end_node)
+        d[r.uid] = ResourceOwner(
+            user=UserReadPublic.model_validate(path.start_node),
+            resource=r.model_copy(
+                update={"path": tuple(e for e in resource_path if e is not None)},
+            ),
+        )
+    return d
+
+
+async def fetch_owner_by_resource_uid(resource_uid: UUIDy) -> ResourceOwner:
+    """Wrap tool for resource info."""
+    uid = to_uuid(resource_uid)
+    owners = await resource_owners_by_resource_uids([uid])
+    return owners[uid]

@@ -1,24 +1,24 @@
 """repo."""
 
-from collections.abc import Iterable
 from datetime import datetime
 from uuid import UUID
 
-import neo4j
 from fastapi import status
 from more_itertools import collapse
 from neomodel import db
-from neomodel.async_.core import AsyncDatabase
 
 from knowde.feature.entry.mapper import MResource
-from knowde.feature.entry.namespace import fetch_namespace, save_resource
+from knowde.feature.entry.namespace import (
+    fetch_namespace,
+    resource_owners_by_resource_uids,
+    save_resource,
+)
 from knowde.feature.entry.namespace.sync import txt2meta
 from knowde.feature.entry.resource.repo.save import sn2db
 from knowde.feature.knowde import (
     KAdjacency,
     Knowde,
     KnowdeSearchResult,
-    ResourceOwner,
 )
 from knowde.feature.knowde.repo.clause import OrderBy, Paging, WherePhrase
 from knowde.feature.knowde.repo.detail import fetch_knowdes_with_detail
@@ -26,7 +26,6 @@ from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.tree2net import parse2net
 from knowde.shared.errors import DomainError
 from knowde.shared.types import UUIDy, to_uuid
-from knowde.shared.user.schema import UserReadPublic
 
 from .cypher import q_adjaceny_uids, q_stats, q_where_knowde
 
@@ -105,7 +104,7 @@ async def search_knowde(
     return KnowdeSearchResult(
         total=search_total(s, where),
         data=ls,
-        owners=await resource_owners_by_knowde_uid({k.resource_uid for k in ls}),
+        owners=await resource_owners_by_resource_uids({k.resource_uid for k in ls}),
     )
 
 
@@ -160,30 +159,3 @@ def adjacency_knowde(sent_uid: str) -> list[KAdjacency]:
         )
         ls.append(adj)
     return ls
-
-
-async def resource_owners_by_knowde_uid(
-    resource_uids: Iterable[UUID],
-) -> dict[UUID, ResourceOwner]:
-    """knowdeの所有者を返す."""
-    q = """
-        UNWIND $uids as uid
-        MATCH p = (user:User)<-[:OWNED|PARENT]-*(r:Resource {uid: uid})
-        RETURN DISTINCT p
-        """
-    rows, _ = await AsyncDatabase().cypher_query(
-        q,
-        params={"uids": list({uid.hex for uid in resource_uids})},
-    )
-    d = {}
-    for row in rows:
-        path: neo4j.graph.Path = row[0]
-        resource_path = [p.get("name") for p in path.nodes[1:]]
-        r = MResource.freeze_dict(path.end_node)
-        d[r.uid] = ResourceOwner(
-            user=UserReadPublic.model_validate(path.start_node),
-            resource=r.model_copy(
-                update={"path": tuple(e for e in resource_path if e is not None)},
-            ),
-        )
-    return d

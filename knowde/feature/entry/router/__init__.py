@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Annotated
 
 import chardet  # 文字エンコーディング検出用
-from fastapi import APIRouter, Depends, UploadFile
+from fastapi import APIRouter, Body, Depends, UploadFile
 
 from knowde.feature.entry import NameSpace, ResourceDetail
 from knowde.feature.entry.namespace import (
@@ -27,7 +27,7 @@ def entry_router() -> APIRouter:  # noqa: D103
 
 
 @router.post("/namespace")
-async def sync_paths(
+async def sync_namespace_api(
     metas: ResourceMetas,
     user: Annotated[User, Depends(auth_component().current_user(active=True))],
 ) -> list[Path]:
@@ -51,14 +51,28 @@ async def read_content(file: UploadFile) -> str:
     return content.decode(encoding)
 
 
+@router.post("/resource-text")
+async def post_text(
+    txt: Annotated[str, Body(embed=True)],
+    path: Annotated[list[str], Body(embed=True)],
+    user: Annotated[User, Depends(auth_component().current_user(active=True))],
+) -> dict[str, str]:
+    """テキストからsysnetを読み取って永続化."""
+    ns = await fetch_namespace(user.id)
+    uid = await text2resource(ns, txt)
+    return {"resource_id": uid}
+
+
 @router.post("/resource")
-async def read_file(
+async def post_files(
     files: list[UploadFile],
     user: Annotated[User, Depends(auth_component().current_user(active=True))],
 ) -> None:
     """ファイルからsysnetを読み取って永続化."""
-    txts = (await read_content(f) for f in files)
-    await text2resource(user.id, txts)
+    for f in files:
+        ns = await fetch_namespace(user.id)
+        txt = await read_content(f)
+        await text2resource(ns, txt)
 
 
 @router.get("/resource/{resource_id}")
