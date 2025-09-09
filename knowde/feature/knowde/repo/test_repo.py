@@ -5,13 +5,10 @@ from neomodel import db
 from pytest_unordered import unordered
 
 from knowde.conftest import async_fixture, mark_async_test
+from knowde.feature.entry.resource import save_text
 from knowde.feature.entry.resource.repo.restore import restore_sysnet
 from knowde.feature.entry.resource.repo.save import sn2db
-from knowde.feature.knowde.repo import (
-    adjacency_knowde,
-    save_text,
-    search_knowde,
-)
+from knowde.feature.knowde.repo import adjacency_knowde, search_knowde
 from knowde.feature.knowde.repo.cypher import q_stats
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.shared.knowde.label import LSentence

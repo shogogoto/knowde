@@ -1,20 +1,12 @@
 """repo."""
 
-from datetime import datetime
 from uuid import UUID
 
 from fastapi import status
 from more_itertools import collapse
 from neomodel import db
 
-from knowde.feature.entry import ResourceMeta
-from knowde.feature.entry.mapper import MResource
-from knowde.feature.entry.namespace import (
-    fetch_namespace,
-    resource_owners_by_resource_uids,
-    save_resource,
-)
-from knowde.feature.entry.resource.repo.save import sn2db
+from knowde.feature.entry.namespace import resource_owners_by_resource_uids
 from knowde.feature.knowde import (
     KAdjacency,
     Knowde,
@@ -22,29 +14,9 @@ from knowde.feature.knowde import (
 )
 from knowde.feature.knowde.repo.clause import OrderBy, Paging, WherePhrase
 from knowde.feature.knowde.repo.detail import fetch_knowdes_with_detail
-from knowde.feature.parsing.sysnet import SysNet
 from knowde.shared.errors import DomainError
-from knowde.shared.types import UUIDy, to_uuid
 
 from .cypher import q_adjaceny_uids, q_stats, q_where_knowde
-
-
-async def save_text(
-    user_id: UUIDy,
-    s: str,
-    path: tuple[str, ...] | None = None,
-    updated: datetime | None = None,
-    do_print: bool = False,  # noqa: FBT001, FBT002
-) -> tuple[SysNet, MResource]:
-    """テキストを保存."""
-    meta, sn = ResourceMeta.from_str(s)
-    meta.updated = updated
-    meta.path = path
-    ns = await fetch_namespace(to_uuid(user_id))
-    await save_resource(meta, ns)
-    r = ns.get_resource(meta.title)
-    sn2db(sn, r.uid, do_print=do_print)
-    return sn, r
 
 
 def search_total(

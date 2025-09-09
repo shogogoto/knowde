@@ -7,7 +7,7 @@ from pytest_unordered import unordered
 
 from knowde.api import root_router
 from knowde.conftest import async_fixture, mark_async_test
-from knowde.feature.knowde.repo import save_text
+from knowde.feature.entry.resource import save_text
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.shared.knowde.label import LSentence
 from knowde.shared.nxutil import to_leaves, to_roots
