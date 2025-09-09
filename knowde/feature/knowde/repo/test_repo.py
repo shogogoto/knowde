@@ -5,16 +5,13 @@ from neomodel import db
 from pytest_unordered import unordered
 
 from knowde.conftest import async_fixture, mark_async_test
-from knowde.feature.knowde.repo import (
-    adjacency_knowde,
-    save_text,
-    search_knowde,
-)
+from knowde.feature.entry.resource import save_text
+from knowde.feature.entry.resource.repo.restore import restore_sysnet
+from knowde.feature.entry.resource.repo.save import sn2db
+from knowde.feature.knowde.repo import adjacency_knowde, search_knowde
 from knowde.feature.knowde.repo.cypher import q_stats
 from knowde.feature.parsing.sysnet import SysNet
-from knowde.feature.stats.nxdb import LSentence
-from knowde.feature.stats.nxdb.restore import restore_sysnet
-from knowde.feature.stats.nxdb.save import sn2db
+from knowde.shared.knowde.label import LSentence
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.user.label import LUser
@@ -48,7 +45,7 @@ async def test_search_knowde_by_txt(u: LUser):
         y: {x}yy
     """
     _sn, _ = await save_text(u.uid, s)
-    res = search_knowde("A1")
+    res = await search_knowde("A1")
     assert [a.sentence for a in res.data] == unordered(["a", "ちん", "bA123"])
 
     a = LSentence.nodes.get(val="xxx")
@@ -132,14 +129,14 @@ async def test_paging(u: LUser):
     sn, _uids = await restore_sysnet(r.uid)
     n_nodes = len(sn.g.nodes) - 1
     assert n_nodes == 121  # title除いて121の文  # noqa: PLR2004
-    res = search_knowde(".*", WherePhrase.REGEX, Paging(page=1))
+    res = await search_knowde(".*", WherePhrase.REGEX, Paging(page=1))
     assert res.total == n_nodes
     assert len(res.data) == 100  # noqa: PLR2004
 
-    res = search_knowde(".*", WherePhrase.REGEX, Paging(page=2))
+    res = await search_knowde(".*", WherePhrase.REGEX, Paging(page=2))
     assert len(res.data) == 21  # noqa: PLR2004
 
-    res = search_knowde(".*", WherePhrase.REGEX, Paging(page=3))
+    res = await search_knowde(".*", WherePhrase.REGEX, Paging(page=3))
     assert len(res.data) == 0
 
 
@@ -170,7 +167,7 @@ async def test_ordering(u: LUser):
         dist_axiom=0,
         dist_leaf=0,
     )
-    res = search_knowde(
+    res = await search_knowde(
         ".*",
         WherePhrase.REGEX,
         order_by=order_by,
@@ -205,7 +202,7 @@ async def test_details(u: LUser):
     """
     _, r = await save_text(u.uid, s)
     _sn, _uids = await restore_sysnet(r.uid)
-    _res = search_knowde(
+    _res = await search_knowde(
         "detail",
         WherePhrase.CONTAINS,
         # do_print=True,

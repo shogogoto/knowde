@@ -24,7 +24,7 @@ def can_parse(
     if not p.is_file():
         return False
     try:
-        parse2net(p.read_text())
+        parse2net(p.read_text(encoding="utf-8"))
     except Exception as e:  # noqa: BLE001
         if handle_error is not None:
             handle_error(p, e)
@@ -43,14 +43,6 @@ def filter_parsable(
     return _f
 
 
-def txt2meta(s: str) -> ResourceMeta:
-    """テキストをメタ情報へ変換."""
-    sn = parse2net(s)
-    meta = ResourceMeta.of(sn)
-    meta.txt_hash = hash(s)  # ファイルに変更があったかをhash値で判断
-    return meta
-
-
 class Anchor(Path):
     """動悸するファイルシステムのルート."""
 
@@ -61,7 +53,7 @@ class Anchor(Path):
         """テキストファイルからメタ情報へ."""
         st = p.stat().st_mtime  # 最終更新日時
         t = datetime.fromtimestamp(st, tz=TZ)  # JST が neo4jに非対応
-        meta = txt2meta(p.read_text())
+        meta, _sn = ResourceMeta.from_str(p.read_text(encoding="utf-8"))
         meta.updated = t
         meta.path = p.relative_to(self).parts
         return meta

@@ -8,6 +8,8 @@ import neo4j
 from pydantic import BaseModel
 from pydantic_core import Url
 
+from knowde.shared.types import to_uuid
+
 
 class Entry(BaseModel, frozen=True):
     """namespace用のhashableな表現."""
@@ -45,7 +47,7 @@ class MResource(Entry, frozen=True):
             if k == "updated" and isinstance(v, neo4j.time.DateTime):
                 new[k] = v.to_native()
             if k == "uid":
-                new[k] = UUID(v)
+                new[k] = to_uuid(v)
             if k == "title":
                 new["name"] = v
             if isinstance(v, list):

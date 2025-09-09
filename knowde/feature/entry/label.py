@@ -13,13 +13,32 @@ from neomodel import (
     DateProperty,
     DateTimeNeo4jFormatProperty,
     IntegerProperty,
+    One,
+    RelationshipFrom,
+    RelationshipTo,
     StringProperty,
+    StructuredNode,
     UniqueIdProperty,
 )
 
+from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.user.label import LUser  # noqa: F401
 
 from .mapper import Entry, MFolder, MResource
+
+
+class LHead(StructuredNode):
+    """見出し."""
+
+    __label__ = "Head"
+    uid = UniqueIdProperty()
+    val = StringProperty(index=True, required=True)  # , max_length=MAX_CHARS)
+    children = RelationshipTo("LHead", "HEAD")
+    parent = RelationshipFrom("LHead", "HEAD", cardinality=One)
+    resource = RelationshipFrom("LResource", "HEAD")
+
+    below = RelationshipTo("LSentence", EdgeType.BELOW.name)
+    child = RelationshipTo("LHead", EdgeType.HEAD.name)
 
 
 class LEntry(AsyncStructuredNode):

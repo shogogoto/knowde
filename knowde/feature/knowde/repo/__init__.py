@@ -1,52 +1,22 @@
 """repo."""
 
-from collections.abc import Iterable
-from datetime import datetime
 from uuid import UUID
 
 from fastapi import status
 from more_itertools import collapse
 from neomodel import db
 
-from knowde.feature.entry.category.folder.repo import fetch_namespace
-from knowde.feature.entry.mapper import MResource
-from knowde.feature.entry.namespace import save_resource
-from knowde.feature.entry.namespace.sync import txt2meta
+from knowde.feature.entry.namespace import resource_owners_by_resource_uids
 from knowde.feature.knowde import (
     KAdjacency,
     Knowde,
     KnowdeSearchResult,
-    ResourceOwnsers,
 )
 from knowde.feature.knowde.repo.clause import OrderBy, Paging, WherePhrase
 from knowde.feature.knowde.repo.detail import fetch_knowdes_with_detail
-from knowde.feature.parsing.sysnet import SysNet
-from knowde.feature.parsing.tree2net import parse2net
-from knowde.feature.stats.nxdb.save import sn2db
 from knowde.shared.errors import DomainError
-from knowde.shared.types import UUIDy, to_uuid
-from knowde.shared.user.schema import UserReadPublic
 
 from .cypher import q_adjaceny_uids, q_stats, q_where_knowde
-
-
-async def save_text(
-    user_id: UUIDy,
-    s: str,
-    path: tuple[str, ...] | None = None,
-    updated: datetime | None = None,
-    do_print: bool = False,  # noqa: FBT001, FBT002
-) -> tuple[SysNet, MResource]:
-    """テキストを保存."""
-    meta = txt2meta(s)
-    meta.updated = updated
-    meta.path = path
-    ns = await fetch_namespace(to_uuid(user_id))
-    await save_resource(meta, ns)
-    r = ns.get_resource(meta.title)
-    sn = parse2net(s)
-    sn2db(sn, r.uid, do_print=do_print)
-    return sn, r
 
 
 def search_total(
@@ -72,7 +42,7 @@ def search_total(
         raise DomainError(msg=msg, status_code=status.HTTP_502_BAD_GATEWAY) from e
 
 
-def search_knowde(
+async def search_knowde(
     s: str,
     where: WherePhrase = WherePhrase.CONTAINS,
     paging: Paging = Paging(),
@@ -104,7 +74,7 @@ def search_knowde(
     return KnowdeSearchResult(
         total=search_total(s, where),
         data=ls,
-        owners=knowde_owners({k.resource_uid for k in ls}),
+        owners=await resource_owners_by_resource_uids({k.resource_uid for k in ls}),
     )
 
 
@@ -159,22 +129,3 @@ def adjacency_knowde(sent_uid: str) -> list[KAdjacency]:
         )
         ls.append(adj)
     return ls
-
-
-def knowde_owners(resource_uids: Iterable[UUID]) -> dict[UUID, ResourceOwnsers]:
-    """knowdeの所有者を返す."""
-    q = """
-        UNWIND $uids as uid
-        MATCH (user:User)<-[:OWNED|PARENT]-*(r:Resource {uid: uid})
-        RETURN DISTINCT user, r
-        """
-    rows, _ = db.cypher_query(
-        q,
-        params={"uids": list({uid.hex for uid in resource_uids})},
-    )
-    d = {}
-    for row in rows:
-        user = UserReadPublic.model_validate(row[0])
-        r = MResource.freeze_dict(row[1])
-        d[r.uid] = ResourceOwnsers(user=user, resource=r)
-    return d

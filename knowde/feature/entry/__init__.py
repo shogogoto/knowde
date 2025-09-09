@@ -3,20 +3,21 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import TYPE_CHECKING, Self
+from typing import Self
 from uuid import UUID
 
 import networkx as nx
 from pydantic import BaseModel, Field
+from pydantic_core import Url
 
 from knowde.feature.entry.mapper import Entry, MResource
+from knowde.feature.knowde import ResourceOwner
 from knowde.feature.parsing.primitive.time import parse2dt
+from knowde.feature.parsing.sysnet import SysNet
+from knowde.feature.parsing.tree2net import parse2net
 from knowde.shared.types import NXGraph
 
 from .errors import DuplicatedTitleError, EntryNotFoundError
-
-if TYPE_CHECKING:
-    from knowde.feature.parsing.sysnet import SysNet
 
 
 class NameSpace(BaseModel):
@@ -33,7 +34,7 @@ class NameSpace(BaseModel):
         if title in self.roots_:
             del self.roots_[title]
 
-    def check_added_reosource(self, e: Entry) -> None:
+    def check_uniq_title(self, e: Entry) -> None:
         """titleの重複を許さない."""
         if isinstance(e, MResource):
             r = self.get_resource_or_none(e.name)
@@ -43,16 +44,13 @@ class NameSpace(BaseModel):
 
     def add_root(self, e: Entry) -> None:
         """user直下."""
-        if e.name in self.roots:
-            msg = f"{e.name}は登録済み"
-            raise ValueError(msg, self.roots)
-        self.check_added_reosource(e)
+        self.check_uniq_title(e)
         self.roots_[e.name] = e
         self.g.add_node(e)
 
     def add_edge(self, parent: Entry, child: Entry) -> None:
         """user直下以外."""
-        self.check_added_reosource(child)
+        self.check_uniq_title(child)
         self.g.add_edge(parent, child)
 
     def children(self, root: str, *names: str) -> list[str]:
@@ -115,7 +113,7 @@ class ResourceMeta(BaseModel):
     title: str
     authors: list[str] = Field(default_factory=list)
     published: date | None = None
-    urls: list[str] = Field(default_factory=list)
+    urls: list[Url] = Field(default_factory=list)
 
     # ファイル由来
     path: tuple[str, ...] | None = Field(default=None, min_length=1)
@@ -148,3 +146,18 @@ class ResourceMeta(BaseModel):
             published=pub,
             title=sn.root,
         )
+
+    @classmethod
+    def from_str(cls, s: str) -> tuple[ResourceMeta, SysNet]:
+        """文字列からリソースメタ情報を作成."""
+        sn = parse2net(s)
+        meta = ResourceMeta.of(sn)
+        meta.txt_hash = hash(s)  # ファイルに変更があったかをhash値で判断
+        return meta, sn
+
+
+class ResourceDetail(BaseModel):
+    """リソース詳細(API Return Type用)."""
+
+    network: SysNet  # Headを含む単文ネット
+    owner: ResourceOwner

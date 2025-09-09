@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field, PrivateAttr, field_validator
 
 from knowde.feature.parsing.primitive.dupchk import DuplicationChecker
 from knowde.feature.parsing.primitive.term.const import BRACE_MARKER
-from knowde.feature.stats.nxdb import LTerm
+from knowde.shared.knowde.label import LTerm
 
 from .errors import (
     AliasContainsMarkError,

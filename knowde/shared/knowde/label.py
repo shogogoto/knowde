@@ -1,15 +1,10 @@
-"""sysnet DB IO.
-
-folderと一体化したCRUD
-permission指定できるよう拡張
-"""
+"""knowde Neo4j Label Definition."""
 
 from __future__ import annotations
 
 from neomodel import (
     FloatProperty,
     FulltextIndex,
-    One,
     RelationshipFrom,
     RelationshipManager,
     RelationshipTo,
@@ -19,22 +14,7 @@ from neomodel import (
     ZeroOrOne,
 )
 
-from knowde.feature.entry.label import LResource
 from knowde.shared.nxutil.edge_type import EdgeType
-
-
-class LHead(StructuredNode):
-    """見出し."""
-
-    __label__ = "Head"
-    uid = UniqueIdProperty()
-    val = StringProperty(index=True, required=True)  # , max_length=MAX_CHARS)
-    children = RelationshipTo("LHead", "HEAD")
-    parent = RelationshipFrom("LHead", "HEAD", cardinality=One)
-    resource = RelationshipFrom("LResource", "HEAD")
-
-    below = RelationshipTo("LSentence", EdgeType.BELOW.name)
-    child = RelationshipTo("LHead", EdgeType.HEAD.name)
 
 
 class LSentence(StructuredNode):
@@ -48,11 +28,11 @@ class LSentence(StructuredNode):
         fulltext_index=FulltextIndex(),
     )  # , max_length=MAX_CHARS)
     term = RelationshipTo("LTerm", "TERM", cardinality=ZeroOrOne)
-    resource_uid = StringProperty(require=True, index=True)  # 作成ユーザーID
     # 各文からlocationを取得しようとしたが、探索に時間がかかりすぎるのか応答しなくなった
     # 探索コストを削減するために、元からIDを持たせる
+    resource_uid = StringProperty(require=True, index=True)  # 作成ユーザーID
 
-    resource = RelationshipFrom(LResource, "BELOW")
+    # resource = RelationshipFrom(LResource, "BELOW")
 
     # cypher_query で relからNodeのpropertyを取得するために必要
     # resolve_object=Trueにするとpropertiesが空にならずにマッピングされる

@@ -9,11 +9,10 @@ import pytest
 
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.entry import NameSpace, ResourceMeta
-from knowde.feature.entry.category.folder.repo import (
-    fetch_namespace,
-)
 from knowde.feature.entry.errors import DuplicatedTitleError
 from knowde.feature.entry.namespace import (
+    fetch_namespace,
+    fetch_owner_by_resource_uid,
     save_or_move_resource,
     save_resource,
     sync_namespace,
@@ -24,7 +23,7 @@ from .sync import Anchor
 
 
 def write_text(p: Path, txt: str) -> Path:  # noqa: D103
-    p.write_text(dedent(txt))
+    p.write_text(dedent(txt), encoding="utf-8")
     return p
 
 
@@ -224,3 +223,15 @@ async def test_duplicate_title(tmp_path: Path) -> None:
 
     with pytest.raises(DuplicatedTitleError):
         await sync_namespace(metas, ns)
+
+
+@mark_async_test()
+async def test_fetch_owner_by_resource_uid(tmp_path: Path) -> None:
+    """Resource UIDからResourceMetaを取得."""
+    u, _anchor, _paths, ns = await setup(tmp_path)
+    r = ns.get_or_none("sub1", "sub11", "# title1")
+    assert r
+    owner = await fetch_owner_by_resource_uid(r.uid)
+    assert owner.user.id.hex == u.uid
+    assert owner.resource.uid == r.uid
+    assert owner.resource.path == ("sub1", "sub11")

@@ -5,17 +5,15 @@ from collections.abc import AsyncGenerator
 import pytest
 
 from knowde.conftest import async_fixture, mark_async_test
-from knowde.feature.entry.errors import EntryAlreadyExistsError, EntryNotFoundError
+from knowde.feature.entry.errors import (
+    EntryAlreadyExistsError,
+)
+from knowde.feature.entry.namespace import fetch_namespace
 from knowde.shared.user.label import LUser
 
-from .repo import (
+from . import (
     create_folder,
-    create_root_folder,
-    create_root_resource,
-    create_sub_folder,
-    create_sub_resource,
-    fetch_namespace,
-    fetch_subfolders,
+    create_resource,
     move_folder,
 )
 
@@ -28,7 +26,7 @@ async def u() -> AsyncGenerator[LUser, None]:  # noqa: D103
 @mark_async_test()
 async def test_create_root_folder(u: LUser) -> None:
     """User直下フォルダ."""
-    await create_root_folder(u.uid, "f1")
+    await create_folder(u.uid, "f1")
     fs = await fetch_namespace(u.uid)
     assert fs.roots == ["f1"]
 
@@ -36,39 +34,36 @@ async def test_create_root_folder(u: LUser) -> None:
 @mark_async_test()
 async def test_create_duplicated_root_folder(u: LUser) -> None:
     """User直下の重複フォルダ."""
-    await create_root_folder(u.uid, "f1")
-    await create_root_folder(u.uid, "f2")
-    await create_sub_folder(u.uid, "f2", "f1")
-    with pytest.raises(EntryAlreadyExistsError):
-        await create_root_folder(u.uid, "f1")
+    await create_folder(u.uid, "f1")
+    await create_folder(u.uid, "f2")
+    await create_folder(u.uid, "f2", "f1")
+    await create_folder(u.uid, "f1")
 
 
 @mark_async_test()
 async def test_create_sub_unexist_parent(u: LUser) -> None:
     """存在しない親の下にフォルダ作ろうとしちゃった."""
-    with pytest.raises(EntryNotFoundError):
-        await create_sub_folder(u.uid, "unexist", "f2")
+    await create_folder(u.uid, "unexist", "f2")
 
 
 @mark_async_test()
 async def test_create_duplicated_sub_folder(u: LUser) -> None:
     """同じ親に対してサブフォルダを複数作る."""
-    await create_root_folder(u.uid, "f1")
-    await create_sub_folder(u.uid, "f1", "f2")
-    with pytest.raises(EntryAlreadyExistsError):
-        await create_sub_folder(u.uid, "f1", "f2")
+    await create_folder(u.uid, "f1")
+    await create_folder(u.uid, "f1", "f2")
+    await create_folder(u.uid, "f1", "f2")
 
 
 @mark_async_test()
 async def test_fetch_folderspace(u: LUser) -> None:
     """ユーザー配下のフォルダ空間を一括取得."""
-    await create_root_folder(u.uid, "f1")
-    await create_sub_folder(u.uid, "f1", "f2")
-    await create_sub_folder(u.uid, "f1", "fff")
-    await create_sub_folder(u.uid, "f1", "ggg")
-    await create_sub_folder(u.uid, "f1", "f2", "f3")
-    await create_sub_folder(u.uid, "f1", "f2", "f31")
-    await create_sub_folder(u.uid, "f1", "f2", "f3", "f4")
+    await create_folder(u.uid, "f1")
+    await create_folder(u.uid, "f1", "f2")
+    await create_folder(u.uid, "f1", "fff")
+    await create_folder(u.uid, "f1", "ggg")
+    await create_folder(u.uid, "f1", "f2", "f3")
+    await create_folder(u.uid, "f1", "f2", "f31")
+    await create_folder(u.uid, "f1", "f2", "f3", "f4")
 
     fs = await fetch_namespace(u.uid)
     assert fs.roots == ["f1"]
@@ -87,14 +82,11 @@ async def test_fetch_subfolders(u: LUser) -> None:
     f21 = await create_folder(u.uid, "f1", "f21")
     f3 = await create_folder(u.uid, "f1", "f2", "f3")
 
-    f1_ = await fetch_subfolders(u.uid, "f1")
-    assert f1 == f1_[0]
-    f2_ = await fetch_subfolders(u.uid, "f1", "f2")
-    assert f2 == f2_[0]
-    f21_ = await fetch_subfolders(u.uid, "f1", "f21")
-    assert f21 == f21_[0]
-    f3_ = await fetch_subfolders(u.uid, "f1", "f2", "f3")
-    assert f3 == f3_[0]
+    ns = await fetch_namespace(u.uid)
+    assert f1.frozen == ns.get("f1")
+    assert f2.frozen == ns.get("f1", "f2")
+    assert f21.frozen == ns.get("f1", "f21")
+    assert f3.frozen == ns.get("f1", "f2", "f3")
 
 
 @mark_async_test()
@@ -102,12 +94,12 @@ async def test_folder_move(u: LUser) -> None:
     """フォルダの移動(配下ごと)."""
     await create_folder(u.uid, "f1")
     await create_folder(u.uid, "f2")
-    await create_folder(u.uid, "f1", "target")
-    await create_folder(u.uid, "f1", "target", "sub")
+    tgt = await create_folder(u.uid, "f1", "target")
+    sub = await create_folder(u.uid, "f1", "target", "sub")
     await create_folder(u.uid, "f2", "other")
-    tgt, subs = await fetch_subfolders(u.uid, "f1", "target")
-    assert tgt.name == "target"
-    assert [s.name for s in subs] == ["sub"]
+    ns = await fetch_namespace(u.uid)
+    assert tgt.frozen == ns.get("f1", "target")
+    assert sub.frozen == ns.get("f1", "target", "sub")
     await move_folder(u.uid, "/f1/target", "/f2/xxx")
     ns = await fetch_namespace(u.uid)
     assert ns.get_or_none("f1", "target") is None  # なくなってる
@@ -115,30 +107,22 @@ async def test_folder_move(u: LUser) -> None:
 
 
 @mark_async_test()
-async def test_create_resource(u: LUser) -> None:
-    """フォルダ(composite)とファイル(leaf)を両方扱えるように拡張."""
+async def test_namespace_each_user(u: LUser):
+    """ユーザーごとのnamespaceが取得できる."""
+    # 同タイトルは登録できない.
     await create_folder(u.uid, "f1")
-    await create_root_resource(u.uid, "r1")
-    await create_sub_resource(u.uid, "f1", "r1")  # 階層が違えば同名でも登録できる
-    # -> 登録できないように変更
+    await create_resource(u.uid, "r1")
+    with pytest.raises(EntryAlreadyExistsError):
+        await create_resource(u.uid, "f1", "r1")  # 階層が違えば同名でも登録できる
     ns = await fetch_namespace(u.uid)
     assert ns.roots == ["f1", "r1"]
-    assert ns.children("f1") == ["r1"]
-
-
-@mark_async_test()
-async def test_namespce_each_user(u: LUser):
-    """ユーザーごとのnamespaceが取得できる."""
-    # test_create_resource と同じ
-    await create_folder(u.uid, "f1")
-    await create_root_resource(u.uid, "r1")
-    await create_sub_resource(u.uid, "f1", "r1")  # 階層が違えば同名でも登録できる
+    # assert ns.children("f1") == ["r1"]
 
     # 別のユーザーには追加されない
     u2 = await LUser(email="two@gmail.com").save()
     ns = await fetch_namespace(u.uid)
     ns2 = await fetch_namespace(u2.uid)
-    assert len(ns.g.nodes) == 3  # noqa: PLR2004
+    assert len(ns.g.nodes) == 2  # noqa: PLR2004
     assert len(ns2.g.nodes) == 0
 
 

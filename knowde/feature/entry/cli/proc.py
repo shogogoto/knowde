@@ -57,7 +57,12 @@ def sync_proc(glob: str, show_error: bool = True) -> None:  # noqa: FBT001 FBT00
         with p.open("rb") as f:
             op.append(f)
             reqfiles.append(("files", (p.name, f, "application/octet-stream")))
-            res = httpx.post(s.url("/upload"), headers=h, files=reqfiles, timeout=1000)
+            res = httpx.post(
+                s.url("/resource"),
+                headers=h,
+                files=reqfiles,
+                timeout=1000,
+            )
         if res.is_success:
             print(f"'{p}'をアップロードしました")  # noqa: T201
         else:
