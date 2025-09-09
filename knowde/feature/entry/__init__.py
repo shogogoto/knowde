@@ -11,10 +11,11 @@ from pydantic import BaseModel, Field
 from pydantic_core import Url
 
 from knowde.feature.entry.mapper import Entry, MResource
+from knowde.feature.knowde import ResourceOwner
 from knowde.feature.parsing.primitive.time import parse2dt
 from knowde.feature.parsing.sysnet import SysNet
+from knowde.feature.parsing.tree2net import parse2net
 from knowde.shared.types import NXGraph
-from knowde.shared.user.schema import UserReadPublic
 
 from .errors import DuplicatedTitleError, EntryNotFoundError
 
@@ -146,10 +147,17 @@ class ResourceMeta(BaseModel):
             title=sn.root,
         )
 
+    @classmethod
+    def from_str(cls, s: str) -> tuple[ResourceMeta, SysNet]:
+        """文字列からリソースメタ情報を作成."""
+        sn = parse2net(s)
+        meta = ResourceMeta.of(sn)
+        meta.txt_hash = hash(s)  # ファイルに変更があったかをhash値で判断
+        return meta, sn
+
 
 class ResourceDetail(BaseModel):
     """リソース詳細(API Return Type用)."""
 
     network: SysNet  # Headを含む単文ネット
-    meta: MResource  # リソースメタ情報
-    user: UserReadPublic  # リソース所有者
+    owner: ResourceOwner

@@ -7,22 +7,21 @@ from typing import TYPE_CHECKING
 from fastapi.testclient import TestClient
 
 from knowde.api import api
-from knowde.config.env import Settings
 from knowde.conftest import mark_async_test
 from knowde.feature.entry.namespace.sync import Anchor
 from knowde.feature.entry.namespace.test_namespace import files  # noqa: F401
+from knowde.feature.knowde import ResourceOwner
 from knowde.feature.user.routers.repo.client import (
     AuthPost,
 )
+from knowde.shared.user.label import LUser
 
 if TYPE_CHECKING:
     from pathlib import Path
 
 
-@mark_async_test()
-async def test_sync_router(files: tuple[Anchor, list[Path]]) -> None:  # noqa: F811, RUF029
-    """Sync コマンドでの想定."""
-    anchor, paths = files
+def auth_header() -> tuple[TestClient, dict[str, str]]:
+    """For fixture."""
     client = TestClient(api)
     p = AuthPost(client=client.post)
     email = "user@example.com"
@@ -31,13 +30,19 @@ async def test_sync_router(files: tuple[Anchor, list[Path]]) -> None:  # noqa: F
     res = p.login(email, password)
     token = res.json()["access_token"]
     h = {"Authorization": f"Bearer {token}"}
+    return client, h
 
+
+@mark_async_test()
+async def test_sync_router(files: tuple[Anchor, list[Path]]) -> None:  # noqa: F811, RUF029
+    """Sync コマンドでの想定."""
+    client, h = auth_header()
+
+    anchor, paths = files
     meta = anchor.to_metas(paths)
-    s = Settings()
-    res = s.post(
+    res = client.post(
         "/namespace",
         headers=h,
-        client=client.post,
         json=meta.model_dump(mode="json"),
     )
 
@@ -50,7 +55,7 @@ async def test_sync_router(files: tuple[Anchor, list[Path]]) -> None:  # noqa: F
         op.append(f)
         reqfiles.append(("files", (p.name, f, "application/octet-stream")))
     res = client.post(
-        s.url("/resource"),
+        "/resource",
         headers=h,
         files=reqfiles,
     )
@@ -58,7 +63,31 @@ async def test_sync_router(files: tuple[Anchor, list[Path]]) -> None:  # noqa: F
     assert res.is_success
 
 
-# @mark_async_test()
-# async def test_fetch_resource_detail():
-#     """fetch_resource_detailのテスト."""
-#     assert 1
+@mark_async_test()
+async def test_fetch_resource_detail(files: tuple[Anchor, list[Path]]):  # noqa: F811
+    """fetch_resource_detailのテスト."""
+    client, h = auth_header()
+    user = await LUser.nodes.first()
+    s = """
+    # title
+    ## head1
+        aaa
+        bbb
+            ccc
+
+    """
+
+    res = client.post(
+        "/resource-text",
+        headers=h,
+        json={"txt": s, "path": ["a", "b", "c"]},
+    )
+    assert res.is_success
+
+    uid = res.json()["resource_id"]
+    res = client.get(f"/resource/{uid}")
+    assert res.is_success
+    owner = ResourceOwner.model_validate(res.json()["owner"])
+
+    assert owner.user.id.hex == user.uid
+    assert owner.resource.uid.hex == uid

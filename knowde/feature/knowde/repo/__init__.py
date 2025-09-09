@@ -7,13 +7,13 @@ from fastapi import status
 from more_itertools import collapse
 from neomodel import db
 
+from knowde.feature.entry import ResourceMeta
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.entry.namespace import (
     fetch_namespace,
     resource_owners_by_resource_uids,
     save_resource,
 )
-from knowde.feature.entry.namespace.sync import txt2meta
 from knowde.feature.entry.resource.repo.save import sn2db
 from knowde.feature.knowde import (
     KAdjacency,
@@ -23,7 +23,6 @@ from knowde.feature.knowde import (
 from knowde.feature.knowde.repo.clause import OrderBy, Paging, WherePhrase
 from knowde.feature.knowde.repo.detail import fetch_knowdes_with_detail
 from knowde.feature.parsing.sysnet import SysNet
-from knowde.feature.parsing.tree2net import parse2net
 from knowde.shared.errors import DomainError
 from knowde.shared.types import UUIDy, to_uuid
 
@@ -38,13 +37,12 @@ async def save_text(
     do_print: bool = False,  # noqa: FBT001, FBT002
 ) -> tuple[SysNet, MResource]:
     """テキストを保存."""
-    meta = txt2meta(s)
+    meta, sn = ResourceMeta.from_str(s)
     meta.updated = updated
     meta.path = path
     ns = await fetch_namespace(to_uuid(user_id))
     await save_resource(meta, ns)
     r = ns.get_resource(meta.title)
-    sn = parse2net(s)
     sn2db(sn, r.uid, do_print=do_print)
     return sn, r
 

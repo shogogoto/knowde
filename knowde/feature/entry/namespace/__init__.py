@@ -1,9 +1,9 @@
-"""resource repository."""
+"""リソースの詳細(knowde)を含まないリソースのメタ情報repo."""
 
 from __future__ import annotations
 
 from collections.abc import Iterable
-from datetime import date
+from datetime import date, datetime
 from itertools import pairwise
 from pathlib import Path, PurePath
 from uuid import UUID
@@ -23,7 +23,8 @@ from knowde.feature.entry.label import LFolder, LResource
 from knowde.feature.entry.mapper import MFolder, MResource
 from knowde.feature.entry.resource.repo.save import sn2db
 from knowde.feature.knowde import ResourceOwner
-from knowde.feature.parsing.tree2net import parse2net
+from knowde.feature.parsing.sysnet import SysNet
+from knowde.shared.errors.domain import NotFoundError
 from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.user.label import LUser
 from knowde.shared.user.schema import UserReadPublic
@@ -225,18 +226,26 @@ async def move_folder(
     return await tgt.save()
 
 
-async def text2resource(ns: NameSpace, txt: str) -> str:
+async def save_resource_with_detail(
+    ns: NameSpace,
+    txt: str,
+    path: list[str] | None = None,
+    updated: datetime | None = None,
+) -> tuple[MResource, ResourceMeta, SysNet]:
     """テキストからResource内のKnowdeネットワークを永続化."""
-    sn = parse2net(txt)
-    meta = ResourceMeta.of(sn)
-    r = ns.get_resource_or_none(meta.title)
-    if r is None:
-        lb = await LResource(**meta.model_dump()).save()
-    else:
-        lb = LResource(**r.model_dump())
-        await lb.refresh()
+    meta, sn = ResourceMeta.from_str(txt)
+    if path is not None:
+        meta.path = tuple(path)
+    if updated is not None:
+        meta.updated = updated
+
+    lb = await save_or_move_resource(meta, ns)
+    if lb is None:
+        msg = f"{meta.title} の保存に失敗しました"
+        raise NotFoundError(msg)
+    m = MResource.freeze_dict(lb.__properties__)
     sn2db(sn, lb.uid)
-    return lb.uid
+    return m, meta, sn
 
 
 async def resource_owners_by_resource_uids(

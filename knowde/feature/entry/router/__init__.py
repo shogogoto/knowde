@@ -12,8 +12,9 @@ from knowde.feature.entry import NameSpace, ResourceDetail
 from knowde.feature.entry.namespace import (
     ResourceMetas,
     fetch_namespace,
+    fetch_owner_by_resource_uid,
+    save_resource_with_detail,
     sync_namespace,
-    text2resource,
 )
 from knowde.feature.entry.resource.repo.restore import restore_sysnet
 from knowde.feature.user.domain import User
@@ -59,8 +60,8 @@ async def post_text(
 ) -> dict[str, str]:
     """テキストからsysnetを読み取って永続化."""
     ns = await fetch_namespace(user.id)
-    uid = await text2resource(ns, txt)
-    return {"resource_id": uid}
+    m, _, _ = await save_resource_with_detail(ns, txt, path)
+    return {"resource_id": m.uid.hex}
 
 
 @router.post("/resource")
@@ -72,15 +73,12 @@ async def post_files(
     for f in files:
         ns = await fetch_namespace(user.id)
         txt = await read_content(f)
-        await text2resource(ns, txt)
+        await save_resource_with_detail(ns, txt)
 
 
 @router.get("/resource/{resource_id}")
-async def get_resource_detail(
-    resource_id: str,
-    user: Annotated[User, Depends(auth_component().current_user(active=True))],
-) -> ResourceDetail:
+async def get_resource_detail(resource_id: str) -> ResourceDetail:
     """リソース詳細."""
     sn, _ = await restore_sysnet(resource_id)
-
-    return ResourceDetail(network=sn)
+    owner = await fetch_owner_by_resource_uid(resource_id)
+    return ResourceDetail(network=sn, owner=owner)
