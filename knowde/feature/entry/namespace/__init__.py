@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from datetime import date
+from datetime import date, datetime
 from itertools import pairwise
 from pathlib import Path, PurePath
 from uuid import UUID
@@ -116,6 +116,7 @@ async def save_resource(m: ResourceMeta, ns: NameSpace) -> LResource | None:
             lb = LResource(**tail.model_dump())
             for k, v in m.model_dump().items():
                 setattr(lb, k, v)
+            lb.updated = datetime.now()  # noqa: DTZ005
             return await lb.save()
         case _:
             raise ValueError
@@ -128,25 +129,32 @@ async def save_or_move_resource(m: ResourceMeta, ns: NameSpace) -> LResource | N
     if old is None:  # 新規
         return await save_resource(m, ns)
     ns.remove_resource(m.title)
-    old = await LResource(**old.model_dump()).save()  # reflesh
-    owner = await old.owner.get_or_none()
-    parent = await old.parent.get_or_none()
+
+    d = old.model_dump()
+    d["uid"] = d["uid"].hex  # ハイフンありに変換されるとknowdeとの結びつかなくなる
+    d["updated"] = datetime.now()  # noqa: DTZ005
+    upd = await LResource(**d).save()  # reflesh
+    owner = await upd.owner.get_or_none()
+    parent = await upd.parent.get_or_none()
     if owner is None and parent is None:
         msg = "所有者も親もなかったなんてあり得ないからね"
         raise SaveResourceError(msg)
+
+    # 既存の繋がりを切る
     if parent is None:  # owner直下
-        await old.owner.disconnect(owner)
+        await upd.owner.disconnect(owner)
     else:
-        await old.parent.disconnect(parent)
+        await upd.parent.disconnect(parent)
+
     new_parent = await fill_parents(ns, *m.names[:-1])
     if new_parent is None:  # user直下
         u = await LUser.nodes.get(uid=ns.user_id.hex)
-        await old.owner.connect(u)
-        ns.add_root(old.frozen)
+        await upd.owner.connect(u)
+        ns.add_root(upd.frozen)
     else:
-        await old.parent.connect(new_parent)
-        ns.add_edge(new_parent.frozen, old.frozen)
-    return old
+        await upd.parent.connect(new_parent)
+        ns.add_edge(new_parent.frozen, upd.frozen)
+    return upd
 
 
 async def sync_namespace(metas: ResourceMetas, ns: NameSpace) -> list[Path]:

@@ -54,9 +54,9 @@ def sn() -> SysNet:  # noqa: D103
 async def test_save_and_restore(sn: SysNet) -> None:
     """永続化して元に戻す."""
     m = ResourceMeta.of(sn)
-    r = await LResource(**m.model_dump()).save()
-    sn2db(sn, r.uid)
-    r, _ = await restore_sysnet(r.uid)
+    rsrc = await LResource(**m.model_dump()).save()
+    sn2db(sn, rsrc.uid)
+    r, _ = await restore_sysnet(rsrc.uid)
     assert set(sn.terms) == set(r.terms)
     # assert set(sn.sentences) == set(r.sentences)  # なぜかFalse
     diff_stc = set(sn.sentences) - set(r.sentences)

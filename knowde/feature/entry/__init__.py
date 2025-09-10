@@ -117,7 +117,8 @@ class ResourceMeta(BaseModel):
 
     # ファイル由来
     path: tuple[str, ...] | None = Field(default=None, min_length=1)
-    updated: datetime | None = None
+    # updated: datetime | None = None
+    updated: datetime = Field(default_factory=datetime.now)
     txt_hash: int | None = None
 
     @property

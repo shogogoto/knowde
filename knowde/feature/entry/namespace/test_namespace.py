@@ -10,6 +10,7 @@ import pytest
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.entry import NameSpace, ResourceMeta
 from knowde.feature.entry.errors import DuplicatedTitleError
+from knowde.feature.entry.label import LResource
 from knowde.feature.entry.namespace import (
     fetch_namespace,
     fetch_owner_by_resource_uid,
@@ -104,6 +105,7 @@ async def setup(p: Path) -> Fixture:  # noqa: D103
 async def test_save_new(tmp_path: Path) -> None:
     """全て新規."""
     _, _, _, ns = await setup(tmp_path)
+
     assert ns.get_or_none("sub1")
     assert ns.get_or_none("sub1", "sub11")
     assert ns.get_or_none("sub1", "sub11", "# title1")
@@ -235,3 +237,45 @@ async def test_fetch_owner_by_resource_uid(tmp_path: Path) -> None:
     assert owner.user.id.hex == u.uid
     assert owner.resource.uid == r.uid
     assert owner.resource.path == ("sub1", "sub11")
+
+
+@mark_async_test()
+async def test_save_resource_updated_without_hyphen():
+    """リソースの更新日時が更新されuidにハイフンが含まれない."""
+    u = await LUser().save()
+    ns = await fetch_namespace(u.uid)
+
+    await save_or_move_resource(
+        ResourceMeta(title="# title1", path=("sub1", "sub11")),
+        ns,
+    )
+
+    ns = await fetch_namespace(u.uid)
+    r = ns.get_resource("# title1")
+    uid = r.uid.hex
+    assert r.updated
+
+    assert await LResource.nodes.get(uid=uid)
+    all_ = await LResource.nodes.filter()
+    assert len(all_) == 1
+    await save_or_move_resource(
+        ResourceMeta(title="# title1", path=("sub1", "sub11")),
+        ns,
+    )
+    ns = await fetch_namespace(u.uid)
+    r2 = ns.get_resource("# title1")
+    assert r.updated < r2.updated
+    assert await LResource.nodes.get(uid=uid)
+    all_ = await LResource.nodes.filter()
+    assert len(all_) == 1
+
+    await save_or_move_resource(
+        ResourceMeta(title="# title1", path=("sub2", "sub12")),
+        ns,
+    )
+    ns = await fetch_namespace(u.uid)
+    r3 = ns.get_resource("# title1")
+    assert r2.updated < r3.updated
+    assert await LResource.nodes.get(uid=uid)
+    all_ = await LResource.nodes.filter()
+    assert len(all_) == 1
