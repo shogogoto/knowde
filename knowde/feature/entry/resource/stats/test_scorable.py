@@ -1,8 +1,9 @@
 """test."""
 
 from knowde.feature.parsing.tree2net import parse2net
-from knowde.feature.stats.systats.nw1_n0.scorable import LRWTpl, SyScore
 from knowde.feature.stats.systats.nw1_n1.ctxdetail import Nw1N1Label
+
+from .scorable import LRWTpl, SyScore
 
 
 def test_scorable_to_edge() -> None:
