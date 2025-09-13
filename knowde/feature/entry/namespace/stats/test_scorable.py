@@ -3,7 +3,7 @@
 from knowde.feature.parsing.tree2net import parse2net
 from knowde.feature.stats.systats.nw1_n1.ctxdetail import Nw1N1Label
 
-from .scorable import LRWTpl, SyScore
+from .scorable import NRecursiveWeight, SyScore
 
 
 def test_scorable_to_edge() -> None:
@@ -20,7 +20,7 @@ def test_scorable_to_edge() -> None:
     """
     sn = parse2net(s)
     items = [Nw1N1Label.PREMISE, Nw1N1Label.CONCLUSION]
-    configs = [LRWTpl(Nw1N1Label.PREMISE, 1, 1)]
+    configs = [NRecursiveWeight(Nw1N1Label.PREMISE, 1, 1)]
     ctx = SyScore.create(items, config=configs)
     assert ctx.get_one(sn, "aaa") == {"premise": 0, "conclusion": 3, "score": 3}
     assert ctx.get_one(sn, "bbb") == {"premise": 1, "conclusion": 0, "score": 1}
@@ -30,7 +30,7 @@ def test_scorable_to_edge() -> None:
     assert ctx.get_one(sn, "fff") == {"premise": 1, "conclusion": 0, "score": 1}
     assert ctx.get_one(sn, "ggg") == {"premise": 1, "conclusion": 0, "score": 1}
 
-    configs = [LRWTpl(Nw1N1Label.PREMISE, 2, 1)]
+    configs = [NRecursiveWeight(Nw1N1Label.PREMISE, 2, 1)]
     ctx = SyScore.create(items, config=configs)
     assert ctx.get_one(sn, "aaa") == {"premise": 0, "conclusion": 3, "score": 3}
     assert ctx.get_one(sn, "bbb") == {"premise": 1, "conclusion": 0, "score": 1}
@@ -40,7 +40,7 @@ def test_scorable_to_edge() -> None:
     assert ctx.get_one(sn, "fff") == {"premise": 2, "conclusion": 0, "score": 2}
     assert ctx.get_one(sn, "ggg") == {"premise": 1, "conclusion": 0, "score": 1}
 
-    configs = [LRWTpl(Nw1N1Label.PREMISE, 3, 2)]
+    configs = [NRecursiveWeight(Nw1N1Label.PREMISE, 3, 2)]
     ctx = SyScore.create(items, config=configs)
     assert ctx.get_one(sn, "aaa") == {"premise": 0, "conclusion": 3, "score": 3}
     assert ctx.get_one(sn, "bbb") == {"premise": 1, "conclusion": 0, "score": 2}
@@ -65,7 +65,7 @@ def test_scorable() -> None:
     sn = parse2net(s)
     items = [Nw1N1Label.REFER, Nw1N1Label.REFERRED]
 
-    configs = [LRWTpl(Nw1N1Label.REFER, 1, 1)]
+    configs = [NRecursiveWeight(Nw1N1Label.REFER, 1, 1)]
     ctx = SyScore.create(items, config=configs)
     assert ctx.get_one(sn, "a2 0") == {"refer": 2, "referred": 0, "score": 2}
     assert ctx.get_one(sn, "b2 1") == {"refer": 2, "referred": 1, "score": 3}
@@ -78,7 +78,7 @@ def test_scorable() -> None:
         "score": 0,
     }
 
-    configs = [LRWTpl(Nw1N1Label.REFER, 2, 3)]
+    configs = [NRecursiveWeight(Nw1N1Label.REFER, 2, 3)]
     ctx = SyScore.create(items, config=configs)
     assert ctx.get_one(sn, "a2 0") == {"refer": 4, "referred": 0, "score": 12}
     assert ctx.get_one(sn, "b2 1") == {"refer": 4, "referred": 1, "score": 13}

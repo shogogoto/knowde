@@ -15,8 +15,8 @@ from knowde.feature.entry.namespace import (
     fetch_owner_by_resource_uid,
     sync_namespace,
 )
-from knowde.feature.entry.resource import save_resource_with_detail
 from knowde.feature.entry.resource.repo.restore import restore_sysnet
+from knowde.feature.entry.resource.usecase import save_resource_with_detail
 from knowde.feature.user.domain import User
 from knowde.shared.user.router_util import auth_component
 
