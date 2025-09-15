@@ -6,10 +6,10 @@ from typing import IO, TYPE_CHECKING
 
 import click
 
+from knowde.feature.entry.namespace.stats.scorable import NRecursiveWeight
 from knowde.feature.stats.systats.types import Nw1N1Label
 
 if TYPE_CHECKING:
-    from knowde.feature.stats.systats.nw1_n0.scorable import LRWTpl
     from knowde.feature.stats.systats.types import Nw1N1Recursive
 
 
@@ -77,7 +77,7 @@ def score_cmd(
     number: int,
     item: tuple[Nw1N1Label],
     ignore: tuple[Nw1N1Label],
-    config: tuple[LRWTpl],
+    config: tuple[NRecursiveWeight],
 ) -> None:
     """ノードの文脈スコア順に表示."""
     from .proc import score_proc  # noqa: PLC0415

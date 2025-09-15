@@ -8,9 +8,9 @@ from typing import IO, TYPE_CHECKING
 import click
 from tabulate import tabulate
 
+from knowde.feature.entry.namespace.stats import Nw1N0Label
+from knowde.feature.entry.namespace.stats.scorable import NRecursiveWeight, SyScore
 from knowde.feature.parsing import try_parse2net
-from knowde.feature.stats.systats.nw1_n0 import Nw1N0Label
-from knowde.feature.stats.systats.nw1_n0.scorable import LRWTpl, SyScore
 from knowde.feature.stats.systats.nw1_n1.ctxdetail import Nw1N1Detail
 from knowde.shared.nxutil.edge_type import EdgeType
 
@@ -45,9 +45,9 @@ def stat_proc(
 def score_proc(  # noqa: D103
     stdin: IO,
     number: int,
-    item: tuple[Nw1N1Label],
-    ignore: tuple[Nw1N1Label],
-    config: tuple[LRWTpl],
+    item: tuple[EdgeType],
+    ignore: tuple[EdgeType],
+    config: tuple[NRecursiveWeight],
 ) -> None:
     txt = stdin.read()
     sn = try_parse2net(txt)

@@ -3,23 +3,22 @@
 from __future__ import annotations
 
 import operator
-from collections.abc import Callable, Hashable
+from collections.abc import Callable
 from enum import Enum, StrEnum
-from functools import cache, reduce
+from functools import reduce
 from typing import Self
 
 import networkx as nx
 
-from knowde.feature.entry.namespace.stats.domain import get_axiom, get_unrefered
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.sysnet import SysNet
-from knowde.feature.stats.systats.nw1_n1 import (
-    get_detail,
-    get_parent_or_none,
-    has_dependency,
-)
-from knowde.shared.nxutil.edge_type import EdgeType, etype_subgraph
 from knowde.shared.types import Duplicable
+
+from .domain.domain import (
+    get_axiom,
+    get_isolation,
+    get_unrefered,
+)
 
 type NW1N0Fn = Callable[[SysNet], int]
 type NW1N0RatioFn = Callable[[SysNet], float]
@@ -171,29 +170,3 @@ class UnificationRatio(Enum):
 def to_percent_values(d: dict[str, float], n_digit: int = 2) -> dict[str, str]:
     """パーセント表示."""
     return {k: f"{v:.{n_digit}%}" for k, v in d.items()}
-
-
-@cache
-def get_isolation(sn: SysNet) -> list[Hashable]:
-    """孤立したノード.
-
-    SIBLINGは無視 <=> parentを持たない
-    HEAD、TO、RESOLVEDも無視
-    """
-
-    def include_isolation_node(n: Hashable) -> bool:
-        """parentもなく、詳細もなく、TOなどの関係もない."""
-        parent = get_parent_or_none(sn, n)
-        if parent is not None:
-            return False
-        if has_dependency(sn, n):
-            return False
-        detail = get_detail(sn, n)
-        return len(detail) == 0
-
-    sub = etype_subgraph(sn.sentence_graph, EdgeType.SIBLING, EdgeType.BELOW)
-    sub = nx.subgraph_view(
-        sub,
-        filter_node=include_isolation_node,  # 見出し削除
-    )
-    return list(sub.nodes)

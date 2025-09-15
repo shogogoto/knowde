@@ -4,11 +4,9 @@ from pytest_unordered import unordered
 
 from knowde.feature.parsing.tree2net import parse2net
 
-from . import (
-    get_isolation,
-)
 from .domain import (
     get_axiom,
+    get_isolation,
     get_unrefered,
 )
 
