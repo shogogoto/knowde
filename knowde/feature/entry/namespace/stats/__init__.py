@@ -6,10 +6,11 @@ import operator
 from collections.abc import Callable, Hashable
 from enum import Enum, StrEnum
 from functools import cache, reduce
-from typing import TYPE_CHECKING, Self
+from typing import Self
 
 import networkx as nx
 
+from knowde.feature.entry.namespace.stats.domain import get_axiom, get_unrefered
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.stats.systats.nw1_n1 import (
@@ -19,9 +20,6 @@ from knowde.feature.stats.systats.nw1_n1 import (
 )
 from knowde.shared.nxutil.edge_type import EdgeType, etype_subgraph
 from knowde.shared.types import Duplicable
-
-if TYPE_CHECKING:
-    from knowde.feature.parsing.sysnet.sysnode import KNArg
 
 type NW1N0Fn = Callable[[SysNet], int]
 type NW1N0RatioFn = Callable[[SysNet], float]
@@ -101,6 +99,10 @@ class Nw1N0Label(StrEnum):
         return d
 
 
+def get_stats(sn: SysNet) -> dict[str, int]:
+    """統計情報取得."""
+
+
 class Systat(Enum):
     """統計情報の構成要素."""
 
@@ -109,8 +111,8 @@ class Systat(Enum):
     SENTENCE = (Nw1N0Label.SENTENCE, lambda sn: len(sn.sentences))
     CHAR = (Nw1N0Label.CHAR, n_char)
     ISOLATION = (Nw1N0Label.ISOLATION, lambda sn: len(get_isolation(sn)))
-    AXIOM = (Nw1N0Label.AXIOM, lambda sn: len(get_axiom_to(sn)))
-    TERM_AXIOM = (Nw1N0Label.TERM_AXIOM, lambda sn: len(get_axiom_resolved(sn)))
+    AXIOM = (Nw1N0Label.AXIOM, lambda sn: len(get_axiom(sn)))
+    TERM_AXIOM = (Nw1N0Label.TERM_AXIOM, lambda sn: len(get_unrefered(sn)))
     # heavy
     DIAMETER = (Nw1N0Label.DIAMETER, lambda sn: nx.diameter(sn.g.to_undirected()))
     RADIUS = (Nw1N0Label.RADIUS, lambda sn: nx.radius(sn.g.to_undirected()))
@@ -193,37 +195,5 @@ def get_isolation(sn: SysNet) -> list[Hashable]:
     sub = nx.subgraph_view(
         sub,
         filter_node=include_isolation_node,  # 見出し削除
-    )
-    return list(sub.nodes)
-
-
-@cache
-def get_axiom_to(sn: SysNet) -> list[Hashable]:
-    """TOの出発点となるDef or sentence."""
-
-    def filter_axiom(n: Hashable) -> bool:
-        has_to = len(list(EdgeType.TO.succ(sn.g, n))) > 0
-        has_from = len(list(EdgeType.TO.pred(sn.g, n))) == 0
-        return has_to and has_from
-
-    sub = nx.subgraph_view(
-        etype_subgraph(sn.sentence_graph, EdgeType.TO),
-        filter_node=filter_axiom,  # 見出し削除
-    )
-    return list(sub.nodes)
-
-
-@cache
-def get_axiom_resolved(sn: SysNet) -> list[KNArg]:
-    """RESOLVEDの出発点."""
-
-    def filter_axiom(n: Hashable) -> bool:
-        has_refer = len(list(EdgeType.RESOLVED.pred(sn.g, n))) > 0
-        has_referred = len(list(EdgeType.RESOLVED.succ(sn.g, n))) == 0
-        return has_refer and has_referred
-
-    sub = nx.subgraph_view(
-        etype_subgraph(sn.sentence_graph, EdgeType.RESOLVED),
-        filter_node=filter_axiom,  # 見出し削除
     )
     return list(sub.nodes)

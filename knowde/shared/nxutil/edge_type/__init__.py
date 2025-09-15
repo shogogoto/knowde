@@ -142,3 +142,17 @@ def _get_one_or_none(ls: list[Hashable], t: EdgeType, src: Hashable) -> Hashable
                 + "\n\t".join(map(str, ls))
             )
             raise MultiEdgesError(msg)
+
+
+def is_root(g: nx.DiGraph, n: Hashable, et: EdgeType) -> bool:
+    """graphのrootのみを取得."""
+    has_to = len(list(et.succ(g, n))) > 0
+    has_from = len(list(et.pred(g, n))) == 0
+    return has_to and has_from
+
+
+def is_leaf(g: nx.DiGraph, n: Hashable, et: EdgeType) -> bool:
+    """graphの先端のみを取得."""
+    has_refer = len(list(et.pred(g, n))) > 0
+    has_referred = len(list(et.succ(g, n))) == 0
+    return has_refer and has_referred
