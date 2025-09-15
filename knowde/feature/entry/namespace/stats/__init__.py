@@ -14,7 +14,7 @@ from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.shared.types import Duplicable
 
-from .domain.domain import (
+from .domain import (
     get_axiom,
     get_isolation,
     get_unrefered,
@@ -96,10 +96,6 @@ class Nw1N0Label(StrEnum):
                 dct = to_percent_values(dct)
             d |= dct
         return d
-
-
-def get_stats(sn: SysNet) -> dict[str, int]:
-    """統計情報取得."""
 
 
 class Systat(Enum):

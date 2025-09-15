@@ -6,7 +6,7 @@ from typing import IO, TYPE_CHECKING
 
 import click
 
-from knowde.feature.entry.namespace.stats.scorable import NRecursiveWeight
+from knowde.feature.stats.systats.nw1_n1.scorable import NRecursiveWeight
 from knowde.feature.stats.systats.types import Nw1N1Label
 
 if TYPE_CHECKING:
