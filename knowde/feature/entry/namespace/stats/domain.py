@@ -20,50 +20,24 @@ from knowde.shared.nxutil.edge_type import EdgeType, etype_subgraph, is_leaf, is
 from knowde.shared.types import Duplicable
 
 
-class ResourceStatsStd(BaseModel):
-    """基本リソース統計情報."""
+class ResourceStatsBasic(BaseModel):
+    """基本的な計数値."""
 
-    n_char: int = Field(title="文字数")
-    n_sentence: int = Field(title="単文数")
-    n_term: int = Field(title="単語数")
-    n_edges: int = Field(title="辺数")
-
+    n_char: int = Field(title="文字数", description="テキストの絶対的なボリューム")
+    n_sentence: int = Field(title="単文数", description="知識の基本的な構成単位の数")
+    n_term: int = Field(title="単語数", description="語彙の規模")
+    n_edges: int = Field(title="辺数", description="知識間の関係性の数")
     n_isolation: int = Field(title="孤立単文数")
     n_axiom: int = Field(title="公理数")
-    n_unrefered: int = Field(title="未参照数")
-
-    @computed_field
-    @property
-    def r_isolation(self) -> float:
-        """孤立割合. 低いほどネットワークのまとまりが良い."""
-        if self.n_sentence == 0:
-            return 0.0
-        return self.n_isolation / self.n_sentence
-
-    @computed_field
-    @property
-    def r_axiom(self) -> float:
-        """全単文に対する公理割合.
-
-        公理割合が低いほどまとまりが良い. オッカムの剃刀的な
-        """
-        if self.n_sentence == 0:
-            return 0.0
-        return self.n_axiom / self.n_sentence
-
-    @computed_field
-    @property
-    def r_unrefered(self) -> float:
-        """全用語の未参照語割合.
-
-        未参照語割合が少ないほど「浮いた用語」がなくまとまりが良い.
-        """
-        if self.n_term == 0:
-            return 0.0
-        return self.n_unrefered / self.n_term
+    n_unrefered: int = Field(
+        title="未参照用語数",
+        description="他のどこからも参照されていない用語数",
+    )
 
     @classmethod
-    def create(cls, sn: SysNet) -> Self:  # noqa: D102
+    def create(cls, sn: SysNet) -> Self:
+        """Create stats."""
+
         def n_char(sn: SysNet) -> int:
             c = 0
             for n in sn.g.nodes:
@@ -92,19 +66,108 @@ class ResourceStatsStd(BaseModel):
         )
 
 
+class ResourceStatsCohesion(ResourceStatsBasic):
+    """まとまりの良さを示す指標."""
+
+    @computed_field(
+        title="孤立単文の割合",
+        description="低いほど、知識が相互に接続されている",
+    )
+    @property
+    def r_isolation(self) -> float:
+        """孤立割合. 低いほどネットワークのまとまりが良い."""
+        if self.n_sentence == 0:
+            return 0.0
+        return self.n_isolation / self.n_sentence
+
+    @computed_field(
+        title="公理割合",
+        description="低いほど、少数の原理から多くの知識が得られている",
+    )
+    @property
+    def r_axiom(self) -> float:
+        """全単文に対する公理割合. 低いほどまとまりが良い. オッカムの剃刀的な."""
+        if self.n_sentence == 0:
+            return 0.0
+        return self.n_axiom / self.n_sentence
+
+    @computed_field(
+        title="未参照用語割合",
+        description="低いほど、定義された用語が無駄なく活用されている",
+    )
+    @property
+    def r_unrefered(self) -> float:
+        """全用語の未参照語割合. 少ないほどまとまりが良い."""
+        if self.n_term == 0:
+            return 0.0
+        return self.n_unrefered / self.n_term
+
+
+class ResourceStatsRichness(BaseModel):
+    """豊かさを示す指標."""
+
+    average_degree: float = Field(
+        title="平均次数",
+        description="一つの知識が平均していくつの他の知識と関連付いているか。高いほど、知識が密に関連し合う",
+    )
+
+    @classmethod
+    def create(cls, sn: SysNet) -> Self:
+        """Create stats."""
+        g = sn.g
+        avg_degree = 0.0 if g.order() == 0 else g.size() / g.order()
+        return cls(average_degree=avg_degree)
+
+
 class ResourceStatsHeavy(BaseModel):
     """グラフ理論の指標 計算重い."""
 
-    # diameter: float = Field(title="直径")
-    # radius: float = Field(title="半径")
-    density: float = Field(title="密度")
+    density: float = Field(
+        title="密度",
+        description="辺の割合。高いほど、ノード同士が密に結合している",
+    )
+    diameter: float = Field(
+        title="直径",
+        description="最大離心距離。ネットワーク内の最も遠いノード間の距離。低いほど、ネットワークがコンパクトで情報の伝達効率が高い。非連結のグラフの場合は、最大の強連結成分に対して計算",
+    )
+    radius: float = Field(
+        title="半径",
+        description="各ノードからの最大距離の最小値。低いほど、中心的なノードから全体にアクセスしやすい。非連結のグラフの場合は、最大の強連結成分に対して計算",
+    )
+    n_scc: int = Field(
+        title="強連結成分の数 Strongly Connected Components",
+        description="グラフがいくつの独立した「島」に分かれているか。低いほど、知識が分断されていない",
+    )
 
     @classmethod
-    def create(cls, sn: SysNet) -> Self:  # noqa: D102
+    def create(cls, sn: SysNet) -> Self:
+        """Create stats."""
+        g = sn.g
+        if g.order() == 0:
+            return cls(density=0.0, diameter=0.0, radius=0.0, n_scc=0)
+
+        n_scc = nx.number_strongly_connected_components(g)
+        density = nx.density(g)
+
+        scc_nodes_list = list(nx.strongly_connected_components(g))
+        if not scc_nodes_list:
+            return cls(density=density, diameter=0.0, radius=0.0, n_scc=n_scc)
+
+        largest_scc_nodes = max(scc_nodes_list, key=len)
+        largest_scc = g.subgraph(largest_scc_nodes)
+
+        if largest_scc.order() <= 1:
+            diameter = 0.0
+            radius = 0.0
+        else:
+            diameter = nx.diameter(largest_scc)
+            radius = nx.radius(largest_scc)
+
         return cls(
-            # diameter=nx.diameter(sn.g),
-            # radius=nx.radius(sn.g),
-            density=nx.density(sn.g),
+            density=density,
+            diameter=diameter,
+            radius=radius,
+            n_scc=n_scc,
         )
 
 

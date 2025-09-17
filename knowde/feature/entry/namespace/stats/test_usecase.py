@@ -27,10 +27,9 @@ def test_echo_resource_stats():
         "r_isolation": 0.5,
         "r_axiom": 0.25,
         "r_unrefered": 0.0,
+        "average_degree": 0.8571428571428571,
     }
-
     stats = to_resource_stats(txt, True)  # noqa: FBT003
-
     assert stats == {
         "n_char": 26,
         "n_sentence": 4,
@@ -42,5 +41,9 @@ def test_echo_resource_stats():
         "r_isolation": 0.5,
         "r_axiom": 0.25,
         "r_unrefered": 0.0,
+        "average_degree": 0.8571428571428571,
         "density": 0.14285714285714285,
+        "diameter": 0.0,
+        "radius": 0.0,
+        "n_scc": 7,
     }
