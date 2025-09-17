@@ -28,7 +28,7 @@ def stat_cmd(
     table: bool,  # noqa: FBT001
 ) -> None:
     """統計値."""
-    from .proc import stat_proc  # noqa: PLC0415
+    from knowde.feature.entry.namespace.stats.usecase import stat_proc  # noqa: PLC0415
 
     stat_proc(stdin, heavy, table)
 
@@ -80,7 +80,7 @@ def score_cmd(
     config: tuple[NRecursiveWeight],
 ) -> None:
     """ノードの文脈スコア順に表示."""
-    from .proc import score_proc  # noqa: PLC0415
+    from knowde.feature.parsing.usecase import score_proc  # noqa: PLC0415
 
     score_proc(stdin, number, item, ignore, config)
 
@@ -105,7 +105,7 @@ def detail_cmd(
     config: tuple[Nw1N1Recursive],
 ) -> None:
     """文字列にマッチするノードの詳細."""
-    from .proc import detail_proc  # noqa: PLC0415
+    from knowde.feature.parsing.usecase import detail_proc  # noqa: PLC0415
 
     detail_proc(stdin, pattern, item, ignore, config)
 
@@ -136,7 +136,7 @@ def time_cmd(stdin: IO, timespan: str, overlap: bool) -> None:  # noqa: FBT001
         ex. 19XX => 1900 ~ 1999
 
     """
-    from .proc import time_proc  # noqa: PLC0415
+    from knowde.feature.parsing.usecase import time_proc  # noqa: PLC0415
 
     if overlap:
         time_proc(stdin, timespan, "overlap")
