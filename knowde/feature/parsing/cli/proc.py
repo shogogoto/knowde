@@ -9,7 +9,7 @@ import click
 from tabulate import tabulate
 
 from knowde.feature.entry.namespace.stats import Nw1N0Label
-from knowde.feature.parsing import try_parse2net
+from knowde.feature.parsing.domain import try_parse2net
 from knowde.feature.stats.systats.nw1_n1.ctxdetail import Nw1N1Detail
 from knowde.feature.stats.systats.nw1_n1.scorable import NRecursiveWeight, SyScore
 from knowde.shared.nxutil.edge_type import EdgeType

@@ -5,8 +5,7 @@ from __future__ import annotations
 import click
 
 from knowde.feature.entry.cli import anchor_cmd, sync_cmd
-
-# from knowde.feature.parsing.cli import view_cli
+from knowde.feature.parsing.cli import view_cli
 from knowde.feature.user.cli import user_cli
 
 from .options.completion import complete_option
@@ -35,7 +34,7 @@ def config_cmd() -> None:
     click.echo(c.model_dump_json(indent=2))
 
 
-# cli.add_command(view_cli)
+cli.add_command(view_cli)
 cli.add_command(user_cli)
 cli.add_command(anchor_cmd)
 cli.add_command(sync_cmd)
