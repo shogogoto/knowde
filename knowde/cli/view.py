@@ -34,6 +34,10 @@ def stat_cmd(
         to_resource_stats,
     )
 
+    def to_percent_values(d: dict[str, float], n_digit: int = 2) -> dict[str, str]:
+        """パーセント表示."""
+        return {k: f"{v:.{n_digit}%}" for k, v in d.items()}
+
     stat = to_resource_stats(stdin.read(), heavy, table)
     if table:
         click.echo(tabulate([stat], headers="keys"))
