@@ -17,7 +17,6 @@ from neomodel import (
     RelationshipFrom,
     RelationshipTo,
     StringProperty,
-    StructuredNode,
     UniqueIdProperty,
 )
 
@@ -27,7 +26,7 @@ from knowde.shared.user.label import LUser  # noqa: F401
 from .mapper import Entry, MFolder, MResource
 
 
-class LHead(StructuredNode):
+class LHead(AsyncStructuredNode):
     """見出し."""
 
     __label__ = "Head"

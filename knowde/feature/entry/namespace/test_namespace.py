@@ -8,7 +8,7 @@ from textwrap import dedent
 import pytest
 
 from knowde.conftest import async_fixture, mark_async_test
-from knowde.feature.entry import NameSpace, ResourceMeta
+from knowde.feature.entry.domain import NameSpace, ResourceMeta
 from knowde.feature.entry.errors import DuplicatedTitleError
 from knowde.feature.entry.label import LResource
 from knowde.feature.entry.namespace import (

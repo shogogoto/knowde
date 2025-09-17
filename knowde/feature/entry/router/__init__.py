@@ -8,7 +8,7 @@ from typing import Annotated
 import chardet  # 文字エンコーディング検出用
 from fastapi import APIRouter, Body, Depends, UploadFile
 
-from knowde.feature.entry import NameSpace, ResourceDetail
+from knowde.feature.entry.domain import NameSpace, ResourceDetail
 from knowde.feature.entry.namespace import (
     ResourceMetas,
     fetch_namespace,

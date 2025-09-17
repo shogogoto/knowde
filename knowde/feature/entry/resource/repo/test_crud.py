@@ -4,7 +4,7 @@ import pytest
 from pytest_unordered import unordered
 
 from knowde.conftest import mark_async_test
-from knowde.feature.entry import ResourceMeta
+from knowde.feature.entry.domain import ResourceMeta
 from knowde.feature.entry.label import LResource
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.tree2net import parse2net

@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from knowde.feature.entry import NameSpace, ResourceMeta
+from knowde.feature.entry.domain import NameSpace, ResourceMeta
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.entry.namespace import fetch_namespace, save_or_move_resource
 from knowde.feature.entry.resource.repo.save import sn2db

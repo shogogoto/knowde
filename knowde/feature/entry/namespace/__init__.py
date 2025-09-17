@@ -13,7 +13,7 @@ import networkx as nx
 from neomodel.async_.core import AsyncDatabase
 from pydantic import RootModel
 
-from knowde.feature.entry import NameSpace, ResourceMeta
+from knowde.feature.entry.domain import NameSpace, ResourceMeta
 from knowde.feature.entry.errors import (
     DuplicatedTitleError,
     EntryAlreadyExistsError,
