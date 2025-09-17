@@ -4,43 +4,14 @@ from __future__ import annotations  # noqa: I001
 
 from datetime import datetime
 
-from knowde.feature.parsing.tree2net import parse2net
 from knowde.feature.entry.domain import ResourceMeta
 from knowde.feature.entry.router import ResourceMetas
+from knowde.feature.parsing.tree2net import filter_parsable
 from knowde.shared.util import TZ
 
 from pathlib import Path
 
 from collections.abc import Callable, Iterable
-
-type ParseHandler = Callable[[Path, Exception], None]
-
-
-def can_parse(
-    p: Path,
-    handle_error: ParseHandler | None = None,
-) -> bool:
-    """エラーなくパースできるか."""
-    if not p.is_file():
-        return False
-    try:
-        parse2net(p.read_text(encoding="utf-8"))
-    except Exception as e:  # noqa: BLE001
-        if handle_error is not None:
-            handle_error(p, e)
-        return False
-    return True
-
-
-def filter_parsable(
-    handle_error: ParseHandler | None = None,
-) -> Callable[[Iterable[Path]], list[Path]]:
-    """パースできるファイルのみを抽出."""
-
-    def _f(_ps: Iterable[Path]) -> list[Path]:
-        return [p for p in _ps if can_parse(p, handle_error)]
-
-    return _f
 
 
 class Anchor(Path):

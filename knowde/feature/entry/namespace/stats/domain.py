@@ -26,7 +26,7 @@ class ResourceStatsBasic(BaseModel):
     n_char: int = Field(title="文字数", description="テキストの絶対的なボリューム")
     n_sentence: int = Field(title="単文数", description="知識の基本的な構成単位の数")
     n_term: int = Field(title="単語数", description="語彙の規模")
-    n_edges: int = Field(title="辺数", description="知識間の関係性の数")
+    n_edge: int = Field(title="辺数", description="知識間の関係性の数")
     n_isolation: int = Field(title="孤立単文数")
     n_axiom: int = Field(title="公理数")
     n_unrefered: int = Field(
@@ -59,7 +59,7 @@ class ResourceStatsBasic(BaseModel):
             n_char=n_char(sn),
             n_sentence=len(sn.sentences),
             n_term=len(sn.terms),
-            n_edges=len(sn.g.edges),
+            n_edge=len(sn.g.edges),
             n_isolation=len(get_isolation(sn)),
             n_axiom=len(get_axiom(sn)),
             n_unrefered=len(get_unrefered(sn)),

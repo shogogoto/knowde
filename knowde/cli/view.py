@@ -38,7 +38,7 @@ def stat_cmd(
         """パーセント表示."""
         return {k: f"{v:.{n_digit}%}" for k, v in d.items()}
 
-    stat = to_resource_stats(stdin.read(), heavy, table)
+    stat = to_resource_stats(stdin.read(), heavy)
     if table:
         click.echo(tabulate([stat], headers="keys"))
     else:

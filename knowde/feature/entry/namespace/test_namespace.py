@@ -279,3 +279,12 @@ async def test_save_resource_updated_without_hyphen():
     assert await LResource.nodes.get(uid=uid)
     all_ = await LResource.nodes.filter()
     assert len(all_) == 1
+
+
+@mark_async_test()
+async def test_save_resource_stats() -> None:
+    """リソース統計情報を保存."""
+    u = await LUser().save()
+    ns = await fetch_namespace(u.uid)
+
+    await save_or_move_resource(ResourceMeta(title="# title1"), ns)
