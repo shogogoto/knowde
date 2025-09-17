@@ -6,7 +6,7 @@ from functools import cache, reduce
 from typing import Self
 
 import networkx as nx
-from pydantic import Field
+from pydantic import BaseModel, Field, computed_field
 
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.sysnet import SysNet
@@ -20,29 +20,47 @@ from knowde.shared.nxutil.edge_type import EdgeType, etype_subgraph, is_leaf, is
 from knowde.shared.types import Duplicable
 
 
-class ResourceStatsStd:
+class ResourceStatsStd(BaseModel):
     """基本リソース統計情報."""
 
     n_char: int = Field(title="文字数")
     n_sentence: int = Field(title="単文数")
     n_term: int = Field(title="単語数")
-    n_edges = Field(title="辺数")
+    n_edges: int = Field(title="辺数")
 
-    n_isoration: int = Field(title="孤立単文数")
-    n_axiom = Field(title="公理数")
-    n_unrefered = Field(title="未参照数")
+    n_isolation: int = Field(title="孤立単文数")
+    n_axiom: int = Field(title="公理数")
+    n_unrefered: int = Field(title="未参照数")
 
+    @computed_field
+    @property
     def r_isolation(self) -> float:
-        """孤立割合. ネットワークのまとまりの悪さ."""
-        return self.n_isoration / self.n_sentence
+        """孤立割合. 低いほどネットワークのまとまりが良い."""
+        if self.n_sentence == 0:
+            return 0.0
+        return self.n_isolation / self.n_sentence
 
+    @computed_field
+    @property
     def r_axiom(self) -> float:
-        """公理割合."""
-        return self.n_term / self.n_char
+        """全単文に対する公理割合.
 
+        公理割合が低いほどまとまりが良い. オッカムの剃刀的な
+        """
+        if self.n_sentence == 0:
+            return 0.0
+        return self.n_axiom / self.n_sentence
+
+    @computed_field
+    @property
     def r_unrefered(self) -> float:
-        """未参照割合."""
-        return self.n_axiom / self.n_term
+        """全用語の未参照語割合.
+
+        未参照語割合が少ないほど「浮いた用語」がなくまとまりが良い.
+        """
+        if self.n_term == 0:
+            return 0.0
+        return self.n_unrefered / self.n_term
 
     @classmethod
     def create(cls, sn: SysNet) -> Self:  # noqa: D102
@@ -68,24 +86,24 @@ class ResourceStatsStd:
             n_sentence=len(sn.sentences),
             n_term=len(sn.terms),
             n_edges=len(sn.g.edges),
-            n_isoration=len(get_isolation(sn)),
+            n_isolation=len(get_isolation(sn)),
             n_axiom=len(get_axiom(sn)),
             n_unrefered=len(get_unrefered(sn)),
         )
 
 
-class ResourceStatsHeavy:
+class ResourceStatsHeavy(BaseModel):
     """グラフ理論の指標 計算重い."""
 
-    diameter: float = Field(title="直径")
-    radius: float = Field(title="半径")
+    # diameter: float = Field(title="直径")
+    # radius: float = Field(title="半径")
     density: float = Field(title="密度")
 
     @classmethod
     def create(cls, sn: SysNet) -> Self:  # noqa: D102
         return cls(
-            diameter=nx.diameter(sn.g),
-            radius=nx.radius(sn.g),
+            # diameter=nx.diameter(sn.g),
+            # radius=nx.radius(sn.g),
             density=nx.density(sn.g),
         )
 

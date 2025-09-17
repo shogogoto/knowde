@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import json
 from typing import IO, TYPE_CHECKING
 
 import click
+from tabulate import tabulate
 
 from knowde.feature.stats.systats.types import Nw1N1Label
 
@@ -28,9 +30,15 @@ def stat_cmd(
     table: bool,  # noqa: FBT001
 ) -> None:
     """統計値."""
-    from knowde.feature.entry.namespace.stats.usecase import stat_proc  # noqa: PLC0415
+    from knowde.feature.entry.namespace.stats.usecase import (  # noqa: PLC0415
+        to_resource_stats,
+    )
 
-    stat_proc(stdin, heavy, table)
+    stat = to_resource_stats(stdin.read(), heavy, table)
+    if table:
+        click.echo(tabulate([stat], headers="keys"))
+    else:
+        click.echo(json.dumps(stat, indent=2))
 
 
 t_choice = click.Choice(tuple(Nw1N1Label))
