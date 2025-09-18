@@ -10,6 +10,8 @@ from knowde.feature.parsing.sysnet import SysNet
 from knowde.shared.errors.domain import NotFoundError
 from knowde.shared.types import UUIDy, to_uuid
 
+from .stats.repo import save_resource_stats_cache
+
 
 async def save_resource_with_detail(
     ns: NameSpace,
@@ -24,11 +26,16 @@ async def save_resource_with_detail(
     if updated is not None:
         meta.updated = updated
 
+    old = ns.get_resource_or_none(meta.title)
     lb = await save_or_move_resource(meta, ns)
     if lb is None:
         msg = f"{meta.title} の保存に失敗しました"
         raise NotFoundError(msg)
     m = MResource.freeze_dict(lb.__properties__)
+
+    is_changed = old is None or old.txt_hash != m.txt_hash
+    if is_changed:
+        await save_resource_stats_cache(m.uid, sn)
     sn2db(sn, lb.uid)
     return m, meta, sn
 

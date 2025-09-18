@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from knowde.feature.entry.namespace.stats.domain import (
+from knowde.feature.parsing.domain import try_parse2net
+
+from .domain import (
     ResourceStatsCohesion,
     ResourceStatsHeavy,
     ResourceStatsRichness,
 )
-from knowde.feature.parsing.domain import try_parse2net
 
 
 def to_resource_stats(

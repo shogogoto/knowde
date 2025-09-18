@@ -17,7 +17,6 @@ async def save_resource_stats_cache(
 ) -> LResourceStatsCache:
     """統計値を保存."""
     r: LResource = await LResource.nodes.get(uid=to_uuid(resource_uid).hex)
-
     s: LResourceStatsCache | None = await r.cached_stats.get_or_none()
 
     retval = ResourceStatsCohesion.create(sn).model_dump()

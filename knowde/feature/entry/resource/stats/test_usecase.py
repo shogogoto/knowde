@@ -1,6 +1,6 @@
 """test usecase."""
 
-from knowde.feature.entry.namespace.stats.usecase import to_resource_stats
+from .usecase import to_resource_stats
 
 
 def test_echo_resource_stats():

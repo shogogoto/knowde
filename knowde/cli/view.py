@@ -30,7 +30,7 @@ def stat_cmd(
     table: bool,  # noqa: FBT001
 ) -> None:
     """統計値."""
-    from knowde.feature.entry.namespace.stats.usecase import (  # noqa: PLC0415
+    from knowde.feature.entry.resource.stats.usecase import (  # noqa: PLC0415
         to_resource_stats,
     )
 
