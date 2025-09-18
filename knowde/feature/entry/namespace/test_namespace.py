@@ -145,7 +145,7 @@ async def test_save_halfway_exists_folder(tmp_path: Path) -> None:
 
 
 @mark_async_test()
-async def test_save_update_exists(tmp_path: Path) -> None:
+async def test_save_update_exists_hash(tmp_path: Path) -> None:
     """既存リソースの更新."""
     u, anchor, paths, ns = await setup(tmp_path)
     tgt = paths[0]
@@ -268,7 +268,6 @@ async def test_save_resource_updated_without_hyphen():
     assert await LResource.nodes.get(uid=uid)
     all_ = await LResource.nodes.filter()
     assert len(all_) == 1
-
     await save_or_move_resource(
         ResourceMeta(title="# title1", path=("sub2", "sub12")),
         ns,

@@ -185,7 +185,7 @@ async def create_resource(
     published: date | None = None,
     urls: list[str] | None = None,
 ) -> LResource:
-    """リソース作成."""
+    """リソース作成のfacade."""
     if len(names) == 0:
         msg = "フォルダ名を1つ以上指定して"
         raise ValueError(msg)
