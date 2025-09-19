@@ -6,7 +6,7 @@ from fastapi import status
 from more_itertools import collapse
 from neomodel import db
 
-from knowde.feature.entry.namespace import resource_owners_by_resource_uids
+from knowde.feature.entry.namespace import resource_infos_by_resource_uids
 from knowde.feature.knowde import (
     KAdjacency,
     Knowde,
@@ -74,7 +74,7 @@ async def search_knowde(
     return KnowdeSearchResult(
         total=search_total(s, where),
         data=ls,
-        owners=await resource_owners_by_resource_uids({k.resource_uid for k in ls}),
+        owners=await resource_infos_by_resource_uids({k.resource_uid for k in ls}),
     )
 
 

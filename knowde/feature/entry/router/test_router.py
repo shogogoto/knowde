@@ -10,7 +10,7 @@ from knowde.api import api
 from knowde.conftest import mark_async_test
 from knowde.feature.entry.namespace.sync import Anchor
 from knowde.feature.entry.namespace.test_namespace import files  # noqa: F401
-from knowde.feature.knowde import ResourceOwner
+from knowde.feature.knowde import ResourceInfo
 from knowde.feature.user.routers.repo.client import (
     AuthPost,
 )
@@ -87,7 +87,6 @@ async def test_fetch_resource_detail(files: tuple[Anchor, list[Path]]):  # noqa:
     uid = res.json()["resource_id"]
     res = client.get(f"/resource/{uid}")
     assert res.is_success
-    owner = ResourceOwner.model_validate(res.json()["owner"])
-
-    assert owner.user.id.hex == user.uid
-    assert owner.resource.uid.hex == uid
+    info = ResourceInfo.model_validate(res.json()["resource_info"])
+    assert info.user.id.hex == user.uid
+    assert info.resource.uid.hex == uid

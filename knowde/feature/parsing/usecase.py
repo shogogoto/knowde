@@ -2,16 +2,14 @@
 
 from __future__ import annotations
 
-import json
 from typing import IO, TYPE_CHECKING
 
 import click
 from tabulate import tabulate
 
-from knowde.feature.parsing import try_parse2net
-from knowde.feature.stats.systats.nw1_n0 import Nw1N0Label
-from knowde.feature.stats.systats.nw1_n0.scorable import LRWTpl, SyScore
+from knowde.feature.parsing.domain import try_parse2net
 from knowde.feature.stats.systats.nw1_n1.ctxdetail import Nw1N1Detail
+from knowde.feature.stats.systats.nw1_n1.scorable import NRecursiveWeight, SyScore
 from knowde.shared.nxutil.edge_type import EdgeType
 
 if TYPE_CHECKING:
@@ -23,31 +21,12 @@ def echo_table(ls: list[dict]) -> None:
     click.echo(tabulate(ls, headers="keys"))
 
 
-def stat_proc(
-    stdin: IO,
-    heavy: bool,  # noqa: FBT001
-    table: bool,  # noqa: FBT001
-) -> None:
-    """統計値."""
-    txt = stdin.read()
-    sn = try_parse2net(txt)
-    labels = Nw1N0Label.standard()
-    if heavy:
-        labels += Nw1N0Label.heavy()
-
-    stat = Nw1N0Label.to_dict(sn, labels)
-    if table:
-        echo_table([stat])
-    else:
-        click.echo(json.dumps(stat, indent=2))
-
-
 def score_proc(  # noqa: D103
     stdin: IO,
     number: int,
-    item: tuple[Nw1N1Label],
-    ignore: tuple[Nw1N1Label],
-    config: tuple[LRWTpl],
+    item: tuple[EdgeType],
+    ignore: tuple[EdgeType],
+    config: tuple[NRecursiveWeight],
 ) -> None:
     txt = stdin.read()
     sn = try_parse2net(txt)

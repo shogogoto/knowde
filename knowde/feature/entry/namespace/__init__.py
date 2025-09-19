@@ -13,15 +13,16 @@ import networkx as nx
 from neomodel.async_.core import AsyncDatabase
 from pydantic import RootModel
 
-from knowde.feature.entry import NameSpace, ResourceMeta
+from knowde.feature.entry.domain import NameSpace, ResourceMeta
 from knowde.feature.entry.errors import (
     DuplicatedTitleError,
     EntryAlreadyExistsError,
     SaveResourceError,
 )
-from knowde.feature.entry.label import LFolder, LResource
+from knowde.feature.entry.label import LFolder, LResource, LResourceStatsCache
 from knowde.feature.entry.mapper import MFolder, MResource
-from knowde.feature.knowde import ResourceOwner
+from knowde.feature.entry.resource.stats.domain import ResourceStats
+from knowde.feature.knowde import ResourceInfo
 from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.user.label import LUser
 from knowde.shared.user.schema import UserReadPublic
@@ -42,11 +43,12 @@ async def fetch_namespace(user_id: UUIDy) -> NameSpace:
     """ユーザー配下のサブフォルダ."""
     q = """
         MATCH (user:User {uid: $uid})
-            , p = (user)<-[:OWNED|PARENT]-*(:Entry)
-        RETURN p
+            , p = (user)<-[:OWNED|PARENT]-*(e:Entry)
+        OPTIONAL MATCH (e)-[:STATS]->(stat:ResourceStatsCache)
+        RETURN p, stat, e
     """
     uid = to_uuid(user_id)
-    res = await AsyncDatabase().cypher_query(
+    rows, _ = await AsyncDatabase().cypher_query(
         q,
         params={"uid": uid.hex},
         resolve_objects=True,
@@ -54,14 +56,19 @@ async def fetch_namespace(user_id: UUIDy) -> NameSpace:
 
     g = nx.DiGraph()
     ns = NameSpace(roots_={}, g=g, user_id=uid)
-
-    for p in res[0]:
-        path: neo4j.graph.Path = p[0]
+    stats = {}
+    for row in rows:
+        path: neo4j.graph.Path = row[0]
+        stat: LResourceStatsCache | None = row[1]
+        e = row[2]
+        if stat is not None:
+            stats[e.uid] = ResourceStats.model_validate(stat.__properties__)
         for e1, e2 in pairwise(path.nodes):
             if isinstance(e1, LUser):
                 ns.add_root(e2.frozen)
             else:
                 ns.add_edge(e1.frozen, e2.frozen)
+    ns.stats = stats
     return ns
 
 
@@ -185,7 +192,7 @@ async def create_resource(
     published: date | None = None,
     urls: list[str] | None = None,
 ) -> LResource:
-    """リソース作成."""
+    """リソース作成のfacade."""
     if len(names) == 0:
         msg = "フォルダ名を1つ以上指定して"
         raise ValueError(msg)
@@ -231,14 +238,15 @@ async def move_folder(
     return await tgt.save()
 
 
-async def resource_owners_by_resource_uids(
+async def resource_infos_by_resource_uids(
     resource_uids: Iterable[UUID],
-) -> dict[UUID, ResourceOwner]:
+) -> dict[UUID, ResourceInfo]:
     """resource_uidの各々のリソースの所有者を返す."""
     q = """
         UNWIND $uids as uid
         MATCH p = (user:User)<-[:OWNED|PARENT]-*(r:Resource {uid: uid})
-        RETURN DISTINCT p
+        MATCH (r)-[:STATS]->(stat:ResourceStatsCache)
+        RETURN DISTINCT p, stat
         """
     rows, _ = await AsyncDatabase().cypher_query(
         q,
@@ -247,19 +255,21 @@ async def resource_owners_by_resource_uids(
     d = {}
     for row in rows:
         path: neo4j.graph.Path = row[0]
+        stats = ResourceStats.model_validate(row[1])
         resource_path = [p.get("name") for p in path.nodes[1:]]
         r = MResource.freeze_dict(path.end_node)
-        d[r.uid] = ResourceOwner(
+        d[r.uid] = ResourceInfo(
             user=UserReadPublic.model_validate(path.start_node),
             resource=r.model_copy(
                 update={"path": tuple(e for e in resource_path if e is not None)},
             ),
+            resource_stats=stats,
         )
     return d
 
 
-async def fetch_owner_by_resource_uid(resource_uid: UUIDy) -> ResourceOwner:
+async def fetch_info_by_resource_uid(resource_uid: UUIDy) -> ResourceInfo:
     """Wrap tool for resource info."""
     uid = to_uuid(resource_uid)
-    owners = await resource_owners_by_resource_uids([uid])
-    return owners[uid]
+    infos = await resource_infos_by_resource_uids([uid])
+    return infos[uid]

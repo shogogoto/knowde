@@ -10,7 +10,7 @@ from uuid import UUID, uuid4
 import networkx as nx
 from lark import Token
 from more_itertools import collapse
-from neomodel import StructuredNode, db
+from neomodel import AsyncStructuredNode, StructuredNode, db
 from pydantic import BaseModel
 
 from knowde.feature.entry.label import LHead, LResource
@@ -55,7 +55,7 @@ def propstr(tgt: StructuredNode | BaseModel | dict) -> str:
     return f"{{ {s} }}"
 
 
-def t2labels(t: type[StructuredNode]) -> str:
+def t2labels(t: type[StructuredNode | AsyncStructuredNode]) -> str:
     """Convert to query string from neomodel type."""
     return ":".join(t.inherited_labels())
 

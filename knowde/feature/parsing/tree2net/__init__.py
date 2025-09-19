@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable, Iterable
 from functools import cache
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import networkx as nx
@@ -60,3 +62,28 @@ def _extract_leaves(tree: Tree) -> tuple[nx.MultiDiGraph, MarkResolver]:
     [md.add_edge(g) for md in mdefs]
     [d.add_edge(g) for d in stddefs]
     return g, MarkResolver.create(mt)
+
+
+type ParseHandler = Callable[[Path, Exception], None]
+
+
+def filter_parsable(
+    handle_error: ParseHandler | None = None,
+) -> Callable[[Iterable[Path]], list[Path]]:
+    """パースできるファイルのみを抽出."""
+
+    def can_parse(p: Path) -> bool:
+        if not p.is_file():
+            return False
+        try:
+            parse2net(p.read_text(encoding="utf-8"))
+        except Exception as e:  # noqa: BLE001
+            if handle_error is not None:
+                handle_error(p, e)
+            return False
+        return True
+
+    def _f(_ps: Iterable[Path]) -> list[Path]:
+        return [p for p in _ps if can_parse(p)]
+
+    return _f

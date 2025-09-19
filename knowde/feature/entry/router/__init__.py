@@ -8,15 +8,15 @@ from typing import Annotated
 import chardet  # 文字エンコーディング検出用
 from fastapi import APIRouter, Body, Depends, UploadFile
 
-from knowde.feature.entry import NameSpace, ResourceDetail
+from knowde.feature.entry.domain import NameSpace, ResourceDetail
 from knowde.feature.entry.namespace import (
     ResourceMetas,
+    fetch_info_by_resource_uid,
     fetch_namespace,
-    fetch_owner_by_resource_uid,
     sync_namespace,
 )
-from knowde.feature.entry.resource import save_resource_with_detail
 from knowde.feature.entry.resource.repo.restore import restore_sysnet
+from knowde.feature.entry.resource.usecase import save_resource_with_detail
 from knowde.feature.user.domain import User
 from knowde.shared.user.router_util import auth_component
 
@@ -80,5 +80,5 @@ async def post_files(
 async def get_resource_detail(resource_id: str) -> ResourceDetail:
     """リソース詳細."""
     sn, _ = await restore_sysnet(resource_id)
-    owner = await fetch_owner_by_resource_uid(resource_id)
-    return ResourceDetail(network=sn, owner=owner)
+    info = await fetch_info_by_resource_uid(resource_id)
+    return ResourceDetail(network=sn, resource_info=info)

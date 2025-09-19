@@ -23,6 +23,7 @@ from networkx import DiGraph
 from pydantic import BaseModel, Field
 
 from knowde.feature.entry.mapper import MResource
+from knowde.feature.entry.resource.stats.domain import ResourceStats
 from knowde.feature.parsing.primitive.term import Term
 from knowde.shared.nxutil import to_nodes
 from knowde.shared.nxutil.edge_type import EdgeType
@@ -86,11 +87,12 @@ class Knowde(BaseModel, frozen=True):
         return f"T({a.when})" if a is not None and a.when else ""
 
 
-class ResourceOwner(BaseModel):
+class ResourceInfo(BaseModel):
     """リソースの所有者."""
 
     user: UserReadPublic
     resource: MResource
+    resource_stats: ResourceStats
 
 
 class KnowdeSearchResult(BaseModel):
@@ -98,7 +100,7 @@ class KnowdeSearchResult(BaseModel):
 
     total: int
     data: list[Knowde]
-    owners: dict[UUID, ResourceOwner]
+    owners: dict[UUID, ResourceInfo]
 
 
 class UidStr(BaseModel):

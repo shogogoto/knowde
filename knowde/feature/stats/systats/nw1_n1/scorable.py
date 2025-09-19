@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from knowde.feature.parsing.sysnet import SysNet
 
 
-class LRWTpl(NamedTuple):
+class NRecursiveWeight(NamedTuple):
     """再帰回数と重みの設定."""
 
     label: Nw1N1Label
@@ -42,7 +42,7 @@ class CtxScorable(BaseModel, frozen=True):
         return self.count * self.weight
 
     @classmethod
-    def create(cls, sn: SysNet, n: KNode, rw: LRWTpl) -> Self:
+    def create(cls, sn: SysNet, n: KNode, rw: NRecursiveWeight) -> Self:
         """Instantiate."""
         sn.check_contains(n)
         ctx = Nw1N1Ctx.from_label(rw.label)
@@ -83,13 +83,13 @@ class CtxScorables(BaseModel, frozen=True):
 class CtxConfig(BaseModel, frozen=True):
     """再帰回数と重み設定."""
 
-    configs: list[LRWTpl]
+    configs: list[NRecursiveWeight]
 
-    def _tpl(self, v: Nw1N1Label) -> LRWTpl:
+    def _tpl(self, v: Nw1N1Label) -> NRecursiveWeight:
         for c in self.configs:
             if c.label == v:
                 return c
-        return LRWTpl(v, 1, 1)
+        return NRecursiveWeight(v, 1, 1)
 
     def get(self, sn: SysNet, n: KNode, ctxs: list[Nw1N1Ctx]) -> CtxScorables:
         """再帰重み付き."""
@@ -110,7 +110,7 @@ class SyScore(BaseModel, frozen=True):
         cls,
         targets: Iterable[Nw1N1Label] = [],
         ignores: Iterable[Nw1N1Label] = [],
-        config: Iterable[LRWTpl] = [],
+        config: Iterable[NRecursiveWeight] = [],
     ) -> Self:
         """Instantiate."""
         return cls(

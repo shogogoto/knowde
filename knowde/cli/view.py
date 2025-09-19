@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
+import json
 from typing import IO, TYPE_CHECKING
 
 import click
+from tabulate import tabulate
 
 from knowde.feature.stats.systats.types import Nw1N1Label
 
 if TYPE_CHECKING:
-    from knowde.feature.stats.systats.nw1_n0.scorable import LRWTpl
+    from knowde.feature.stats.systats.nw1_n1.scorable import NRecursiveWeight
     from knowde.feature.stats.systats.types import Nw1N1Recursive
 
 
@@ -28,9 +30,19 @@ def stat_cmd(
     table: bool,  # noqa: FBT001
 ) -> None:
     """統計値."""
-    from .proc import stat_proc  # noqa: PLC0415
+    from knowde.feature.entry.resource.stats.usecase import (  # noqa: PLC0415
+        to_resource_stats,
+    )
 
-    stat_proc(stdin, heavy, table)
+    def to_percent_values(d: dict[str, float], n_digit: int = 2) -> dict[str, str]:
+        """パーセント表示."""
+        return {k: f"{v:.{n_digit}%}" for k, v in d.items()}
+
+    stat = to_resource_stats(stdin.read(), heavy)
+    if table:
+        click.echo(tabulate([stat], headers="keys"))
+    else:
+        click.echo(json.dumps(stat, indent=2))
 
 
 t_choice = click.Choice(tuple(Nw1N1Label))
@@ -77,10 +89,10 @@ def score_cmd(
     number: int,
     item: tuple[Nw1N1Label],
     ignore: tuple[Nw1N1Label],
-    config: tuple[LRWTpl],
+    config: tuple[NRecursiveWeight],
 ) -> None:
     """ノードの文脈スコア順に表示."""
-    from .proc import score_proc  # noqa: PLC0415
+    from knowde.feature.parsing.usecase import score_proc  # noqa: PLC0415
 
     score_proc(stdin, number, item, ignore, config)
 
@@ -105,7 +117,7 @@ def detail_cmd(
     config: tuple[Nw1N1Recursive],
 ) -> None:
     """文字列にマッチするノードの詳細."""
-    from .proc import detail_proc  # noqa: PLC0415
+    from knowde.feature.parsing.usecase import detail_proc  # noqa: PLC0415
 
     detail_proc(stdin, pattern, item, ignore, config)
 
@@ -136,7 +148,7 @@ def time_cmd(stdin: IO, timespan: str, overlap: bool) -> None:  # noqa: FBT001
         ex. 19XX => 1900 ~ 1999
 
     """
-    from .proc import time_proc  # noqa: PLC0415
+    from knowde.feature.parsing.usecase import time_proc  # noqa: PLC0415
 
     if overlap:
         time_proc(stdin, timespan, "overlap")
