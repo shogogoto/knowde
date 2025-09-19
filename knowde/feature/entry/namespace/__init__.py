@@ -19,8 +19,9 @@ from knowde.feature.entry.errors import (
     EntryAlreadyExistsError,
     SaveResourceError,
 )
-from knowde.feature.entry.label import LFolder, LResource
+from knowde.feature.entry.label import LFolder, LResource, LResourceStatsCache
 from knowde.feature.entry.mapper import MFolder, MResource
+from knowde.feature.entry.resource.stats.domain import ResourceStats
 from knowde.feature.knowde import ResourceOwner
 from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.user.label import LUser
@@ -42,11 +43,12 @@ async def fetch_namespace(user_id: UUIDy) -> NameSpace:
     """ユーザー配下のサブフォルダ."""
     q = """
         MATCH (user:User {uid: $uid})
-            , p = (user)<-[:OWNED|PARENT]-*(:Entry)
-        RETURN p
+            , p = (user)<-[:OWNED|PARENT]-*(e:Entry)
+        OPTIONAL MATCH (e)-[:STATS]->(stat:ResourceStatsCache)
+        RETURN p, stat, e
     """
     uid = to_uuid(user_id)
-    res = await AsyncDatabase().cypher_query(
+    rows, _ = await AsyncDatabase().cypher_query(
         q,
         params={"uid": uid.hex},
         resolve_objects=True,
@@ -54,14 +56,19 @@ async def fetch_namespace(user_id: UUIDy) -> NameSpace:
 
     g = nx.DiGraph()
     ns = NameSpace(roots_={}, g=g, user_id=uid)
-
-    for p in res[0]:
-        path: neo4j.graph.Path = p[0]
+    stats = {}
+    for row in rows:
+        path: neo4j.graph.Path = row[0]
+        stat: LResourceStatsCache | None = row[1]
+        e = row[2]
+        if stat is not None:
+            stats[e.uid] = ResourceStats.model_validate(stat.__properties__)
         for e1, e2 in pairwise(path.nodes):
             if isinstance(e1, LUser):
                 ns.add_root(e2.frozen)
             else:
                 ns.add_edge(e1.frozen, e2.frozen)
+    ns.stats = stats
     return ns
 
 
@@ -238,7 +245,8 @@ async def resource_owners_by_resource_uids(
     q = """
         UNWIND $uids as uid
         MATCH p = (user:User)<-[:OWNED|PARENT]-*(r:Resource {uid: uid})
-        RETURN DISTINCT p
+        OPTIONAL MATCH (r)-[:STATS]->(stat:ResourceStatsCache)
+        RETURN DISTINCT p, stat
         """
     rows, _ = await AsyncDatabase().cypher_query(
         q,
@@ -247,6 +255,9 @@ async def resource_owners_by_resource_uids(
     d = {}
     for row in rows:
         path: neo4j.graph.Path = row[0]
+        stats = row[1]
+        if stats is not None:
+            stats = ResourceStats.model_validate(stats)
         resource_path = [p.get("name") for p in path.nodes[1:]]
         r = MResource.freeze_dict(path.end_node)
         d[r.uid] = ResourceOwner(
@@ -254,6 +265,7 @@ async def resource_owners_by_resource_uids(
             resource=r.model_copy(
                 update={"path": tuple(e for e in resource_path if e is not None)},
             ),
+            stats=stats,
         )
     return d
 

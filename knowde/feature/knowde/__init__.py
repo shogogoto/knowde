@@ -23,6 +23,7 @@ from networkx import DiGraph
 from pydantic import BaseModel, Field
 
 from knowde.feature.entry.mapper import MResource
+from knowde.feature.entry.resource.stats.domain import ResourceStats
 from knowde.feature.parsing.primitive.term import Term
 from knowde.shared.nxutil import to_nodes
 from knowde.shared.nxutil.edge_type import EdgeType
@@ -91,6 +92,7 @@ class ResourceOwner(BaseModel):
 
     user: UserReadPublic
     resource: MResource
+    resource_stats: ResourceStats | None = None
 
 
 class KnowdeSearchResult(BaseModel):

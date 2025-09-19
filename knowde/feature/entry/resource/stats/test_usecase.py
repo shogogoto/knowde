@@ -16,7 +16,7 @@ def test_echo_resource_stats():
     """
 
     stats = to_resource_stats(txt, False)  # noqa: FBT003
-    assert stats == {
+    assert stats.model_dump(exclude_none=True) == {
         "n_char": 26,
         "n_sentence": 4,
         "n_term": 0,
@@ -30,7 +30,7 @@ def test_echo_resource_stats():
         "average_degree": 0.8571428571428571,
     }
     stats = to_resource_stats(txt, True)  # noqa: FBT003
-    assert stats == {
+    assert stats.model_dump(exclude_none=True) == {
         "n_char": 26,
         "n_sentence": 4,
         "n_term": 0,

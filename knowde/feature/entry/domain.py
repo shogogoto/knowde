@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 from pydantic_core import Url
 
 from knowde.feature.entry.mapper import Entry, MResource
+from knowde.feature.entry.resource.stats.domain import ResourceStats
 from knowde.feature.knowde import ResourceOwner
 from knowde.feature.parsing.primitive.time import parse2dt
 from knowde.feature.parsing.sysnet import SysNet
@@ -26,6 +27,7 @@ class NameSpace(BaseModel):
     g: NXGraph = Field(default_factory=nx.DiGraph)
     roots_: dict[str, Entry]
     user_id: UUID
+    stats: dict[str, ResourceStats] = Field(default_factory=dict)
 
     def remove_resource(self, title: str) -> None:
         """リソースの削除."""
@@ -162,3 +164,4 @@ class ResourceDetail(BaseModel):
 
     network: SysNet  # Headを含む単文ネット
     owner: ResourceOwner
+    stats: ResourceStats | None = None

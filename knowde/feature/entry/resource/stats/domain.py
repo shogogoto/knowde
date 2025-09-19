@@ -6,6 +6,7 @@ from functools import cache, reduce
 from typing import Self
 
 import networkx as nx
+import pydantic_partial
 from pydantic import BaseModel, Field, computed_field
 
 from knowde.feature.parsing.primitive.term import Term
@@ -169,6 +170,14 @@ class ResourceStatsHeavy(BaseModel):
             radius=radius,
             n_scc=n_scc,
         )
+
+
+class ResourceStats(
+    ResourceStatsCohesion,
+    ResourceStatsRichness,
+    pydantic_partial.create_partial_model(ResourceStatsHeavy),
+):
+    """知識の量を示す指標 for API."""
 
 
 @cache
