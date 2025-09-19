@@ -33,10 +33,10 @@ async def save_resource_with_detail(
         raise NotFoundError(msg)
     m = MResource.freeze_dict(lb.__properties__)
 
+    await save_resource_stats_cache(m.uid, sn)
     is_changed = old is None or old.txt_hash != m.txt_hash
     if is_changed:
-        await save_resource_stats_cache(m.uid, sn)
-    sn2db(sn, lb.uid)
+        sn2db(sn, lb.uid)
     return m, meta, sn
 
 

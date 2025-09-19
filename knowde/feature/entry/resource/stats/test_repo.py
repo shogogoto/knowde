@@ -11,7 +11,7 @@ from knowde.feature.entry.namespace import (
 from knowde.feature.parsing.tree2net import parse2net
 from knowde.shared.user.label import LUser
 
-from .repo import save_resource_stats_cache
+from .repo import fetch_resource_stats_cache, save_resource_stats_cache
 
 
 @mark_async_test()
@@ -49,6 +49,7 @@ async def test_fetch_resource_info_by_resource_uid() -> None:
     r = ns.get_resource("# title1")
     assert r
     sn = parse2net(s)
+    assert await fetch_resource_stats_cache(r.uid) is None
     await save_resource_stats_cache(r.uid, sn)
 
     info = await fetch_info_by_resource_uid(r.uid)
@@ -56,3 +57,5 @@ async def test_fetch_resource_info_by_resource_uid() -> None:
     assert info.resource.uid == r.uid
     assert info.resource.path == ("sub1",)
     assert info.resource_stats is not None
+
+    assert await fetch_resource_stats_cache(r.uid)

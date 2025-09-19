@@ -30,3 +30,9 @@ async def save_resource_stats_cache(
     lb = await LResourceStatsCache(**retval).save()
     await r.cached_stats.connect(lb)
     return lb
+
+
+async def fetch_resource_stats_cache(resource_uid: UUIDy) -> LResourceStatsCache | None:
+    """統計値を取得."""
+    r: LResource = await LResource.nodes.get(uid=to_uuid(resource_uid).hex)
+    return await r.cached_stats.get_or_none()
