@@ -87,12 +87,12 @@ class Knowde(BaseModel, frozen=True):
         return f"T({a.when})" if a is not None and a.when else ""
 
 
-class ResourceOwner(BaseModel):
+class ResourceInfo(BaseModel):
     """リソースの所有者."""
 
     user: UserReadPublic
     resource: MResource
-    resource_stats: ResourceStats | None = None
+    resource_stats: ResourceStats
 
 
 class KnowdeSearchResult(BaseModel):
@@ -100,7 +100,7 @@ class KnowdeSearchResult(BaseModel):
 
     total: int
     data: list[Knowde]
-    owners: dict[UUID, ResourceOwner]
+    owners: dict[UUID, ResourceInfo]
 
 
 class UidStr(BaseModel):

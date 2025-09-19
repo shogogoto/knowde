@@ -11,8 +11,8 @@ from fastapi import APIRouter, Body, Depends, UploadFile
 from knowde.feature.entry.domain import NameSpace, ResourceDetail
 from knowde.feature.entry.namespace import (
     ResourceMetas,
+    fetch_info_by_resource_uid,
     fetch_namespace,
-    fetch_owner_by_resource_uid,
     sync_namespace,
 )
 from knowde.feature.entry.resource.repo.restore import restore_sysnet
@@ -80,5 +80,5 @@ async def post_files(
 async def get_resource_detail(resource_id: str) -> ResourceDetail:
     """リソース詳細."""
     sn, _ = await restore_sysnet(resource_id)
-    owner = await fetch_owner_by_resource_uid(resource_id)
+    owner = await fetch_info_by_resource_uid(resource_id)
     return ResourceDetail(network=sn, owner=owner)

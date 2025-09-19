@@ -12,7 +12,7 @@ from pydantic_core import Url
 
 from knowde.feature.entry.mapper import Entry, MResource
 from knowde.feature.entry.resource.stats.domain import ResourceStats
-from knowde.feature.knowde import ResourceOwner
+from knowde.feature.knowde import ResourceInfo
 from knowde.feature.parsing.primitive.time import parse2dt
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.tree2net import parse2net
@@ -163,5 +163,5 @@ class ResourceDetail(BaseModel):
     """リソース詳細(API Return Type用)."""
 
     network: SysNet  # Headを含む単文ネット
-    owner: ResourceOwner
+    owner: ResourceInfo
     stats: ResourceStats | None = None

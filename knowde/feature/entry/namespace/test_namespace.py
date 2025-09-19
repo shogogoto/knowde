@@ -13,7 +13,6 @@ from knowde.feature.entry.errors import DuplicatedTitleError
 from knowde.feature.entry.label import LResource
 from knowde.feature.entry.namespace import (
     fetch_namespace,
-    fetch_owner_by_resource_uid,
     save_or_move_resource,
     save_resource,
     sync_namespace,
@@ -225,18 +224,6 @@ async def test_duplicate_title(tmp_path: Path) -> None:
 
     with pytest.raises(DuplicatedTitleError):
         await sync_namespace(metas, ns)
-
-
-@mark_async_test()
-async def test_fetch_owner_by_resource_uid(tmp_path: Path) -> None:
-    """Resource UIDからResourceMetaを取得."""
-    u, _anchor, _paths, ns = await setup(tmp_path)
-    r = ns.get_or_none("sub1", "sub11", "# title1")
-    assert r
-    owner = await fetch_owner_by_resource_uid(r.uid)
-    assert owner.user.id.hex == u.uid
-    assert owner.resource.uid == r.uid
-    assert owner.resource.path == ("sub1", "sub11")
 
 
 @mark_async_test()
