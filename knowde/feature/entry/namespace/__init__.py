@@ -271,5 +271,5 @@ async def resource_infos_by_resource_uids(
 async def fetch_info_by_resource_uid(resource_uid: UUIDy) -> ResourceInfo:
     """Wrap tool for resource info."""
     uid = to_uuid(resource_uid)
-    owners = await resource_infos_by_resource_uids([uid])
-    return owners[uid]
+    infos = await resource_infos_by_resource_uids([uid])
+    return infos[uid]

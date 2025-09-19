@@ -80,5 +80,5 @@ async def post_files(
 async def get_resource_detail(resource_id: str) -> ResourceDetail:
     """リソース詳細."""
     sn, _ = await restore_sysnet(resource_id)
-    owner = await fetch_info_by_resource_uid(resource_id)
-    return ResourceDetail(network=sn, owner=owner)
+    info = await fetch_info_by_resource_uid(resource_id)
+    return ResourceDetail(network=sn, resource_info=info)

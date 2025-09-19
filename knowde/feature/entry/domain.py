@@ -163,5 +163,4 @@ class ResourceDetail(BaseModel):
     """リソース詳細(API Return Type用)."""
 
     network: SysNet  # Headを含む単文ネット
-    owner: ResourceInfo
-    stats: ResourceStats | None = None
+    resource_info: ResourceInfo
