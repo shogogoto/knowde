@@ -100,7 +100,7 @@ class KnowdeSearchResult(BaseModel):
 
     total: int
     data: list[Knowde]
-    owners: dict[UUID, ResourceInfo]
+    resource_infos: dict[UUID, ResourceInfo]
 
 
 class UidStr(BaseModel):
