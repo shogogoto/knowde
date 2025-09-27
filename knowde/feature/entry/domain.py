@@ -164,3 +164,10 @@ class ResourceDetail(BaseModel):
 
     network: SysNet  # Headを含む単文ネット
     resource_info: ResourceInfo
+
+
+class ResourceSearchResult(BaseModel, frozen=True):
+    """リソース検索結果."""
+
+    total: int
+    data: list[ResourceInfo] = Field(default_factory=list)
