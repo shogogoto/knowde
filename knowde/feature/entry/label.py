@@ -13,6 +13,7 @@ from neomodel import (
     DateProperty,
     DateTimeNeo4jFormatProperty,
     FloatProperty,
+    FulltextIndex,
     IntegerProperty,
     One,
     RelationshipFrom,
@@ -71,7 +72,11 @@ class LResource(LEntry):
     """情報源 rootの見出し(H1)."""
 
     __label__ = "Resource"
-    title = StringProperty(index=True, required=True)  # userの中でユニーク
+    title = StringProperty(
+        index=True,
+        required=True,
+        fulltext_index=FulltextIndex(),
+    )  # userの中でユニーク
     name = AliasProperty("title")
     authors = ArrayProperty(StringProperty())
     published = DateProperty()
@@ -114,22 +119,12 @@ class LResourceStatsCache(AsyncStructuredNode):
     n_axiom = IntegerProperty()
     n_unrefered = IntegerProperty()
 
-    # 計算可能 computed_field なものは記録しない
-    # heavy
-    # グラフ理論の指標 計算重いかも
-    # やるなら neo4jではなく networkx でまず作るか
-    #   <- CLIでも使えるから
+    # computed
     average_degree = FloatProperty()
     density = FloatProperty()
     diameter = FloatProperty()
     radius = FloatProperty()
     n_scc = IntegerProperty()
-
-    # resource: AsyncRelationshipManager = AsyncRelationshipTo(
-    #     "LResource",
-    #     "CACHE",
-    #     cardinality=AsyncOne,
-    # )
 
 
 class LFolder(LEntry):

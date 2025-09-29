@@ -24,7 +24,7 @@ async def setup() -> LUser:  # noqa: D103
               a{i}
               b{i}
         """
-        for i in range(1, 5)
+        for i in reversed(range(1, 5))
     ]
 
     for s in ss:
@@ -55,12 +55,45 @@ async def test_search_resources() -> None:
         ## title1
     """,
     )
-    rs = await search_resources("")
-    assert rs.total == 5  # noqa: PLR2004
+    rs_asc = await search_resources("", keys=["title"], desc=False)
+    assert [r.resource.name for r in rs_asc.data] == [
+        "# other user",
+        "# title1",
+        "# title2",
+        "# title3",
+        "# title4",
+    ]
+    rs_desc = await search_resources("", keys=["title"], desc=True)
+    assert rs_desc.total == rs_asc.total == 5  # noqa: PLR2004
+    assert [r.resource.name for r in rs_desc.data] == [
+        "# title4",
+        "# title3",
+        "# title2",
+        "# title1",
+        "# other user",
+    ]
 
     # ユーザー検索
     urs = await search_resources("", search_user="two")
     assert urs.total == len(urs.data) == 1
     assert urs.data[0].user.username == "two"
     assert urs.data[0].resource.name == "# other user"
-    # print([r.resource.published for r in rs.data])
+
+    # authorで検索 パフォーマンス悪化を懸念してやめとく
+    # ars = await search_resources("author1")
+    # assert len(ars.data) == ars.total == 1
+    # assert list(ars.data[0].resource.authors) == unordered(["author1"])
+
+
+@mark_async_test()
+async def test_search_resources_range() -> None:
+    """範囲検索."""
+    # u = await LUser(email="one@gmail.com").save()
+    # s1 = """
+    #     # title1
+    #
+    # """
+    # stats で sort
+
+    # updatedを絞る
+    # publishedを絞る

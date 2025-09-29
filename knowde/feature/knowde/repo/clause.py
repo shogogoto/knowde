@@ -33,22 +33,7 @@ class Paging(BaseModel):
 
 
 class OrderBy(BaseModel):
-    """ORDER BY句.
-
-    weightと項目の合計値(score)でソートできる
-    他のスコア算出方法についてはペンディング
-    """
-
-    # 元の意味の値ではない
-    # weight: KStats = KStats(
-    #     n_detail=1,
-    #     n_premise=3,
-    #     n_conclusion=3,
-    #     n_refer=3,
-    #     n_referred=-3,
-    #     dist_axiom=1,
-    #     dist_leaf=1,
-    # )
+    """ORDER BY句."""
 
     n_detail: int = 1
     n_premise: int = 1
