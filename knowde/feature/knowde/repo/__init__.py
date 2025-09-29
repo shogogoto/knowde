@@ -74,7 +74,9 @@ async def search_knowde(
     return KnowdeSearchResult(
         total=search_total(s, where),
         data=ls,
-        owners=await resource_infos_by_resource_uids({k.resource_uid for k in ls}),
+        resource_infos=await resource_infos_by_resource_uids({
+            k.resource_uid for k in ls
+        }),
     )
 
 

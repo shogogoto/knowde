@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Self
+from typing import Literal, Self
 from uuid import UUID
 
 import networkx as nx
@@ -164,3 +164,33 @@ class ResourceDetail(BaseModel):
 
     network: SysNet  # Headを含む単文ネット
     resource_info: ResourceInfo
+
+
+# LResource由来
+ResourceOrderKey = Literal["title", "published", "updated"]
+# authors は listと比較しないといけない
+# パフォーマンス悪化を懸念してやめとこう、単なるメタデータってことで
+# やるんならauthorをLabelとして独立させてindexが効くようにすべし
+
+
+# type をつけると get_argsで値のtupleが取れない
+StatsOrderKey = Literal[  # LResourceStatsCache由来
+    "n_char",
+    "n_sentence",
+    "r_isolation",
+    "r_axiom",
+    "r_unrefered",
+    "average_degree",
+    "density",
+    "diameter",
+    "radius",
+]
+
+UserOrderKey = Literal["username", "display_name"]  # LUser由来
+
+
+class ResourceSearchResult(BaseModel, frozen=True):
+    """リソース検索結果."""
+
+    total: int
+    data: list[ResourceInfo] = Field(default_factory=list)

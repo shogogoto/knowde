@@ -8,7 +8,7 @@ from typing import Annotated
 import chardet  # 文字エンコーディング検出用
 from fastapi import APIRouter, Body, Depends, UploadFile
 
-from knowde.feature.entry.domain import NameSpace, ResourceDetail
+from knowde.feature.entry.domain import NameSpace, ResourceDetail, ResourceSearchResult
 from knowde.feature.entry.namespace import (
     ResourceMetas,
     fetch_info_by_resource_uid,
@@ -16,9 +16,11 @@ from knowde.feature.entry.namespace import (
     sync_namespace,
 )
 from knowde.feature.entry.resource.repo.restore import restore_sysnet
+from knowde.feature.entry.resource.repo.search import search_resources
 from knowde.feature.entry.resource.usecase import save_resource_with_detail
+from knowde.feature.entry.router.param import ResourceSearchBody
 from knowde.feature.user.domain import User
-from knowde.shared.user.router_util import auth_component
+from knowde.shared.user.router_util import TrackUser, auth_component
 
 router = APIRouter(tags=["entry"])
 
@@ -82,3 +84,18 @@ async def get_resource_detail(resource_id: str) -> ResourceDetail:
     sn, _ = await restore_sysnet(resource_id)
     info = await fetch_info_by_resource_uid(resource_id)
     return ResourceDetail(network=sn, resource_info=info)
+
+
+@router.post("/resource/search")
+async def search_resource_post(
+    body: ResourceSearchBody,
+    user: TrackUser = None,
+) -> ResourceSearchResult:
+    """リソース検索(POST)."""
+    return await search_resources(
+        search_str=body.q,
+        paging=body.paging,
+        search_user=body.q_user,
+        desc=body.desc,
+        keys=body.order_by,
+    )
