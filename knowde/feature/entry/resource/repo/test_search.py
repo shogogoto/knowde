@@ -5,7 +5,7 @@ from knowde.feature.entry.resource.repo.search import (
     search_resources,
 )
 from knowde.feature.entry.resource.usecase import save_text
-from knowde.feature.knowde.repo.clause import Paging
+from knowde.shared.cypher import Paging
 from knowde.shared.user.label import LUser
 
 

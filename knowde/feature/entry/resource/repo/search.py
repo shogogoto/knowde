@@ -14,7 +14,7 @@ from knowde.feature.entry.domain import (
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.entry.resource.stats.domain import ResourceStats
 from knowde.feature.knowde import ResourceInfo
-from knowde.feature.knowde.repo.clause import Paging
+from knowde.shared.cypher import Paging
 from knowde.shared.errors import DomainError
 from knowde.shared.user.schema import UserReadPublic
 

@@ -12,8 +12,9 @@ from knowde.feature.knowde import (
     Knowde,
     KnowdeSearchResult,
 )
-from knowde.feature.knowde.repo.clause import OrderBy, Paging, WherePhrase
+from knowde.feature.knowde.repo.clause import OrderBy, WherePhrase
 from knowde.feature.knowde.repo.detail import fetch_knowdes_with_detail
+from knowde.shared.cypher import Paging
 from knowde.shared.errors import DomainError
 
 from .cypher import q_adjaceny_uids, q_stats, q_where_knowde

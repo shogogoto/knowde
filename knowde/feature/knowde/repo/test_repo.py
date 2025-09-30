@@ -11,12 +11,13 @@ from knowde.feature.entry.resource.usecase import save_text
 from knowde.feature.knowde.repo import adjacency_knowde, search_knowde
 from knowde.feature.knowde.repo.cypher import q_stats
 from knowde.feature.parsing.sysnet import SysNet
+from knowde.shared.cypher import Paging
 from knowde.shared.knowde.label import LSentence
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.user.label import LUser
 
-from .clause import OrderBy, Paging, WherePhrase
+from .clause import OrderBy, WherePhrase
 
 
 @async_fixture()
