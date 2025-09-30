@@ -85,15 +85,15 @@ async def test_search_resources() -> None:
     # assert list(ars.data[0].resource.authors) == unordered(["author1"])
 
 
-@mark_async_test()
-async def test_search_resources_range() -> None:
-    """範囲検索."""
-    # u = await LUser(email="one@gmail.com").save()
-    # s1 = """
-    #     # title1
-    #
-    # """
-    # stats で sort
-
-    # updatedを絞る
-    # publishedを絞る
+# @mark_async_test()
+# async def test_search_resources_range() -> None:
+#     """範囲検索."""
+#     # u = await LUser(email="one@gmail.com").save()
+#     # s1 = """
+#     #     # title1
+#     #
+#     # """
+#     # stats で sort
+#
+#     # updatedを絞る
+#     # publishedを絞る
