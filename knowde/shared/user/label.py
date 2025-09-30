@@ -13,6 +13,7 @@ from neomodel import (
     BooleanProperty,
     DateTimeNeo4jFormatProperty,
     EmailProperty,
+    FulltextIndex,
     IntegerProperty,
     StringProperty,
     UniqueIdProperty,
@@ -61,7 +62,11 @@ class LUser(AsyncStructuredNode):
     created = DateTimeNeo4jFormatProperty(default_now=True)
 
     # 追加情報
-    display_name = StringProperty(default=None, max_length=LEN_DISPLAY_NAME)
+    display_name = StringProperty(
+        default=None,
+        max_length=LEN_DISPLAY_NAME,
+        fulltext_index=FulltextIndex(),
+    )
     profile = StringProperty(default=None, max_length=LEN_PROFILE)
     avatar_url = StringProperty(default=None)
     username = StringProperty(
@@ -69,5 +74,6 @@ class LUser(AsyncStructuredNode):
         pattern=r"^[^-]*$",
         unique_index=True,
         max_lenght=MAX_LEN_USERNAME,
+        fulltext_index=FulltextIndex(),
     )
     accounts: AsyncRelationshipManager = AsyncRelationshipTo(LAccount, "OAUTH")

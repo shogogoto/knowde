@@ -50,8 +50,9 @@ async def search_resources(  # noqa: PLR0917
         WITH r, stat, u
         ORDER BY {", ".join(skeys)} {((desc and "DESC") or "ASC")}
 
-        WITH collect({{r:r, stat:stat, u:u}}) as results
-        RETURN size(results) as total, results[$offset..$offset + $limit] as page
+        WITH COLLECT({{r:r, stat:stat, u:u}}) AS results
+        RETURN SIZE(results) AS total
+            , results[$offset..$offset + $limit] AS page
     """
 
     if do_print:

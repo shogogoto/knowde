@@ -52,6 +52,7 @@ async def test_search_resources() -> None:
         u2.uid,
         """
         # other user
+          @published 9999/12/31
         ## title1
     """,
     )
@@ -78,6 +79,15 @@ async def test_search_resources() -> None:
     assert urs.total == len(urs.data) == 1
     assert urs.data[0].user.username == "two"
     assert urs.data[0].resource.name == "# other user"
+
+    rs_pub = await search_resources("", keys=["published"], desc=False)
+    assert [r.resource.name for r in rs_pub.data] == [
+        "# title1",
+        "# title2",
+        "# title3",
+        "# title4",
+        "# other user",
+    ]
 
     # authorで検索 パフォーマンス悪化を懸念してやめとく
     # ars = await search_resources("author1")
