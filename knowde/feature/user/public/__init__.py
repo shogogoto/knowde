@@ -3,35 +3,45 @@
 entryやknowdeが絡むような機能はそっちのfeatureで書く
 """
 
-from typing import Annotated
-
-from fastapi import APIRouter, Query
+from fastapi import APIRouter
 from neomodel import Q
+from pydantic import BaseModel, Field
 
 from knowde.feature.user.errors import UserNotFoundError
 from knowde.feature.user.schema import UserReadPublic
+from knowde.integration.user_archivement.domain import (
+    UserSearchOrderKey,
+    UserSearchResult,
+)
+from knowde.integration.user_archivement.repo import fetch_user_with_achivement
+from knowde.shared.cypher import Paging
 from knowde.shared.user.label import LUser
 from knowde.shared.user.router_util import TrackUser
 
 _r = APIRouter(tags=["public_user"])
 
 
-@_r.get("/search")
+class UserSearchBody(BaseModel, frozen=True):
+    """ユーザー検索パラメータ."""
+
+    q: str = ""
+    paging: Paging = Field(default_factory=Paging)
+    desc: bool = True
+    order_by: list[UserSearchOrderKey] | None = None
+
+
+@_r.post("/search")
 async def search_user(
-    display_name: Annotated[str, Query()] = "",
-    id: Annotated[str, Query()] = "",  # noqa: A002
+    body: UserSearchBody,
     user: TrackUser = None,
-) -> list[UserReadPublic]:
+) -> UserSearchResult:
     """認証なしユーザー検索."""
-    q = Q()
-    if id:
-        q |= Q(uid__istartswith=id.replace("-", "")) | Q(username__icontains=id)
-
-    if display_name:
-        q &= Q(display_name__icontains=display_name)
-
-    users = await LUser.nodes.filter(q).order_by("display_name", "username", "uid")
-    return [UserReadPublic.model_validate(u.__properties__) for u in users]
+    return await fetch_user_with_achivement(
+        search_str=body.q,
+        paging=body.paging,
+        keys=body.order_by,
+        desc=body.desc,
+    )
 
 
 @_r.get("/profile/{username}")

@@ -5,7 +5,7 @@ from knowde.feature.entry.resource.repo.search import (
     search_resources,
 )
 from knowde.feature.entry.resource.usecase import save_text
-from knowde.feature.knowde.repo.clause import Paging
+from knowde.shared.cypher import Paging
 from knowde.shared.user.label import LUser
 
 
@@ -52,6 +52,7 @@ async def test_search_resources() -> None:
         u2.uid,
         """
         # other user
+          @published 9999/12/31
         ## title1
     """,
     )
@@ -79,21 +80,30 @@ async def test_search_resources() -> None:
     assert urs.data[0].user.username == "two"
     assert urs.data[0].resource.name == "# other user"
 
+    rs_pub = await search_resources("", keys=["published"], desc=False)
+    assert [r.resource.name for r in rs_pub.data] == [
+        "# title1",
+        "# title2",
+        "# title3",
+        "# title4",
+        "# other user",
+    ]
+
     # authorで検索 パフォーマンス悪化を懸念してやめとく
     # ars = await search_resources("author1")
     # assert len(ars.data) == ars.total == 1
     # assert list(ars.data[0].resource.authors) == unordered(["author1"])
 
 
-@mark_async_test()
-async def test_search_resources_range() -> None:
-    """範囲検索."""
-    # u = await LUser(email="one@gmail.com").save()
-    # s1 = """
-    #     # title1
-    #
-    # """
-    # stats で sort
-
-    # updatedを絞る
-    # publishedを絞る
+# @mark_async_test()
+# async def test_search_resources_range() -> None:
+#     """範囲検索."""
+#     # u = await LUser(email="one@gmail.com").save()
+#     # s1 = """
+#     #     # title1
+#     #
+#     # """
+#     # stats で sort
+#
+#     # updatedを絞る
+#     # publishedを絞る

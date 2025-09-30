@@ -2,7 +2,6 @@
 
 from typing import get_args
 
-from fastapi import status
 from neomodel.async_.core import AsyncDatabase
 
 from knowde.feature.entry.domain import (
@@ -14,31 +13,8 @@ from knowde.feature.entry.domain import (
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.entry.resource.stats.domain import ResourceStats
 from knowde.feature.knowde import ResourceInfo
-from knowde.feature.knowde.repo.clause import Paging
-from knowde.shared.errors import DomainError
+from knowde.shared.cypher import Paging
 from knowde.shared.user.schema import UserReadPublic
-
-
-async def search_total_resources(search_str: str, search_user: str) -> int:
-    """検索にマッチするリソース総数."""
-    q = """
-        MATCH (r:Resource
-            WHERE r.title CONTAINS $s
-                //OR ANY(author IN r.authors WHERE author CONTAINS $s)
-            )
-            , (u:User)<-[:OWNED|PARENT]-*(r)
-        WHERE u.username CONTAINS $u OR u.display_name CONTAINS $u
-        RETURN COUNT(r)
-    """
-    rows, _ = await AsyncDatabase().cypher_query(
-        q,
-        params={"s": search_str, "u": search_user},
-    )
-    try:
-        return rows[0][0]
-    except IndexError as e:
-        msg = "Failed to get total count from query result."
-        raise DomainError(msg=msg, status_code=status.HTTP_502_BAD_GATEWAY) from e
 
 
 async def search_resources(  # noqa: PLR0917
@@ -64,26 +40,40 @@ async def search_resources(  # noqa: PLR0917
             msg = f"Unknown order key: {k}"
             raise TypeError(msg)
         skeys.append(q_ord)
+
     q = f"""
-        MATCH (r:Resource WHERE r.title CONTAINS $s
-                //OR ANY(author IN r.authors WHERE author CONTAINS $s)
-            )
+        MATCH (r:Resource WHERE r.title CONTAINS $s)
             -[:STATS]->(stat:ResourceStatsCache)
             , (u:User)<-[:OWNED|PARENT]-*(r)
         WHERE u.username CONTAINS $u OR u.display_name CONTAINS $u
+
+        WITH r, stat, u
         ORDER BY {", ".join(skeys)} {((desc and "DESC") or "ASC")}
-        {paging.phrase()}
-        RETURN r, stat, u
+
+        WITH COLLECT({{r:r, stat:stat, u:u}}) AS results
+        RETURN SIZE(results) AS total
+            , results[$offset..$offset + $limit] AS page
     """
+
     if do_print:
         print(q)  # noqa: T201
-    rows, _ = await AsyncDatabase().cypher_query(
-        q,
-        params={"s": search_str, "u": search_user},
-    )
+
+    params = {
+        "s": search_str,
+        "u": search_user,
+        "offset": paging.skip,
+        "limit": paging.size,
+    }
+
+    rows, _ = await AsyncDatabase().cypher_query(q, params=params)
+    if not rows:
+        return ResourceSearchResult(total=0, data=[])
+
+    total, page = rows[0]
     infos = []
-    for row in rows:
-        r, stat, u = row
+    for row in page:
+        # r, stat, u = row  # from old query
+        r, stat, u = row["r"], row["stat"], row["u"]
         info = ResourceInfo(
             user=UserReadPublic.model_validate(u),
             resource=MResource.freeze_dict(r),
@@ -92,6 +82,6 @@ async def search_resources(  # noqa: PLR0917
         infos.append(info)
 
     return ResourceSearchResult(
-        total=await search_total_resources(search_str, search_user),
+        total=total,
         data=infos,
     )

@@ -3,7 +3,8 @@
 from fastapi import Query
 from pydantic import BaseModel, Field
 
-from knowde.feature.knowde.repo.clause import OrderBy, Paging, WherePhrase
+from knowde.feature.knowde.repo.clause import OrderBy, WherePhrase
+from knowde.shared.cypher import Paging
 
 
 class SearchParam(BaseModel):
