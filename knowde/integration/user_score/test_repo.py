@@ -1,5 +1,6 @@
 """test."""
 
+from knowde.conftest import mark_async_test
 from knowde.feature.entry.resource.usecase import save_text
 from knowde.integration.user_score.repo import fetch_user_with_achivement
 from knowde.shared.cypher import Paging
@@ -8,7 +9,7 @@ from knowde.shared.user.label import LUser
 
 async def setup(username: str, count: int) -> LUser:  # noqa: D103
     u = await LUser(
-        email=f"{username}@gmail.com",
+        email=f"{username}@example.com",
         display_name=username,
         username=username,
     ).save()
@@ -29,6 +30,7 @@ async def setup(username: str, count: int) -> LUser:  # noqa: D103
     return u
 
 
+@mark_async_test()
 async def test_fetch_user_by_score():
     """Aaaa."""
     await setup("zero", 0)
@@ -52,7 +54,12 @@ async def test_fetch_user_by_score():
     res = await fetch_user_with_achivement("four")
     assert len(res.data) == 0
 
-    # sort
+    # ソート
+    res = await fetch_user_with_achivement("", keys=["username"], desc=True)
+    assert [r.user.username for r in res.data] == ["zero", "two", "three", "one"]
+    res = await fetch_user_with_achivement("", keys=["username"], desc=False)
+    assert [r.user.username for r in res.data] == ["one", "three", "two", "zero"]
 
-    # assert len(rows) == 10
-    # print(res.model_dump_json(indent=2))
+    # ソート by archivement
+    res = await fetch_user_with_achivement("", keys=["n_sentence"])
+    assert [r.user.username for r in res.data] == ["three", "two", "one", "zero"]

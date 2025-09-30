@@ -1,11 +1,19 @@
 """domain."""
 
-from typing import Self
+from typing import Literal, Self
 
 from pydantic import BaseModel, Field
 
 from knowde.feature.entry.domain import NameSpace
 from knowde.shared.user.schema import UserReadPublic
+
+UserScoreOrderKey = Literal[
+    "username",
+    "display_name",
+    "n_char",
+    "n_sentence",
+    "n_resource",
+]
 
 
 class UserAcheivement(BaseModel, frozen=True):
