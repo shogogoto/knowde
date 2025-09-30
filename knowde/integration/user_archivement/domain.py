@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 from knowde.feature.entry.domain import NameSpace
 from knowde.shared.user.schema import UserReadPublic
 
-UserScoreOrderKey = Literal[
+UserSearchOrderKey = Literal[
     "username",
     "display_name",
     "n_char",

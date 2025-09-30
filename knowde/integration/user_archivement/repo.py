@@ -4,20 +4,21 @@ from typing import get_args
 
 from neomodel.async_.core import AsyncDatabase
 
-from knowde.integration.user_score.domain import (
+from knowde.shared.cypher import Paging
+from knowde.shared.user.schema import UserReadPublic
+
+from .domain import (
     UserAcheivement,
-    UserScoreOrderKey,
+    UserSearchOrderKey,
     UserSearchResult,
     UserSearchRow,
 )
-from knowde.shared.cypher import Paging
-from knowde.shared.user.schema import UserReadPublic
 
 
 async def fetch_user_with_achivement(
     search_str: str = "",
     paging: Paging = Paging(),
-    keys: list[UserScoreOrderKey] | None = None,
+    keys: list[UserSearchOrderKey] | None = None,
     desc: bool = True,  # noqa: FBT001, FBT002
 ) -> UserSearchResult:
     """成果付きでユーザー検索."""
@@ -25,7 +26,7 @@ async def fetch_user_with_achivement(
         keys = ["username"]
     skeys = []
     for k in keys:
-        if k in get_args(UserScoreOrderKey):
+        if k in get_args(UserSearchOrderKey):
             if k in {"username", "display_name"}:
                 skeys.append(f"u.{k}")
             else:

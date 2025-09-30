@@ -2,9 +2,10 @@
 
 from knowde.conftest import mark_async_test
 from knowde.feature.entry.resource.usecase import save_text
-from knowde.integration.user_score.repo import fetch_user_with_achivement
 from knowde.shared.cypher import Paging
 from knowde.shared.user.label import LUser
+
+from .repo import fetch_user_with_achivement
 
 
 async def setup(username: str, count: int) -> LUser:  # noqa: D103
