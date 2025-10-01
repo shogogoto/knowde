@@ -16,7 +16,7 @@ UserSearchOrderKey = Literal[
 ]
 
 
-class UserAcheivement(BaseModel, frozen=True):
+class UserAchievement(BaseModel, frozen=True):
     """ユーザーの作業量計."""
 
     n_char: int = Field(title="文字数")
@@ -42,7 +42,7 @@ class UserSearchRow(BaseModel, frozen=True):
     """検索結果行."""
 
     user: UserReadPublic
-    archivement: UserAcheivement
+    archivement: UserAchievement
 
 
 class UserSearchResult(BaseModel, frozen=True):

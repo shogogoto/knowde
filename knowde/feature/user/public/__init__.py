@@ -13,7 +13,7 @@ from knowde.integration.user_archivement.domain import (
     UserSearchOrderKey,
     UserSearchResult,
 )
-from knowde.integration.user_archivement.repo import fetch_user_with_achivement
+from knowde.integration.user_archivement.repo import fetch_user_with_current_achivement
 from knowde.shared.cypher import Paging
 from knowde.shared.user.label import LUser
 from knowde.shared.user.router_util import TrackUser
@@ -36,7 +36,7 @@ async def search_user(
     user: TrackUser = None,
 ) -> UserSearchResult:
     """認証なしユーザー検索."""
-    return await fetch_user_with_achivement(
+    return await fetch_user_with_current_achivement(
         search_str=body.q,
         paging=body.paging,
         keys=body.order_by,
