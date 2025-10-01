@@ -21,7 +21,7 @@ from .domain import (
 )
 
 
-async def fetch_user_with_current_achivement(
+async def fetch_user_with_current_achivement(  # noqa: PLR0914
     search_str: str = "",
     paging: Paging = Paging(),
     keys: list[UserSearchOrderKey] | None = None,
@@ -66,8 +66,9 @@ async def fetch_user_with_current_achivement(
     )
     data = []
     if not rows:
-        return UserSearchResult(total=0, data=data)
+        return UserSearchResult(total=0, data=[])
     total, page = rows[0]
+    now = datetime.now(tz=TZ)
     for row in page:
         u, n_char, n_sentence, n_resource = (
             row["u"],
@@ -80,7 +81,7 @@ async def fetch_user_with_current_achivement(
             n_char=n_char,
             n_sentence=n_sentence,
             n_resource=n_resource,
-            created=datetime.now(tz=TZ),
+            created=now,
         )
         data.append(UserSearchRow(user=user, archivement=archivement))
     return UserSearchResult(
@@ -197,3 +198,36 @@ async def fetch_achievement_history(
         hs.append(h)
 
     return AchievementHistories(root=hs)
+
+
+async def fetch_activity(user_ids: list[UUIDy]) -> list[UserSearchRow]:
+    """ID指定で現在成果を取得."""
+    q = f"""
+        UNWIND $user_ids AS uid
+        MATCH (u:User {{uid: uid}})
+        {q_archivement("u")}
+        RETURN u
+            , n_char
+            , n_sentence
+            , n_resource
+    """
+    rows, _ = await AsyncDatabase().cypher_query(
+        q,
+        params={
+            "user_ids": [to_uuid(uid).hex for uid in user_ids],
+        },
+    )
+
+    now = datetime.now(tz=TZ)
+    data = []
+    for row in rows:
+        u, n_char, n_sentence, n_resource = row
+        user = UserReadPublic.model_validate(u)
+        archivement = UserAchievement(
+            n_char=n_char,
+            n_sentence=n_sentence,
+            n_resource=n_resource,
+            created=now,
+        )
+        data.append(UserSearchRow(user=user, archivement=archivement))
+    return data

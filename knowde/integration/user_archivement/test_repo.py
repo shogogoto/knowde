@@ -10,6 +10,7 @@ from knowde.shared.util import TZ
 
 from .repo import (
     fetch_achievement_history,
+    fetch_activity,
     fetch_user_with_current_achivement,
     snapshot_archivement,
 )
@@ -111,3 +112,14 @@ async def test_snapshot_archivement(us: list[LUser]):
     three = next(h for h in hs.root if h.user.username == "three")
     assert three.user.username == "three"
     assert [a.n_resource for a in three.archivements] == [3, 3, 3]
+
+
+@mark_async_test()
+async def test_fetch_activity(us: list[LUser]):
+    """成果スナップショット."""
+    res = await fetch_activity([us[0].uid])
+    zero = res[0]
+    assert zero.user.username == "zero"
+    assert zero.archivement.n_char == 0
+    assert zero.archivement.n_sentence == 0
+    assert zero.archivement.n_resource == 0
