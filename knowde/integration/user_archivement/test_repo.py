@@ -75,19 +75,17 @@ async def test_fetch_user_by_score(us: list[LUser]):
 @mark_async_test()
 async def test_snapshot_archivement(us: list[LUser]):
     """成果スナップショット."""
-    # await setup("zero", 0)
-    # await setup("one", 1)
-    # await setup("two", 2)
-    # await setup("three", 3)
-    # print("#" * 80)
-    _res = await snapshot_archivement()
-    # print(res)
-    # res = await snapshot_archivement()
-    # print(res)
-    # res = await snapshot_archivement()
-    # print(res)
-    # res = await fetch_user_with_achivement()
-    # assert len(res.data) == 4()
+    assert await snapshot_archivement(paging=Paging(page=1, size=2)) == (4, 2, 2)
+    res = await snapshot_archivement(paging=Paging(page=1, size=2))
+    assert res == (4, 2, 0)  # 1回目で処理済み
+    res = await snapshot_archivement(paging=Paging(page=2, size=2))
+    assert res == (4, 2, 2)  # 残り
+    res = await snapshot_archivement(paging=Paging(page=2, size=2))
+    assert res == (4, 2, 0)  # 残りも処理済み
+    res = await snapshot_archivement(paging=Paging(page=3, size=2))
+    assert res == (4, 0, 0)  # 処理対象なし
 
-    # sleep(10000)
-    # raise AssertionError
+    # res = await snapshot_archivement()
+    # print(res)
+    # res = await snapshot_archivement()
+    # print(res)

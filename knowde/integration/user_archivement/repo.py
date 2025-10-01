@@ -89,10 +89,6 @@ async def fetch_user_with_current_achivement(
 def week_start(now: datetime) -> str:
     """現在から6日前の日付を計算し、Cypherパラメータ用の文字列として返す."""
     week_start_dt = now - timedelta(days=6)
-    # Cypherの datetime() 関数がパースできる形式に変換 (ISO 8601)
-    # ただし、Cypherの datetime() が datetime(string) の形式を受け入れるため、
-    # $week_start_datetime には '2025-01-01T00:00:00.000000000' のような
-    # ISO 8601形式の文字列を渡すのが安全
     return week_start_dt.isoformat()
 
 
@@ -100,59 +96,62 @@ def week_start(now: datetime) -> str:
 async def snapshot_archivement(
     now: datetime = datetime.now(tz=TZ),
     paging: Paging = Paging(size=10000),  # user数多すぎる場合の対応を想定
-) -> int:
+) -> tuple[int, int, int]:
     """成果を保存.
 
-    成果の毎週の履歴をユーザーごとに管理したい
-
-    (u:User)-[:ARCHEIVE]-(a1)-[:PREV]->(a2)
-    のように最新のものをuserの近くに配置
-
-    今週にまだ成果スナップショットが保存されていない場合にのみこれを新規作成する
-
+    最新のものをuserの近くに配置しPREVで古いものを辿れる
+    今週の成果スナップショットが未作成のときに新規作成する
     今週とは、現在日から過去6日分のこと
-    今週の引数で与えられる曜日dayの成果スナップショットがある場合は新規作成もしない
-
-
+    Returns:
+        tuple[int, int, int]: 全user数、処理対象数、 スナップショット作成数
     """
     q = f"""
         MATCH (u: User)
         WITH COLLECT(u) AS all_users
         WITH all_users[$offset..$offset + $limit] AS users_in_page
-            , SIZE(all_users) AS total_processed_in_page
-        UNWIND users_in_page AS u
+            , SIZE(all_users) AS n_all_users
+        WITH users_in_page, n_all_users
+            , SIZE(users_in_page) AS n_target
+        UNWIND CASE
+            WHEN n_target = 0 THEN [NULL]
+            ELSE users_in_page
+        END AS u
         OPTIONAL MATCH (u)-[r_latest:ARCHEIVE]->(latest:Archievement)
         WITH u, r_latest, latest
-            , datetime() AS now
             , CASE
                 WHEN latest IS NULL THEN true
                 WHEN latest.created < datetime($week_start) THEN true
                 ELSE false
               END AS should_create
-            , total_processed_in_page
+            , n_all_users
+            , n_target
 
-        {q_archivement("u")}
-            , r_latest, latest
-            , now, should_create
-            , total_processed_in_page
+        CALL (u, r_latest, latest, should_create) {{
+            WITH u, r_latest, latest, should_create
+                , datetime() AS now
+            WHERE should_create
+                AND u IS NOT NULL
+            {q_archivement("u")}
+                , r_latest, latest
+                , now, should_create
 
-        WHERE should_create
-        FOREACH(i IN CASE WHEN r_latest IS NOT NULL THEN [1] ELSE [] END |
-            DELETE r_latest
-        )
-        CREATE (u)-[:ARCHEIVE]->(newA:Archievement {{
-            n_char: COALESCE(n_char, 0)
-            , n_sentence: COALESCE(n_sentence, 0)
-            , n_resource: COALESCE(n_resource, 0)
-            , created: now
-        }})
-
-        FOREACH(i IN CASE WHEN latest IS NOT NULL THEN [1] ELSE [] END |
-            CREATE (newA)-[:PREV]->(latest)
-        )
-        RETURN  total_processed_in_page
-            , COUNT(newA) AS total_created
-        //RETURN SIZE(COLLECT(u)) AS total
+            FOREACH(i IN CASE WHEN r_latest IS NOT NULL THEN [1] ELSE [] END |
+                DELETE r_latest
+            )
+            CREATE (u)-[:ARCHEIVE]->(newA:Archievement {{
+                n_char: COALESCE(n_char, 0)
+                , n_sentence: COALESCE(n_sentence, 0)
+                , n_resource: COALESCE(n_resource, 0)
+                , created: now
+            }})
+            FOREACH(i IN CASE WHEN latest IS NOT NULL THEN [1] ELSE [] END |
+                CREATE (newA)-[:PREV]->(latest)
+            )
+            RETURN COUNT(u) AS total_created
+        }} IN TRANSACTIONS OF 1 ROW // Neo4j 5.0 以降の並列化オプション
+        RETURN n_all_users
+            , n_target
+            , SUM(total_created) AS n_processed
     """
 
     rows, _ = await AsyncDatabase().cypher_query(
@@ -163,7 +162,7 @@ async def snapshot_archivement(
             "week_start": week_start(now),
         },
     )
-    return rows  # total
+    return tuple(rows[0])  # total,
 
 
 async def fetch_activity(user_id: UUID) -> None:
