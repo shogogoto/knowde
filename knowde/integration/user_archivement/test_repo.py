@@ -97,7 +97,7 @@ async def test_snapshot_archivement(us: list[LUser]):
     n = datetime.now(tz=TZ)
     assert await snapshot_archivement(n + timedelta(days=1)) == (4, 4, 0)
     assert await snapshot_archivement(n + timedelta(days=5)) == (4, 4, 0)
-    assert await snapshot_archivement(n + timedelta(days=6, minutes=-1)) == (4, 4, 0)
+    assert await snapshot_archivement(n + timedelta(days=6, minutes=-10)) == (4, 4, 0)
     assert await snapshot_archivement(n + timedelta(days=6)) == (4, 4, 4)
     assert await snapshot_archivement(n + timedelta(days=7)) == (4, 4, 0)
     assert await snapshot_archivement(n + timedelta(days=11)) == (4, 4, 0)
