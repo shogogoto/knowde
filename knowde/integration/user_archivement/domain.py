@@ -2,10 +2,11 @@
 
 from typing import Literal, Self
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, RootModel
 
 from knowde.feature.entry.domain import NameSpace
 from knowde.shared.user.schema import UserReadPublic
+from knowde.shared.util import Neo4jDateTime
 
 UserSearchOrderKey = Literal[
     "username",
@@ -22,6 +23,7 @@ class UserAchievement(BaseModel, frozen=True):
     n_char: int = Field(title="文字数")
     n_sentence: int = Field(title="単文数")
     n_resource: int = Field(title="リソース数")
+    created: Neo4jDateTime
 
     @classmethod
     def from_namspace(cls, ns: NameSpace) -> Self:
@@ -50,3 +52,14 @@ class UserSearchResult(BaseModel, frozen=True):
 
     total: int
     data: list[UserSearchRow]
+
+
+class AchievementHistory(BaseModel, frozen=True):
+    """成果履歴."""
+
+    user: UserReadPublic
+    archivements: list[UserAchievement]
+
+
+class AchievementHistories(RootModel[list[AchievementHistory]]):
+    """成果履歴."""

@@ -5,7 +5,7 @@ from neomodel import (
     AsyncRelationshipTo,
     AsyncStructuredNode,
     AsyncZeroOrOne,
-    DateTimeNeo4jFormatProperty,
+    DateTimeProperty,
     IntegerProperty,
 )
 
@@ -16,10 +16,10 @@ class LArchievement(AsyncStructuredNode):
     """成果."""
 
     __label__ = "Archievement"
-    total_char = IntegerProperty()
-    total_sentence = IntegerProperty()
+    n_char = IntegerProperty()
+    n_sentence = IntegerProperty()
     n_resource = IntegerProperty()
-    created = DateTimeNeo4jFormatProperty()
+    created = DateTimeProperty()
 
     user = AsyncRelationshipFrom(LUser, "ARCHEIVE", cardinality=AsyncZeroOrOne)
     prev = AsyncRelationshipTo(

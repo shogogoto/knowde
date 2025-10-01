@@ -2,16 +2,18 @@
 
 from datetime import datetime, timedelta
 from typing import get_args
-from uuid import UUID
 
 from neomodel.async_.core import AsyncDatabase
 
 from knowde.integration.user_archivement.cypher import q_archivement
 from knowde.shared.cypher import Paging
+from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.user.schema import UserReadPublic
 from knowde.shared.util import TZ
 
 from .domain import (
+    AchievementHistories,
+    AchievementHistory,
     UserAchievement,
     UserSearchOrderKey,
     UserSearchResult,
@@ -78,6 +80,7 @@ async def fetch_user_with_current_achivement(
             n_char=n_char,
             n_sentence=n_sentence,
             n_resource=n_resource,
+            created=datetime.now(tz=TZ),
         )
         data.append(UserSearchRow(user=user, archivement=archivement))
     return UserSearchResult(
@@ -117,7 +120,7 @@ async def snapshot_archivement(
         WITH u, r_latest, latest
             , CASE
                 WHEN latest IS NULL THEN true
-                WHEN latest.created < $week_start THEN true
+                WHEN latest.created < datetime($week_start) THEN true
                 ELSE false
               END AS should_create
             , n_all_users
@@ -135,7 +138,7 @@ async def snapshot_archivement(
                 n_char: COALESCE(n_char, 0)
                 , n_sentence: COALESCE(n_sentence, 0)
                 , n_resource: COALESCE(n_resource, 0)
-                , created: $now
+                , created: datetime($now)
             }})
             DELETE r_latest
             FOREACH(i IN CASE WHEN latest IS NOT NULL THEN [1] ELSE [] END |
@@ -160,5 +163,37 @@ async def snapshot_archivement(
     return tuple(rows[0])  # total,
 
 
-async def fetch_activity(user_id: UUID) -> None:
+async def fetch_achievement_history(
+    user_ids: list[UUIDy],
+) -> AchievementHistories:
     """直近成果の活動を取得."""
+    q = """
+        UNWIND $user_ids AS uid
+        MATCH (u:User {uid: uid})-[r:ARCHEIVE]->(a:Archievement)
+        CALL (a) {
+            OPTIONAL MATCH p = (a)-[:PREV]->*(prev:Archievement)
+            WITH p, LENGTH(p) as len
+            ORDER BY len DESC
+            LIMIT 1
+            RETURN nodes(p) AS achievements
+        }
+        RETURN u, achievements
+    """
+
+    rows, _ = await AsyncDatabase().cypher_query(
+        q,
+        params={
+            "user_ids": [to_uuid(uid).hex for uid in user_ids],
+        },
+    )
+    hs = []
+    for row in rows:
+        u, achivements = row
+        h = AchievementHistory(
+            user=UserReadPublic.model_validate(u),
+            archivements=[UserAchievement.model_validate(a) for a in achivements],
+        )
+
+        hs.append(h)
+
+    return AchievementHistories(root=hs)

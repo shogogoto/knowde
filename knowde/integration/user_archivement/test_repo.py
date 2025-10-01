@@ -8,7 +8,11 @@ from knowde.shared.cypher import Paging
 from knowde.shared.user.label import LUser
 from knowde.shared.util import TZ
 
-from .repo import fetch_user_with_current_achivement, snapshot_archivement
+from .repo import (
+    fetch_achievement_history,
+    fetch_user_with_current_achivement,
+    snapshot_archivement,
+)
 
 
 async def setup(username: str, count: int) -> LUser:  # noqa: D103
@@ -99,3 +103,11 @@ async def test_snapshot_archivement(us: list[LUser]):
     assert await snapshot_archivement(n + timedelta(days=12)) == (4, 4, 0)
     assert await snapshot_archivement(n + timedelta(days=13)) == (4, 4, 4)
     assert await snapshot_archivement(n + timedelta(days=14)) == (4, 4, 0)
+
+    hs = await fetch_achievement_history([u.uid for u in us])
+    zero = next(h for h in hs.root if h.user.username == "zero")
+    assert zero.user.username == "zero"
+    assert [a.n_resource for a in zero.archivements] == [0, 0, 0]
+    three = next(h for h in hs.root if h.user.username == "three")
+    assert three.user.username == "three"
+    assert [a.n_resource for a in three.archivements] == [3, 3, 3]
