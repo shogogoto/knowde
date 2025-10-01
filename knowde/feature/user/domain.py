@@ -5,15 +5,13 @@
 
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Annotated
 from uuid import UUID
 
 from fastapi_users.schemas import BaseOAuthAccount, BaseOAuthAccountMixin
-from pydantic import BeforeValidator, EmailStr
+from pydantic import EmailStr
 
 from knowde.feature.user.schema import CommonSchema
-from knowde.shared.util import neo4j_dt_validator
+from knowde.shared.util import Neo4jDateTime
 
 
 class User(CommonSchema, BaseOAuthAccountMixin):
@@ -25,7 +23,7 @@ class User(CommonSchema, BaseOAuthAccountMixin):
     is_active: bool
     is_superuser: bool
     is_verified: bool
-    created: Annotated[datetime, BeforeValidator(neo4j_dt_validator)]
+    created: Neo4jDateTime
 
     @property
     def id(self) -> UUID:  # noqa: D102
