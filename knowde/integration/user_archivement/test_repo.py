@@ -1,9 +1,12 @@
 """test."""
 
+from datetime import datetime, timedelta
+
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.entry.resource.usecase import save_text
 from knowde.shared.cypher import Paging
 from knowde.shared.user.label import LUser
+from knowde.shared.util import TZ
 
 from .repo import fetch_user_with_current_achivement, snapshot_archivement
 
@@ -83,9 +86,16 @@ async def test_snapshot_archivement(us: list[LUser]):
     res = await snapshot_archivement(paging=Paging(page=2, size=2))
     assert res == (4, 2, 0)  # 残りも処理済み
     res = await snapshot_archivement(paging=Paging(page=3, size=2))
-    assert res == (4, 0, 0)  # 処理対象なし
+    assert res == (4, 0, 0)  # 処理対象が範囲外
 
-    # res = await snapshot_archivement()
-    # print(res)
-    # res = await snapshot_archivement()
-    # print(res)
+    # 翌週ならスナップショットを追加できる
+    n = datetime.now(tz=TZ)
+    assert await snapshot_archivement(n + timedelta(days=1)) == (4, 4, 0)
+    assert await snapshot_archivement(n + timedelta(days=5)) == (4, 4, 0)
+    assert await snapshot_archivement(n + timedelta(days=6, minutes=-1)) == (4, 4, 0)
+    assert await snapshot_archivement(n + timedelta(days=6)) == (4, 4, 4)
+    assert await snapshot_archivement(n + timedelta(days=7)) == (4, 4, 0)
+    assert await snapshot_archivement(n + timedelta(days=11)) == (4, 4, 0)
+    assert await snapshot_archivement(n + timedelta(days=12)) == (4, 4, 0)
+    assert await snapshot_archivement(n + timedelta(days=13)) == (4, 4, 4)
+    assert await snapshot_archivement(n + timedelta(days=14)) == (4, 4, 0)

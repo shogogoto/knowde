@@ -97,13 +97,10 @@ async def snapshot_archivement(
     now: datetime = datetime.now(tz=TZ),
     paging: Paging = Paging(size=10000),  # user数多すぎる場合の対応を想定
 ) -> tuple[int, int, int]:
-    """成果を保存.
+    """ユーザーごとの週次成果スナップショットを追加。.
 
-    最新のものをuserの近くに配置しPREVで古いものを辿れる
-    今週の成果スナップショットが未作成のときに新規作成する
-    今週とは、現在日から過去6日分のこと
-    Returns:
-        tuple[int, int, int]: 全user数、処理対象数、 スナップショット作成数
+    n_all_users, n_target, n_saved のタプルを返す
+    過去6日間に未記録のユーザーの成果を記録する
     """
     q = f"""
         MATCH (u: User)
@@ -120,7 +117,7 @@ async def snapshot_archivement(
         WITH u, r_latest, latest
             , CASE
                 WHEN latest IS NULL THEN true
-                WHEN latest.created < datetime($week_start) THEN true
+                WHEN latest.created < $week_start THEN true
                 ELSE false
               END AS should_create
             , n_all_users
@@ -128,22 +125,19 @@ async def snapshot_archivement(
 
         CALL (u, r_latest, latest, should_create) {{
             WITH u, r_latest, latest, should_create
-                , datetime() AS now
             WHERE should_create
                 AND u IS NOT NULL
             {q_archivement("u")}
                 , r_latest, latest
-                , now, should_create
+                , should_create
 
-            FOREACH(i IN CASE WHEN r_latest IS NOT NULL THEN [1] ELSE [] END |
-                DELETE r_latest
-            )
             CREATE (u)-[:ARCHEIVE]->(newA:Archievement {{
                 n_char: COALESCE(n_char, 0)
                 , n_sentence: COALESCE(n_sentence, 0)
                 , n_resource: COALESCE(n_resource, 0)
-                , created: now
+                , created: $now
             }})
+            DELETE r_latest
             FOREACH(i IN CASE WHEN latest IS NOT NULL THEN [1] ELSE [] END |
                 CREATE (newA)-[:PREV]->(latest)
             )
@@ -151,7 +145,7 @@ async def snapshot_archivement(
         }} IN TRANSACTIONS OF 1 ROW // Neo4j 5.0 以降の並列化オプション
         RETURN n_all_users
             , n_target
-            , SUM(total_created) AS n_processed
+            , SUM(total_created) AS n_saved
     """
 
     rows, _ = await AsyncDatabase().cypher_query(
@@ -159,6 +153,7 @@ async def snapshot_archivement(
         params={
             "offset": paging.skip,
             "limit": paging.size,
+            "now": now.isoformat(),
             "week_start": week_start(now),
         },
     )
