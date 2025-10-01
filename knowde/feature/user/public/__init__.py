@@ -5,43 +5,14 @@ entryやknowdeが絡むような機能はそっちのfeatureで書く
 
 from fastapi import APIRouter
 from neomodel import Q
-from pydantic import BaseModel, Field
 
 from knowde.feature.user.errors import UserNotFoundError
 from knowde.feature.user.schema import UserReadPublic
-from knowde.integration.user_archivement.domain import (
-    UserSearchOrderKey,
-    UserSearchResult,
-)
-from knowde.integration.user_archivement.repo import fetch_user_with_current_achivement
-from knowde.shared.cypher import Paging
+from knowde.integration.user_achivement.router.router import user_achievement_router
 from knowde.shared.user.label import LUser
 from knowde.shared.user.router_util import TrackUser
 
 _r = APIRouter(tags=["public_user"])
-
-
-class UserSearchBody(BaseModel, frozen=True):
-    """ユーザー検索パラメータ."""
-
-    q: str = ""
-    paging: Paging = Field(default_factory=Paging)
-    desc: bool = True
-    order_by: list[UserSearchOrderKey] | None = None
-
-
-@_r.post("/search")
-async def search_user(
-    body: UserSearchBody,
-    user: TrackUser = None,
-) -> UserSearchResult:
-    """認証なしユーザー検索."""
-    return await fetch_user_with_current_achivement(
-        search_str=body.q,
-        paging=body.paging,
-        keys=body.order_by,
-        desc=body.desc,
-    )
 
 
 @_r.get("/profile/{username}")
@@ -57,6 +28,9 @@ async def user_profile(username: str, user: TrackUser = None) -> UserReadPublic:
         raise UserNotFoundError(msg)
     lb = lbs[0]
     return UserReadPublic.model_validate(lb.__properties__)
+
+
+_r.include_router(user_achievement_router())
 
 
 def public_user_router() -> APIRouter:  # noqa: D103

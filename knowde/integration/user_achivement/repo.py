@@ -5,12 +5,12 @@ from typing import get_args
 
 from neomodel.async_.core import AsyncDatabase
 
-from knowde.integration.user_archivement.cypher import q_archivement
 from knowde.shared.cypher import Paging
 from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.user.schema import UserReadPublic
 from knowde.shared.util import TZ
 
+from .cypher import q_archivement
 from .domain import (
     AchievementHistories,
     AchievementHistory,
