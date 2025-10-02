@@ -1,13 +1,12 @@
 """shared user schema."""
 
-from datetime import datetime
 from typing import Annotated
 from uuid import UUID
 
 from pydantic import BaseModel, BeforeValidator, Field
 
 from knowde.shared.types import to_uuid
-from knowde.shared.util import neo4j_dt_validator
+from knowde.shared.util import Neo4jDateTime
 
 from . import LEN_DISPLAY_NAME, LEN_PROFILE, MAX_LEN_USERNAME
 
@@ -29,4 +28,4 @@ class UserReadPublic(CommonSchema):
     """公開ユーザー情報."""
 
     id: Annotated[UUID, BeforeValidator(to_uuid)] = Field(alias="uid")
-    created: Annotated[datetime, BeforeValidator(neo4j_dt_validator)]
+    created: Neo4jDateTime
