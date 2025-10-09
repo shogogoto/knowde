@@ -26,18 +26,20 @@ async def save_resource_with_detail(
     if updated is not None:
         meta.updated = updated
 
-    old = ns.get_resource_or_none(meta.title)
+    now = ns.get_resource_or_none(meta.title)
     lb = await save_or_move_resource(meta, ns)
     if lb is None:
         msg = f"{meta.title} の保存に失敗しました"
         raise NotFoundError(msg)
-    m = MResource.freeze_dict(lb.__properties__)
+    old = MResource.freeze_dict(lb.__properties__)
 
-    await save_resource_stats_cache(m.uid, sn)
-    is_changed = old is None or old.txt_hash != m.txt_hash
+    cache = await lb.cached_stats.get_or_none()
+    await save_resource_stats_cache(old.uid, sn)
+    # 未キャッシュ=新規登録 or hash更新時
+    is_changed = cache is None or now is None or now.txt_hash != old.txt_hash
     if is_changed:
         sn2db(sn, lb.uid)
-    return m, meta, sn
+    return old, meta, sn
 
 
 async def save_text(

@@ -42,5 +42,5 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
             logger.exception("Uncaught exception %s", e.__class__.__name__)
             return JSONResponse(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                content=e.args,
+                content=[str(arg) for arg in e.args],
             )
