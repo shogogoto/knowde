@@ -5,7 +5,12 @@ cache 有無 / resource 有無 でテスト
 
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.entry.namespace import create_resource, fetch_namespace
-from knowde.feature.entry.resource.usecase import save_resource_with_detail
+from knowde.feature.entry.resource.fixture import sample_real_text
+from knowde.feature.entry.resource.usecase import (
+    get_resource_detail_impl,
+    save_resource_with_detail,
+    save_text,
+)
 from knowde.shared.user.label import LUser
 
 
@@ -72,3 +77,19 @@ async def test_save_resource_with_detail_saved_cached(u: LUser):
     ns = await fetch_namespace(u.uid)
     assert len(ns.g.nodes) == 1
     assert ns.stats[rid].n_sentence == 2  # noqa: PLR2004
+
+
+@mark_async_test()
+async def test_restore_regression(u: LUser) -> None:
+    """実データでrestoreでterm merge error."""
+    # "重複によってマージできませんでした",
+    # "[Term(HOMFLYPT多項式(THOMFLYP多項式)), Term(HOMFLY多項式)]",
+    # "HOMFLY多項式(HOMFLYPT多項式)"
+
+    txt = sample_real_text()
+    _sn, r = await save_text(u.uid, txt)
+    detail = await get_resource_detail_impl(str(r.uid))
+
+    detail.model_dump_json(indent=2)
+    # print(sn2.model_dump_json(indent=2))
+    # raise AssertionError

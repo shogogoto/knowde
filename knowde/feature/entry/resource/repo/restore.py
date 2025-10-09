@@ -67,14 +67,15 @@ async def restore_sysnet(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]
         MATCH (n2)<-[r3:ALIAS]-(m:Term)
         RETURN r3 as r, m as s, n2 as e
     """
-    res = await AsyncDatabase().cypher_query(
+    rows, _ = await AsyncDatabase().cypher_query(
         q,
         params={"uid": to_uuid(resource_uid).hex},
     )
+
     col = DirectedEdgeCollection()
     defs = []
     uids = {}
-    for r, _s, _e in res[0]:
+    for r, _s, _e in rows:
         if r is None:  # resource
             if not (_s is None and _e is None):
                 rsrc = LResource(**dict(_s))
@@ -99,7 +100,7 @@ async def restore_sysnet(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]
             case _:
                 raise ValueError(r, s, e)
     g = nx.MultiDiGraph()
-    col.add_edges(g)
+    col.set_edges(g)
     mdefs, stddefs, _ = MergedDef.create_and_parted(defs)
     [md.add_edge(g) for md in mdefs]
     [d.add_edge(g) for d in stddefs]

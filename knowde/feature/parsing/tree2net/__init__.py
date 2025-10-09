@@ -47,7 +47,7 @@ def parse2net(txt: str, do_print: bool = False) -> SysNet:  # noqa: FBT001 FBT00
 
 def _build_graph(tree: Tree, col: DirectedEdgeCollection) -> nx.MultiDiGraph:
     g, resolver = _extract_leaves(tree)
-    col.add_edges(g)
+    col.set_edges(g)
     add_resolved_edges(g, resolver)
     replace_quoterms(g, resolver)
     return g
