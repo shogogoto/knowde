@@ -164,6 +164,7 @@ class ResourceDetail(BaseModel):
 
     network: SysNet  # Headを含む単文ネット
     resource_info: ResourceInfo
+    # uids: dict[str, str]
 
 
 # LResource由来

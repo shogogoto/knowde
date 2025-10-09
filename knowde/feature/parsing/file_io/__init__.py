@@ -20,7 +20,7 @@ T_EDGE_KEY: Final = "type"
 
 
 class NxJsonalyzer(json.JSONEncoder):
-    """nxgraph to serialize用."""
+    """nxgraph の serialize用."""
 
     def default(self, o: object) -> object:  # noqa: D102
         if isinstance(o, EdgeType):

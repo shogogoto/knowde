@@ -10,6 +10,7 @@ from knowde.api import api
 from knowde.conftest import mark_async_test
 from knowde.feature.entry.namespace.sync import Anchor
 from knowde.feature.entry.namespace.test_namespace import files  # noqa: F401
+from knowde.feature.entry.resource.usecase import save_text
 from knowde.feature.knowde import ResourceInfo
 from knowde.feature.user.routers.repo.client import (
     AuthPost,
@@ -90,3 +91,25 @@ async def test_fetch_resource_detail(files: tuple[Anchor, list[Path]]):  # noqa:
     info = ResourceInfo.model_validate(res.json()["resource_info"])
     assert info.user.id.hex == user.uid
     assert info.resource.uid.hex == uid
+
+
+@mark_async_test()
+async def test_restore_regression() -> None:
+    """whenで 端がないとinfを返そうとしてエラーになる."""
+    client, h = auth_header()
+    u = await LUser.nodes.first()
+
+    txt = """
+    # title
+      aaa
+      ラ・フレージュ学院でラテン語、数学、古典、科学、スコラ哲学を学ぶ
+        when. ~ 1612
+    """
+    _sn, r = await save_text(u.uid, txt)
+
+    res = client.get(
+        f"/resource/{r.uid}",
+        headers=h,
+    )
+    assert res.is_success
+    # print(json.dumps(res.json(), indent=2))

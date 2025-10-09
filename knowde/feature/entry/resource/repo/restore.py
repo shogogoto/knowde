@@ -1,6 +1,7 @@
 """db から sysnetを復元."""
 
 from functools import cache
+from math import isinf
 from uuid import UUID
 
 import neo4j
@@ -14,7 +15,6 @@ from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.sysnet.sysnode import DUMMY_SENTENCE, Def, KNode
 from knowde.feature.parsing.sysnet.sysnode.merged_def import MergedDef
 from knowde.feature.parsing.tree2net.directed_edge import DirectedEdgeCollection
-from knowde.shared.knowde.label import LInterval
 from knowde.shared.nxutil.edge_type import Direction, EdgeType
 from knowde.shared.types import Duplicable, UUIDy, to_uuid
 
@@ -33,6 +33,9 @@ def to_sysnode(n: neo4j.graph.Node) -> KNode:
         case "Interval":
             d = dict(n)
             d["n"] = d.pop("val")
+            for k in ("start", "end"):  # infはJSONに変換できない
+                if isinf(d[k]):
+                    d[k] = None
             return WhenNode.model_validate(d)
         case _:
             props = n.items()
@@ -92,7 +95,7 @@ async def restore_sysnet(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]
                 s2 = Term.create(*s.names, alias=r.get("alias", None))
                 d = Def.dummy(s2) if e == DUMMY_SENTENCE else Def(term=s2, sentence=e)
                 defs.append(d)
-            case x if x == "WHEN" and isinstance(e, LInterval):
+            case x if x == "WHEN" and isinstance(e, WhenNode):
                 col.append(EdgeType.WHEN, Direction.FORWARD, s, e)
             case x if x in [et.name for et in EdgeType]:
                 t = EdgeType.__members__.get(r.type)
