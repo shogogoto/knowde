@@ -112,4 +112,3 @@ async def test_restore_regression() -> None:
         headers=h,
     )
     assert res.is_success
-    # print(json.dumps(res.json(), indent=2))

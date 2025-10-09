@@ -66,8 +66,8 @@ async def save_text(
 
 async def get_resource_detail_impl(resource_id: str) -> ResourceDetail:
     """リソース詳細API実装."""
-    sn, _uids = await restore_sysnet(resource_id)
+    sn, uids = await restore_sysnet(resource_id)
     info = await fetch_info_by_resource_uid(resource_id)
-    return ResourceDetail(network=sn, resource_info=info)
+    return ResourceDetail(network=sn, resource_info=info, uids=uids)
 
     # print(d.model_dump(mode="python"))

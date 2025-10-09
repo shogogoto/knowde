@@ -77,7 +77,7 @@ async def restore_sysnet(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]
 
     col = DirectedEdgeCollection()
     defs = []
-    uids = {}
+    uids: dict[KNode, UUID] = {}
     for r, _s, _e in rows:
         if r is None:  # resource
             if not (_s is None and _e is None):
@@ -85,8 +85,12 @@ async def restore_sysnet(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]
             continue
         s = to_sysnode(_s)
         e = to_sysnode(_e)
-        uids[s] = _s.get("uid")
-        uids[e] = _e.get("uid")
+        s_uid = _s.get("uid")
+        if s_uid:
+            uids[s] = s_uid
+        e_uid = _e.get("uid")
+        if e_uid:
+            uids[e] = e_uid
         match r.type:
             case "ALIAS" if isinstance(s, Term) and isinstance(e, Term):
                 term = Term(names=s.names + e.names)
