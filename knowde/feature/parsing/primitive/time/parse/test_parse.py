@@ -59,7 +59,7 @@ from . import parse_extime, str2edtf
         ("R5", "2023"),  # 令和
     ],
 )
-def test_2edtf(string: str, expected: str) -> None:
+def test_str2edtf(string: str, expected: str) -> None:
     """EDTFへの通常パターン."""
     # print("-" * 30)
     aligned = str2edtf(string)

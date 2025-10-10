@@ -69,9 +69,13 @@ def parse_when(string: str) -> EDTFObject:
     match (i, len(ls)):
         case (0, 2):  # ~ extime
             e = str2edtf(ls[1])
+            if "/" in e:
+                e = e.split("/")[1]
             return parse_extime(f"../{e}")
         case (1, 2):  # ex1 ~
             s = str2edtf(ls[0])
+            if "/" in s:
+                s = s.split("/")[0]
             return parse_extime(f"{s}/..")
         case (1, 3):  # ex1 ~ ex2
             f1 = str2edtf(ls[0])
