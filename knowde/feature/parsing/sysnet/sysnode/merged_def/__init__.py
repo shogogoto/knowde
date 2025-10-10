@@ -12,7 +12,7 @@ from knowde.feature.parsing.primitive.term import (
     check_and_merge_term,
     eq_term,
 )
-from knowde.feature.parsing.sysnet.sysnode import Def, IDef
+from knowde.feature.parsing.sysnet.sysnode import Def, DummySentence, IDef
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.util import parted
 
@@ -24,7 +24,7 @@ class MergedDef(IDef, frozen=True):
     """termのマージによって生成されるまとめられたDef."""
 
     term: Term
-    sentences: list[str] = Field(min_length=1)
+    sentences: list[str | DummySentence] = Field(min_length=1)
 
     @override
     def __str__(self) -> str:
@@ -55,8 +55,11 @@ class MergedDef(IDef, frozen=True):
             if len(tgt) <= 1:  # マージ不要
                 std.extend(tgt)
                 continue
-            stcs = [d.sentence for d in tgt if not d.is_dummy]
-            merged.append(cls.one(t, *stcs))
+            stcs = [d.sentence for d in tgt]
+            stcs2 = [d.sentence for d in tgt if not d.is_dummy]
+            if len(stcs2) == 0:  # 1つだけダミーを残す
+                stcs2 = [stcs[0]]
+            merged.append(cls.one(t, *stcs2))
         return merged, std, mt
 
     @override

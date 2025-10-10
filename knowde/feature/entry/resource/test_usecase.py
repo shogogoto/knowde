@@ -5,7 +5,9 @@ cache 有無 / resource 有無 でテスト
 
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.entry.namespace import create_resource, fetch_namespace
-from knowde.feature.entry.resource.usecase import save_resource_with_detail
+from knowde.feature.entry.resource.usecase import (
+    save_resource_with_detail,
+)
 from knowde.shared.user.label import LUser
 
 

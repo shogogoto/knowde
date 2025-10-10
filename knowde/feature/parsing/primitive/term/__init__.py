@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections import Counter
 from collections.abc import Iterable
-from functools import cached_property
+from functools import cached_property, reduce
 from typing import NoReturn, Self
 
 import networkx as nx
@@ -183,25 +183,24 @@ class MergedTerms(BaseModel, frozen=True):
         """用語を追加する."""
         for t in ts:
             self._chk(t)
-            c = self._common(t)
-            if c is None:
-                self.terms.append(t)
-            else:
-                self.terms.remove(c)
-                self.terms.append(c.merge(t))
+            self._merge_and_append(t)
         return self
 
-    def _common(self, t: Term) -> Term | None:
+    def _merge_and_append(self, t: Term) -> None:
         """共通する名を持つ用語があれば返す."""
-        ls = [v for v in self.terms if t.has(*v.names)]
-        match len(ls):
+        commons = [v for v in self.terms if t.has(*v.names)]
+        match len(commons):
             case 0:
-                return None
+                self.terms.append(t)
             case 1:
-                return ls[0]
+                common = commons[0]
+                self.terms.remove(common)
+                self.terms.append(common.merge(t))
             case _:
-                msg = "重複によってマージできませんでした"
-                raise TermConflictError(msg, ls, t)
+                merged = reduce(lambda t1, t2: t1.merge(t2), [t, *commons])
+                for c in commons:
+                    self.terms.remove(c)
+                self.terms.append(merged)
 
     @cached_property
     def frozen(self) -> frozenset[Term]:

@@ -15,6 +15,7 @@ from knowde.feature.entry.resource.stats.domain import ResourceStats
 from knowde.feature.knowde import ResourceInfo
 from knowde.feature.parsing.primitive.time import parse2dt
 from knowde.feature.parsing.sysnet import SysNet
+from knowde.feature.parsing.sysnet.sysnode import KNode
 from knowde.feature.parsing.tree2net import parse2net
 from knowde.shared.types import NXGraph
 
@@ -164,6 +165,7 @@ class ResourceDetail(BaseModel):
 
     network: SysNet  # Headを含む単文ネット
     resource_info: ResourceInfo
+    uids: dict[KNode, UUID]
 
 
 # LResource由来

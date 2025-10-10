@@ -1,6 +1,7 @@
 """db から sysnetを復元."""
 
 from functools import cache
+from math import isinf
 from uuid import UUID
 
 import neo4j
@@ -14,7 +15,6 @@ from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.sysnet.sysnode import DUMMY_SENTENCE, Def, KNode
 from knowde.feature.parsing.sysnet.sysnode.merged_def import MergedDef
 from knowde.feature.parsing.tree2net.directed_edge import DirectedEdgeCollection
-from knowde.shared.knowde.label import LInterval
 from knowde.shared.nxutil.edge_type import Direction, EdgeType
 from knowde.shared.types import Duplicable, UUIDy, to_uuid
 
@@ -33,6 +33,9 @@ def to_sysnode(n: neo4j.graph.Node) -> KNode:
         case "Interval":
             d = dict(n)
             d["n"] = d.pop("val")
+            for k in ("start", "end"):  # infはJSONに変換できない
+                if isinf(d[k]):
+                    d[k] = None
             return WhenNode.model_validate(d)
         case _:
             props = n.items()
@@ -67,22 +70,27 @@ async def restore_sysnet(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]
         MATCH (n2)<-[r3:ALIAS]-(m:Term)
         RETURN r3 as r, m as s, n2 as e
     """
-    res = await AsyncDatabase().cypher_query(
+    rows, _ = await AsyncDatabase().cypher_query(
         q,
         params={"uid": to_uuid(resource_uid).hex},
     )
+
     col = DirectedEdgeCollection()
     defs = []
-    uids = {}
-    for r, _s, _e in res[0]:
+    uids: dict[KNode, UUID] = {}
+    for r, _s, _e in rows:
         if r is None:  # resource
             if not (_s is None and _e is None):
                 rsrc = LResource(**dict(_s))
             continue
         s = to_sysnode(_s)
         e = to_sysnode(_e)
-        uids[s] = _s.get("uid")
-        uids[e] = _e.get("uid")
+        s_uid = _s.get("uid")
+        if s_uid:
+            uids[s] = s_uid
+        e_uid = _e.get("uid")
+        if e_uid:
+            uids[e] = e_uid
         match r.type:
             case "ALIAS" if isinstance(s, Term) and isinstance(e, Term):
                 term = Term(names=s.names + e.names)
@@ -91,7 +99,7 @@ async def restore_sysnet(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]
                 s2 = Term.create(*s.names, alias=r.get("alias", None))
                 d = Def.dummy(s2) if e == DUMMY_SENTENCE else Def(term=s2, sentence=e)
                 defs.append(d)
-            case x if x == "WHEN" and isinstance(e, LInterval):
+            case x if x == "WHEN" and isinstance(e, WhenNode):
                 col.append(EdgeType.WHEN, Direction.FORWARD, s, e)
             case x if x in [et.name for et in EdgeType]:
                 t = EdgeType.__members__.get(r.type)
@@ -99,7 +107,7 @@ async def restore_sysnet(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]
             case _:
                 raise ValueError(r, s, e)
     g = nx.MultiDiGraph()
-    col.add_edges(g)
+    col.set_edges(g)
     mdefs, stddefs, _ = MergedDef.create_and_parted(defs)
     [md.add_edge(g) for md in mdefs]
     [d.add_edge(g) for d in stddefs]

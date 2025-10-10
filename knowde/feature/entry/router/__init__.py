@@ -11,13 +11,14 @@ from fastapi import APIRouter, Body, Depends, UploadFile
 from knowde.feature.entry.domain import NameSpace, ResourceDetail, ResourceSearchResult
 from knowde.feature.entry.namespace import (
     ResourceMetas,
-    fetch_info_by_resource_uid,
     fetch_namespace,
     sync_namespace,
 )
-from knowde.feature.entry.resource.repo.restore import restore_sysnet
 from knowde.feature.entry.resource.repo.search import search_resources
-from knowde.feature.entry.resource.usecase import save_resource_with_detail
+from knowde.feature.entry.resource.usecase import (
+    get_resource_detail_impl,
+    save_resource_with_detail,
+)
 from knowde.feature.entry.router.param import ResourceSearchBody
 from knowde.feature.user.domain import User
 from knowde.shared.user.router_util import TrackUser, auth_component
@@ -81,9 +82,7 @@ async def post_files(
 @router.get("/resource/{resource_id}")
 async def get_resource_detail(resource_id: str) -> ResourceDetail:
     """リソース詳細."""
-    sn, _ = await restore_sysnet(resource_id)
-    info = await fetch_info_by_resource_uid(resource_id)
-    return ResourceDetail(network=sn, resource_info=info)
+    return await get_resource_detail_impl(resource_id)
 
 
 @router.post("/resource/search")

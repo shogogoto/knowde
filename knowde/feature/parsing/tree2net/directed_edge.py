@@ -59,7 +59,7 @@ class DirectedEdgeCollection(BaseModel):
             ls.extend([cvt(n) for n in v.nodes])
         return [e for e in ls if e]
 
-    def add_edges(self, g: nx.DiGraph) -> None:
+    def set_edges(self, g: nx.DiGraph) -> None:
         """graphへ関係を追加."""
         for v in self.values:
             v.add_edge(g, arg2sentence)
