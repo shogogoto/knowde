@@ -87,11 +87,13 @@ def q_call_sent_names(var: str) -> str:
     """単文の名前を取得."""
     return f"""
     CALL ({var}) {{
-        OPTIONAL MATCH p = ({var})-[:DEF|ALIAS]-*(:Term)
-        WITH p, LENGTH(p) as len
+        OPTIONAL MATCH ({var})<-[r:DEF]-(t1:Term)
+        OPTIONAL MATCH p = (t1)-[:ALIAS]->*(t2:Term)
+        WITH p, LENGTH(p) as len, r
         ORDER BY len DESC
         LIMIT 1
-        RETURN nodes(p)[1..] as names
+        RETURN nodes(p) as names
+            , r.alias AS alias
     }}
     """
 
@@ -141,7 +143,7 @@ def q_adjaceny_uids(sent_var: str) -> str:
 #  これをstream と呼ぶ
 # これ以外では 無方向でアスタによる高コストな 複雑関係 EXAMPLE|TO|RESOLVED
 #   で対称のsentenceまでのpathを取得する
-# この comppex の端以外では stream は現れない、として曖昧さ・検索コストを減らす
+# この complex の端以外では stream は現れない、として曖昧さ・検索コストを減らす
 #  (r:Resource)-[stream]->*(:Sentence)-[complex]-(:Sentence)
 # (:Resource)--*(sent) ではコスト高すぎるかも
 #
@@ -151,7 +153,7 @@ STREAM: Final = "SIBLING|BELOW|HEAD|NUM|BY"
 
 def q_upper(sent_var: str) -> str:
     """parentの末尾 upper を取得する."""
-    # RESOUVED は含めない ブロックを飛び越えて広範囲に探索することになって
+    # RESOLVED は含めない ブロックを飛び越えて広範囲に探索することになって
     #   応答が返ってこなくなる
     complex_ = "TO|EXAMPLE"  # resourceに近づくとは限らない方向
     return f"""

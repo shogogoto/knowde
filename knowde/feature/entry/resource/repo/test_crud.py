@@ -1,15 +1,18 @@
 """系の永続化."""
 
+import networkx as nx
 import pytest
 from pytest_unordered import unordered
 
 from knowde.conftest import mark_async_test
 from knowde.feature.entry.domain import ResourceMeta
 from knowde.feature.entry.label import LResource
+from knowde.feature.entry.resource.usecase import save_text
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.tree2net import parse2net
+from knowde.shared.user.label import LUser
 
-from .restore import restore_sysnet
+from .restore import restore_sysnet, restore_tops, restore_undersentnet
 from .save import sn2db
 
 
@@ -62,3 +65,37 @@ async def test_save_and_restore(sn: SysNet) -> None:
     diff_stc = set(sn.sentences) - set(r.sentences)
     assert len(diff_stc) == 0
     assert sn.whens == unordered(r.whens)
+
+
+@mark_async_test()
+async def test_restore_tops():
+    """先端のHeadかSentenceまで復元."""
+    u = await LUser(email="one@gmail.com").save()
+    s = """
+    # title
+      direct
+    ## h1
+      s1
+    ### h11
+    #### h111
+      s111
+    ## h2
+      s2
+      A, B: s2next
+        when. ~ 19C
+      C:
+    """
+
+    sn_, mr = await save_text(u.uid, s)
+    g1, root = await restore_tops(mr.uid)
+    assert root == "# title"
+    assert {"direct", "s1", "s2"} < set(g1.nodes)
+    assert "s2net" not in g1.nodes
+    g2, _uids = await restore_undersentnet(mr.uid)
+    g = nx.compose(g1, g2)
+
+    # うまく比較したいけど、簡易的にこれで済ませる
+    assert {str(n) for n in sn_.g.nodes} == {str(n) for n in g.nodes}
+    # nxprint(sn_.g, True)
+    # nxprint(g, True)
+    # print(uids)
