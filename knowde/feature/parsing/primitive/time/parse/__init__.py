@@ -57,7 +57,7 @@ def str2edtf(string: str) -> str:
         s = s.replace(MagicTime.BC, "")
         s = f"-{s}"
 
-    # 20C -> 1901/2000 が厳密だが、19XXでよくね?
+    # 20C -> 1901/2000 が厳密だが、19XXでよくね? 世紀
     s = Season.replace(s)
     if p_century.matches(s):
         n = p_century.parse_string(s)[0]

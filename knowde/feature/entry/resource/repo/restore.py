@@ -9,6 +9,7 @@ import networkx as nx
 from neomodel.async_.core import AsyncDatabase
 
 from knowde.feature.entry.label import LResource
+from knowde.feature.knowde.repo.cypher import q_call_sent_names
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.primitive.time import WhenNode
 from knowde.feature.parsing.sysnet import SysNet
@@ -20,43 +21,133 @@ from knowde.shared.types import Duplicable, UUIDy, to_uuid
 
 
 @cache
-def to_sysnode(n: neo4j.graph.Node) -> KNode:
+def to_sysnode(n: neo4j.graph.Node) -> tuple[KNode, str]:
     """neo4jから変換."""
     lb_name = next(iter(n.labels))
     match lb_name:
         case "Sentence" | "Head":
-            return n.get("val")
+            retval = n.get("val")
         case "Term":
-            return Term.create(n.get("val"))
+            retval = Term.create(n.get("val"))
         case "Resource" | "Entry":
-            return n.get("title")
+            retval = n.get("title")
         case "Interval":
             d = dict(n)
             d["n"] = d.pop("val")
             for k in ("start", "end"):  # infはJSONに変換できない
                 if isinf(d[k]):
                     d[k] = None
-            return WhenNode.model_validate(d)
+            retval = WhenNode.model_validate(d)
         case _:
             props = n.items()
             raise ValueError(props, lb_name)
+    return retval, lb_name
 
 
-async def restore_sysnet(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]]:  # noqa: PLR0914
+async def restore_tops(resource_uid: UUIDy) -> tuple[nx.DiGraph, str]:
+    """SysNetを先のHeadまたはSentenceまで復元."""
+    q = """
+        MATCH (root:Resource {uid: $uid})
+        MATCH (root)-[:HEAD]->*(s:Head)-[r:HEAD|BELOW]->(e:Head|Sentence)
+        RETURN r, s, e
+        UNION
+        MATCH (root:Resource {uid: $uid})
+        MATCH (root)-[r:HEAD|BELOW]->(e:Head|Sentence)
+        RETURN r, root as s, e
+    """
+    rsrc = await LResource.nodes.get(uid=to_uuid(resource_uid).hex)
+    rows, _ = await AsyncDatabase().cypher_query(
+        q,
+        params={"uid": to_uuid(resource_uid).hex},
+    )
+    g = nx.MultiDiGraph()
+    for row in rows:
+        r, s_, e_ = row
+        s, _ = to_sysnode(s_)
+        e, _ = to_sysnode(e_)
+        if r.type == "HEAD":
+            EdgeType.HEAD.add_edge(g, s, e)
+        elif r.type == "BELOW":
+            EdgeType.BELOW.add_edge(g, s, e)
+        else:
+            msg = "r.type"
+            raise TypeError(msg, r.type)
+    return g, rsrc.title
+
+
+async def restore_undersentnet(  # noqa: PLR0914
+    resource_uid: UUIDy,
+) -> tuple[nx.DiGraph, dict[str, UUID]]:
+    """top以下のsentenceやdefのネットワークを復元."""
+    various = "|".join([
+        et.name for et in EdgeType if et not in {EdgeType.HEAD, EdgeType.DEF}
+    ])
+    q = f"""
+        MATCH (s:Sentence {{resource_uid: $uid}})
+        OPTIONAL MATCH (s)-[r:{various}]->(e:Sentence|Interval)
+        {q_call_sent_names("s")}
+        RETURN s
+            , COLLECT([e, r]) as ends
+            , COALESCE(names, []) as names
+            , alias
+    """
+    rows, _ = await AsyncDatabase().cypher_query(
+        q,
+        params={"uid": to_uuid(resource_uid).hex},
+    )
+    g = nx.MultiDiGraph()
+    col = DirectedEdgeCollection()
+    uids: dict[str, UUID] = {}
+    for row in rows:
+        s, ends, names, alias = row
+        names = [n.get("val") for n in names]
+        sval = s.get("val")
+        uids[sval] = to_uuid(s.get("uid"))
+        for end in ends:
+            e, r = end
+            if e is None:
+                continue
+            en, _ = to_sysnode(e)
+            col.append(
+                EdgeType.__members__.get(r.type),
+                Direction.FORWARD,
+                sval,
+                en,
+            )
+        if len(names) > 0:
+            term = Term.create(*names, alias=alias)
+            df = (
+                Def(term=term, sentence=sval)
+                if sval != DUMMY_SENTENCE
+                else Def.dummy(term)
+            )
+            df.add_edge(g)
+        else:
+            g.add_node(sval)
+    col.set_edges(g)
+    return g, uids
+
+
+async def restore_sysnet(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]]:
+    """SysNetを復元."""
+    g1, root = await restore_tops(resource_uid)
+    g2, uids = await restore_undersentnet(resource_uid)
+    g = nx.compose(g1, g2)
+    return SysNet(g=g, root=root), uids
+
+
+async def restore_sysnet2(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]]:  # noqa: PLR0914
     """DBからSysNetを復元."""
     various = "|".join([et.name for et in EdgeType if et != EdgeType.HEAD])
     q = f"""
         MATCH (root:Resource {{uid: $uid}})
-        RETURN null as r, root as s, null as e
-
-        // 直下
-        UNION
         OPTIONAL MATCH (root)-[r1:HEAD|BELOW]->(top:Head|Sentence)
         RETURN r1 as r, root as s, top as e
 
         // 見出し
         UNION
-        OPTIONAL MATCH (top)-[:HEAD]->*(hs:Head)-[rh:HEAD]->(he:Head)
+        MATCH (root:Resource {{uid: $uid}})
+        OPTIONAL MATCH (root)-[:HEAD]->*(hs:Head)-[rh:HEAD]->(he:Head)
         RETURN rh as r, hs as s, he as e
 
         // いろいろ
@@ -78,13 +169,14 @@ async def restore_sysnet(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]
     col = DirectedEdgeCollection()
     defs = []
     uids: dict[KNode, UUID] = {}
+    root = ""
     for r, _s, _e in rows:
-        if r is None:  # resource
-            if not (_s is None and _e is None):
-                rsrc = LResource(**dict(_s))
+        if r is None:
             continue
-        s = to_sysnode(_s)
-        e = to_sysnode(_e)
+        s, s_name = to_sysnode(_s)
+        if s_name == "Resource":
+            root = s
+        e, _ = to_sysnode(_e)
         s_uid = _s.get("uid")
         if s_uid:
             uids[s] = s_uid
@@ -111,4 +203,4 @@ async def restore_sysnet(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]
     mdefs, stddefs, _ = MergedDef.create_and_parted(defs)
     [md.add_edge(g) for md in mdefs]
     [d.add_edge(g) for d in stddefs]
-    return SysNet(root=rsrc.title, g=g), uids
+    return SysNet(root=root, g=g), uids
