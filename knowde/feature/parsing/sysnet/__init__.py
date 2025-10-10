@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 import networkx as nx
 from lark import Token
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from knowde.feature.parsing.primitive.heading import get_headings
 from knowde.feature.parsing.primitive.template import Templates
@@ -35,7 +35,7 @@ class SysNet(BaseModel, frozen=True):
     """系ネットワーク."""
 
     root: str
-    g: NXGraph = Field(default_factory=nx.MultiDiGraph)
+    g: NXGraph
 
     def get(self, n: KNode) -> KNArg:
         """文に紐づく用語があれば定義を返す."""
