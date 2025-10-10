@@ -8,7 +8,6 @@ import neo4j
 import networkx as nx
 from neomodel.async_.core import AsyncDatabase
 
-from knowde.feature.entry.label import LResource
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.primitive.time import WhenNode
 from knowde.feature.parsing.sysnet import SysNet
@@ -20,26 +19,27 @@ from knowde.shared.types import Duplicable, UUIDy, to_uuid
 
 
 @cache
-def to_sysnode(n: neo4j.graph.Node) -> KNode:
+def to_sysnode(n: neo4j.graph.Node) -> tuple[KNode, str]:
     """neo4jから変換."""
     lb_name = next(iter(n.labels))
     match lb_name:
         case "Sentence" | "Head":
-            return n.get("val")
+            retval = n.get("val")
         case "Term":
-            return Term.create(n.get("val"))
+            retval = Term.create(n.get("val"))
         case "Resource" | "Entry":
-            return n.get("title")
+            retval = n.get("title")
         case "Interval":
             d = dict(n)
             d["n"] = d.pop("val")
             for k in ("start", "end"):  # infはJSONに変換できない
                 if isinf(d[k]):
                     d[k] = None
-            return WhenNode.model_validate(d)
+            retval = WhenNode.model_validate(d)
         case _:
             props = n.items()
             raise ValueError(props, lb_name)
+    return retval, lb_name
 
 
 async def restore_sysnet(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]]:  # noqa: PLR0914
@@ -47,10 +47,6 @@ async def restore_sysnet(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]
     various = "|".join([et.name for et in EdgeType if et != EdgeType.HEAD])
     q = f"""
         MATCH (root:Resource {{uid: $uid}})
-        RETURN null as r, root as s, null as e
-
-        // 直下
-        UNION
         OPTIONAL MATCH (root)-[r1:HEAD|BELOW]->(top:Head|Sentence)
         RETURN r1 as r, root as s, top as e
 
@@ -78,13 +74,14 @@ async def restore_sysnet(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]
     col = DirectedEdgeCollection()
     defs = []
     uids: dict[KNode, UUID] = {}
+    root = ""
     for r, _s, _e in rows:
-        if r is None:  # resource
-            if not (_s is None and _e is None):
-                rsrc = LResource(**dict(_s))
+        if r is None:
             continue
-        s = to_sysnode(_s)
-        e = to_sysnode(_e)
+        s, s_name = to_sysnode(_s)
+        if s_name == "Resource":
+            root = s
+        e, _ = to_sysnode(_e)
         s_uid = _s.get("uid")
         if s_uid:
             uids[s] = s_uid
@@ -111,4 +108,4 @@ async def restore_sysnet(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]
     mdefs, stddefs, _ = MergedDef.create_and_parted(defs)
     [md.add_edge(g) for md in mdefs]
     [d.add_edge(g) for d in stddefs]
-    return SysNet(root=rsrc.title, g=g), uids
+    return SysNet(root=root, g=g), uids
