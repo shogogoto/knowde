@@ -99,3 +99,32 @@ async def test_restore_tops():
     # nxprint(sn_.g, True)
     # nxprint(g, True)
     # print(uids)
+
+
+@mark_async_test()
+async def test_restore_individual():
+    """別のリソースの内容を取得しないことの確認."""
+    u = await LUser(email="one@gmail.com").save()
+    s1 = """
+    # title
+      direct
+    ## h1
+      aaa
+      bbb
+      ccc
+    """
+    _, mr1 = await save_text(u.uid, s1)
+
+    s2 = """
+    # title2
+      direct2
+    ## h1
+      ddd
+      eee
+    """
+    _, mr2 = await save_text(u.uid, s2)
+
+    sn1, _uids1 = await restore_sysnet(mr1.uid)
+    sn2, _uids2 = await restore_sysnet(mr2.uid)
+    assert sn1.sentences == unordered(["direct", "aaa", "bbb", "ccc"])
+    assert sn2.sentences == unordered(["direct2", "ddd", "eee"])
