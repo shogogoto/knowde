@@ -43,35 +43,40 @@ def q_detail_location(
         {q_loc}
         RETURN sent
             , names
+            , alias
             , intv
             , stats
             {", location" if is_location else ""}
     """
 
 
+def _row2knowde(sent, names, alias, when, stats) -> Knowde:
+    """q_detail_locationの結果をKnowdeに変換."""
+    names = [n.get("val") for n in names] if names is not None else []
+    return Knowde(
+        sentence=sent.get("val"),
+        uid=sent.get("uid"),
+        term=Term.create(*names, alias=alias) if names else None,
+        stats=stats,
+        additional=Additional(
+            when=when.get("val") if when is not None else None,
+        ),
+        resource_uid=to_uuid(sent.get("resource_uid")),
+    )
+
+
 def fetch_knowdes_with_detail(
     uids: Iterable[str],
     order_by: OrderBy | None = OrderBy(),
-) -> dict[str, Knowde]:
+) -> dict[UUID, Knowde]:
     """文のuuidリストから名前などの付属情報を返す."""
     q = q_detail_location(order_by=order_by)
-    res = db.cypher_query(q, params={"uids": list(uids)})
+    rows, _ = db.cypher_query(q, params={"uids": list(uids)})
     d = {}
-    for row in res[0]:
-        sent, names, when, stats = row
+    for row in rows:
+        sent, names, alias, when, stats = row
         uid = sent.get("uid")
-        names = [n.get("val") for n in names] if names is not None else []
-        d[uid] = Knowde(
-            sentence=sent.get("val"),
-            uid=uid,
-            term=Term.create(*names) if names else None,
-            stats=stats,
-            additional=Additional(
-                when=when.get("val") if when is not None else None,
-            ),
-            resource_uid=to_uuid(sent.get("resource_uid")),
-        )
-
+        d[uid] = _row2knowde(sent, names, alias, when, stats)
     diff = set(uids) - set(d.keys())
     if len(diff) > 0:
         msg = f"fail to fetch_nodes_by_ids: {[UUID(e) for e in diff]}"
@@ -92,22 +97,12 @@ def fetch_knowdes_with_detail_and_location(
         d_loc = {}
         d_parents = {}
         for row in rows:
-            sent, names, when, stats, location = row
+            sent, names, alais, when, stats, location = row
             s, uid = sent.get("val"), sent.get("uid")
             if location is None:
                 msg = f"location not found: {s} @{uid}"
                 raise NotFoundError(msg)
-            names = [n.get("val") for n in names] if names is not None else []
-            d[uid] = Knowde(
-                sentence=s,
-                uid=uid,
-                term=Term.create(*names) if names else None,
-                stats=stats,
-                additional=Additional(
-                    when=when.get("val") if when is not None else None,
-                ),
-                resource_uid=to_uuid(sent.get("resource_uid")),
-            )
+            d[uid] = _row2knowde(sent, names, alais, when, stats)
             d_loc[uid], d_parents[uid] = build_location_res(location, uid)
         return d, d_loc, d_parents
 

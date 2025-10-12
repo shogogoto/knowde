@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Hashable
 from functools import cache
 from typing import TYPE_CHECKING, Final, Self, override
 
@@ -67,18 +68,23 @@ class Def(IDef, frozen=True):
     @override
     def add_edge(self, g: nx.DiGraph) -> None:
         """定義の追加."""
-        terms = list(EdgeType.DEF.pred(g, self.sentence))
-        match len(terms):
-            case 0:  # 新規登録
-                EdgeType.DEF.add_edge(g, self.term, self.sentence)
-            case _:
-                msg = f"'{self}'が他の定義文と重複しています"
-                raise DefSentenceConflictError(msg, terms)
+        add_def_edge(g, self.sentence, self.term)
 
     @property
     def is_dummy(self) -> bool:
         """文がダミー."""
         return isinstance(self.sentence, DummySentence)
+
+
+def add_def_edge(g: nx.DiGraph, sentence: Hashable, term: Hashable) -> None:
+    """定義の追加."""
+    terms = list(EdgeType.DEF.pred(g, sentence))
+    match len(terms):
+        case 0:  # 新規登録
+            EdgeType.DEF.add_edge(g, term, sentence)
+        case _:
+            msg = f"'{term}: {sentence}'が他の定義文と重複しています"
+            raise DefSentenceConflictError(msg, terms)
 
 
 DUMMY_SENTENCE: Final = "<<<not defined>>>"

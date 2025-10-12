@@ -2,14 +2,12 @@
 
 from datetime import datetime
 
-from knowde.feature.entry.domain import NameSpace, ResourceDetail, ResourceMeta
+from knowde.feature.entry.domain import NameSpace, ResourceMeta
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.entry.namespace import (
-    fetch_info_by_resource_uid,
     fetch_namespace,
     save_or_move_resource,
 )
-from knowde.feature.entry.resource.repo.restore import restore_sysnet
 from knowde.feature.entry.resource.repo.save import sn2db
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.shared.errors.domain import NotFoundError
@@ -62,10 +60,3 @@ async def save_text(
         updated,
     )
     return sn, m
-
-
-async def get_resource_detail_impl(resource_id: str) -> ResourceDetail:
-    """リソース詳細API実装."""
-    sn, uids = await restore_sysnet(resource_id)
-    info = await fetch_info_by_resource_uid(resource_id)
-    return ResourceDetail(network=sn, resource_info=info, uids=uids)
