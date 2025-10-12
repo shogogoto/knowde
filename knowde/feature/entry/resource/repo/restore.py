@@ -8,12 +8,17 @@ import neo4j
 import networkx as nx
 from neomodel.async_.core import AsyncDatabase
 
-from knowde.feature.entry.label import LResource
 from knowde.feature.knowde.repo.cypher import q_call_sent_names
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.primitive.time import WhenNode
 from knowde.feature.parsing.sysnet import SysNet
-from knowde.feature.parsing.sysnet.sysnode import DUMMY_SENTENCE, Def, KNode
+from knowde.feature.parsing.sysnet.sysnode import (
+    DUMMY_SENTENCE,
+    Def,
+    DummySentence,
+    KNode,
+    add_def_edge,
+)
 from knowde.feature.parsing.sysnet.sysnode.merged_def import MergedDef
 from knowde.feature.parsing.tree2net.directed_edge import DirectedEdgeCollection
 from knowde.shared.nxutil.edge_type import Direction, EdgeType
@@ -27,6 +32,8 @@ def to_sysnode(n: neo4j.graph.Node) -> tuple[KNode, str]:
     match lb_name:
         case "Sentence" | "Head":
             retval = n.get("val")
+            if retval == DUMMY_SENTENCE:
+                retval = DummySentence(uid=n.get("uid"))
         case "Term":
             retval = Term.create(n.get("val"))
         case "Resource" | "Entry":
@@ -44,7 +51,7 @@ def to_sysnode(n: neo4j.graph.Node) -> tuple[KNode, str]:
     return retval, lb_name
 
 
-async def restore_tops(resource_uid: UUIDy) -> tuple[nx.DiGraph, str]:
+async def restore_tops2(resource_uid: UUIDy) -> tuple[nx.DiGraph, dict[UUID, KNode]]:
     """SysNetを先のHeadまたはSentenceまで復元."""
     q = """
         MATCH (root:Resource {uid: $uid})
@@ -55,29 +62,33 @@ async def restore_tops(resource_uid: UUIDy) -> tuple[nx.DiGraph, str]:
         MATCH (root)-[r:HEAD|BELOW]->(e:Head|Sentence)
         RETURN r, root as s, e
     """
-    rsrc = await LResource.nodes.get(uid=to_uuid(resource_uid).hex)
     rows, _ = await AsyncDatabase().cypher_query(
         q,
         params={"uid": to_uuid(resource_uid).hex},
     )
     g = nx.MultiDiGraph()
+    uids = {}
     for row in rows:
         r, s_, e_ = row
-        s, _ = to_sysnode(s_)
-        e, _ = to_sysnode(e_)
-        if r.type == "HEAD":
-            EdgeType.HEAD.add_edge(g, s, e)
-        elif r.type == "BELOW":
-            EdgeType.BELOW.add_edge(g, s, e)
-        else:
-            msg = "r.type"
-            raise TypeError(msg, r.type)
-    return g, rsrc.title
+        suid = to_uuid(s_.get("uid"))
+        euid = to_uuid(e_.get("uid"))
+        uids[suid], _ = to_sysnode(s_)
+        uids[euid], _ = to_sysnode(e_)
+        EdgeType(r.type.lower()).add_edge(g, suid, euid)
+    return g, uids
 
 
-async def restore_undersentnet(  # noqa: PLR0914
+async def restore_tops(resource_uid: UUIDy) -> tuple[nx.DiGraph, str]:
+    """SysNetを先のHeadまたはSentenceまで復元."""
+    g, uids = await restore_tops2(resource_uid)
+    g_relabeled = nx.relabel_nodes(g, uids)
+    title = uids[to_uuid(resource_uid)]
+    return g_relabeled, title
+
+
+async def restore_undersentnet2(  # noqa: PLR0914
     resource_uid: UUIDy,
-) -> tuple[nx.DiGraph, dict[str, UUID]]:
+) -> tuple[nx.DiGraph, dict[UUID, KNode], dict[UUID, Term]]:
     """top以下のsentenceやdefのネットワークを復元."""
     various = "|".join([
         et.name for et in EdgeType if et not in {EdgeType.HEAD, EdgeType.DEF}
@@ -96,36 +107,37 @@ async def restore_undersentnet(  # noqa: PLR0914
         params={"uid": to_uuid(resource_uid).hex},
     )
     g = nx.MultiDiGraph()
-    col = DirectedEdgeCollection()
-    uids: dict[str, UUID] = {}
+    uids: dict[UUID, KNode] = {}
+    terms: dict[UUID, Term] = {}
     for row in rows:
         s, ends, names, alias = row
         names = [n.get("val") for n in names]
-        sval = s.get("val")
-        uids[sval] = to_uuid(s.get("uid"))
+        sval, _ = to_sysnode(s)
+        suid = to_uuid(s.get("uid"))
+        uids[suid] = sval
+        g.add_node(suid)
         for end in ends:
             e, r = end
             if e is None:
                 continue
-            en, _ = to_sysnode(e)
-            col.append(
-                EdgeType.__members__.get(r.type),
-                Direction.FORWARD,
-                sval,
-                en,
-            )
+            euid = to_uuid(e.get("uid"))
+            EdgeType(r.type.lower()).add_edge(g, suid, euid)
+            uids[euid], _ = to_sysnode(e)
         if len(names) > 0:
             term = Term.create(*names, alias=alias)
-            df = (
-                Def(term=term, sentence=sval)
-                if sval != DUMMY_SENTENCE
-                else Def.dummy(term)
-            )
-            df.add_edge(g)
-        else:
-            g.add_node(sval)
-    col.set_edges(g)
-    return g, uids
+            terms[suid] = term
+    return g, uids, terms
+
+
+async def restore_undersentnet(
+    resource_uid: UUIDy,
+) -> tuple[nx.DiGraph, dict[KNode, UUID]]:
+    """top以下のsentenceやdefのネットワークを復元."""
+    g22, uids2, terms2 = await restore_undersentnet2(resource_uid)
+    for uid, term in terms2.items():
+        add_def_edge(g22, uids2[uid], term)
+    g2_relabeled = nx.relabel_nodes(g22, uids2)
+    return g2_relabeled, {v: k for k, v in uids2.items()}
 
 
 async def restore_sysnet(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]]:
