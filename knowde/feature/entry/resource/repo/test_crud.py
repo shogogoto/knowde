@@ -12,7 +12,10 @@ from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.tree2net import parse2net
 from knowde.shared.user.label import LUser
 
-from .restore import restore_sysnet, restore_tops, restore_undersentnet
+from .restore import (
+    restore_sysnet,
+    restore_tops,
+)
 from .save import sn2db
 
 
@@ -78,7 +81,7 @@ async def test_restore_tops():
       s1
     ### h11
     #### h111
-      s111
+      s111{A}
     ## h2
       s2
       A, B: s2next
@@ -86,19 +89,12 @@ async def test_restore_tops():
       C:
     """
 
-    sn_, mr = await save_text(u.uid, s)
-    g1, root = await restore_tops(mr.uid)
-    assert root == "# title"
-    assert {"direct", "s1", "s2"} < set(g1.nodes)
+    _, mr = await save_text(u.uid, s)
+    g1, uids = await restore_tops(mr.uid)
+    g = nx.relabel_nodes(g1, uids)
+    assert uids[mr.uid] == "# title"
+    assert {"direct", "s1", "s2"} < set(g.nodes)
     assert "s2net" not in g1.nodes
-    g2, _uids = await restore_undersentnet(mr.uid)
-    g = nx.compose(g1, g2)
-
-    # うまく比較したいけど、簡易的にこれで済ませる
-    assert {str(n) for n in sn_.g.nodes} == {str(n) for n in g.nodes}
-    # nxprint(sn_.g, True)
-    # nxprint(g, True)
-    # print(uids)
 
 
 @mark_async_test()
