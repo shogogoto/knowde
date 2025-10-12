@@ -118,20 +118,22 @@ async def restore_undersentnet(  # noqa: PLR0914
     return g, uids, terms
 
 
-async def restore_graph(resource_uid: UUIDy) -> tuple[nx.DiGraph, dict[UUID, KNode]]:
+async def restore_graph(
+    resource_uid: UUIDy,
+) -> tuple[nx.DiGraph, dict[UUID, KNode], dict[UUID, Term]]:
     """SysNetのgraphを復元."""
     g1, uids1 = await restore_tops(resource_uid)
     g2, uids2, terms2 = await restore_undersentnet(resource_uid)
-    for uid, term in terms2.items():
-        add_def_edge(g2, uids2[uid], term)
     g = nx.compose(g1, g2)
     uids = {**uids1, **uids2}
-    return g, uids
+    return g, uids, terms2
 
 
 async def restore_sysnet(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]]:
     """SysNetを復元."""
-    g, uids = await restore_graph(resource_uid)
+    g, uids, terms = await restore_graph(resource_uid)
+    for uid, term in terms.items():
+        add_def_edge(g, uids[uid], term)
     g_relabeled = nx.relabel_nodes(g, uids)
     uid_reverse = {v: k for k, v in uids.items()}
     return SysNet(g=g_relabeled, root=uids[to_uuid(resource_uid)]), uid_reverse

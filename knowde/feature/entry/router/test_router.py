@@ -11,6 +11,7 @@ from knowde.conftest import mark_async_test
 from knowde.feature.entry.namespace.sync import Anchor
 from knowde.feature.entry.namespace.test_namespace import files  # noqa: F401
 from knowde.feature.entry.resource.usecase import save_text
+from knowde.feature.entry.router.fixture import fixture_txt
 from knowde.feature.knowde import ResourceInfo
 from knowde.feature.user.routers.repo.client import (
     AuthPost,
@@ -107,8 +108,16 @@ async def test_restore_regression() -> None:
     """
     _sn, r = await save_text(u.uid, txt)
 
-    res = client.get(
-        f"/resource/{r.uid}",
-        headers=h,
-    )
+    res = client.get(f"/resource/{r.uid}", headers=h)
+    assert res.is_success
+
+
+@mark_async_test()
+async def test_restore_regression2() -> None:
+    """frontendでjsonを解釈できるようにする."""
+    client, h = auth_header()
+    u = await LUser.nodes.first()
+    _sn, r = await save_text(u.uid, fixture_txt())
+
+    res = client.get(f"/resource/{r.uid}", headers=h)
     assert res.is_success

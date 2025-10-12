@@ -13,6 +13,7 @@ from pydantic_core import Url
 from knowde.feature.entry.mapper import Entry, MResource
 from knowde.feature.entry.resource.stats.domain import ResourceStats
 from knowde.feature.knowde import ResourceInfo
+from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.primitive.time import parse2dt
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.sysnet.sysnode import KNode
@@ -163,9 +164,10 @@ class ResourceMeta(BaseModel):
 class ResourceDetail(BaseModel):
     """リソース詳細(API Return Type用)."""
 
-    network: SysNet  # Headを含む単文ネット
+    g: NXGraph  # Headを含む単文ネット
     resource_info: ResourceInfo
-    uids: dict[KNode, UUID]
+    uids: dict[UUID, KNode]
+    terms: dict[UUID, Term]
 
 
 # LResource由来
