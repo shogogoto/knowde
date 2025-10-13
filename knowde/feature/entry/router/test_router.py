@@ -121,3 +121,4 @@ async def test_restore_regression2() -> None:
 
     res = client.get(f"/resource/{r.uid}", headers=h)
     assert res.is_success
+    raise AssertionError

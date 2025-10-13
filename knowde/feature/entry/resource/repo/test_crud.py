@@ -89,7 +89,7 @@ async def test_restore_tops():
       C:
     """
 
-    _, mr = await save_text(u.uid, s)
+    _sn, mr = await save_text(u.uid, s)
     g1, uids = await restore_tops(mr.uid)
     g = nx.relabel_nodes(g1, uids)
     assert uids[mr.uid] == "# title"

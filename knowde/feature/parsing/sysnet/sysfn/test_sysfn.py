@@ -30,7 +30,7 @@ def test_resolved() -> None:
     root = "sys"
     g = nx.MultiDiGraph()
     g.add_node(root)
-    EdgeType.HEAD.add_path(g, root, "h1", "h2")
+    EdgeType.BELOW.add_path(g, root, "h1", "h2")
     defs = [
         Def.create("df", ["A"]),  # term, sentence 0 0
         Def.create("b{A}b", ["B"]),  # 0 1

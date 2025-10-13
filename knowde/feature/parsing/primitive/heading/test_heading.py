@@ -1,25 +1,28 @@
 """test."""
 
 import networkx as nx
+from lark import Token
 
 from knowde.feature.parsing.primitive.heading import get_heading_path, get_headings
 from knowde.shared.nxutil.edge_type import EdgeType
 
+hpath = [Token(value=f"h{i}", type=f"H{i + 1}") for i in range(1, 4)]
+
 
 def test_get_headings() -> None:
     """見出し一覧."""
-    root = "sys"
+    root = Token(value="root", type="H1")
     g = nx.MultiDiGraph()
-    EdgeType.HEAD.add_path(g, root, *[f"h{i}" for i in range(1, 4)])
-    assert get_headings(g, root) == {root, *{f"h{i}" for i in range(1, 4)}}
+    EdgeType.BELOW.add_path(g, root, *hpath)
+    assert get_headings(g, root) == {root, *hpath}
 
 
 def test_heading_path() -> None:
     """任意のnodeから直近の見出しpathを取得."""
-    r = "root"
+    r = Token(value="root", type="H1")
     g = nx.MultiDiGraph()
     g.add_node(r)
-    EdgeType.HEAD.add_path(g, r, *[f"h{i}" for i in range(1, 4)])
+    EdgeType.BELOW.add_path(g, r, *hpath)
     EdgeType.SIBLING.add_path(g, "h1", "aaa")
     EdgeType.BELOW.add_path(g, "aaa", "Aaa", "AAa")
     EdgeType.SIBLING.add_path(g, "h2", "bbb", "ccc")

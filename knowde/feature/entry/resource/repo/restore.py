@@ -6,6 +6,7 @@ from uuid import UUID
 
 import neo4j
 import networkx as nx
+from lark import Token
 from neomodel.async_.core import AsyncDatabase
 
 from knowde.feature.knowde.repo.cypher import q_call_sent_names
@@ -23,40 +24,40 @@ from knowde.shared.types import UUIDy, to_uuid
 
 
 @cache
-def to_sysnode(n: neo4j.graph.Node) -> tuple[KNode, str]:
+def to_knode(n: neo4j.graph.Node) -> KNode:
     """neo4jから変換."""
     lb_name = next(iter(n.labels))
+    val = n.get("val")
     match lb_name:
-        case "Sentence" | "Head":
-            retval = n.get("val")
-            if retval == DUMMY_SENTENCE:
-                retval = DummySentence(uid=n.get("uid"))
+        case "Head":
+            return Token(type="H2", value=val)  # 適当なheading type
+        case "Sentence":
+            return DummySentence(uid=n.get("uid")) if val == DUMMY_SENTENCE else val
         case "Term":
-            retval = Term.create(n.get("val"))
+            return Term.create(val)
         case "Resource" | "Entry":
-            retval = n.get("title")
+            return Token(type="H1", value=n.get("title"))
         case "Interval":
             d = dict(n)
             d["n"] = d.pop("val")
             for k in ("start", "end"):  # infはJSONに変換できない
                 if isinf(d[k]):
                     d[k] = None
-            retval = WhenNode.model_validate(d)
+            return WhenNode.model_validate(d)
         case _:
             props = n.items()
             raise ValueError(props, lb_name)
-    return retval, lb_name
 
 
 async def restore_tops(resource_uid: UUIDy) -> tuple[nx.DiGraph, dict[UUID, KNode]]:
     """SysNetを先のHeadまたはSentenceまで復元."""
     q = """
         MATCH (root:Resource {uid: $uid})
-        MATCH (root)-[:HEAD]->*(s:Head)-[r:HEAD|BELOW]->(e:Head|Sentence)
+        MATCH (root)-[:BELOW|SIBLING]->*(s:Head)-[r:BELOW]->(e:Head|Sentence)
         RETURN r, s, e
         UNION
         MATCH (root:Resource {uid: $uid})
-        MATCH (root)-[r:HEAD|BELOW]->(e:Head|Sentence)
+        MATCH (root)-[r:BELOW]->(e:Head|Sentence)
         RETURN r, root as s, e
     """
     rows, _ = await AsyncDatabase().cypher_query(
@@ -69,8 +70,8 @@ async def restore_tops(resource_uid: UUIDy) -> tuple[nx.DiGraph, dict[UUID, KNod
         r, s_, e_ = row
         suid = to_uuid(s_.get("uid"))
         euid = to_uuid(e_.get("uid"))
-        uids[suid], _ = to_sysnode(s_)
-        uids[euid], _ = to_sysnode(e_)
+        uids[suid] = to_knode(s_)
+        uids[euid] = to_knode(e_)
         EdgeType(r.type.lower()).add_edge(g, suid, euid)
     return g, uids
 
@@ -79,9 +80,7 @@ async def restore_undersentnet(  # noqa: PLR0914
     resource_uid: UUIDy,
 ) -> tuple[nx.DiGraph, dict[UUID, KNode], dict[UUID, Term]]:
     """top以下のsentenceやdefのネットワークを復元."""
-    various = "|".join([
-        et.name for et in EdgeType if et not in {EdgeType.HEAD, EdgeType.DEF}
-    ])
+    various = "|".join([et.name for et in EdgeType if et != EdgeType.DEF])
     q = f"""
         MATCH (s:Sentence {{resource_uid: $uid}})
         OPTIONAL MATCH (s)-[r:{various}]->(e:Sentence|Interval)
@@ -101,7 +100,7 @@ async def restore_undersentnet(  # noqa: PLR0914
     for row in rows:
         s, ends, names, alias = row
         names = [n.get("val") for n in names]
-        sval, _ = to_sysnode(s)
+        sval = to_knode(s)
         suid = to_uuid(s.get("uid"))
         uids[suid] = sval
         g.add_node(suid)
@@ -111,7 +110,7 @@ async def restore_undersentnet(  # noqa: PLR0914
                 continue
             euid = to_uuid(e.get("uid"))
             EdgeType(r.type.lower()).add_edge(g, suid, euid)
-            uids[euid], _ = to_sysnode(e)
+            uids[euid] = to_knode(e)
         if len(names) > 0:
             term = Term.create(*names, alias=alias)
             terms[suid] = term
@@ -136,4 +135,5 @@ async def restore_sysnet(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]
         add_def_edge(g, uids[uid], term)
     g_relabeled = nx.relabel_nodes(g, uids)
     uid_reverse = {v: k for k, v in uids.items()}
-    return SysNet(g=g_relabeled, root=uids[to_uuid(resource_uid)]), uid_reverse
+    title = str(uids[to_uuid(resource_uid)])
+    return SysNet(g=g_relabeled, root=title), uid_reverse

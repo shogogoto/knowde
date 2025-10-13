@@ -28,7 +28,6 @@ class EdgeType(StrEnum):
     """グラフ関係の種類."""
 
     # 文章構成
-    HEAD = auto()  # 見出しを配下にする
     SIBLING = auto()  # 兄弟 同階層 並列
     BELOW = auto()  # 配下 階層が下がる 直列
 
