@@ -9,6 +9,7 @@ import networkx as nx
 from lark import Token
 from neomodel.async_.core import AsyncDatabase
 
+from knowde.feature.entry.label import LResource
 from knowde.feature.knowde.repo.cypher import q_call_sent_names
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.primitive.time import WhenNode
@@ -19,6 +20,7 @@ from knowde.feature.parsing.sysnet.sysnode import (
     KNode,
     add_def_edge,
 )
+from knowde.shared.errors.domain import NotFoundError
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import UUIDy, to_uuid
 
@@ -51,23 +53,35 @@ def to_knode(n: neo4j.graph.Node) -> KNode:
 
 async def restore_tops(resource_uid: UUIDy) -> tuple[nx.DiGraph, dict[UUID, KNode]]:
     """SysNetを先のHeadまたはSentenceまで復元."""
+    ruid = to_uuid(resource_uid)
+    rsc = await LResource.nodes.get_or_none(uid=ruid.hex)
+    if rsc is None:
+        msg = f"リソースが見つかりません: {ruid}"
+        raise NotFoundError(msg)
     q = """
         MATCH (root:Resource {uid: $uid})
-        MATCH (root)-[:BELOW|SIBLING]->*(s:Head)-[r:BELOW]->(e:Head|Sentence)
+        OPTIONAL MATCH (root)-[:BELOW|SIBLING*]->(s:Head)-[r:BELOW]->(e:Head|Sentence)
+        WHERE r IS NOT NULL AND e IS NOT NULL AND root IS NOT NULL
         RETURN r, s, e
         UNION
         MATCH (root:Resource {uid: $uid})
-        MATCH (root)-[r:BELOW]->(e:Head|Sentence)
+        OPTIONAL MATCH (root)-[r:BELOW]->(e:Head|Sentence)
+        WHERE r IS NOT NULL AND e IS NOT NULL AND root IS NOT NULL
         RETURN r, root as s, e
     """
     rows, _ = await AsyncDatabase().cypher_query(
         q,
-        params={"uid": to_uuid(resource_uid).hex},
+        params={"uid": ruid.hex},
     )
     g = nx.MultiDiGraph()
-    uids = {}
+    # 詳細が空の場合に何も返さないのを阻止
+    title = Token(type="H1", value=rsc.title)
+    g.add_node(title)
+    uids: dict[UUID, KNode] = {ruid: title}
     for row in rows:
         r, s_, e_ = row
+        if r is None:
+            continue
         suid = to_uuid(s_.get("uid"))
         euid = to_uuid(e_.get("uid"))
         uids[suid] = to_knode(s_)

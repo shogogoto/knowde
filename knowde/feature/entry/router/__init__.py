@@ -86,6 +86,11 @@ async def get_resource_detail(resource_id: str) -> ResourceDetail:
     return ResourceDetail(g=g, resource_info=info, uids=uids, terms=terms)
 
 
+@router.delete("/resource/{resource_id}")
+async def delete_resource_api(resource_id: str) -> None:
+    """リソース削除."""
+
+
 @router.post("/resource/search")
 async def search_resource_post(
     body: ResourceSearchBody,
