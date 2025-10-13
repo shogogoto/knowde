@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Hashable
+from collections.abc import Hashable, Iterable
 from functools import cache
 from typing import Final
 
@@ -14,13 +14,23 @@ class HeadingNotFoundError(Exception):
     """見出しが見つからない."""
 
 
-HEADING: Final = ["H1", "H2", "H3", "H4", "H5", "H6"]
+H_TYPES: Final = [f"H{i}" for i in range(1, 7)]
+
+
+def include_heading(children: Iterable[Hashable]) -> list:
+    """headingのみを取得."""
+    return [c for c in children if isinstance(c, Token) and c.type in H_TYPES]
+
+
+def exclude_heading(children: Iterable[Hashable]) -> list:
+    """heading以外を取得."""
+    return [c for c in children if not (isinstance(c, Token) and c.type in H_TYPES)]
 
 
 @cache
-def get_headings(g: nx.DiGraph, root: Hashable) -> set[str]:
+def get_headings(g: nx.DiGraph) -> set[str]:
     """見出しセット."""
-    return {str(n) for n in g.nodes if isinstance(n, Token) and n.type in HEADING}
+    return {str(n) for n in include_heading(g.nodes)}
 
 
 @cache
@@ -33,4 +43,4 @@ def get_heading_path(g: nx.DiGraph, root: Hashable, n: Hashable) -> list[Hashabl
     for p in paths:
         if len(minp) > len(p):
             minp = p
-    return [e for e in minp if e in get_headings(g, root)]
+    return [e for e in minp if e in get_headings(g)]

@@ -14,7 +14,7 @@ def test_get_headings() -> None:
     root = Token(value="root", type="H1")
     g = nx.MultiDiGraph()
     EdgeType.BELOW.add_path(g, root, *hpath)
-    assert get_headings(g, root) == {root, *hpath}
+    assert get_headings(g) == {root, *hpath}
 
 
 def test_heading_path() -> None:

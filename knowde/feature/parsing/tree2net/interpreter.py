@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from collections.abc import Hashable
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING
 
 from lark import Token, Tree
 from lark.visitors import Interpreter
 
+from knowde.feature.parsing.primitive.heading import exclude_heading, include_heading
 from knowde.feature.parsing.tree2net.directed_edge import (
     DirectedEdgeCollection,
 )
@@ -18,19 +18,6 @@ if TYPE_CHECKING:
     from lark.tree import Branch
 
     from knowde.feature.parsing.sysnet.sysnode import KNode
-
-
-H_TYPES: Final = [f"H{i}" for i in range(2, 7)]
-
-
-def include_heading(children: list[Hashable]) -> list:
-    """headingのみを取得."""
-    return [c for c in children if isinstance(c, Token) and c.type in H_TYPES]
-
-
-def exclude_heading(children: list[Hashable]) -> list:
-    """heading以外を取得."""
-    return [c for c in children if not (isinstance(c, Token) and c.type in H_TYPES)]
 
 
 class SysNetInterpreter(Interpreter):
@@ -46,8 +33,6 @@ class SysNetInterpreter(Interpreter):
         children = self.visit_children(tree)
         self._add_indent(exclude_heading(children[1:]), p)
         self._add_indent(include_heading(children[1:]), p)
-        # for c in include_heading(children[1:]):
-        #     self.col.append(EdgeType.BELOW, Direction.FORWARD, p, c)
 
     def _add_indent(self, children: list[Branch], parent: KNode) -> None:
         """インデントを登録."""

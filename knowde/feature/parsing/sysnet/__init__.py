@@ -47,7 +47,7 @@ class SysNet(BaseModel, frozen=True):
     def sentences(self) -> list[str | Duplicable]:
         """文."""
         stc = to_sentence(self.g.nodes)
-        hs = get_headings(self.g, self.root)
+        hs = get_headings(self.g)
         stc = [n for n in stc if n not in hs]
         return [s for s in stc if not is_meta(s)]
 
