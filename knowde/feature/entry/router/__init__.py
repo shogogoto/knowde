@@ -9,12 +9,15 @@ import chardet  # 文字エンコーディング検出用
 from fastapi import APIRouter, Body, Depends, UploadFile
 
 from knowde.feature.entry.domain import NameSpace, ResourceDetail, ResourceSearchResult
+from knowde.feature.entry.errors import NotOwnerError
 from knowde.feature.entry.namespace import (
     ResourceMetas,
     fetch_info_by_resource_uid,
     fetch_namespace,
     sync_namespace,
 )
+from knowde.feature.entry.resource.repo.delete import delete_resource
+from knowde.feature.entry.resource.repo.owner import is_resource_owner
 from knowde.feature.entry.resource.repo.restore import restore_graph
 from knowde.feature.entry.resource.repo.search import search_resources
 from knowde.feature.entry.resource.usecase import save_resource_with_detail
@@ -87,8 +90,15 @@ async def get_resource_detail(resource_id: str) -> ResourceDetail:
 
 
 @router.delete("/resource/{resource_id}")
-async def delete_resource_api(resource_id: str) -> None:
+async def delete_resource_api(
+    resource_id: str,
+    user: Annotated[User, Depends(auth_component().current_user(active=True))],
+) -> None:
     """リソース削除."""
+    if not await is_resource_owner(user.uid, resource_id):
+        msg = "リソースを削除できるのは所有者のみです"
+        raise NotOwnerError(msg=msg)
+    await delete_resource(resource_id)
 
 
 @router.post("/resource/search")

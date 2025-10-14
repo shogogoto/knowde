@@ -7,6 +7,8 @@ from pytest_unordered import unordered
 from knowde.conftest import mark_async_test
 from knowde.feature.entry.domain import ResourceMeta
 from knowde.feature.entry.label import LResource
+from knowde.feature.entry.mapper import MResource
+from knowde.feature.entry.namespace import fetch_namespace
 from knowde.feature.entry.resource.repo.delete import delete_resource
 from knowde.feature.entry.resource.usecase import save_text
 from knowde.feature.parsing.sysnet import SysNet
@@ -138,8 +140,13 @@ async def test_restore_and_delete_individual():
         "xxx{A}{B}",
     ])
     assert sn2.sentences == unordered(["direct2", "ddd", "eee"])
+    ns = await fetch_namespace(u.uid)
+    assert len([n for n in ns.g.nodes if isinstance(n, MResource)]) == 2  # noqa: PLR2004
     await delete_resource(mr1.uid)
     with pytest.raises(NotFoundError):
         sn1, _uids1 = await restore_sysnet(mr1.uid)
     sn2, _uids2 = await restore_sysnet(mr2.uid)
     assert sn2.sentences == unordered(["direct2", "ddd", "eee"])
+
+    ns = await fetch_namespace(u.uid)
+    assert len([n for n in ns.g.nodes if isinstance(n, MResource)]) == 1
