@@ -60,7 +60,8 @@ async def restore_tops(resource_uid: UUIDy) -> tuple[nx.DiGraph, dict[UUID, KNod
         raise NotFoundError(msg)
     q = """
         MATCH (root:Resource {uid: $uid})
-        OPTIONAL MATCH (root)-[:BELOW|SIBLING*]->(s:Head)-[r:BELOW]->(e:Head|Sentence)
+        OPTIONAL MATCH (root)-[:BELOW|SIBLING*]->
+            (s:Head)-[r:BELOW|SIBLING]->(e:Head|Sentence)
         WHERE r IS NOT NULL AND e IS NOT NULL AND root IS NOT NULL
         RETURN r, s, e
         UNION

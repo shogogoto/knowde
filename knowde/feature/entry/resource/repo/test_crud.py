@@ -11,6 +11,7 @@ from knowde.feature.entry.mapper import MResource
 from knowde.feature.entry.namespace import fetch_namespace
 from knowde.feature.entry.resource.repo.delete import delete_resource
 from knowde.feature.entry.resource.usecase import save_text
+from knowde.feature.parsing.primitive.heading import include_heading
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.tree2net import parse2net
 from knowde.shared.errors.domain import NotFoundError
@@ -98,6 +99,9 @@ async def test_restore_tops():
     g = nx.relabel_nodes(g1, uids)
     assert uids[mr.uid] == "# title"
     assert {"direct", "s1", "s2"} < set(g.nodes)
+    assert {"# title", "## h1", "### h11", "#### h111", "## h2"} == set(
+        map(str, include_heading(g.nodes)),
+    )
     assert "s2net" not in g1.nodes
 
 
