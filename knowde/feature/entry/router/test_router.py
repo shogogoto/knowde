@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from fastapi import status
 from fastapi.testclient import TestClient
 
 from knowde.api import api
@@ -22,11 +23,10 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
-def auth_header() -> tuple[TestClient, dict[str, str]]:
+def auth_header(email: str = "user@example.com") -> tuple[TestClient, dict[str, str]]:
     """For fixture."""
     client = TestClient(api)
     p = AuthPost(client=client.post)
-    email = "user@example.com"
     password = "password"  # noqa: S105
     res = p.register(email, password)
     res = p.login(email, password)
@@ -107,7 +107,6 @@ async def test_restore_regression() -> None:
         when. ~ 1612
     """
     _sn, r = await save_text(u.uid, txt)
-
     res = client.get(f"/resource/{r.uid}", headers=h)
     assert res.is_success
 
@@ -118,6 +117,20 @@ async def test_restore_regression2() -> None:
     client, h = auth_header()
     u = await LUser.nodes.first()
     _sn, r = await save_text(u.uid, fixture_txt())
-
     res = client.get(f"/resource/{r.uid}", headers=h)
+    assert res.is_success
+
+
+@mark_async_test()
+async def test_delete_resource_router() -> None:
+    """所有者がリソースを削除できる."""
+    client, h1 = auth_header()
+    _, h2 = auth_header("two@gmail.com")
+    u = await LUser.nodes.first()
+    _sn, r = await save_text(u.uid, "# title\n")
+
+    res = client.delete(f"/resource/{r.uid}", headers=h2)
+    assert res.status_code == status.HTTP_403_FORBIDDEN
+
+    res = client.delete(f"/resource/{r.uid}", headers=h1)
     assert res.is_success

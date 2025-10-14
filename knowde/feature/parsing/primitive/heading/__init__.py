@@ -2,24 +2,35 @@
 
 from __future__ import annotations
 
-from collections.abc import Hashable
+from collections.abc import Hashable, Iterable
 from functools import cache
+from typing import Final
 
 import networkx as nx
-
-from knowde.shared.nxutil import to_nodes
-from knowde.shared.nxutil.edge_type import EdgeType
+from lark import Token
 
 
 class HeadingNotFoundError(Exception):
     """見出しが見つからない."""
 
 
+H_TYPES: Final = [f"H{i}" for i in range(1, 7)]
+
+
+def include_heading(children: Iterable[Hashable]) -> list:
+    """headingのみを取得."""
+    return [c for c in children if isinstance(c, Token) and c.type in H_TYPES]
+
+
+def exclude_heading(children: Iterable[Hashable]) -> list:
+    """heading以外を取得."""
+    return [c for c in children if not (isinstance(c, Token) and c.type in H_TYPES)]
+
+
 @cache
-def get_headings(g: nx.DiGraph, root: Hashable) -> set[str]:
+def get_headings(g: nx.DiGraph) -> set[str]:
     """見出しセット."""
-    ns = to_nodes(g, root, EdgeType.HEAD.succ)
-    return {str(n) for n in ns if n}
+    return {str(n) for n in include_heading(g.nodes)}
 
 
 @cache
@@ -32,4 +43,4 @@ def get_heading_path(g: nx.DiGraph, root: Hashable, n: Hashable) -> list[Hashabl
     for p in paths:
         if len(minp) > len(p):
             minp = p
-    return [e for e in minp if e in get_headings(g, root)]
+    return [e for e in minp if e in get_headings(g)]

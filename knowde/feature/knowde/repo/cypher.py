@@ -148,7 +148,7 @@ def q_adjaceny_uids(sent_var: str) -> str:
 # (:Resource)--*(sent) ではコスト高すぎるかも
 #
 
-STREAM: Final = "SIBLING|BELOW|HEAD|NUM|BY"
+STREAM: Final = "SIBLING|BELOW|NUM|BY"
 
 
 def q_upper(sent_var: str) -> str:
@@ -200,7 +200,9 @@ def build_location_res(
     i_r = row.index(r)
 
     path: Path = row[i_r + 1]  # リソース ~ 文のパス
-    heads = [rel.end_node for rel in path.relationships if rel.type == "HEAD"]
+    heads = [
+        rel.end_node for rel in path.relationships if "Head" in rel.end_node.labels
+    ]
     headers = [UidStr(val=e.get("val"), uid=e.get("uid")) for e in heads]
     parent_uids = [
         rel.start_node.get("uid")

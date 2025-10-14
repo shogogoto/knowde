@@ -120,7 +120,7 @@ def test_add_heading() -> None:
                 <- jjj
     """
     sn = parse2net(s)
-    assert get_headings(sn.g, sn.root) == {"# h1", "## h2", "### h3"}
+    assert get_headings(sn.g) == {"# h1", "## h2", "### h3"}
     assert get_heading_path(sn.g, sn.root, "ccc") == ["# h1"]
     assert get_heading_path(sn.g, sn.root, "eEE") == ["# h1"]
     assert get_heading_path(sn.g, sn.root, "eeE") == ["# h1"]

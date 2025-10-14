@@ -7,9 +7,13 @@ from pytest_unordered import unordered
 from knowde.conftest import mark_async_test
 from knowde.feature.entry.domain import ResourceMeta
 from knowde.feature.entry.label import LResource
+from knowde.feature.entry.mapper import MResource
+from knowde.feature.entry.namespace import fetch_namespace
+from knowde.feature.entry.resource.repo.delete import delete_resource
 from knowde.feature.entry.resource.usecase import save_text
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.tree2net import parse2net
+from knowde.shared.errors.domain import NotFoundError
 from knowde.shared.user.label import LUser
 
 from .restore import (
@@ -89,7 +93,7 @@ async def test_restore_tops():
       C:
     """
 
-    _, mr = await save_text(u.uid, s)
+    _sn, mr = await save_text(u.uid, s)
     g1, uids = await restore_tops(mr.uid)
     g = nx.relabel_nodes(g1, uids)
     assert uids[mr.uid] == "# title"
@@ -98,16 +102,21 @@ async def test_restore_tops():
 
 
 @mark_async_test()
-async def test_restore_individual():
+async def test_restore_and_delete_individual():
     """別のリソースの内容を取得しないことの確認."""
     u = await LUser(email="one@gmail.com").save()
     s1 = """
     # title
       direct
+      bro
     ## h1
-      aaa
-      bbb
+      A: aaa
+    ### h2
+      B, BB, BBB: bbb
       ccc
+        when. 20C ~
+    ### h3
+      xxx{A}{B}
     """
     _, mr1 = await save_text(u.uid, s1)
 
@@ -122,5 +131,22 @@ async def test_restore_individual():
 
     sn1, _uids1 = await restore_sysnet(mr1.uid)
     sn2, _uids2 = await restore_sysnet(mr2.uid)
-    assert sn1.sentences == unordered(["direct", "aaa", "bbb", "ccc"])
+    assert sn1.sentences == unordered([
+        "direct",
+        "aaa",
+        "bbb",
+        "ccc",
+        "bro",
+        "xxx{A}{B}",
+    ])
     assert sn2.sentences == unordered(["direct2", "ddd", "eee"])
+    ns = await fetch_namespace(u.uid)
+    assert len([n for n in ns.g.nodes if isinstance(n, MResource)]) == 2  # noqa: PLR2004
+    await delete_resource(mr1.uid)
+    with pytest.raises(NotFoundError):
+        sn1, _uids1 = await restore_sysnet(mr1.uid)
+    sn2, _uids2 = await restore_sysnet(mr2.uid)
+    assert sn2.sentences == unordered(["direct2", "ddd", "eee"])
+
+    ns = await fetch_namespace(u.uid)
+    assert len([n for n in ns.g.nodes if isinstance(n, MResource)]) == 1
