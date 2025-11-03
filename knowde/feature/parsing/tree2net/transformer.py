@@ -35,8 +35,6 @@ class TSysArg(Transformer):
     WHERE = lambda _, _tok: EdgeType.WHERE.forward  # noqa: E731
     BY = lambda _, _tok: EdgeType.BY.forward  # noqa: E731
 
-    NUM = lambda _, _tok: EdgeType.NUM.forward  # noqa: E731
-
     ANTONYM = lambda _, _tok: EdgeType.ANTI.both  # noqa: E731
     SIMILAR = lambda _, _tok: EdgeType.SIMILAR.both  # noqa: E731
     DUPLICABLE = lambda _, _tok: Duplicable(n=_stoken(_tok))  # noqa: E731

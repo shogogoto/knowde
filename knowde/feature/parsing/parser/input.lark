@@ -35,14 +35,13 @@ QUOTERM: /[ \t]/* "`" ANY "`"
 DUPLICABLE: /[ \t]/* "+++" ANY "+++"
 
 // 文脈
-?ctype.2: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|NUM|SIMILAR|BY|WHERE)
+?ctype.2: (THUS|CAUSE|ANTONYM|EXAMPLE|GENERAL|REF|SIMILAR|BY|WHERE)
 THUS.2:    "->"   // 故に
 CAUSE.2:   "<-"   // なぜなら
 ANTONYM.2: "<->"  // 対義関係
 EXAMPLE.2: "ex." // 例化
 GENERAL.2: "xe." // 汎化 例化の逆順
 REF.2:     "ref."     // 引用
-NUM.2:     /\d+\./    // 連番
 SIMILAR.2: "~="   // 類似
 BY.2:      "by."       // アクターは誰
 WHERE.2:   "where."

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from lark import Token, Tree
+from lark import Tree
 from lark.visitors import Interpreter
 
 from knowde.feature.parsing.primitive.heading import exclude_heading, include_heading
@@ -24,8 +24,8 @@ class SysNetInterpreter(Interpreter):
     """SysNet構築."""
 
     def __init__(self) -> None:  # noqa: D107
-        self.col: DirectedEdgeCollection = DirectedEdgeCollection()
-        self.root: Token | str = "__dummy__"
+        self.col = DirectedEdgeCollection()
+        self.root: Branch | str = "__dummy__"
 
     def h1(self, tree: Tree) -> None:  # noqa: D102
         p = tree.children[0]
