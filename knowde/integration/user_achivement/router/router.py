@@ -48,7 +48,7 @@ async def get_user_activity(
 
 
 # TODO: API Keyを渡すのは急ぎではないがいつかやる  # noqa: FIX002, TD002, TD003
-@_r.get(
+@_r.post(
     "/achievement/batch",
     # dependencies=[Depends(get_api_key)]
 )
