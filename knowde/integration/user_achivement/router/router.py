@@ -5,10 +5,12 @@ from typing import Annotated
 from fastapi import APIRouter, Query
 
 from knowde.integration.user_achivement.domain import (
+    AchievementHistories,
     UserSearchResult,
     UserSearchRow,
 )
 from knowde.integration.user_achivement.repo import (
+    fetch_achievement_history,
     fetch_activity,
     fetch_user_with_current_achivement,
     snapshot_archivement,
@@ -65,6 +67,14 @@ async def save_user_achievement(
         n_target=n_target,
         n_saved=n_saved,
     )
+
+
+@_r.post("/archievement-history")
+async def get_archievement_history(
+    req: UserActivityRequest,
+) -> AchievementHistories:
+    """指定ユーザーの週間成果履歴."""
+    return await fetch_achievement_history(req.user_ids)
 
 
 def user_achievement_router() -> APIRouter:  # noqa: D103
