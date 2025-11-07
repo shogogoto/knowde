@@ -63,3 +63,15 @@ class AchievementHistory(BaseModel, frozen=True):
 
 class AchievementHistories(RootModel[list[AchievementHistory]]):
     """成果履歴."""
+
+
+class UserActivity(BaseModel, frozen=True):
+    """ユーザーの活動状況."""
+
+    user: UserReadPublic
+    latest: UserAchievement | None
+    current: UserAchievement
+
+
+class UserActivities(RootModel[list[UserActivity]]):
+    """ユーザーの活動状況."""

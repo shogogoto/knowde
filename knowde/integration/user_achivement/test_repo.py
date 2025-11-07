@@ -1,6 +1,7 @@
 """test."""
 
 from datetime import datetime, timedelta
+from operator import attrgetter
 
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.entry.resource.usecase import save_text
@@ -116,10 +117,65 @@ async def test_snapshot_archivement(us: list[LUser]):
 
 @mark_async_test()
 async def test_fetch_activity(us: list[LUser]):
-    """成果スナップショット."""
-    res = await fetch_activity([us[0].uid])
-    zero = res[0]
+    """現在の活動状況."""
+    await snapshot_archivement(paging=Paging(page=1, size=100))
+    u = await LUser(email="nolatest@ex.com").save()
+    res = await fetch_activity([u.uid, us[0].uid])
+
+    attrs = attrgetter("n_char", "n_sentence", "n_resource")
+
+    no_latest = res.root[0]
+    assert no_latest.latest is None
+    assert attrs(no_latest.current) == (0, 0, 0)
+
+    zero = res.root[1]
     assert zero.user.username == "zero"
-    assert zero.archivement.n_char == 0
-    assert zero.archivement.n_sentence == 0
-    assert zero.archivement.n_resource == 0
+    assert zero.latest is not None
+    assert attrs(zero.latest) == (0, 0, 0)
+    assert attrs(zero.current) == (0, 0, 0)
+    await save_text(
+        u.uid,
+        """
+        # heaven
+          janne
+          da
+          arc
+    """,
+    )
+
+    await save_text(
+        us[0].uid,
+        """
+        # re:birth
+          acid
+          black
+          cherry
+    """,
+    )
+
+    # no_latestのまま currentが更新される
+    res = await fetch_activity([u.uid, us[0].uid])
+    no_latest = res.root[0]
+    assert no_latest.latest is None
+    assert attrs(no_latest.current) == (18, 3, 1)
+
+    zero = res.root[1]
+    assert zero.user.username == "zero"
+    assert zero.latest is not None
+    assert attrs(zero.latest) == (0, 0, 0)
+    assert attrs(zero.current) == (25, 3, 1)
+
+    # currentを更新
+    await snapshot_archivement(
+        now=datetime.now(tz=TZ) + timedelta(days=7),
+        paging=Paging(page=1, size=100),
+    )
+    res = await fetch_activity([u.uid, us[0].uid])
+    no_latest = res.root[0]
+    assert attrs(no_latest.latest) == (18, 3, 1)
+    assert attrs(no_latest.current) == (18, 3, 1)
+
+    zero = res.root[1]
+    assert zero.user.username == "zero"
+    assert attrs(zero.latest) == (25, 3, 1)
+    assert attrs(zero.current) == (25, 3, 1)

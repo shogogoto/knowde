@@ -15,6 +15,8 @@ from .domain import (
     AchievementHistories,
     AchievementHistory,
     UserAchievement,
+    UserActivities,
+    UserActivity,
     UserSearchOrderKey,
     UserSearchResult,
     UserSearchRow,
@@ -200,16 +202,18 @@ async def fetch_achievement_history(
     return AchievementHistories(root=hs)
 
 
-async def fetch_activity(user_ids: list[UUIDy]) -> list[UserSearchRow]:
-    """ID指定で現在成果を取得."""
+async def fetch_activity(user_ids: list[UUIDy]) -> UserActivities:
+    """ID指定で最近の成果と現在成果の差分を取得."""
     q = f"""
         UNWIND $user_ids AS uid
         MATCH (u:User {{uid: uid}})
         {q_archivement("u")}
+        OPTIONAL MATCH (u)-[r:ARCHEIVE]->(latest:Archievement)
         RETURN u
             , n_char
             , n_sentence
             , n_resource
+            , latest
     """
     rows, _ = await AsyncDatabase().cypher_query(
         q,
@@ -221,13 +225,21 @@ async def fetch_activity(user_ids: list[UUIDy]) -> list[UserSearchRow]:
     now = datetime.now(tz=TZ)
     data = []
     for row in rows:
-        u, n_char, n_sentence, n_resource = row
+        u, n_char, n_sentence, n_resource, latest = row
         user = UserReadPublic.model_validate(u)
-        archivement = UserAchievement(
-            n_char=n_char,
-            n_sentence=n_sentence,
-            n_resource=n_resource,
-            created=now,
+
+        if latest is not None:
+            latest = UserAchievement.model_validate(latest)
+
+        a = UserActivity(
+            user=user,
+            latest=latest,
+            current=UserAchievement(
+                n_char=n_char,
+                n_sentence=n_sentence,
+                n_resource=n_resource,
+                created=now,
+            ),
         )
-        data.append(UserSearchRow(user=user, archivement=archivement))
-    return data
+        data.append(a)
+    return UserActivities(root=data)

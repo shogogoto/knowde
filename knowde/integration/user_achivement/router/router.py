@@ -6,8 +6,8 @@ from fastapi import APIRouter, Query
 
 from knowde.integration.user_achivement.domain import (
     AchievementHistories,
+    UserActivities,
     UserSearchResult,
-    UserSearchRow,
 )
 from knowde.integration.user_achivement.repo import (
     fetch_achievement_history,
@@ -44,7 +44,7 @@ async def search_user(
 @_r.post("/activity")
 async def get_user_activity(
     req: UserActivityRequest,
-) -> list[UserSearchRow]:
+) -> UserActivities:
     """複数ユーザーの現在の成果をまとめて取得."""
     return await fetch_activity(req.user_ids)
 
