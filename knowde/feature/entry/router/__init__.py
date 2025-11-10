@@ -17,7 +17,7 @@ from knowde.feature.entry.namespace import (
     sync_namespace,
 )
 from knowde.feature.entry.resource.repo.delete import delete_resource
-from knowde.feature.entry.resource.repo.owner import is_resource_owner
+from knowde.feature.entry.resource.repo.owner import is_entry_owner
 from knowde.feature.entry.resource.repo.restore import restore_graph
 from knowde.feature.entry.resource.repo.search import search_resources
 from knowde.feature.entry.resource.usecase import save_resource_with_detail
@@ -89,13 +89,15 @@ async def get_resource_detail(resource_id: str) -> ResourceDetail:
     return ResourceDetail(g=g, resource_info=info, uids=uids, terms=terms)
 
 
+# resourceの削除とfolderの削除を統合したい
+# folderの削除は子にresourceがない場合にのみ可能
 @router.delete("/resource/{resource_id}")
 async def delete_resource_api(
     resource_id: str,
     user: Annotated[User, Depends(auth_component().current_user(active=True))],
 ) -> None:
     """リソース削除."""
-    if not await is_resource_owner(user.uid, resource_id):
+    if not await is_entry_owner(user.uid, resource_id):
         msg = "リソースを削除できるのは所有者のみです"
         raise NotOwnerError(msg=msg)
     await delete_resource(resource_id)
