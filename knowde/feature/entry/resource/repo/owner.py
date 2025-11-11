@@ -2,16 +2,17 @@
 
 from neomodel.async_.core import AsyncDatabase
 
+from knowde.shared.errors.domain import NotFoundError
 from knowde.shared.types import UUIDy, to_uuid
 
 
-async def is_entry_owner(user_uid: UUIDy, entry_uid: UUIDy) -> bool:
+async def check_entry_owner(user_uid: UUIDy, entry_uid: UUIDy) -> bool:
     """エントリー所有者判定."""
     q = """
-    RETURN EXISTS {
-        MATCH (e:Entry {uid: $eid})
-            -[:OWNED|PARENT]->*(u:User {uid: $uid})
-    }
+    MATCH (e:Entry {uid: $eid})
+    MATCH (u:User {uid: $uid})
+    OPTIONAL MATCH p = (e)-[:OWNED|PARENT]->*(u)
+    RETURN e, u, p
     """
     rows, _ = await AsyncDatabase().cypher_query(
         q,
@@ -20,4 +21,11 @@ async def is_entry_owner(user_uid: UUIDy, entry_uid: UUIDy) -> bool:
             "uid": to_uuid(user_uid).hex,
         },
     )
-    return rows[0][0]
+    if len(rows) == 0:
+        msg = "エントリーが見つかりません"
+        raise NotFoundError(msg)
+    _e, u, p = rows[0]
+    if u is None:
+        msg = "ユーザーが見つかりません"
+        raise NotFoundError(msg)
+    return p is not None

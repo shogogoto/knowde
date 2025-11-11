@@ -281,7 +281,7 @@ async def fetch_info_by_resource_uid(resource_uid: UUIDy) -> ResourceInfo:
 
 async def delete_folder(folder_uid: UUIDy):
     """フォルダを削除."""
-    f: LFolder | None = await LFolder.nodes.get_or_none(uid=folder_uid)
+    f: LFolder | None = await LFolder.nodes.get_or_none(uid=to_uuid(folder_uid).hex)
     if f is None:
         msg = f"folder not found: {folder_uid}"
         raise NotFoundError(msg)
