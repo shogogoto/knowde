@@ -25,3 +25,9 @@ class NotOwnerError(DomainError):
     """所有者ではない."""
 
     status_code = status.HTTP_403_FORBIDDEN
+
+
+class FolderDeleteError(DomainError):
+    """フォルダを削除できる状態にない."""
+
+    status_code = status.HTTP_409_CONFLICT

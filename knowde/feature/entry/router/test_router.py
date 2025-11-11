@@ -9,6 +9,7 @@ from fastapi.testclient import TestClient
 
 from knowde.api import api
 from knowde.conftest import mark_async_test
+from knowde.feature.entry.namespace import create_folder, create_resource
 from knowde.feature.entry.namespace.sync import Anchor
 from knowde.feature.entry.namespace.test_namespace import files  # noqa: F401
 from knowde.feature.entry.resource.usecase import save_text
@@ -122,15 +123,27 @@ async def test_restore_regression2() -> None:
 
 
 @mark_async_test()
-async def test_delete_resource_router() -> None:
-    """所有者がリソースを削除できる."""
+async def test_delete_entry_router() -> None:
+    """所有者がエントリを削除できる."""
     client, h1 = auth_header()
     _, h2 = auth_header("two@gmail.com")
     u = await LUser.nodes.first()
     _sn, r = await save_text(u.uid, "# title\n")
 
-    res = client.delete(f"/resource/{r.uid}", headers=h2)
+    # check owner
+    res = client.delete(f"/entry/{r.uid}", headers=h2)
     assert res.status_code == status.HTTP_403_FORBIDDEN
-
-    res = client.delete(f"/resource/{r.uid}", headers=h1)
+    res = client.delete(f"/entry/{r.uid}", headers=h1)
     assert res.is_success
+
+    # delete entry
+    f = await create_folder(u.uid, "f1")
+    r = await create_resource(u.uid, "f1", "r21")
+
+    res = client.delete(f"/entry/{f.uid}", headers=h1)
+    assert res.status_code == status.HTTP_409_CONFLICT
+    res = client.delete(f"/entry/{r.uid}", headers=h1)
+    assert res.is_success
+    assert client.delete(f"/entry/{f.uid}", headers=h1).is_success
+    res = client.delete(f"/entry/{f.uid}", headers=h1)
+    assert res.status_code == status.HTTP_404_NOT_FOUND

@@ -4,20 +4,23 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Annotated
+from uuid import UUID
 
 import chardet  # 文字エンコーディング検出用
 from fastapi import APIRouter, Body, Depends, UploadFile
 
 from knowde.feature.entry.domain import NameSpace, ResourceDetail, ResourceSearchResult
 from knowde.feature.entry.errors import NotOwnerError
+from knowde.feature.entry.label import LResource
 from knowde.feature.entry.namespace import (
     ResourceMetas,
+    delete_folder,
     fetch_info_by_resource_uid,
     fetch_namespace,
     sync_namespace,
 )
 from knowde.feature.entry.resource.repo.delete import delete_resource
-from knowde.feature.entry.resource.repo.owner import is_resource_owner
+from knowde.feature.entry.resource.repo.owner import check_entry_owner
 from knowde.feature.entry.resource.repo.restore import restore_graph
 from knowde.feature.entry.resource.repo.search import search_resources
 from knowde.feature.entry.resource.usecase import save_resource_with_detail
@@ -89,16 +92,22 @@ async def get_resource_detail(resource_id: str) -> ResourceDetail:
     return ResourceDetail(g=g, resource_info=info, uids=uids, terms=terms)
 
 
-@router.delete("/resource/{resource_id}")
-async def delete_resource_api(
-    resource_id: str,
+# resourceの削除とfolderの削除を統合したい
+# folderの削除は子にresourceがない場合にのみ可能
+@router.delete("/entry/{entry_id}")
+async def delete_entry_api(
+    entry_id: UUID,
     user: Annotated[User, Depends(auth_component().current_user(active=True))],
 ) -> None:
     """リソース削除."""
-    if not await is_resource_owner(user.uid, resource_id):
+    if not await check_entry_owner(user.uid, entry_id):
         msg = "リソースを削除できるのは所有者のみです"
         raise NotOwnerError(msg=msg)
-    await delete_resource(resource_id)
+
+    if await LResource.nodes.get_or_none(uid=entry_id.hex):
+        await delete_resource(entry_id)
+    else:
+        await delete_folder(entry_id)
 
 
 @router.post("/resource/search")

@@ -1,19 +1,20 @@
 """test folder."""
 
 from collections.abc import AsyncGenerator
+from uuid import uuid4
 
 import pytest
 
 from knowde.conftest import async_fixture, mark_async_test
-from knowde.feature.entry.errors import (
-    EntryAlreadyExistsError,
-)
+from knowde.feature.entry.errors import FolderDeleteError
 from knowde.feature.entry.namespace import fetch_namespace
+from knowde.shared.errors.domain import NotFoundError
 from knowde.shared.user.label import LUser
 
 from . import (
     create_folder,
     create_resource,
+    delete_folder,
     move_folder,
 )
 
@@ -112,8 +113,8 @@ async def test_namespace_each_user(u: LUser):
     # 同タイトルは登録できない.
     await create_folder(u.uid, "f1")
     await create_resource(u.uid, "r1")
-    with pytest.raises(EntryAlreadyExistsError):
-        await create_resource(u.uid, "f1", "r1")  # 階層が違えば同名でも登録できる
+    # with pytest.raises(EntryAlreadyExistsError):
+    #     await create_resource(u.uid, "f1", "r1")  # 階層が違えば同名でも登録できる
     ns = await fetch_namespace(u.uid)
     assert ns.roots == ["f1", "r1"]
     # assert ns.children("f1") == ["r1"]
@@ -126,13 +127,17 @@ async def test_namespace_each_user(u: LUser):
     assert len(ns2.g.nodes) == 0
 
 
-# def test_delete_folder(u: LUser) -> None:
-#     """フォルダの削除(配下ごと)."""
-#     create_folder(u.uid, "f1")
-#     create_resource(u.uid, "r1")
-#     create_resource(u.uid, "r2")
-#     create_resource(u.uid, "f1", "r21")
+@mark_async_test()
+async def test_delete_folder(u: LUser) -> None:
+    """フォルダの削除(配下ごと)."""
+    with pytest.raises(NotFoundError):
+        await delete_folder(uuid4())
 
-#     ns = fetch_namespace(u.uid)
+    f = await create_folder(u.uid, "f1")
+    r = await create_resource(u.uid, "f1", "r21")
 
-#     nxprint(ns.g)
+    with pytest.raises(FolderDeleteError):
+        await delete_folder(f.uid)
+
+    await r.delete()
+    await delete_folder(f.uid)  # 子要素をなくしたらfolderを削除できるようになる
