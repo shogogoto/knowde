@@ -12,17 +12,20 @@ import neo4j
 import networkx as nx
 from neomodel.async_.core import AsyncDatabase
 from pydantic import RootModel
+from pydantic_core import Url
 
 from knowde.feature.entry.domain import NameSpace, ResourceMeta
 from knowde.feature.entry.errors import (
     DuplicatedTitleError,
     EntryAlreadyExistsError,
+    FolderDeleteError,
     SaveResourceError,
 )
 from knowde.feature.entry.label import LFolder, LResource, LResourceStatsCache
 from knowde.feature.entry.mapper import MFolder, MResource
 from knowde.feature.entry.resource.stats.domain import ResourceStats
 from knowde.feature.knowde import ResourceInfo
+from knowde.shared.errors.domain import NotFoundError
 from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.user.label import LUser
 from knowde.shared.user.schema import UserReadPublic
@@ -190,11 +193,11 @@ async def create_resource(
     *names: str,
     authors: list[str] | None = None,
     published: date | None = None,
-    urls: list[str] | None = None,
+    urls: list[Url] | None = None,
 ) -> LResource:
     """リソース作成のfacade."""
     if len(names) == 0:
-        msg = "フォルダ名を1つ以上指定して"
+        msg = "entry名を1つ以上指定して"
         raise ValueError(msg)
 
     m = ResourceMeta(
@@ -202,8 +205,9 @@ async def create_resource(
         authors=authors or [],
         published=published,
         urls=urls or [],
-        path=tuple(names[:-1]) if len(names) > 1 else None,
+        path=tuple(names),
     )
+
     ns = await fetch_namespace(user_id)
     r = await save_resource(m, ns)
     if r is None:
@@ -273,3 +277,16 @@ async def fetch_info_by_resource_uid(resource_uid: UUIDy) -> ResourceInfo:
     uid = to_uuid(resource_uid)
     infos = await resource_infos_by_resource_uids([uid])
     return infos[uid]
+
+
+async def delete_folder(folder_uid: UUIDy):
+    """フォルダを削除."""
+    f: LFolder | None = await LFolder.nodes.get_or_none(uid=folder_uid)
+    if f is None:
+        msg = f"folder not found: {folder_uid}"
+        raise NotFoundError(msg)
+    children = await f.children.all()
+    if len(children) > 0:
+        msg = f"[{f.name}]を削除する前に子エントリを削除してください"
+        raise FolderDeleteError(msg)
+    await f.delete()

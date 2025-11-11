@@ -6,6 +6,7 @@ from typing import override
 from neomodel import (
     AliasProperty,
     ArrayProperty,
+    AsyncRelationshipFrom,
     AsyncRelationshipManager,
     AsyncRelationshipTo,
     AsyncStructuredNode,
@@ -122,6 +123,12 @@ class LFolder(LEntry):
 
     __label__ = "Folder"
     name = StringProperty(index=True)
+
+    children: AsyncRelationshipManager = AsyncRelationshipFrom(
+        "LEntry",
+        "PARENT",
+        cardinality=AsyncZeroOrOne,
+    )
 
     @property
     @override
