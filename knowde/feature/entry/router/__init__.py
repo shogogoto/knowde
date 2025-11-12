@@ -81,7 +81,11 @@ async def post_files(
     for f in files:
         ns = await fetch_namespace(user.id)
         txt = await read_content(f)
-        await save_resource_with_detail(ns, txt)
+        await save_resource_with_detail(
+            ns,
+            txt,
+            path=f.filename.split("/") if f.filename else None,
+        )
 
 
 @router.get("/resource/{resource_id}")
