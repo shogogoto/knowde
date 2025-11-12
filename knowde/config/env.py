@@ -119,6 +119,7 @@ class Settings(BaseSettings):
         json: object = None,
         data: object = None,
         headers: dict | None = None,
+        files: httpx._types.RequestFiles | None = None,
         client: Callable[..., httpx.Response] = httpx.post,
     ) -> httpx.Response:
         """Post of Restful API."""
@@ -128,6 +129,7 @@ class Settings(BaseSettings):
             params=params,
             json=json,
             data=data,
+            files=files,
             headers=headers,
         )
 
