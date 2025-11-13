@@ -32,11 +32,17 @@ def print_error(p: Path, e: Exception) -> None:
 def sync_proc(
     glob: str,
     show_error: bool = True,  # noqa: FBT001, FBT002
-    get_client: Callable[..., httpx.Response] = httpx.get,
-    post_client: Callable[..., httpx.Response] = httpx.post,
+    get_client: Callable[..., httpx.Response] | None = None,
+    post_client: Callable[..., httpx.Response] | None = None,
 ) -> None:
     """CLI環境のファイルシステムとDBを同期."""
     c = LocalConfig.load()
+    s = Settings()
+    if get_client is None:
+        get_client = s.get
+    if post_client is None:
+        post_client = httpx.post
+
     if c.ANCHOR is None:
         click.echo("同期するディレクトリをlinkコマンドで設定してください")
         sys.exit(1)
@@ -50,7 +56,6 @@ def sync_proc(
         a.rglob(glob),
         filter_parsable(handle_error=print_error if show_error else None),
     )
-    s = Settings()
     res = s.post(
         "/namespace",
         json=data.model_dump(mode="json"),
