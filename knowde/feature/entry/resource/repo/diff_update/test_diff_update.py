@@ -1,4 +1,4 @@
-"""ネットワーク2 node0 系の差分."""
+"""差分更新test."""
 
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.tree2net import parse2net

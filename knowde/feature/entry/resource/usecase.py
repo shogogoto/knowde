@@ -31,7 +31,7 @@ async def save_resource_with_detail(
     if updated is not None:
         meta.updated = updated
 
-    now = ns.get_resource_or_none(meta.title)
+    new = ns.get_resource_or_none(meta.title)
 
     async with adb.transaction:
         lb = await save_or_move_resource(meta, ns)
@@ -41,10 +41,11 @@ async def save_resource_with_detail(
         old = MResource.freeze_dict(lb.__properties__)
         cache = await lb.cached_stats.get_or_none()
         await save_resource_stats_cache(old.uid, sn)
-        # 未キャッシュ=新規登録 or hash更新時
-        is_changed = cache is None or now is None or now.txt_hash != old.txt_hash
+        if cache is None or new is None:  # new
+            await sn2db(sn, lb.uid)
+        is_changed = new is not None and new.txt_hash != old.txt_hash
         if is_changed:
-            await sn2db(sn, lb.uid)  # ここで freezeする
+            pass
         return old, meta, sn
 
 

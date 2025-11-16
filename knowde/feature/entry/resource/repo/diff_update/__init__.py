@@ -1,10 +1,10 @@
-"""ネットワーク2 node0 系の差分."""
+"""差分更新."""
 
 from __future__ import annotations
 
 from collections.abc import Hashable, Iterable
 from itertools import product
-from typing import TYPE_CHECKING, Self, TypeVar
+from typing import TYPE_CHECKING, Self
 
 import Levenshtein
 from pydantic import BaseModel
@@ -20,14 +20,12 @@ if TYPE_CHECKING:
 # diff
 # 3種類 term, sentence, edge
 
-T = TypeVar("T")
-
 
 class SysNodeDiff[T](BaseModel, frozen=True):
     """SysNet間の用語差分."""
 
-    added: set[T]
-    removed: set[T]
+    added: set
+    removed: set
 
     def __str__(self) -> str:  # noqa: D105
         return f"-{self.removed}\n+{self.added}"
@@ -39,7 +37,7 @@ class SysNodeDiff[T](BaseModel, frozen=True):
     def terms(cls, old: SysNet, new: SysNet) -> Self:  # noqa: D102
         t1 = set(old.terms)
         t2 = set(new.terms)
-        return cls(added=t2 - t1, removed=t1 - t2)
+        return cls(added=t2.difference(t1), removed=t1 - t2)
 
     @classmethod
     def sentences(cls, old: SysNet, new: SysNet) -> Self:  # noqa: D102
