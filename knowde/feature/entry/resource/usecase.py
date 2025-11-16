@@ -2,6 +2,8 @@
 
 from datetime import datetime
 
+from neomodel import adb
+
 from knowde.feature.entry.domain import NameSpace, ResourceMeta
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.entry.namespace import (
@@ -30,19 +32,20 @@ async def save_resource_with_detail(
         meta.updated = updated
 
     now = ns.get_resource_or_none(meta.title)
-    lb = await save_or_move_resource(meta, ns)
-    if lb is None:
-        msg = f"{meta.title} の保存に失敗しました"
-        raise NotFoundError(msg)
-    old = MResource.freeze_dict(lb.__properties__)
 
-    cache = await lb.cached_stats.get_or_none()
-    await save_resource_stats_cache(old.uid, sn)
-    # 未キャッシュ=新規登録 or hash更新時
-    is_changed = cache is None or now is None or now.txt_hash != old.txt_hash
-    if is_changed:
-        sn2db(sn, lb.uid)
-    return old, meta, sn
+    async with adb.transaction:
+        lb = await save_or_move_resource(meta, ns)
+        if lb is None:
+            msg = f"{meta.title} の保存に失敗しました"
+            raise NotFoundError(msg)
+        old = MResource.freeze_dict(lb.__properties__)
+        cache = await lb.cached_stats.get_or_none()
+        await save_resource_stats_cache(old.uid, sn)
+        # 未キャッシュ=新規登録 or hash更新時
+        is_changed = cache is None or now is None or now.txt_hash != old.txt_hash
+        if is_changed:
+            await sn2db(sn, lb.uid)  # ここで freezeする
+        return old, meta, sn
 
 
 async def save_text(

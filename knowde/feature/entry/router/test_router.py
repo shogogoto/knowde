@@ -147,3 +147,18 @@ async def test_delete_entry_router() -> None:
     assert client.delete(f"/entry/{f.uid}", headers=h1).is_success
     res = client.delete(f"/entry/{f.uid}", headers=h1)
     assert res.status_code == status.HTTP_404_NOT_FOUND
+
+
+@mark_async_test()
+async def test_post_resource_with_optimistic_locking() -> None:
+    """リソース作成が同時に起きないように楽観的ロック."""
+    # client, h1 = auth_header()
+    # _, h2 = auth_header("two@gmail.com")
+    # u = await LUser.nodes.first()
+    # _sn, r = await save_text(u.uid, "# title\n")
+    #
+    # # check owner
+    # res = client.delete(f"/resource/{r.uid}", headers=h2)
+    # assert res.status_code == status.HTTP_403_FORBIDDEN
+    # res = client.delete(f"/resource/{r.uid}", headers=h1)
+    # assert res.is_success
