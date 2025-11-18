@@ -4,9 +4,9 @@ from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.tree2net import parse2net
 from knowde.shared.nxutil.edge_type import EdgeType
 
-from . import (
-    SysNodeDiff,
-    edgediff,
+from .domain import (
+    UpdateDiff,
+    create_edgediff,
     identify_sentence,
     identify_term,
 )
@@ -29,7 +29,7 @@ def test_term_diff() -> None:
 
     sn1 = parse2net(s1)
     sn2 = parse2net(s2)
-    d = SysNodeDiff.terms(sn1, sn2)
+    d = UpdateDiff.terms(sn1, sn2)
     assert d.added == {Term.create("D")}
     assert d.removed == {Term.create("A")}
 
@@ -110,7 +110,7 @@ def test_edgediff() -> None:
     """
     sn1 = parse2net(txt1)
     sn2 = parse2net(txt2)
-    ed = edgediff(sn1, sn2)
+    ed = create_edgediff(sn1, sn2)
     assert ed.removed == {
         EdgeType.SIBLING.to_tuple("aaa", "bbb"),
         EdgeType.SIBLING.to_tuple("bbb", "ccc"),

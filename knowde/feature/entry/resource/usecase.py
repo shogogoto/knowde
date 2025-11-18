@@ -10,6 +10,8 @@ from knowde.feature.entry.namespace import (
     fetch_namespace,
     save_or_move_resource,
 )
+from knowde.feature.entry.resource.repo.diff_update.repo import update_resource_diff
+from knowde.feature.entry.resource.repo.restore import restore_sysnet
 from knowde.feature.entry.resource.repo.save import sn2db
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.shared.errors.domain import NotFoundError
@@ -45,7 +47,9 @@ async def save_resource_with_detail(
             await sn2db(sn, lb.uid)
         is_changed = new is not None and new.txt_hash != old.txt_hash
         if is_changed:
-            pass
+            restored, _ = await restore_sysnet(lb.uid)
+            await update_resource_diff(restored, sn)
+        # 適切な status code と message を与える
         return old, meta, sn
 
 
