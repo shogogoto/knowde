@@ -1,7 +1,7 @@
 """test."""
 
 from knowde.feature.parsing.tree2net import parse2net
-from knowde.feature.stats.systats.nw1_n1.ctxdetail import Nw1N1Label
+from knowde.feature.systats.nw1_n1.ctxdetail import Nw1N1Label
 
 from .scorable import NRecursiveWeight, SyScore
 

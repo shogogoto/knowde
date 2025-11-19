@@ -126,7 +126,7 @@ async def test_paging(u: LUser):
     h = nx.compose(sn.g, g)
     EdgeType.BELOW.add_edge(h, sn.root, "0")
     sn = SysNet(root=sn.root, g=h)
-    sn2db(sn, r.uid)
+    await sn2db(sn, r.uid)
     sn, _uids = await restore_sysnet(r.uid)
     n_nodes = len(sn.g.nodes) - 1
     assert n_nodes == 121  # title除いて121の文  # noqa: PLR2004
@@ -150,7 +150,7 @@ async def to_chain(u: LUser) -> SysNet:
     h = nx.compose(sn.g, g)
     EdgeType.BELOW.add_edge(h, sn.root, "0")
     sn = SysNet(root=sn.root, g=h)
-    sn2db(sn, r.uid)
+    await sn2db(sn, r.uid)
     sn, _uids = await restore_sysnet(r.uid)
     return sn
 

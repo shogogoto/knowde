@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field, computed_field
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.sysnet.sysnode import KNArg
-from knowde.feature.stats.systats.nw1_n1 import (
+from knowde.feature.systats.nw1_n1 import (
     get_detail,
     get_parent_or_none,
     has_dependency,

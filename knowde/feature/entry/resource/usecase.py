@@ -2,12 +2,15 @@
 
 from datetime import datetime
 
+from neomodel import adb
+
 from knowde.feature.entry.domain import NameSpace, ResourceMeta
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.entry.namespace import (
     fetch_namespace,
     save_or_move_resource,
 )
+from knowde.feature.entry.resource.repo.diff_update.repo import update_resource_diff
 from knowde.feature.entry.resource.repo.save import sn2db
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.shared.errors.domain import NotFoundError
@@ -29,20 +32,23 @@ async def save_resource_with_detail(
     if updated is not None:
         meta.updated = updated
 
-    now = ns.get_resource_or_none(meta.title)
-    lb = await save_or_move_resource(meta, ns)
-    if lb is None:
-        msg = f"{meta.title} の保存に失敗しました"
-        raise NotFoundError(msg)
-    old = MResource.freeze_dict(lb.__properties__)
+    already = ns.get_resource_or_none(meta.title)
 
-    cache = await lb.cached_stats.get_or_none()
-    await save_resource_stats_cache(old.uid, sn)
-    # 未キャッシュ=新規登録 or hash更新時
-    is_changed = cache is None or now is None or now.txt_hash != old.txt_hash
-    if is_changed:
-        sn2db(sn, lb.uid)
-    return old, meta, sn
+    async with adb.transaction:
+        lb = await save_or_move_resource(meta, ns)
+        if lb is None:
+            msg = f"{meta.title} の保存に失敗しました"
+            raise NotFoundError(msg)
+        old = MResource.freeze_dict(lb.__properties__)
+        cache = await lb.cached_stats.get_or_none()
+        await save_resource_stats_cache(old.uid, sn)
+        if cache is None or already is None:  # 新規作成
+            await sn2db(sn, lb.uid)
+        is_changed = already is not None and already.txt_hash != old.txt_hash
+        if is_changed:
+            await update_resource_diff(lb.uid, sn)
+        # 適切な status code と message を与える
+        return old, meta, sn
 
 
 async def save_text(

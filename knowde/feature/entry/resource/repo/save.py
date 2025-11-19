@@ -10,7 +10,7 @@ from uuid import UUID, uuid4
 import networkx as nx
 from lark import Token
 from more_itertools import collapse
-from neomodel import AsyncStructuredNode, StructuredNode, db
+from neomodel import AsyncStructuredNode, StructuredNode, adb
 from pydantic import BaseModel
 
 from knowde.feature.entry.label import LHead, LResource
@@ -152,7 +152,7 @@ def sysnet2cypher(sn: SysNet) -> str:
     return "\n".join([q for q in qs if q is not None])
 
 
-def sn2db(sn: SysNet, resource_id: UUIDy, do_print: bool = False) -> None:  # noqa: FBT001, FBT002
+async def sn2db(sn: SysNet, resource_id: UUIDy, do_print: bool = False) -> None:  # noqa: FBT001, FBT002
     """新規登録."""
     q = sysnet2cypher(sn)
     if len(q.splitlines()) <= 1:  # create対象なし
@@ -160,4 +160,4 @@ def sn2db(sn: SysNet, resource_id: UUIDy, do_print: bool = False) -> None:  # no
     if do_print:
         print()  # noqa: T201
         print(q)  # noqa: T201
-    db.cypher_query(q, params={"uid": to_uuid(resource_id).hex})
+    await adb.cypher_query(q, params={"uid": to_uuid(resource_id).hex})
