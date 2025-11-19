@@ -5,92 +5,44 @@ from knowde.feature.parsing.tree2net import parse2net
 from knowde.shared.nxutil.edge_type import EdgeType
 
 from .domain import (
-    UpdateDiff,
-    create_edgediff,
-    identify_sentence,
-    identify_term,
+    create_updatediff,
+    diff2sets,
+    identify_updatediff_term,
+    identify_updatediff_txt,
+    sysnet2edges,
 )
+
+
+def test_sentence_diff() -> None:
+    """文差分."""
+    o1 = "A"
+    o2 = "XXX"  # deleted
+    o3 = "YYY"  # updated
+    old = [o1, o2, o3]
+    n1 = "A"  # remain
+    n2 = "B"  # added
+    n3 = "YYX"  # updated
+    new = [n1, n2, n3]
+    d, a, up = create_updatediff(old, new, lambda: identify_updatediff_txt)
+    assert d == {o2}
+    assert a == {n2}
+    assert up == {o3: n3}
 
 
 def test_term_diff() -> None:
     """用語差分."""
-    s1 = """
-        # title
-            A: a
-            B: b
-            c
-    """
-    s2 = """
-        # title
-            B: b
-            c
-            D: d
-    """
-
-    sn1 = parse2net(s1)
-    sn2 = parse2net(s2)
-    d = UpdateDiff.terms(sn1, sn2)
-    assert d.added == {Term.create("D")}
-    assert d.removed == {Term.create("A")}
-
-
-def test_identify_changed_sentence() -> None:
-    """変更前と変更後を同定したい."""
-    s1 = """
-        # title
-            aaaaaold
-            bbb
-            ccc
-            dsafdfewx
-    """
-    s2 = """
-        # title
-            bbb
-            ccc
-            aaaaanew
-            ddd
-    """
-
-    sn1 = parse2net(s1)
-    sn2 = parse2net(s2)
-    assert identify_sentence(sn1, sn2) == {"aaaaaold": "aaaaanew"}
-
-
-def test_identify_changed_term() -> None:
-    """変更前と変更後を同定したい.
-
-    条件
-        同じ文(文の同定が先に必要かも)に紐付いている
-        Term自体の類似 (共通aliasやnameを持つか).
-
-        term,sentence
-        変更あり,変更なし
-        変更なし,変更あり
-
-
-        変更あり,変更あり 同定必要
-
-    """
-    txt1 = """
-        # title
-            A: qawsedrftg
-            PPP: aaa
-            QQQ: zxcvbnm
-
-    """
-
-    txt2 = """
-        # title
-            A, B: qawsedrftg
-            PPP: bbb
-            RRR: zxcvbnmZ
-    """
-    sn1 = parse2net(txt1)
-    sn2 = parse2net(txt2)
-    assert identify_term(sn1, sn2) == {
-        Term.create("A"): Term.create("A", "B"),
-        Term.create("QQQ"): Term.create("RRR"),
-    }
+    o1 = Term.create("A")
+    o2 = Term.create("XXX")  # deleted
+    o3 = Term.create("YYY")  # updated
+    old = [o1, o2, o3]
+    n1 = Term.create("A")  # remain
+    n2 = Term.create("B")  # added
+    n3 = Term.create("YYX")  # updated
+    new = [n1, n2, n3]
+    d, a, up = create_updatediff(old, new, lambda: identify_updatediff_term)
+    assert d == {o2}
+    assert a == {n2}
+    assert up == {o3: n3}
 
 
 def test_edgediff() -> None:
@@ -100,6 +52,7 @@ def test_edgediff() -> None:
             A: aaa
             B: bbb
             C: ccc
+            ddd
     """
 
     txt2 = """
@@ -107,15 +60,18 @@ def test_edgediff() -> None:
             A: aaa
                 BB: bbb
             C: ccc
+            ddd
     """
     sn1 = parse2net(txt1)
     sn2 = parse2net(txt2)
-    ed = create_edgediff(sn1, sn2)
-    assert ed.removed == {
+    e1 = sysnet2edges(sn1)
+    e2 = sysnet2edges(sn2)
+    removed, added = diff2sets(e1, e2)
+    assert removed == {
         EdgeType.SIBLING.to_tuple("aaa", "bbb"),
         EdgeType.SIBLING.to_tuple("bbb", "ccc"),
     }
-    assert ed.added == {
+    assert added == {
         EdgeType.BELOW.to_tuple("aaa", "bbb"),
         EdgeType.SIBLING.to_tuple("aaa", "ccc"),
     }

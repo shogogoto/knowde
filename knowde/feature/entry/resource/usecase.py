@@ -11,7 +11,6 @@ from knowde.feature.entry.namespace import (
     save_or_move_resource,
 )
 from knowde.feature.entry.resource.repo.diff_update.repo import update_resource_diff
-from knowde.feature.entry.resource.repo.restore import restore_sysnet
 from knowde.feature.entry.resource.repo.save import sn2db
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.shared.errors.domain import NotFoundError
@@ -33,7 +32,7 @@ async def save_resource_with_detail(
     if updated is not None:
         meta.updated = updated
 
-    new = ns.get_resource_or_none(meta.title)
+    already = ns.get_resource_or_none(meta.title)
 
     async with adb.transaction:
         lb = await save_or_move_resource(meta, ns)
@@ -43,12 +42,11 @@ async def save_resource_with_detail(
         old = MResource.freeze_dict(lb.__properties__)
         cache = await lb.cached_stats.get_or_none()
         await save_resource_stats_cache(old.uid, sn)
-        if cache is None or new is None:  # new
+        if cache is None or already is None:  # 新規作成
             await sn2db(sn, lb.uid)
-        is_changed = new is not None and new.txt_hash != old.txt_hash
+        is_changed = already is not None and already.txt_hash != old.txt_hash
         if is_changed:
-            restored, _ = await restore_sysnet(lb.uid)
-            await update_resource_diff(restored, sn)
+            await update_resource_diff(lb.uid, sn)
         # 適切な status code と message を与える
         return old, meta, sn
 
