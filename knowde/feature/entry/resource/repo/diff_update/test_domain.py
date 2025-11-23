@@ -23,7 +23,7 @@ def test_sentence_diff() -> None:
     n2 = "B"  # added
     n3 = "YYX"  # updated
     new = [n1, n2, n3]
-    d, a, up = create_updatediff(old, new, lambda: identify_updatediff_txt)
+    d, a, up = create_updatediff(old, new, identify_updatediff_txt)
     assert d == {o2}
     assert a == {n2}
     assert up == {o3: n3}
@@ -39,7 +39,7 @@ def test_term_diff() -> None:
     n2 = Term.create("B")  # added
     n3 = Term.create("YYX")  # updated
     new = [n1, n2, n3]
-    d, a, up = create_updatediff(old, new, lambda: identify_updatediff_term)
+    d, a, up = create_updatediff(old, new, identify_updatediff_term)
     assert d == {o2}
     assert a == {n2}
     assert up == {o3: n3}
@@ -68,10 +68,10 @@ def test_edgediff() -> None:
     e2 = sysnet2edges(sn2)
     removed, added = diff2sets(e1, e2)
     assert removed == {
-        EdgeType.SIBLING.to_tuple("aaa", "bbb"),
-        EdgeType.SIBLING.to_tuple("bbb", "ccc"),
+        ("aaa", "bbb", EdgeType.SIBLING),
+        ("bbb", "ccc", EdgeType.SIBLING),
     }
     assert added == {
-        EdgeType.BELOW.to_tuple("aaa", "bbb"),
-        EdgeType.SIBLING.to_tuple("aaa", "ccc"),
+        ("aaa", "bbb", EdgeType.BELOW),
+        ("aaa", "ccc", EdgeType.SIBLING),
     }

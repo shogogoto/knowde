@@ -112,13 +112,15 @@ def reconnect_root_below(sn: SysNet, varnames: dict[KNode, str]) -> str | None:
             raise ValueError
 
 
+type EdgeRel = tuple[KNode, KNode, EdgeType]
+
+
 def rel2q(
-    edge: tuple[KNode, KNode, dict[str, EdgeType]],
+    edge: EdgeRel,
     varnames: dict[KNode, str],
 ) -> str | list[str] | None:
     """edgeからcreate可能な文字列に変換."""
-    u, v, d = edge
-    t = d["type"]
+    u, v, t = edge
     match t:
         case EdgeType.DEF:
             if not isinstance(u, Term):
@@ -146,7 +148,7 @@ def sysnet2cypher(sn: SysNet) -> str:
         sn.g,
         filter_node=lambda n: n not in sn.meta,
     )
-    q_rel = [rel2q(e, varnames) for e in g.edges.data()]
+    q_rel = [rel2q((u, v, attr["type"]), varnames) for u, v, attr in g.edges.data()]
     q_rel.append(reconnect_root_below(sn, varnames))
     qs = collapse([*q_create, *q_rel])
     return "\n".join([q for q in qs if q is not None])

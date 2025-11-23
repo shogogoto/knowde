@@ -11,11 +11,11 @@ from typing import TYPE_CHECKING
 
 import Levenshtein
 
+from knowde.feature.entry.resource.repo.save import EdgeRel
+from knowde.feature.parsing.sysnet.sysnode import KNode
+
 from .errors import IdentificationError
-from .types import (
-    TypedEdge,
-    UpdateGetterFactory,
-)
+from .types import UpdateGetter
 
 if TYPE_CHECKING:
     from knowde.feature.parsing.primitive.term import Term
@@ -54,11 +54,11 @@ def diff2sets[T](old: Iterable[T], new: Iterable[T]) -> tuple[set[T], set[T]]:
 def create_updatediff[T](
     old: Iterable[T],
     new: Iterable[T],
-    f: UpdateGetterFactory[T],
+    f: UpdateGetter[T],
 ) -> tuple[set[T], set[T], dict[T, T]]:
     """更新差分の作成."""
     removed, added = diff2sets(old, new)
-    updated = f()(removed, added)
+    updated = f(removed, added)
     removed -= set(updated.keys())
     added -= set(updated.values())
     return removed, added, updated
@@ -76,31 +76,20 @@ def identify_updatediff_term(
     return {r_txts[k]: a_txts[v] for k, v in updiff.items()}
 
 
-def sysnet2edges(sn: SysNet) -> set[TypedEdge]:
+def sysnet2edges(sn: SysNet) -> set[EdgeRel]:
     """edgeをsetに変換."""
     edges = set()
     for s in sn.sentences:  # 単文の関係だけ見れば良い
-        e = {(u, attr["type"], v) for u, v, attr in sn.g.out_edges(s, data=True)}
+        e = {(u, v, attr["type"]) for u, v, attr in sn.g.out_edges(s, data=True)}
         edges = edges.union(e)
     return edges
 
 
-def edgestr(te: TypedEdge) -> str:
-    """To string."""
-    u, t, v = te
-    return f"'{u}'-[{t.name}]->'{v}'"
-
-
-def diff_edges(
-    old: Iterable[TypedEdge],
-    new: Iterable[TypedEdge],
-):
-    """更新関係リストの作成.
-
-    edgeのIDは不要なので、delete insertすれば良く、updateは要らない
-
-    削除されるsentについていた関係は自動的に削除されるので把握しなくて良い
-    追加されるsentの関係
-    更新されるsentの関係は何もしない
-    追加も更新もない関係のみの変更
-    """
+def edges2nodes(es: Iterable[EdgeRel]) -> set[KNode]:
+    """edgeをnodeに変換."""
+    s = set()
+    for e in es:
+        u, v, _ = e
+        s.add(u)
+        s.add(v)
+    return s
