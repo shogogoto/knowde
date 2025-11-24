@@ -4,7 +4,9 @@ from collections.abc import Iterable
 from uuid import UUID
 
 from knowde.feature.entry.resource.repo.save import EdgeRel, q_create_node
-from knowde.feature.parsing.sysnet.sysnode import KNode
+from knowde.feature.parsing.primitive.term import Term
+from knowde.feature.parsing.sysnet import SysNet
+from knowde.feature.parsing.sysnet.sysnode import Def, KNode
 from knowde.shared.types import to_uuid
 
 
@@ -29,7 +31,6 @@ def q_update_removed(removed: Iterable[KNode]) -> str:
 def match_qs(varnames: dict[KNode, str], uids: dict[KNode, UUID]) -> list[str]:
     """差分更新のために既存ノードをマッチさせる."""
     qs = []
-
     for n, name in varnames.items():
         uid = uids.get(n)
         if uid is not None:
@@ -55,3 +56,39 @@ def match_rel_for_del(
         vars_rel.append(var_rel)
         qs.append(q)
     return qs, vars_rel
+
+
+def delete_term_qs(
+    terms: Iterable[Term],
+    varnames: dict[KNode, str],
+    sn: SysNet,
+) -> tuple[list[str], list[str]]:
+    """termの更新."""
+    q_rels = []
+    q_dels = []
+    for t in terms:
+        df = sn.get(t)
+        if not isinstance(df, Def):
+            raise TypeError
+        var = varnames[df.sentence]
+        q = f"MATCH (term_{var}:Term)-[:DEF|ALIAS]-*({var})"
+        d = f"DETACH DELETE term_{var}"
+        q_rels.append(q)
+        q_dels.append(d)
+    return q_rels, q_dels
+
+
+def insert_term_q(
+    term: Term,
+    varnames: dict[KNode, str],
+    sn: SysNet,
+) -> list[str]:
+    """termの登録."""
+    df = sn.get(term)
+    if not isinstance(df, Def):
+        raise TypeError
+    var = varnames[df.sentence]
+    q = f"CREATE ({var})<-[:DEF]-(:Term {{val: '{term.names[0]}'}})"
+    for name in term.names[1:]:
+        q += f"-[:ALIAS]->(:Term {{val: '{name}'}})"
+    return q
