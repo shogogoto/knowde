@@ -14,6 +14,7 @@
     関係
 """
 
+import pytest
 from pytest_unordered import unordered
 
 from knowde.conftest import async_fixture, mark_async_test
@@ -29,48 +30,42 @@ async def u() -> LUser:  # noqa: D103
     return await LUser(email="one@gmail.com").save()
 
 
-@mark_async_test()
-async def test_update_add_sentence(u: LUser) -> None:
-    """追加単文の差分更新."""
-    _, rm = await save_text(
-        u.uid,
-        """
-        # title1
-          aaa
-          bbb
-    """,
-    )
-    upd = """
-        # title1
-            aaa
-                aaa1
-            bbb
-            ccc
-    """
-    sn = parse2net(upd)
-    await update_resource_diff(rm.uid, sn)
-    db_sn, _ = await restore_sysnet(rm.uid)
-    assert sn.g.edges() == unordered(db_sn.g.edges())
+old1 = """
+# title1
+    aaa
+    bbb
+"""
+upd1 = """
+# title1
+    aaa
+        aaa1
+    bbb
+    ccc
+"""
+
+old2 = """
+# title1
+    aaa
+        bbb
+    ccc
+"""
+upd2 = """
+# title1
+    aaa
+    bbb
+    ccc
+"""
 
 
 @mark_async_test()
-async def test_update_edge(u: LUser) -> None:
-    """関係だけを更新."""
-    _, rm = await save_text(
-        u.uid,
-        """
-        # title1
-          aaa
-            bbb
-          ccc
-    """,
-    )
-    upd = """
-        # title1
-            aaa
-            bbb
-            ccc
-    """
+@pytest.mark.parametrize(
+    ("old", "upd"),
+    [(old1, upd1), (old2, upd2)],
+    ids=["単文追加", "関係のみ更新"],
+)
+async def test_update(u: LUser, old: str, upd: str) -> None:
+    """更新差分."""
+    _, rm = await save_text(u.uid, old)
     sn = parse2net(upd)
     await update_resource_diff(rm.uid, sn)
     db_sn, _ = await restore_sysnet(rm.uid)
