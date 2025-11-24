@@ -4,7 +4,7 @@ from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.tree2net import parse2net
 from knowde.shared.nxutil.edge_type import EdgeType
 
-from .domain import (
+from . import (
     create_updatediff,
     diff2sets,
     identify_updatediff_term,

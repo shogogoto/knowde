@@ -5,7 +5,10 @@ from functools import partial
 from neomodel import adb
 
 from knowde.feature.entry.label import LResource
-from knowde.feature.entry.resource.repo.diff_update.cypher import match_qs
+from knowde.feature.entry.resource.repo.diff_update.cypher import (
+    match_qs,
+    match_rel_for_del,
+)
 from knowde.feature.entry.resource.repo.diff_update.domain import (
     create_updatediff,
     diff2sets,
@@ -19,7 +22,11 @@ from knowde.feature.parsing.sysnet import SysNet
 from knowde.shared.types import UUIDy, to_uuid
 
 
-async def update_resource_diff(resource_id: UUIDy, upd: SysNet):
+async def update_resource_diff(
+    resource_id: UUIDy,
+    upd: SysNet,
+    do_print: bool = False,  # noqa: FBT001, FBT002
+):
     """更新差分の反映.
 
     更新箇所の特定
@@ -45,17 +52,24 @@ async def update_resource_diff(resource_id: UUIDy, upd: SysNet):
     f = partial(identify_updatediff_txt, threshold_ratio=0.6)
     removed, added, updated = create_updatediff(sn.sentences, upd.sentences, f)
 
-    _e_rem, e_add = diff2sets(sysnet2edges(sn), sysnet2edges(upd))
+    e_rem, e_add = diff2sets(sysnet2edges(sn), sysnet2edges(upd))
     nodes = removed | added | set(updated.keys()) | edges2nodes(e_add)
     varnames = {n: f"n{i}" for i, n in enumerate(nodes)}
 
+    match_dels, var_rels = match_rel_for_del(e_rem, varnames)
     qs = [
         f"MATCH (root:{t2labels(LResource)} {{uid: $uid}})",
         *match_qs(varnames, uids),
+        *match_dels,
         *[q_create_node(n, varnames) for n in added],
         *[rel2q(e, varnames) for e in e_add],
+        *[f"DELETE {r}" for r in var_rels],
     ]
     query = "\n".join([q for q in qs if q is not None])
+
+    if do_print:
+        print("-" * 30)  # noqa: T201
+        print(query)  # noqa: T201
     _ = await adb.cypher_query(
         query,
         params={"uid": to_uuid(resource_id).hex},

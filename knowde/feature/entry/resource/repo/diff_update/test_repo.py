@@ -40,40 +40,38 @@ async def test_update_add_sentence(u: LUser) -> None:
           bbb
     """,
     )
-    new = """
+    upd = """
         # title1
             aaa
                 aaa1
             bbb
             ccc
     """
-    new_sn = parse2net(new)
-    await update_resource_diff(rm.uid, new_sn)
-
-    upd_sn, _ = await restore_sysnet(rm.uid)
-
-    assert new_sn.g.edges() == unordered(upd_sn.g.edges())
+    sn = parse2net(upd)
+    await update_resource_diff(rm.uid, sn)
+    db_sn, _ = await restore_sysnet(rm.uid)
+    assert sn.g.edges() == unordered(db_sn.g.edges())
 
 
-# @mark_async_test()
-# async def test_diff_update_repo() -> None:
-#     """差分更新repo test."""
-#     u = await LUser(email="one@gmail.com").save()
-#     _, rm = await save_text(
-#         u.uid,
-#         """
-#         # title1
-#           aaa
-#           bbb
-#     """,
-#     )
-#     new = """
-#         # title1
-#             aaa
-#             bbbb
-#             ccc
-#     """
-#     new_sn = parse2net(new)
-#     await update_resource_diff(rm.uid, new_sn)
-#
-#     _sn, _ = await restore_sysnet(rm.uid)
+@mark_async_test()
+async def test_update_edge(u: LUser) -> None:
+    """関係だけを更新."""
+    _, rm = await save_text(
+        u.uid,
+        """
+        # title1
+          aaa
+            bbb
+          ccc
+    """,
+    )
+    upd = """
+        # title1
+            aaa
+            bbb
+            ccc
+    """
+    sn = parse2net(upd)
+    await update_resource_diff(rm.uid, sn)
+    db_sn, _ = await restore_sysnet(rm.uid)
+    assert sn.g.edges() == unordered(db_sn.g.edges())

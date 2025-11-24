@@ -5,21 +5,21 @@ DB機能なしのdomain
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from itertools import product
 from typing import TYPE_CHECKING
 
 import Levenshtein
 
+from knowde.feature.entry.resource.repo.diff_update.errors import IdentificationError
 from knowde.feature.entry.resource.repo.save import EdgeRel
 from knowde.feature.parsing.sysnet.sysnode import KNode
-
-from .errors import IdentificationError
-from .types import UpdateGetter
 
 if TYPE_CHECKING:
     from knowde.feature.parsing.primitive.term import Term
     from knowde.feature.parsing.sysnet import SysNet
+
+type UpdateGetter[T] = Callable[[Iterable[T], Iterable[T]], dict[T, T]]
 
 
 def identify_updatediff_txt(
