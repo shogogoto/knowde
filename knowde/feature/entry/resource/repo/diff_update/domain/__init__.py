@@ -13,7 +13,7 @@ import Levenshtein
 
 from knowde.feature.entry.resource.repo.diff_update.errors import IdentificationError
 from knowde.feature.entry.resource.repo.save import EdgeRel
-from knowde.feature.parsing.sysnet.sysnode import KNode
+from knowde.feature.parsing.sysnet.sysnode import Def, KNode
 
 if TYPE_CHECKING:
     from knowde.feature.parsing.primitive.term import Term
@@ -93,3 +93,20 @@ def edges2nodes(es: Iterable[EdgeRel]) -> set[KNode]:
         s.add(u)
         s.add(v)
     return s
+
+
+def get_switched_def_terms(old: SysNet, upd: SysNet) -> dict[Term, Term]:
+    """用語と単文の入れ替えを取得する.
+
+    単文はそのままにしたいので、操作すべきtermsを返す
+    """
+    old_defs = {old.get(t) for t in old.terms}
+    old_defs = {d for d in old_defs if isinstance(d, Def)}  # 型付け
+    d = {}
+    for old_d in old_defs:
+        if old_d.sentence not in upd.g:
+            continue
+        upd_d = upd.get(old_d.sentence)
+        if isinstance(upd_d, Def):
+            d[old_d.term] = upd_d.term
+    return d

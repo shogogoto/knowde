@@ -17,6 +17,7 @@ from knowde.feature.entry.resource.repo.diff_update.domain import (
     create_updatediff,
     diff2sets,
     edges2nodes,
+    get_switched_def_terms,
     identify_updatediff_term,
     identify_updatediff_txt,
     sysnet2edges,
@@ -28,6 +29,7 @@ from knowde.feature.parsing.sysnet.sysnode import Def
 from knowde.shared.types import UUIDy, to_uuid
 
 
+# 単文のuidをなるべく不変にする
 async def update_resource_diff(  # noqa: PLR0914
     resource_id: UUIDy,
     upd: SysNet,
@@ -44,7 +46,11 @@ async def update_resource_diff(  # noqa: PLR0914
     # 関係
     e_rem, e_add = diff2sets(sysnet2edges(sn), sysnet2edges(upd))
 
-    # 旧新の定義
+    # 定義の組み合わせの変更のみを取得
+    switched_t = get_switched_def_terms(sn, upd)
+    upd_t |= switched_t
+
+    # 用語の変更分からの定義
     defs = {sn.get(t) for t in rm_t | upd_t.keys()} | {
         upd.get(t) for t in add_t | set(upd_t.values())
     }
@@ -69,6 +75,7 @@ async def update_resource_diff(  # noqa: PLR0914
         print(f"{upd_t =}")  # noqa: T201
         print(f"{e_rem =}")  # noqa: T201
         print(f"{e_add =}")  # noqa: T201
+        print(f"{switched_t =}")  # noqa: T201
 
     # クエリ構築
     q_delrels, var_delrels = match_rel_for_del(e_rem, varnames)
@@ -90,11 +97,15 @@ async def update_resource_diff(  # noqa: PLR0914
         *[insert_term_q(t, varnames, upd, new2old) for t in new_t],
         *[update_sentence_q(o, n, varnames) for o, n in updated.items()],
     ]
-    query = "\n".join([q for q in qs if q is not None])
+    qs = [q for q in qs if q is not None]
+    query = "\n".join(qs)
 
     if do_print:
         print("-" * 30)  # noqa: T201
         print(query)  # noqa: T201
+
+    if len(qs) == 1:  # 規定のroot matchだけ。他のクエリがない
+        return
 
     _ = await adb.cypher_query(
         query,

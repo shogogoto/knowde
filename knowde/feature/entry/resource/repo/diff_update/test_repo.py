@@ -108,23 +108,32 @@ async def test_update_terms(u: LUser) -> None:
 
 @mark_async_test()
 async def test_update_defs(u: LUser) -> None:
-    """定義更新(より複雑な用語更新)."""
+    """用語と単文を同時に変更."""
     old = """
         # title1
             A: aaa
             B: bbb
-            C: ccc
-            D: ddd
     """
     upd = """
         # title1
-            !文と用語を同時に変更
             A,A1,A2: aad
-            !文そのまま
             B: bbbbb
-            ! 用語入れ替え
-            !D: ccc
-            !C: ddd
+    """
+    await common(u, old, upd)
+
+
+@mark_async_test()
+async def test_switch_term(u: LUser) -> None:
+    """単文そのままに用語だけを入れ替える."""
+    old = """
+        # title1
+            A: aaa
+            B: bbb
+    """
+    upd = """
+        # title1
+            B: aaa
+            A: bbb
     """
     await common(u, old, upd)
 
