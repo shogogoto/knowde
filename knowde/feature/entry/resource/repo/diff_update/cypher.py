@@ -3,11 +3,11 @@
 from collections.abc import Iterable
 from uuid import UUID
 
-from knowde.feature.entry.resource.repo.save import EdgeRel, q_create_node
+from knowde.feature.entry.resource.repo.save import EdgeRel, q_create_node, rel2q
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.sysnet.sysnode import Def, KNode
-from knowde.shared.types import to_uuid
+from knowde.shared.types import Duplicable, to_uuid
 
 
 def q_update_added(added: Iterable[KNode]) -> str:
@@ -28,7 +28,7 @@ def q_update_removed(removed: Iterable[KNode]) -> str:
     return q
 
 
-def match_qs(varnames: dict[KNode, str], uids: dict[KNode, UUID]) -> list[str]:
+def match_nodes(varnames: dict[KNode, str], uids: dict[KNode, UUID]) -> list[str]:
     """差分更新のために既存ノードをマッチさせる."""
     qs = []
     for n, name in varnames.items():
@@ -82,13 +82,43 @@ def insert_term_q(
     term: Term,
     varnames: dict[KNode, str],
     sn: SysNet,
-) -> list[str]:
+    new2old_sent: dict[str | Duplicable, str | Duplicable],
+) -> str:
     """termの登録."""
     df = sn.get(term)
     if not isinstance(df, Def):
         raise TypeError
-    var = varnames[df.sentence]
+    s = new2old_sent.get(df.sentence, df.sentence)
+    var = varnames[s]
     q = f"CREATE ({var})<-[:DEF]-(:Term {{val: '{term.names[0]}'}})"
     for name in term.names[1:]:
         q += f"-[:ALIAS]->(:Term {{val: '{name}'}})"
     return q
+
+
+def update_sentence_q(
+    old: str | Duplicable,
+    new: str | Duplicable,
+    varnames: dict[KNode, str],
+) -> str:
+    """既存uidを保持しつつ単文を更新 or 新規登録."""
+    var = varnames[old]
+
+    # if var is None:  # 新規登録
+    #     q = f"CREATE ({var}:Sentence {{val: '{new}'}})"
+    # else:  # 既存更新
+    #     q = f"SET {var}.val = '{new}'"
+    return f"SET {var}.val = '{new}'"
+
+
+def merge_edge_q(
+    e: EdgeRel,
+    varnames: dict[KNode, str],
+    new2old_sent: dict[str | Duplicable, str | Duplicable],
+):
+    """関係更新."""
+    u, v, t = e
+    u2 = new2old_sent.get(u, u)
+    v2 = new2old_sent.get(v, v)
+
+    return rel2q((u2, v2, t), varnames)

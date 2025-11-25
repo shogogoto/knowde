@@ -1,5 +1,7 @@
 """更新差分repo test."""
 
+from time import sleep
+
 from pytest_unordered import unordered
 
 from knowde.conftest import async_fixture, mark_async_test
@@ -16,14 +18,24 @@ async def u() -> LUser:  # noqa: D103
     return await LUser(email="one@gmail.com").save()
 
 
-async def common(u: LUser, old: str, upd: str, do_print: bool = False) -> None:  # noqa: D103, FBT001, FBT002
+async def common(  # noqa: D103
+    u: LUser,
+    old: str,
+    upd: str,
+    do_print: bool = False,  # noqa: FBT001, FBT002
+    do_sleep: bool = False,  # noqa: FBT001, FBT002
+) -> None:
     _, rm = await save_text(u.uid, old)
     sn = parse2net(upd)
     await update_resource_diff(rm.uid, sn, do_print)
     db_sn, _ = await restore_sysnet(rm.uid)
     if do_print:
+        print("--------- TXT")  # noqa: T201
         nxprint(sn.g, True)  # noqa: FBT003
+        print("--------- DB")  # noqa: T201
         nxprint(db_sn.g, True)  # noqa: FBT003
+    if do_sleep:
+        sleep(1000)  # noqa: ASYNC251
     assert sn.g.edges() == unordered(db_sn.g.edges())
 
 
@@ -58,7 +70,7 @@ async def test_update_edge(u: LUser) -> None:
         # title1
             aaa
             bbb
-            ccc
+                -> ccc
     """
     await common(u, old, upd)
 
@@ -94,22 +106,43 @@ async def test_update_terms(u: LUser) -> None:
     await common(u, old, upd)
 
 
-# @mark_async_test()
-# async def test_update_defs(u: LUser) -> None:
-#     """定義更新(より複雑な用語更新)."""
-#     old = """
-#         # title1
-#             aaa
-#             B: bbb
-#             C: ccc
-#     """
-#     upd = """
-#         # title1
-#             ! 追加
-#             A: aaa
-#             ! 用語削除
-#             bbb
-#             ! 用語変更
-#             CC: ccc
-#     """
-#     await common(u, old, upd, True)
+@mark_async_test()
+async def test_update_defs(u: LUser) -> None:
+    """定義更新(より複雑な用語更新)."""
+    old = """
+        # title1
+            A: aaa
+            B: bbb
+            C: ccc
+            D: ddd
+    """
+    upd = """
+        # title1
+            !文と用語を同時に変更
+            A,A1,A2: aad
+            !文そのまま
+            B: bbbbb
+            ! 用語入れ替え
+            !D: ccc
+            !C: ddd
+    """
+    await common(u, old, upd)
+
+
+@mark_async_test()
+async def test_update_duplicable(u: LUser) -> None:
+    """定義更新(より複雑な用語更新)."""
+    # old = """
+    #     # title1
+    #         A: aaa
+    #         B: bbb
+    #         C: ccc
+    # """
+    # upd = """
+    #     # title1
+    #         !文と用語を同時に変更
+    #         A: aad
+    #         B: bbb
+    #         C: ccc
+    # """
+    # await common(u, old, upd, True)
