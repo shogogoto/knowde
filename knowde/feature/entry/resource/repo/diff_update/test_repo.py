@@ -187,20 +187,23 @@ async def test_update_duplicable(u: LUser) -> None:
     await common(u, old, upd)
 
 
-# @mark_async_test()
-# async def test_update_when(u: LUser) -> None:
-#     """無単文定義対応."""
-#     old = """
-#         # title1
-#             A:
-#             B: bbb
-#             C: ccc
-#     """
-#     upd = """
-#         # title1
-#             A: aaa
-#             B:
-#             C: ccc
-#             D:
-#     """
-#     await common(u, old, upd)
+@mark_async_test()
+async def test_update_when(u: LUser) -> None:
+    """when付加情報."""
+    old = """
+        # title1
+            aaa
+                when. 2025
+            bbb
+            ccc
+                when. -9
+    """
+    upd = """
+        # title1
+            aaa
+                when. 9999
+            bbb
+                when. 1000
+            ccc
+    """
+    await common(u, old, upd)

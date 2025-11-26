@@ -53,7 +53,11 @@ async def update_resource_diff(  # noqa: PLR0914
         updiff |= identify_duplicate_updiff(sn, upd)
         return updiff
 
-    removed, added, updated = create_updatediff(sn.sentences, upd.sentences, f1)
+    removed, added, updated = create_updatediff(
+        sn.sentences + sn.whens,
+        upd.sentences + upd.whens,
+        f1,
+    )
     # 用語
     f2 = partial(identify_updatediff_term, threshold_ratio=0.6)
     rm_t, add_t, upd_t = create_updatediff(sn.terms, upd.terms, f2)
@@ -72,8 +76,9 @@ async def update_resource_diff(  # noqa: PLR0914
         removed
         | added
         | set(updated.keys())
-        | edges2nodes(e_add) - {sn.root}
-        | {d.sentence for d in defs if isinstance(d, Def)}
+        | edges2nodes(e_rem)
+        | edges2nodes(e_add)
+        | {d.sentence for d in defs if isinstance(d, Def)} - {sn.root}
     )
     varnames = {sent: f"n{i}" for i, sent in enumerate(sentences)} | {sn.root: "root"}
 
@@ -107,8 +112,8 @@ async def update_resource_diff(  # noqa: PLR0914
         *q_t_del,
         *delete_sentency_qs(removed, varnames),
         *[q_create_node(n, varnames) for n in added],
-        *[f"DELETE {r}" for r in var_delrels],
         *[merge_edge_q(e, varnames, new2old) for e in e_add],
+        *[f"DELETE {r}" for r in var_delrels],
         *[insert_term_q(t, varnames, upd, new2old) for t in new_t],
         *[update_sentence_q(o, n, varnames) for o, n in updated.items()],
     ]

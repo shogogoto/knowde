@@ -26,7 +26,7 @@ from knowde.shared.types import Duplicable, UUIDy, is_duplicable, to_uuid
 
 
 @cache
-def to_knode(n: neo4j.graph.Node) -> KNode:
+def to_knowde(n: neo4j.graph.Node) -> KNode:
     """neo4jから変換."""
     lb_name = next(iter(n.labels))
     val = n.get("val")
@@ -87,8 +87,8 @@ async def restore_tops(resource_uid: UUIDy) -> tuple[nx.DiGraph, dict[UUID, KNod
             continue
         suid = to_uuid(s_.get("uid"))
         euid = to_uuid(e_.get("uid"))
-        uids[suid] = to_knode(s_)
-        uids[euid] = to_knode(e_)
+        uids[suid] = to_knowde(s_)
+        uids[euid] = to_knowde(e_)
         EdgeType(r.type.lower()).add_edge(g, suid, euid)
     return g, uids
 
@@ -117,7 +117,7 @@ async def restore_undersentnet(  # noqa: PLR0914
     for row in rows:
         s, ends, names, alias = row
         names = [n.get("val") for n in names]
-        sval = to_knode(s)
+        sval = to_knowde(s)
         suid = to_uuid(s.get("uid"))
         uids[suid] = sval
         g.add_node(suid)
@@ -127,7 +127,7 @@ async def restore_undersentnet(  # noqa: PLR0914
                 continue
             euid = to_uuid(e.get("uid"))
             EdgeType(r.type.lower()).add_edge(g, suid, euid)
-            uids[euid] = to_knode(e)
+            uids[euid] = to_knowde(e)
         if len(names) > 0:
             term = Term.create(*names, alias=alias)
             terms[suid] = term

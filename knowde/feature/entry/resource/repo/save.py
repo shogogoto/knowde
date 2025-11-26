@@ -50,7 +50,8 @@ def propstr(tgt: StructuredNode | BaseModel | dict) -> str:
     if isinstance(tgt, BaseModel):
         d = tgt.model_dump(mode="json")
 
-    kvs = [f"{k}: {val2str(v)}" for k, v in d.items() if v]
+    d["uid"] = to_uuid(d["uid"]).hex
+    kvs = [f"{k}: {val2str(v)}" for k, v in dict(d).items() if v]
     s = ", ".join(kvs)
     return f"{{ {s} }}"
 

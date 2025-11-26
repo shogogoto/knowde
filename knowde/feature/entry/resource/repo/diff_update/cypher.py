@@ -5,9 +5,23 @@ from uuid import UUID
 
 from knowde.feature.entry.resource.repo.save import EdgeRel, rel2q
 from knowde.feature.parsing.primitive.term import Term
+from knowde.feature.parsing.primitive.time import WhenNode
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.sysnet.sysnode import Def, KNode, Sentency
-from knowde.shared.types import to_uuid
+from knowde.shared.types import Duplicable, to_uuid
+
+
+def n2label(n: KNode) -> str:
+    """nodeのラベル."""
+    match n:
+        case WhenNode():
+            return "Interval"
+        case str() | Duplicable():
+            return "Sentence"
+        case Term():
+            return "Term"
+        case _:
+            raise TypeError(n)
 
 
 def match_nodes(varnames: dict[KNode, str], uids: dict[KNode, UUID]) -> list[str]:
@@ -18,7 +32,7 @@ def match_nodes(varnames: dict[KNode, str], uids: dict[KNode, UUID]) -> list[str
             continue
         uid = uids.get(n)
         if uid is not None:
-            q = f"MATCH ({name}:Sentence {{uid: '{to_uuid(uid).hex}'}})"
+            q = f"MATCH ({name}:{n2label(n)} {{uid: '{to_uuid(uid).hex}'}})"
             qs.append(q)
     return qs
 
