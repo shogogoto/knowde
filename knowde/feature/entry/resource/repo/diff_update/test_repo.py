@@ -33,6 +33,7 @@ async def common(  # noqa: D103
     sn = parse2net(upd)
     await update_resource_diff(rm.uid, sn, do_print)
     db_sn, _ = await restore_sysnet(rm.uid)
+    dupmap = identify_duplicate_updiff(sn, db_sn)
     if do_print:
         print("--------- TXT")  # noqa: T201
         nxprint(sn.g, True)  # noqa: FBT003
@@ -40,14 +41,13 @@ async def common(  # noqa: D103
         nxprint(db_sn.g, True)  # noqa: FBT003
         # print("--------- TXT - DB edges")
         # pp(set(sn.g.edges()) - set(db_sn.g.edges()))
-
+        print(f"{dupmap=}")  # noqa: T201
     if do_sleep:
         sleep(1000)  # noqa: ASYNC251
 
     # 元のuidを尊重するため、updのsnのduplicable uidは変更される
     # なのでそれを補正して比較
-    dupmap = identify_duplicate_updiff(sn, db_sn)
-    g = nx.relabel_nodes(sn.g, dupmap)
+    g = nx.relabel_nodes(sn.g, dupmap) if len(dupmap) > 0 else sn.g
 
     assert g.edges() == unordered(db_sn.g.edges())
 
@@ -166,3 +166,41 @@ async def test_update_nosentence_def(u: LUser) -> None:
             D:
     """
     await common(u, old, upd)
+
+
+@mark_async_test()
+async def test_update_duplicable(u: LUser) -> None:
+    """重複可能文."""
+    old = """
+        # title1
+            +++ aaa +++
+            +++ xxx +++
+    """
+    upd = """
+        # title1
+            +++ bbb +++
+            +++ xxx +++
+            +++ xxx +++
+            +++yyy+++
+            +++yyy+++
+    """
+    await common(u, old, upd)
+
+
+# @mark_async_test()
+# async def test_update_when(u: LUser) -> None:
+#     """無単文定義対応."""
+#     old = """
+#         # title1
+#             A:
+#             B: bbb
+#             C: ccc
+#     """
+#     upd = """
+#         # title1
+#             A: aaa
+#             B:
+#             C: ccc
+#             D:
+#     """
+#     await common(u, old, upd)

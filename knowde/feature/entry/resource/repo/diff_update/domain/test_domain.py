@@ -56,7 +56,7 @@ def test_edgediff() -> None:
     """
 
     txt2 = """
-        # title2
+        # title
             A: aaa
                 BB: bbb
             C: ccc

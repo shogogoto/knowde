@@ -14,6 +14,8 @@ def match_nodes(varnames: dict[KNode, str], uids: dict[KNode, UUID]) -> list[str
     """差分更新のために既存ノードをマッチさせる."""
     qs = []
     for n, name in varnames.items():
+        if name == "root":
+            continue
         uid = uids.get(n)
         if uid is not None:
             q = f"MATCH ({name}:Sentence {{uid: '{to_uuid(uid).hex}'}})"
@@ -104,3 +106,13 @@ def merge_edge_q(
     v2 = new2old_sent.get(v, v)
 
     return rel2q((u2, v2, t), varnames)
+
+
+def delete_sentency_qs(ss: Iterable[Sentency], varnames: dict[KNode, str]) -> list[str]:
+    """単文の削除."""
+    qs = []
+    for s in ss:
+        var = varnames[s]
+        q = f"DETACH DELETE ({var})"
+        qs.append(q)
+    return qs

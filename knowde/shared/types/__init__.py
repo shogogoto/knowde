@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Hashable
 from typing import Annotated, Any
 from uuid import UUID, uuid4
@@ -96,3 +97,11 @@ class Duplicable(BaseModel, frozen=True):
     def __repr__(self) -> str:
         """Class representation."""
         return f"Dupl({self} {str(self.uid)[:8]}..)"
+
+
+DUPLICABLE_SURRONDED = re.compile(r"^\+\+\+.*\+\+\+$")
+
+
+def is_duplicable(text) -> bool:
+    """文字列が '+++何らかの文字+++' のパターンに完全に一致するかを判定します。."""
+    return bool(DUPLICABLE_SURRONDED.fullmatch(text))

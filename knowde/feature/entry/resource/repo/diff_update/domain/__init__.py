@@ -80,7 +80,7 @@ def identify_updatediff_term(
 def sysnet2edges(sn: SysNet) -> set[EdgeRel]:
     """edgeをsetに変換."""
     edges = set()
-    for s in sn.sentences:  # 単文の関係だけ見れば良い
+    for s in [*sn.sentences, sn.root]:  # 単文の関係だけ見れば良い
         e = {(u, v, attr["type"]) for u, v, attr in sn.g.out_edges(s, data=True)}
         edges = edges.union(e)
     return edges

@@ -22,7 +22,7 @@ from knowde.feature.parsing.sysnet.sysnode import (
 )
 from knowde.shared.errors.domain import NotFoundError
 from knowde.shared.nxutil.edge_type import EdgeType
-from knowde.shared.types import UUIDy, to_uuid
+from knowde.shared.types import Duplicable, UUIDy, is_duplicable, to_uuid
 
 
 @cache
@@ -34,6 +34,8 @@ def to_knode(n: neo4j.graph.Node) -> KNode:
         case "Head":
             return Token(type="H2", value=val)  # 適当なheading type
         case "Sentence":
+            if is_duplicable(val):
+                return Duplicable(n=val, uid=n.get("uid"))
             return DummySentence(uid=n.get("uid")) if val == DUMMY_SENTENCE else val
         case "Term":
             return Term.create(val)

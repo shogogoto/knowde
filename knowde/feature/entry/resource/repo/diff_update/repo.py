@@ -8,6 +8,7 @@ from neomodel import adb
 
 from knowde.feature.entry.label import LResource
 from knowde.feature.entry.resource.repo.diff_update.cypher import (
+    delete_sentency_qs,
     delete_term_qs,
     insert_term_q,
     match_nodes,
@@ -71,23 +72,23 @@ async def update_resource_diff(  # noqa: PLR0914
         removed
         | added
         | set(updated.keys())
-        | edges2nodes(e_add)
+        | edges2nodes(e_add) - {sn.root}
         | {d.sentence for d in defs if isinstance(d, Def)}
     )
-    varnames = {sent: f"n{i}" for i, sent in enumerate(sentences)}
+    varnames = {sent: f"n{i}" for i, sent in enumerate(sentences)} | {sn.root: "root"}
 
     if do_print:
         print("#" * 30)  # noqa: T201
+        pp(varnames)
         print(f"{removed =}")  # noqa: T201
         print(f"{added =}")  # noqa: T201
         print(f"{updated =}")  # noqa: T201
         print(f"{defs}")  # noqa: T201
-        pp(varnames)
         print(f"{rm_t =}")  # noqa: T201
         print(f"{add_t =}")  # noqa: T201
         print(f"{upd_t =}")  # noqa: T201
-        # print(f"{e_rem =}")
-        # print(f"{e_add =}")
+        print(f"{e_rem =}")  # noqa: T201
+        print(f"{e_add =}")  # noqa: T201
         print(f"{switched_t =}")  # noqa: T201
 
     # クエリ構築
@@ -104,6 +105,7 @@ async def update_resource_diff(  # noqa: PLR0914
         *match_t,
         *q_delrels,
         *q_t_del,
+        *delete_sentency_qs(removed, varnames),
         *[q_create_node(n, varnames) for n in added],
         *[f"DELETE {r}" for r in var_delrels],
         *[merge_edge_q(e, varnames, new2old) for e in e_add],
