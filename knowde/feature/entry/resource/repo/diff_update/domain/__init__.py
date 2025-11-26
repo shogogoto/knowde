@@ -13,7 +13,8 @@ import Levenshtein
 
 from knowde.feature.entry.resource.repo.diff_update.errors import IdentificationError
 from knowde.feature.entry.resource.repo.save import EdgeRel
-from knowde.feature.parsing.sysnet.sysnode import Def, KNode
+from knowde.feature.parsing.sysnet.sysnode import Def, KNode, Sentency
+from knowde.shared.types import Duplicable
 
 if TYPE_CHECKING:
     from knowde.feature.parsing.primitive.term import Term
@@ -26,7 +27,7 @@ def identify_updatediff_txt(
     old: Iterable[str],
     new: Iterable[str],
     threshold_ratio: float = 0.6,
-) -> dict[str, str]:
+) -> dict[Sentency, Sentency]:
     """2種類の文の集合の更新対を同定."""
     o, n = set(old), set(new)
     removed, added = o - n, n - o
@@ -57,11 +58,11 @@ def create_updatediff[T](
     f: UpdateGetter[T],
 ) -> tuple[set[T], set[T], dict[T, T]]:
     """更新差分の作成."""
-    removed, added = diff2sets(old, new)
-    updated = f(removed, added)
-    removed -= set(updated.keys())
-    added -= set(updated.values())
-    return removed, added, updated
+    rm, add = diff2sets(old, new)
+    updated = f(rm, add)
+    rm -= set(updated.keys())
+    add -= set(updated.values())
+    return rm, add, updated
 
 
 def identify_updatediff_term(
@@ -107,6 +108,40 @@ def get_switched_def_terms(old: SysNet, upd: SysNet) -> dict[Term, Term]:
         if old_d.sentence not in upd.g:
             continue
         upd_d = upd.get(old_d.sentence)
-        if isinstance(upd_d, Def):
+        if isinstance(upd_d, Def) and upd_d.term != old_d.term:
             d[old_d.term] = upd_d.term
     return d
+
+
+def identify_duplicate_updiff(
+    old: SysNet,
+    upd: SysNet,
+) -> dict[Sentency, Sentency]:
+    """Dupl <-> strの変更を用語共有で同定."""
+    map_ = {}
+    # Dupl -> str
+    old_d = [
+        d
+        for d in [old.get(s) for s in old.sentences]
+        if isinstance(d, Def) and isinstance(d.sentence, Duplicable)
+    ]
+    for od in old_d:
+        if od.term not in upd.g:
+            continue
+        d = upd.get(od.term)
+        if isinstance(d, Def) and od.sentence != d.sentence:
+            map_[od.sentence] = d.sentence
+
+    # str -> Dupl
+    upd_d = [
+        d
+        for d in [upd.get(s) for s in upd.sentences]
+        if isinstance(d, Def) and isinstance(d.sentence, Duplicable)
+    ]
+    for ud in upd_d:
+        if ud.term not in old.g:
+            continue
+        d = old.get(ud.term)
+        if isinstance(d, Def) and ud.sentence != d.sentence:
+            map_[d.sentence] = ud.sentence
+    return map_

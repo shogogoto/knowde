@@ -1,6 +1,8 @@
 """repo."""
 
+from collections.abc import Iterable
 from functools import partial
+from pprint import pp
 
 from neomodel import adb
 
@@ -18,6 +20,7 @@ from knowde.feature.entry.resource.repo.diff_update.domain import (
     diff2sets,
     edges2nodes,
     get_switched_def_terms,
+    identify_duplicate_updiff,
     identify_updatediff_term,
     identify_updatediff_txt,
     sysnet2edges,
@@ -25,10 +28,11 @@ from knowde.feature.entry.resource.repo.diff_update.domain import (
 from knowde.feature.entry.resource.repo.restore import restore_sysnet
 from knowde.feature.entry.resource.repo.save import q_create_node, t2labels
 from knowde.feature.parsing.sysnet import SysNet
-from knowde.feature.parsing.sysnet.sysnode import Def
+from knowde.feature.parsing.sysnet.sysnode import Def, Sentency
 from knowde.shared.types import UUIDy, to_uuid
 
 
+# db操作以外はdomainに移す
 # 単文のuidをなるべく不変にする
 async def update_resource_diff(  # noqa: PLR0914
     resource_id: UUIDy,
@@ -37,8 +41,17 @@ async def update_resource_diff(  # noqa: PLR0914
 ):
     """更新差分の反映."""
     sn, uids = await restore_sysnet(resource_id)
+
     # 単文
-    f1 = partial(identify_updatediff_txt, threshold_ratio=0.6)
+    def f1(old: Iterable[Sentency], new: Iterable[Sentency]):
+        updiff = identify_updatediff_txt(
+            [o for o in old if isinstance(o, str)],
+            [n for n in new if isinstance(n, str)],
+            threshold_ratio=0.6,
+        )
+        updiff |= identify_duplicate_updiff(sn, upd)
+        return updiff
+
     removed, added, updated = create_updatediff(sn.sentences, upd.sentences, f1)
     # 用語
     f2 = partial(identify_updatediff_term, threshold_ratio=0.6)
@@ -69,12 +82,12 @@ async def update_resource_diff(  # noqa: PLR0914
         print(f"{added =}")  # noqa: T201
         print(f"{updated =}")  # noqa: T201
         print(f"{defs}")  # noqa: T201
-        print(f"{varnames =}")  # noqa: T201
+        pp(varnames)
         print(f"{rm_t =}")  # noqa: T201
         print(f"{add_t =}")  # noqa: T201
         print(f"{upd_t =}")  # noqa: T201
-        print(f"{e_rem =}")  # noqa: T201
-        print(f"{e_add =}")  # noqa: T201
+        # print(f"{e_rem =}")
+        # print(f"{e_add =}")
         print(f"{switched_t =}")  # noqa: T201
 
     # クエリ構築

@@ -24,6 +24,7 @@ async def save_resource_with_detail(
     txt: str,
     path: list[str] | None = None,
     updated: datetime | None = None,
+    do_print: bool = False,  # noqa: FBT001, FBT002
 ) -> tuple[MResource, ResourceMeta, SysNet]:
     """テキストからResource内のKnowdeネットワークを永続化."""
     meta, sn = ResourceMeta.from_str(txt)
@@ -43,7 +44,7 @@ async def save_resource_with_detail(
         cache = await lb.cached_stats.get_or_none()
         await save_resource_stats_cache(old.uid, sn)
         if cache is None or already is None:  # 新規作成
-            await sn2db(sn, lb.uid)
+            await sn2db(sn, lb.uid, do_print)
         is_changed = already is not None and already.txt_hash != old.txt_hash
         if is_changed:
             await update_resource_diff(lb.uid, sn)
@@ -56,6 +57,7 @@ async def save_text(
     s: str,
     path: tuple[str, ...] | None = None,
     updated: datetime | None = None,
+    do_print: bool = False,  # noqa: FBT001, FBT002
 ) -> tuple[SysNet, MResource]:
     """テキストをリソース詳細として保存するラッパー."""
     ns = await fetch_namespace(to_uuid(user_id))
@@ -64,5 +66,6 @@ async def save_text(
         s,
         list(path) if path is not None else None,
         updated,
+        do_print,
     )
     return sn, m

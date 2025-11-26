@@ -2,9 +2,13 @@
 
 from time import sleep
 
+import networkx as nx
 from pytest_unordered import unordered
 
 from knowde.conftest import async_fixture, mark_async_test
+from knowde.feature.entry.resource.repo.diff_update.domain import (
+    identify_duplicate_updiff,
+)
 from knowde.feature.entry.resource.repo.diff_update.repo import update_resource_diff
 from knowde.feature.entry.resource.repo.restore import restore_sysnet
 from knowde.feature.entry.resource.usecase import save_text
@@ -34,9 +38,18 @@ async def common(  # noqa: D103
         nxprint(sn.g, True)  # noqa: FBT003
         print("--------- DB")  # noqa: T201
         nxprint(db_sn.g, True)  # noqa: FBT003
+        # print("--------- TXT - DB edges")
+        # pp(set(sn.g.edges()) - set(db_sn.g.edges()))
+
     if do_sleep:
         sleep(1000)  # noqa: ASYNC251
-    assert sn.g.edges() == unordered(db_sn.g.edges())
+
+    # 元のuidを尊重するため、updのsnのduplicable uidは変更される
+    # なのでそれを補正して比較
+    dupmap = identify_duplicate_updiff(sn, db_sn)
+    g = nx.relabel_nodes(sn.g, dupmap)
+
+    assert g.edges() == unordered(db_sn.g.edges())
 
 
 @mark_async_test()
@@ -77,14 +90,12 @@ async def test_update_edge(u: LUser) -> None:
 
 @mark_async_test()
 async def test_update_terms(u: LUser) -> None:
-    """用語更新.
-
-    ! 追加
-    ! 用語削除
-    ! 用語変更
-    ! 2つの用語も削除
-    ! 片方の用語を削除
-    """
+    """用語更新."""
+    # aaa 用語追加
+    # bbb 用語削除
+    # ccc 用語変更
+    # ddd 3名の用語を削除
+    # eee 名の削除と追加
     old = """
         # title1
             zero: 000
@@ -139,19 +150,19 @@ async def test_switch_term(u: LUser) -> None:
 
 
 @mark_async_test()
-async def test_update_duplicable(u: LUser) -> None:
-    """定義更新(より複雑な用語更新)."""
-    # old = """
-    #     # title1
-    #         A: aaa
-    #         B: bbb
-    #         C: ccc
-    # """
-    # upd = """
-    #     # title1
-    #         !文と用語を同時に変更
-    #         A: aad
-    #         B: bbb
-    #         C: ccc
-    # """
-    # await common(u, old, upd, True)
+async def test_update_nosentence_def(u: LUser) -> None:
+    """無単文定義対応."""
+    old = """
+        # title1
+            A:
+            B: bbb
+            C: ccc
+    """
+    upd = """
+        # title1
+            A: aaa
+            B:
+            C: ccc
+            D:
+    """
+    await common(u, old, upd)

@@ -3,29 +3,11 @@
 from collections.abc import Iterable
 from uuid import UUID
 
-from knowde.feature.entry.resource.repo.save import EdgeRel, q_create_node, rel2q
+from knowde.feature.entry.resource.repo.save import EdgeRel, rel2q
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.sysnet import SysNet
-from knowde.feature.parsing.sysnet.sysnode import Def, KNode
-from knowde.shared.types import Duplicable, to_uuid
-
-
-def q_update_added(added: Iterable[KNode]) -> str:
-    """単文追加."""
-    q = ""
-    varnames = {n: f"n{i}" for i, n in enumerate(added)}
-    for a in added:
-        q += f"{q_create_node(a, varnames)}\n"
-    return q
-
-
-def q_update_removed(removed: Iterable[KNode]) -> str:
-    """単文削除."""
-    q = ""
-    varnames = {n: f"n{i}" for i, n in enumerate(removed)}
-    for r in removed:
-        q += f"MATCH (n) WHERE id(n) = id({varnames[r]}) DETACH DELETE n\n"
-    return q
+from knowde.feature.parsing.sysnet.sysnode import Def, KNode, Sentency
+from knowde.shared.types import to_uuid
 
 
 def match_nodes(varnames: dict[KNode, str], uids: dict[KNode, UUID]) -> list[str]:
@@ -82,7 +64,7 @@ def insert_term_q(
     term: Term,
     varnames: dict[KNode, str],
     sn: SysNet,
-    new2old_sent: dict[str | Duplicable, str | Duplicable],
+    new2old_sent: dict[Sentency, Sentency],
 ) -> str:
     """termの登録."""
     df = sn.get(term)
@@ -97,8 +79,8 @@ def insert_term_q(
 
 
 def update_sentence_q(
-    old: str | Duplicable,
-    new: str | Duplicable,
+    old: Sentency,
+    new: Sentency,
     varnames: dict[KNode, str],
 ) -> str:
     """既存uidを保持しつつ単文を更新 or 新規登録."""
@@ -114,7 +96,7 @@ def update_sentence_q(
 def merge_edge_q(
     e: EdgeRel,
     varnames: dict[KNode, str],
-    new2old_sent: dict[str | Duplicable, str | Duplicable],
+    new2old_sent: dict[Sentency, Sentency],
 ):
     """関係更新."""
     u, v, t = e

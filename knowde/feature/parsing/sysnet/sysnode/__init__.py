@@ -96,7 +96,8 @@ class DummySentence(Duplicable, frozen=True):
     n: str = DUMMY_SENTENCE
 
 
-type _KNElem = str | Duplicable | Template | WhenNode  # 共通型
+type Sentency = str | Duplicable
+type _KNElem = Sentency | Template | WhenNode  # 共通型
 type KNode = Term | _KNElem
 type KNArg = Def | _KNElem
 

@@ -95,4 +95,4 @@ class Duplicable(BaseModel, frozen=True):
 
     def __repr__(self) -> str:
         """Class representation."""
-        return f"Dupl({self})"
+        return f"Dupl({self} {str(self.uid)[:8]}..)"
