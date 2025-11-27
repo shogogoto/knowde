@@ -6,7 +6,7 @@ import networkx as nx
 from pytest_unordered import unordered
 
 from knowde.conftest import async_fixture, mark_async_test
-from knowde.feature.entry.resource.repo.diff_update.domain import (
+from knowde.feature.entry.resource.repo.diff_update.domain.domain import (
     identify_duplicate_updiff,
 )
 from knowde.feature.entry.resource.repo.diff_update.repo import update_resource_diff
