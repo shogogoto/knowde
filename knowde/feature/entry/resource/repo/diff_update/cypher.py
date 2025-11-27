@@ -130,3 +130,21 @@ def delete_sentency_qs(ss: Iterable[Sentency], varnames: dict[KNode, str]) -> li
         q = f"DETACH DELETE ({var})"
         qs.append(q)
     return qs
+
+
+def build_varnames(  # noqa: PLR0917
+    old: SysNet,
+    upd: SysNet,
+    old_t: set[Term],
+    upd_t: set[Term],
+    old_s: set[Sentency],
+    upd_s: set[Sentency],
+) -> dict[KNode, str]:
+    """差分更新のための変数名の作成."""
+    upd_defs = {old.get(t) for t in old_t} | {upd.get(t) for t in upd_t}
+    sentences = (
+        old_s
+        | upd_s
+        | {d.sentence for d in upd_defs if isinstance(d, Def)} - {old.root}
+    )
+    return {sent: f"n{i}" for i, sent in enumerate(sentences)} | {old.root: "root"}

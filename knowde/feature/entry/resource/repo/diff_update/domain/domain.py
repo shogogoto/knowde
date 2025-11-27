@@ -10,7 +10,7 @@ import Levenshtein
 
 from knowde.feature.entry.resource.repo.diff_update.errors import IdentificationError
 from knowde.feature.entry.resource.repo.save import EdgeRel
-from knowde.feature.parsing.sysnet.sysnode import Def, KNode, Sentency
+from knowde.feature.parsing.sysnet.sysnode import Def, Sentency
 from knowde.shared.types import Duplicable
 
 if TYPE_CHECKING:
@@ -83,7 +83,7 @@ def sysnet2edges(sn: SysNet) -> set[EdgeRel]:
     return edges
 
 
-def edges2nodes(es: Iterable[EdgeRel]) -> set[KNode]:
+def edges2nodes(es: Iterable[EdgeRel]) -> set[Sentency]:
     """edgeをnodeに変換."""
     s = set()
     for e in es:
