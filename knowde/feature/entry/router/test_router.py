@@ -163,36 +163,34 @@ async def aclient() -> AsyncGenerator[AsyncClient, None]:  # noqa: D103
         yield client
 
 
+async def async_auth_header(aclient: AsyncClient) -> dict[str, str]:  # noqa: D103
+    email = "one@gmail.com"
+    password = "password"  # noqa: S105
+    d = {"email": email, "password": password}
+    res = await aclient.post("/auth/register", json=d)
+    d = {"username": email, "password": password}
+    res = await aclient.post("/auth/jwt/login", data=d)
+    token = res.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+
+def reqfile(s: str, fname: str, p: Path):  # noqa: D103
+    f = p / fname
+    f.write_text(s)
+    return [("files", (fname, f.read_bytes(), "application/octet-stream"))]
+
+
 @mark_async_test()
-async def test_post_resource_with_optimistic_locking_new(
-    aclient: AsyncClient,
-    tmp_path: Path,
-):
-    """リソース作成が同時に起きないように楽観的ロック."""
-
-    async def async_auth_header(aclient: AsyncClient) -> dict[str, str]:
-        email = "one@gmail.com"
-        password = "password"  # noqa: S105
-        d = {"email": email, "password": password}
-        res = await aclient.post("/auth/register", json=d)
-        d = {"username": email, "password": password}
-        res = await aclient.post("/auth/jwt/login", data=d)
-        token = res.json()["access_token"]
-        return {"Authorization": f"Bearer {token}"}
-
+async def test_post_resource_locking_new(aclient: AsyncClient, tmp_path: Path):
+    """リソース作成が同時に起きないようにロック."""
     h = await async_auth_header(aclient)
-
-    def reqfile(s: str, fname: str):
-        f = tmp_path / fname
-        f.write_text(s)
-        return [("files", (fname, f.read_bytes(), "application/octet-stream"))]
 
     s = """
         # title1
             aaa
     """
-    task1 = aclient.post("/resource", headers=h, files=reqfile(s, "a.txt"))
-    task2 = aclient.post("/resource", headers=h, files=reqfile(s, "b.txt"))
+    task1 = aclient.post("/resource", headers=h, files=reqfile(s, "a.txt", tmp_path))
+    task2 = aclient.post("/resource", headers=h, files=reqfile(s, "b.txt", tmp_path))
 
     results = await asyncio.gather(
         task1,
@@ -200,3 +198,24 @@ async def test_post_resource_with_optimistic_locking_new(
     )
 
     assert status.HTTP_409_CONFLICT in [r.status_code for r in results]
+
+
+# @mark_async_test()
+# async def test_post_resource_locking_upd(aclient: AsyncClient, tmp_path: Path):
+#     """リソース更新が同時に起きないようにロック."""
+#     h = await async_auth_header(aclient)
+#
+#     s = """
+#         # title1
+#             aaa
+#     """
+#     task1 = aclient.post("/resource", headers=h, files=reqfile(s, "a.txt", tmp_path))
+#     task2 = aclient.post("/resource", headers=h, files=reqfile(s, "b.txt", tmp_path))
+#
+#     results = await asyncio.gather(
+#         task1,
+#         task2,
+#     )
+#
+#     assert status.HTTP_409_CONFLICT in [r.status_code for r in results]
+#     raise AssertionError

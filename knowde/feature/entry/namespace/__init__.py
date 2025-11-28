@@ -10,6 +10,7 @@ from uuid import UUID
 
 import neo4j
 import networkx as nx
+from more_itertools import collapse
 from neomodel.async_.core import AsyncDatabase
 from pydantic import RootModel
 from pydantic_core import Url
@@ -290,3 +291,20 @@ async def delete_folder(folder_uid: UUIDy):
         msg = f"[{f.name}]を削除する前に子エントリを削除してください"
         raise FolderDeleteError(msg)
     await f.delete()
+
+
+async def fetch_resources_by_user(user_id: UUIDy) -> list[LResource]:
+    """同一ユーザーの全リソースを返す."""
+    q = """
+        MATCH (user:User {uid: $uid})
+            , p = (user)<-[:OWNED|PARENT]-*(r:Resource)
+        RETURN r
+    """
+    uid = to_uuid(user_id)
+    rows, _ = await AsyncDatabase().cypher_query(
+        q,
+        params={"uid": uid.hex},
+        resolve_objects=True,
+    )
+
+    return list(collapse(rows, base_type=LResource))

@@ -2,14 +2,12 @@
 
 from datetime import datetime
 
-from neomodel.async_.core import AsyncDatabase
-
 from knowde.feature.entry.domain import NameSpace, ResourceMeta
 from knowde.feature.entry.errors import ResourceSaveOptimisticLockError
-from knowde.feature.entry.label import LResource
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.entry.namespace import (
     fetch_namespace,
+    fetch_resources_by_user,
     save_or_move_resource,
 )
 from knowde.feature.entry.resource.repo.diff_update.repo import update_resource_diff
@@ -43,30 +41,31 @@ async def save_resource_with_detail(
     if updated is not None:
         meta.updated = updated
     # Writeを伴うものはすべてtransactionに含める
-    async with AsyncDatabase().transaction:
-        # 新規, 新規で同時に処理が来た場合に
-        lb = await save_or_move_resource(meta, ns)
-        rs = await LResource.nodes.filter(title=meta.title, txt_hash=meta.txt_hash)
-        if len(rs) > 1:
-            msg = "同一リソースを重複して新規作成しました"
-            raise ResourceSaveOptimisticLockError(msg)
+    # 新規, 新規で同時に処理が来た場合に
+    lb = await save_or_move_resource(meta, ns)
 
-        if lb is None:
-            msg = f"{meta.title} の保存に失敗しました"
-            raise NotFoundError(msg)
-        old = MResource.freeze_dict(lb.__properties__)
-        cache = await lb.cached_stats.get_or_none()
-        await save_resource_stats_cache(old.uid, sn)
-        already = ns.get_resource_or_none(meta.title)
-        if cache is None or already is None:  # 新規作成
-            await sn2db(sn, lb.uid, do_print)
-        is_changed = already is not None and already.txt_hash != old.txt_hash
-        if is_changed:
-            await update_resource_diff(lb.uid, sn)
-        # 適切な status code と message を与える
-        # cache_for_lock_check = await lb.cached_stats.get_or_none()
+    rs = await fetch_resources_by_user(ns.user_id)
+    rs = [r for r in rs if r.name == meta.title]
+    if len(rs) > 1:
+        msg = f"同一リソース'{meta.title}を重複して新規作成しました"
+        raise ResourceSaveOptimisticLockError(msg)
 
-        return old, meta, sn
+    if lb is None:
+        msg = f"{meta.title} の保存に失敗しました"
+        raise NotFoundError(msg)
+    old = MResource.freeze_dict(lb.__properties__)
+    cache = await lb.cached_stats.get_or_none()
+    await save_resource_stats_cache(old.uid, sn)
+    already = ns.get_resource_or_none(meta.title)
+    if cache is None or already is None:  # 新規作成
+        await sn2db(sn, lb.uid, do_print)
+    is_changed = already is not None and already.txt_hash != old.txt_hash
+    if is_changed:
+        await update_resource_diff(lb.uid, sn)
+    # 適切な status code と message を与える
+    # cache_for_lock_check = await lb.cached_stats.get_or_none()
+
+    return old, meta, sn
 
 
 async def save_text(

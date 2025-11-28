@@ -8,6 +8,7 @@ from uuid import UUID
 
 import chardet  # 文字エンコーディング検出用
 from fastapi import APIRouter, Body, Depends, UploadFile
+from neomodel.async_.core import AsyncDatabase
 
 from knowde.feature.entry.domain import NameSpace, ResourceDetail, ResourceSearchResult
 from knowde.feature.entry.errors import NotOwnerError
@@ -81,11 +82,12 @@ async def post_files(
     for f in files:
         txt = await read_content(f)
         ns = await fetch_namespace(user.id)
-        await save_resource_with_detail(
-            ns,
-            txt,
-            path=f.filename.split("/") if f.filename else None,
-        )
+        async with AsyncDatabase().transaction:
+            await save_resource_with_detail(
+                ns,
+                txt,
+                path=f.filename.split("/") if f.filename else None,
+            )
 
 
 @router.get("/resource/{resource_id}")
