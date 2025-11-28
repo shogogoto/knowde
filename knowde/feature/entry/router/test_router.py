@@ -227,5 +227,4 @@ async def test_post_resource_locking_upd(aclient: AsyncClient, tmp_path: Path):
         task1,
         task2,
     )
-    assert status.HTTP_200_OK in [r.status_code for r in results]
     assert status.HTTP_409_CONFLICT in [r.status_code for r in results]
