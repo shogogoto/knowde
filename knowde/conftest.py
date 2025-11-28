@@ -31,11 +31,6 @@ def pytest_sessionfinish() -> None:
 
 
 _mark_async_test = pytest.mark.asyncio(loop_scope="session")
-mark_async_session_auto_fixture = pytest_asyncio.fixture(
-    loop_scope="session",
-    scope="session",
-    autouse=True,
-)
 mark_async_function_auto_fixture = pytest_asyncio.fixture(
     loop_scope="session",
     autouse=True,

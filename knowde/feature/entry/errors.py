@@ -31,3 +31,9 @@ class FolderDeleteError(DomainError):
     """フォルダを削除できる状態にない."""
 
     status_code = status.HTTP_409_CONFLICT
+
+
+class ResourceSaveOptimisticLockError(DomainError):
+    """リソース更新時の競合."""
+
+    status_code = status.HTTP_409_CONFLICT

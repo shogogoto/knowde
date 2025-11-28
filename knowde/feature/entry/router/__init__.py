@@ -53,13 +53,6 @@ async def get_namaspace(
     return await fetch_namespace(user.id)
 
 
-async def read_content(file: UploadFile) -> str:
-    """ファイルの内容を適切なエンコーディングで読み込む."""
-    content = await file.read()
-    encoding = chardet.detect(content)["encoding"] or "utf-8"
-    return content.decode(encoding)
-
-
 @router.post("/resource-text")
 async def post_text(
     txt: Annotated[str, Body(embed=True)],
@@ -78,9 +71,16 @@ async def post_files(
     user: Annotated[User, Depends(auth_component().current_user(active=True))],
 ) -> None:
     """ファイルからsysnetを読み取って永続化."""
+
+    async def read_content(file: UploadFile) -> str:
+        """ファイルの内容を適切なエンコーディングで読み込む."""
+        content = await file.read()
+        encoding = chardet.detect(content)["encoding"] or "utf-8"
+        return content.decode(encoding)
+
     for f in files:
-        ns = await fetch_namespace(user.id)
         txt = await read_content(f)
+        ns = await fetch_namespace(user.id)
         await save_resource_with_detail(
             ns,
             txt,
