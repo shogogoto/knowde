@@ -87,9 +87,8 @@ async def update_resource_diff(
         return [q for q in qs if q is not None]
 
     qs = build_query()
-    if len(qs) == 1:  # 規定のroot matchだけ。他のクエリがない
-        msg = "クエリ行が追加されていないのにこの関数が呼び出された"
-        raise ValueError(msg)
+    if len(qs) == 1:  # 規定のroot matchだけで更新なし
+        return
 
     query = "\n".join(qs)
     if do_print:

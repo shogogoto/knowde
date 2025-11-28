@@ -200,22 +200,31 @@ async def test_post_resource_locking_new(aclient: AsyncClient, tmp_path: Path):
     assert status.HTTP_409_CONFLICT in [r.status_code for r in results]
 
 
-# @mark_async_test()
-# async def test_post_resource_locking_upd(aclient: AsyncClient, tmp_path: Path):
-#     """リソース更新が同時に起きないようにロック."""
-#     h = await async_auth_header(aclient)
-#
-#     s = """
-#         # title1
-#             aaa
-#     """
-#     task1 = aclient.post("/resource", headers=h, files=reqfile(s, "a.txt", tmp_path))
-#     task2 = aclient.post("/resource", headers=h, files=reqfile(s, "b.txt", tmp_path))
-#
-#     results = await asyncio.gather(
-#         task1,
-#         task2,
-#     )
-#
-#     assert status.HTTP_409_CONFLICT in [r.status_code for r in results]
-#     raise AssertionError
+@mark_async_test()
+async def test_post_resource_locking_upd(aclient: AsyncClient, tmp_path: Path):
+    """リソース更新が同時に起きないようにロック."""
+    h = await async_auth_header(aclient)
+
+    s = """
+        # title1
+            aaa
+    """
+
+    u = await LUser(email="one@gmail.com").nodes.first()
+    await save_text(u.uid, s)
+
+    upd = """
+        # title1
+            aaa
+            bbb
+            ccc
+    """
+
+    task1 = aclient.post("/resource", headers=h, files=reqfile(upd, "a.txt", tmp_path))
+    task2 = aclient.post("/resource", headers=h, files=reqfile(upd, "b.txt", tmp_path))
+
+    results = await asyncio.gather(
+        task1,
+        task2,
+    )
+    assert status.HTTP_409_CONFLICT in [r.status_code for r in results]

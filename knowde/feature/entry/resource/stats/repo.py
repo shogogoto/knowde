@@ -5,9 +5,7 @@ from knowde.feature.parsing.sysnet import SysNet
 from knowde.shared.types import UUIDy, to_uuid
 
 from .domain import (
-    ResourceStatsCohesion,
-    ResourceStatsHeavy,
-    ResourceStatsRichness,
+    create_resource_stats,
 )
 
 
@@ -19,15 +17,13 @@ async def save_resource_stats_cache(
     r: LResource = await LResource.nodes.get(uid=to_uuid(resource_uid).hex)
     s: LResourceStatsCache | None = await r.cached_stats.get_or_none()
 
-    retval = ResourceStatsCohesion.create(sn).model_dump()
-    retval.update(ResourceStatsRichness.create(sn).model_dump())
-    retval.update(ResourceStatsHeavy.create(sn).model_dump())
+    stats = create_resource_stats(sn)
 
     if s is not None:
-        for k, v in retval.items():
+        for k, v in stats.items():
             setattr(s, k, v)
         return await s.save()
-    lb = await LResourceStatsCache(**retval).save()
+    lb = await LResourceStatsCache(**stats).save()
     await r.cached_stats.connect(lb)
     return lb
 

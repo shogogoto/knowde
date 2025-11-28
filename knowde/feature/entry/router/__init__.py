@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from pathlib import Path
 from typing import Annotated
 from uuid import UUID
@@ -28,6 +29,7 @@ from knowde.feature.entry.resource.usecase import save_resource_with_detail
 from knowde.feature.entry.router.param import ResourceSearchBody
 from knowde.feature.user.domain import User
 from knowde.shared.user.router_util import TrackUser, auth_component
+from knowde.shared.util import TZ
 
 router = APIRouter(tags=["entry"])
 
@@ -87,6 +89,7 @@ async def post_files(
                 ns,
                 txt,
                 path=f.filename.split("/") if f.filename else None,
+                updated=datetime.now(tz=TZ),
             )
 
 

@@ -30,6 +30,7 @@ from knowde.shared.errors.domain import NotFoundError
 from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.user.label import LUser
 from knowde.shared.user.schema import UserReadPublic
+from knowde.shared.util import TZ
 
 
 class ResourceMetas(RootModel[list[ResourceMeta]]):
@@ -133,9 +134,13 @@ async def save_resource(m: ResourceMeta, ns: NameSpace) -> LResource | None:
             raise ValueError
 
 
-async def save_or_move_resource(m: ResourceMeta, ns: NameSpace) -> LResource | None:
+async def save_or_move_resource(
+    m: ResourceMeta,
+    ns: NameSpace,
+) -> LResource | None:
     """移動を反映してsave."""
     # NSに重複したタイトルがあると困る
+
     old = ns.get_resource_or_none(m.title)
     if old is None:  # 新規
         return await save_resource(m, ns)
@@ -143,7 +148,7 @@ async def save_or_move_resource(m: ResourceMeta, ns: NameSpace) -> LResource | N
 
     d = old.model_dump()
     d["uid"] = d["uid"].hex  # ハイフンありに変換されるとknowdeとの結びつかなくなる
-    d["updated"] = datetime.now()  # noqa: DTZ005
+    d["updated"] = m.updated or datetime.now(tz=TZ)
     upd = await LResource(**d).save()  # reflesh
     owner = await upd.owner.get_or_none()
     parent = await upd.parent.get_or_none()
