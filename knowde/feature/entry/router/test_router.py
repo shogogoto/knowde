@@ -228,3 +228,39 @@ async def test_post_resource_locking_upd(aclient: AsyncClient, tmp_path: Path):
         task2,
     )
     assert status.HTTP_409_CONFLICT in [r.status_code for r in results]
+
+
+@mark_async_test()
+async def test_post_resource_with_parse_error_message(
+    aclient: AsyncClient,
+    tmp_path: Path,
+):
+    """テキストファイルのフォーマット不備を指摘するエラーメッセージを返す."""
+    h = await async_auth_header(aclient)
+    s1 = """
+        # title1
+            aaa
+                    bbb
+                ccc
+    """
+    res = await aclient.post(
+        "/resource",
+        headers=h,
+        files=reqfile(s1, "a.txt", tmp_path),
+    )
+
+    assert res.status_code == status.HTTP_400_BAD_REQUEST
+
+    s2 = """
+        # title1
+            aaa
+            aaa
+            ccc
+    """
+    res = await aclient.post(
+        "/resource",
+        headers=h,
+        files=reqfile(s2, "a.txt", tmp_path),
+    )
+
+    assert res.status_code == status.HTTP_400_BAD_REQUEST

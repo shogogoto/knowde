@@ -2,8 +2,10 @@
 
 from textwrap import dedent
 
+from knowde.shared.errors import DomainError
 
-class ParserError(Exception):
+
+class ParserError(DomainError):
     """独自定義."""
 
 
@@ -17,6 +19,14 @@ class UnexpectedPivotError(ParserError):
 
 class KnSyntaxError(ParserError):
     """自作構文エラー."""
+
+    label: str
+
+    def __init__(self, *args, **kwargs):  # noqa: D107
+        ctx, line, _ = args
+        self.args = args
+        msg = f"{self.label} at line {line}.\n{ctx}"
+        super().__init__(msg, kwargs)
 
     def __str__(self) -> str:
         """エラー文."""
