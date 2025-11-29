@@ -2,13 +2,17 @@
 
 from __future__ import annotations
 
+import asyncio
+from collections.abc import AsyncGenerator
 from typing import TYPE_CHECKING
 
 from fastapi import status
 from fastapi.testclient import TestClient
+from httpx import ASGITransport, AsyncClient
 
 from knowde.api import api
-from knowde.conftest import mark_async_test
+from knowde.config.env import Settings
+from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.entry.namespace import create_folder, create_resource
 from knowde.feature.entry.namespace.sync import Anchor
 from knowde.feature.entry.namespace.test_namespace import files  # noqa: F401
@@ -147,3 +151,116 @@ async def test_delete_entry_router() -> None:
     assert client.delete(f"/entry/{f.uid}", headers=h1).is_success
     res = client.delete(f"/entry/{f.uid}", headers=h1)
     assert res.status_code == status.HTTP_404_NOT_FOUND
+
+
+@async_fixture()
+async def aclient() -> AsyncGenerator[AsyncClient, None]:  # noqa: D103
+    s = Settings()
+    async with AsyncClient(
+        transport=ASGITransport(app=api),
+        base_url=s.KNOWDE_URL,
+    ) as client:
+        yield client
+
+
+async def async_auth_header(aclient: AsyncClient) -> dict[str, str]:  # noqa: D103
+    email = "one@gmail.com"
+    password = "password"  # noqa: S105
+    d = {"email": email, "password": password}
+    res = await aclient.post("/auth/register", json=d)
+    d = {"username": email, "password": password}
+    res = await aclient.post("/auth/jwt/login", data=d)
+    token = res.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+
+def reqfile(s: str, fname: str, p: Path):  # noqa: D103
+    f = p / fname
+    f.write_text(s)
+    return [("files", (fname, f.read_bytes(), "application/octet-stream"))]
+
+
+@mark_async_test()
+async def test_post_resource_locking_new(aclient: AsyncClient, tmp_path: Path):
+    """リソース作成が同時に起きないようにロック."""
+    h = await async_auth_header(aclient)
+
+    s = """
+        # title1
+            aaa
+    """
+    task1 = aclient.post("/resource", headers=h, files=reqfile(s, "a.txt", tmp_path))
+    task2 = aclient.post("/resource", headers=h, files=reqfile(s, "b.txt", tmp_path))
+
+    results = await asyncio.gather(
+        task1,
+        task2,
+    )
+
+    assert status.HTTP_409_CONFLICT in [r.status_code for r in results]
+
+
+@mark_async_test()
+async def test_post_resource_locking_upd(aclient: AsyncClient, tmp_path: Path):
+    """リソース更新が同時に起きないようにロック."""
+    h = await async_auth_header(aclient)
+
+    s = """
+        # title1
+            aaa
+    """
+
+    u = await LUser(email="one@gmail.com").nodes.first()
+    await save_text(u.uid, s)
+
+    upd = """
+        # title1
+            aaa
+            bbb
+            ccc
+    """
+
+    task1 = aclient.post("/resource", headers=h, files=reqfile(upd, "a.txt", tmp_path))
+    task2 = aclient.post("/resource", headers=h, files=reqfile(upd, "b.txt", tmp_path))
+
+    results = await asyncio.gather(
+        task1,
+        task2,
+    )
+    assert status.HTTP_409_CONFLICT in [r.status_code for r in results]
+
+
+@mark_async_test()
+async def test_post_resource_with_parse_error_message(
+    aclient: AsyncClient,
+    tmp_path: Path,
+):
+    """テキストファイルのフォーマット不備を指摘するエラーメッセージを返す."""
+    h = await async_auth_header(aclient)
+    s1 = """
+        # title1
+            aaa
+                    bbb
+                ccc
+    """
+    res = await aclient.post(
+        "/resource",
+        headers=h,
+        files=reqfile(s1, "a.txt", tmp_path),
+    )
+
+    assert res.status_code == status.HTTP_400_BAD_REQUEST
+
+    s2 = """
+        # title1
+            aaa
+            aaa
+            ccc
+    """
+    res = await aclient.post(
+        "/resource",
+        headers=h,
+        files=reqfile(s2, "a.txt", tmp_path),
+    )
+
+    assert res.status_code == status.HTTP_400_BAD_REQUEST

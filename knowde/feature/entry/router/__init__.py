@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from pathlib import Path
 from typing import Annotated
 from uuid import UUID
 
 import chardet  # 文字エンコーディング検出用
 from fastapi import APIRouter, Body, Depends, UploadFile
+from neomodel.async_.core import AsyncDatabase
 
 from knowde.feature.entry.domain import NameSpace, ResourceDetail, ResourceSearchResult
 from knowde.feature.entry.errors import NotOwnerError
@@ -27,6 +29,7 @@ from knowde.feature.entry.resource.usecase import save_resource_with_detail
 from knowde.feature.entry.router.param import ResourceSearchBody
 from knowde.feature.user.domain import User
 from knowde.shared.user.router_util import TrackUser, auth_component
+from knowde.shared.util import TZ
 
 router = APIRouter(tags=["entry"])
 
@@ -53,13 +56,6 @@ async def get_namaspace(
     return await fetch_namespace(user.id)
 
 
-async def read_content(file: UploadFile) -> str:
-    """ファイルの内容を適切なエンコーディングで読み込む."""
-    content = await file.read()
-    encoding = chardet.detect(content)["encoding"] or "utf-8"
-    return content.decode(encoding)
-
-
 @router.post("/resource-text")
 async def post_text(
     txt: Annotated[str, Body(embed=True)],
@@ -78,14 +74,23 @@ async def post_files(
     user: Annotated[User, Depends(auth_component().current_user(active=True))],
 ) -> None:
     """ファイルからsysnetを読み取って永続化."""
+
+    async def read_content(file: UploadFile) -> str:
+        """ファイルの内容を適切なエンコーディングで読み込む."""
+        content = await file.read()
+        encoding = chardet.detect(content)["encoding"] or "utf-8"
+        return content.decode(encoding)
+
     for f in files:
-        ns = await fetch_namespace(user.id)
         txt = await read_content(f)
-        await save_resource_with_detail(
-            ns,
-            txt,
-            path=f.filename.split("/") if f.filename else None,
-        )
+        ns = await fetch_namespace(user.id)
+        async with AsyncDatabase().transaction:
+            await save_resource_with_detail(
+                ns,
+                txt,
+                path=f.filename.split("/") if f.filename else None,
+                updated=datetime.now(tz=TZ),
+            )
 
 
 @router.get("/resource/{resource_id}")

@@ -10,6 +10,7 @@ from uuid import UUID
 
 import neo4j
 import networkx as nx
+from more_itertools import collapse
 from neomodel.async_.core import AsyncDatabase
 from pydantic import RootModel
 from pydantic_core import Url
@@ -29,6 +30,7 @@ from knowde.shared.errors.domain import NotFoundError
 from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.user.label import LUser
 from knowde.shared.user.schema import UserReadPublic
+from knowde.shared.util import TZ
 
 
 class ResourceMetas(RootModel[list[ResourceMeta]]):
@@ -132,9 +134,13 @@ async def save_resource(m: ResourceMeta, ns: NameSpace) -> LResource | None:
             raise ValueError
 
 
-async def save_or_move_resource(m: ResourceMeta, ns: NameSpace) -> LResource | None:
+async def save_or_move_resource(
+    m: ResourceMeta,
+    ns: NameSpace,
+) -> LResource | None:
     """移動を反映してsave."""
     # NSに重複したタイトルがあると困る
+
     old = ns.get_resource_or_none(m.title)
     if old is None:  # 新規
         return await save_resource(m, ns)
@@ -142,7 +148,7 @@ async def save_or_move_resource(m: ResourceMeta, ns: NameSpace) -> LResource | N
 
     d = old.model_dump()
     d["uid"] = d["uid"].hex  # ハイフンありに変換されるとknowdeとの結びつかなくなる
-    d["updated"] = datetime.now()  # noqa: DTZ005
+    d["updated"] = m.updated or datetime.now(tz=TZ)
     upd = await LResource(**d).save()  # reflesh
     owner = await upd.owner.get_or_none()
     parent = await upd.parent.get_or_none()
@@ -290,3 +296,20 @@ async def delete_folder(folder_uid: UUIDy):
         msg = f"[{f.name}]を削除する前に子エントリを削除してください"
         raise FolderDeleteError(msg)
     await f.delete()
+
+
+async def fetch_resources_by_user(user_id: UUIDy) -> list[LResource]:
+    """同一ユーザーの全リソースを返す."""
+    q = """
+        MATCH (user:User {uid: $uid})
+            , p = (user)<-[:OWNED|PARENT]-*(r:Resource)
+        RETURN r
+    """
+    uid = to_uuid(user_id)
+    rows, _ = await AsyncDatabase().cypher_query(
+        q,
+        params={"uid": uid.hex},
+        resolve_objects=True,
+    )
+
+    return list(collapse(rows, base_type=LResource))

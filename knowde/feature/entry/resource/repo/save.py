@@ -10,7 +10,7 @@ from uuid import UUID, uuid4
 import networkx as nx
 from lark import Token
 from more_itertools import collapse
-from neomodel import AsyncStructuredNode, StructuredNode, db
+from neomodel import AsyncStructuredNode, StructuredNode, adb
 from pydantic import BaseModel
 
 from knowde.feature.entry.label import LHead, LResource
@@ -50,7 +50,8 @@ def propstr(tgt: StructuredNode | BaseModel | dict) -> str:
     if isinstance(tgt, BaseModel):
         d = tgt.model_dump(mode="json")
 
-    kvs = [f"{k}: {val2str(v)}" for k, v in d.items() if v]
+    d["uid"] = to_uuid(d["uid"]).hex
+    kvs = [f"{k}: {val2str(v)}" for k, v in dict(d).items() if v]
     s = ", ".join(kvs)
     return f"{{ {s} }}"
 
@@ -112,13 +113,15 @@ def reconnect_root_below(sn: SysNet, varnames: dict[KNode, str]) -> str | None:
             raise ValueError
 
 
+type EdgeRel = tuple[KNode, KNode, EdgeType]
+
+
 def rel2q(
-    edge: tuple[KNode, KNode, dict[str, EdgeType]],
+    edge: EdgeRel,
     varnames: dict[KNode, str],
 ) -> str | list[str] | None:
     """edgeからcreate可能な文字列に変換."""
-    u, v, d = edge
-    t = d["type"]
+    u, v, t = edge
     match t:
         case EdgeType.DEF:
             if not isinstance(u, Term):
@@ -146,13 +149,13 @@ def sysnet2cypher(sn: SysNet) -> str:
         sn.g,
         filter_node=lambda n: n not in sn.meta,
     )
-    q_rel = [rel2q(e, varnames) for e in g.edges.data()]
+    q_rel = [rel2q((u, v, attr["type"]), varnames) for u, v, attr in g.edges.data()]
     q_rel.append(reconnect_root_below(sn, varnames))
     qs = collapse([*q_create, *q_rel])
     return "\n".join([q for q in qs if q is not None])
 
 
-def sn2db(sn: SysNet, resource_id: UUIDy, do_print: bool = False) -> None:  # noqa: FBT001, FBT002
+async def sn2db(sn: SysNet, resource_id: UUIDy, do_print: bool = False) -> None:  # noqa: FBT001, FBT002
     """新規登録."""
     q = sysnet2cypher(sn)
     if len(q.splitlines()) <= 1:  # create対象なし
@@ -160,4 +163,4 @@ def sn2db(sn: SysNet, resource_id: UUIDy, do_print: bool = False) -> None:  # no
     if do_print:
         print()  # noqa: T201
         print(q)  # noqa: T201
-    db.cypher_query(q, params={"uid": to_uuid(resource_id).hex})
+    await adb.cypher_query(q, params={"uid": to_uuid(resource_id).hex})

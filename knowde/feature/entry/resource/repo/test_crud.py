@@ -66,7 +66,7 @@ async def test_save_and_restore(sn: SysNet) -> None:
     """永続化して元に戻す."""
     m = ResourceMeta.of(sn)
     rsrc = await LResource(**m.model_dump()).save()
-    sn2db(sn, rsrc.uid)
+    await sn2db(sn, rsrc.uid)
     r, _ = await restore_sysnet(rsrc.uid)
     assert set(sn.terms) == set(r.terms)
     # assert set(sn.sentences) == set(r.sentences)  # なぜかFalse

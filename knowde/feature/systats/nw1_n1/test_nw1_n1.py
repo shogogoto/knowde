@@ -3,7 +3,7 @@
 from pytest_unordered import unordered
 
 from knowde.feature.parsing.tree2net import parse2net
-from knowde.feature.stats.systats.nw1_n1 import (
+from knowde.feature.systats.nw1_n1 import (
     get_conclusion,
     get_detail,
     get_example,
