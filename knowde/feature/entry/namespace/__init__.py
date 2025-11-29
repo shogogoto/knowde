@@ -41,7 +41,7 @@ class ResourceMetas(RootModel[list[ResourceMeta]]):
         titles = [m.title for m in self.root]
         if len(titles) != len(set(titles)):
             msg = "titleが重複しています"
-            raise DuplicatedTitleError(msg, titles)
+            raise DuplicatedTitleError(msg)
 
 
 async def fetch_namespace(user_id: UUIDy) -> NameSpace:

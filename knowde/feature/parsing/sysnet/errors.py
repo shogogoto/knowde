@@ -3,10 +3,9 @@
 from typing import NoReturn
 
 from knowde.feature.parsing.primitive.dupchk import DuplicationChecker
-from knowde.shared.errors import DomainError
 
 
-class InterpreterError(DomainError):
+class InterpreterError(Exception):
     """構文木解析用."""
 
 

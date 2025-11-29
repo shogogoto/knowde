@@ -18,6 +18,7 @@ from knowde.feature.parsing.primitive.time import parse2dt
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.sysnet.sysnode import KNode
 from knowde.feature.parsing.tree2net import parse2net
+from knowde.shared.errors import DomainError
 from knowde.shared.types import NXGraph
 
 from .errors import DuplicatedTitleError, EntryNotFoundError
@@ -155,7 +156,10 @@ class ResourceMeta(BaseModel):
     @classmethod
     def from_str(cls, s: str) -> tuple[ResourceMeta, SysNet]:
         """文字列からリソースメタ情報を作成."""
-        sn = parse2net(s)
+        try:
+            sn = parse2net(s)
+        except Exception as e:
+            raise DomainError(msg=f"[{e.__class__.__name__}] {e!s}") from e
         meta = ResourceMeta.of(sn)
         meta.txt_hash = hash(s)  # ファイルに変更があったかをhash値で判断
         return meta, sn

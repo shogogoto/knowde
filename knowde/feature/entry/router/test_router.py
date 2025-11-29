@@ -56,8 +56,8 @@ async def test_sync_router(files: tuple[Anchor, list[Path]]) -> None:  # noqa: F
     anchor, _ = files
     reqfiles = []
     op = []
-    for _p in res.json():
-        p = anchor / _p
+    for p_ in res.json():
+        p = anchor / p_
         f = p.open("rb")
         op.append(f)
         reqfiles.append(("files", (p.name, f, "application/octet-stream")))
@@ -264,3 +264,21 @@ async def test_post_resource_with_parse_error_message(
     )
 
     assert res.status_code == status.HTTP_400_BAD_REQUEST
+
+
+# @mark_async_test()
+# async def test_post_real_files(aclient: AsyncClient):
+#     """テキストファイルのフォーマット不備を指摘するエラーメッセージを返す."""
+#     h = await async_auth_header(aclient)
+#
+#     a = Anchor("~/Documents/notes").expanduser()
+#     ps = [p for ext in ["md", "kn"] for p in a.rglob(f"**/*.{ext}")]
+#     for p in ps:
+#         print(p)
+#         res = await aclient.post(
+#             "/resource",
+#             headers=h,
+#             files=reqfile(p.read_text(), p.name, p.parent),
+#         )
+#         print(res.status_code, res.text[:200])
+#     # assert res.status_code == status.HTTP_400_BAD_REQUEST
