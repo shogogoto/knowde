@@ -34,20 +34,29 @@ class Marker(BaseModel, frozen=True):
         c = self.m_close
         return regex.compile(rf"{o}((?:[^{o}{c}]++|(?R))*){c}")
 
-    def pick(self, s: str) -> list[str]:
+    def pick(self, s: str, ignore_mark: Marker | None = None) -> list[str]:
         """マークの値を取り出す."""
         if not self.contains(s):
             return []
+        ignored_marks = []
+        if ignore_mark:
+            for ig in ignore_mark.pattern.findall(s):
+                ignored_marks += self.pattern.findall(ig)
         marks = self.pattern.findall(s)
+        n_orig = len(marks)
+        [marks.remove(m) for m in ignored_marks]
         if any(map(self.contains, marks)):
             msg = (
                 f"マーク'{self.m_open} {self.m_close}'内に'{self.m_open}"
                 f"'または'{self.m_close}'が含まれています: {s}"
             )
             raise MarkContainsMarkError(msg)
-        if len(marks) == 0:
-            msg = "マーク内に文字列を入力してください"
-            raise EmptyMarkError(msg)
+        if n_orig == 0:
+            msg = (
+                f"'{s}'のマーク'{self.m_open} {self.m_close}'内に"
+                "文字列を入力してください"
+            )
+            raise EmptyMarkError(msg, marks)
         return marks
 
     def contains(self, s: str) -> bool:

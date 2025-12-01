@@ -16,6 +16,13 @@ def test_pick_mark() -> None:
     assert BRACE_MARKER.pick(s2) == ["d1", "d2", "d3"]
 
 
+def test_ignore_mark_picking_for_formula() -> None:
+    """数式(LaTeX)の中でマークを無視する."""
+    ignore_mark = Marker(m_open=r"\$", m_close=r"\$")
+    s = "${d1}x{d2}$xxxx{d3}x"
+    assert BRACE_MARKER.pick(s, ignore_mark) == ["d3"]
+
+
 def test_pick_mark_empty() -> None:
     """mark内が空の場合、抽出しない."""
     s = "xx{}xx"

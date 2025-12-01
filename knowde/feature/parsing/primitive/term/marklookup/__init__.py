@@ -5,7 +5,9 @@ from __future__ import annotations
 from functools import cache
 
 from knowde.feature.parsing.primitive.term import Term
-from knowde.feature.parsing.primitive.term.const import BRACE_MARKER
+from knowde.feature.parsing.primitive.term.const import (
+    BRACE_MARKER,
+)
 from knowde.feature.parsing.primitive.term.errors import MarkUncontainedError
 
 

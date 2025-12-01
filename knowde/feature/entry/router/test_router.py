@@ -266,13 +266,14 @@ async def test_post_resource_with_parse_error_message(
     assert res.status_code == status.HTTP_400_BAD_REQUEST
 
 
+# @pytest.mark.skip
 # @mark_async_test()
-# async def test_post_real_files(aclient: AsyncClient):
-#     """テキストファイルのフォーマット不備を指摘するエラーメッセージを返す."""
+# async def test_post_for_debug(aclient: AsyncClient):
+#     """debug用."""
 #     h = await async_auth_header(aclient)
 #
 #     a = Anchor("~/Documents/notes").expanduser()
-#     ps = [p for ext in ["md", "kn"] for p in a.rglob(f"**/*.{ext}")]
+#     ps = [p for ext in ["md", "kn"] for p in a.rglob(f"*零*.{ext}")]
 #     for p in ps:
 #         print(p)
 #         res = await aclient.post(
@@ -281,4 +282,4 @@ async def test_post_resource_with_parse_error_message(
 #             files=reqfile(p.read_text(), p.name, p.parent),
 #         )
 #         print(res.status_code, res.text[:200])
-#     # assert res.status_code == status.HTTP_400_BAD_REQUEST
+#         assert res.status_code == status.HTTP_200_OK

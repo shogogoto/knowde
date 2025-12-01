@@ -8,7 +8,10 @@ import networkx as nx
 from pydantic import BaseModel
 
 from knowde.feature.parsing.primitive.term import Term
-from knowde.feature.parsing.primitive.term.const import BRACE_MARKER
+from knowde.feature.parsing.primitive.term.const import (
+    BRACE_MARKER,
+    FORMULA_IGNORE_MARK,
+)
 from knowde.feature.parsing.primitive.term.errors import MarkUncontainedError
 from knowde.feature.parsing.primitive.term.marklookup import to_lookup
 from knowde.shared.nxutil import to_nested
@@ -41,7 +44,7 @@ class MarkResolver(BaseModel, frozen=True):
             {mark: {mark:{...:{}}}}
 
         """
-        marks = BRACE_MARKER.pick(s)
+        marks = BRACE_MARKER.pick(s, FORMULA_IGNORE_MARK)
         for m in marks:
             if m not in self.g:
                 msg = f"'{m}'は用語として存在しません at '{s}'"

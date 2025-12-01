@@ -12,7 +12,9 @@ from more_itertools import flatten
 from pydantic import BaseModel, Field, PrivateAttr, field_validator
 
 from knowde.feature.parsing.primitive.dupchk import DuplicationChecker
-from knowde.feature.parsing.primitive.term.const import BRACE_MARKER
+from knowde.feature.parsing.primitive.term.const import (
+    BRACE_MARKER,
+)
 from knowde.shared.knowde.label import LTerm
 
 from .errors import (
@@ -150,7 +152,9 @@ class Term(BaseModel, frozen=True):
     @property
     def marks(self) -> list[str]:
         """Flatten marks."""
-        return list(flatten([BRACE_MARKER.pick(n) for n in self.names]))
+        return list(
+            flatten([BRACE_MARKER.pick(n) for n in self.names]),
+        )
 
     def __lt__(self, other: Term) -> bool:  # noqa: D105
         return self.names < other.names
