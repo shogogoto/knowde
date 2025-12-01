@@ -6,10 +6,11 @@ from edtf import EDTFObject, parse_edtf
 from japanera import EraDate
 
 from knowde.feature.parsing.primitive.time.parse.const import (
+    P_CENTURY,
+    P_NUMBER,
     MagicTime,
     Season,
-    p_century,
-    p_number,
+    century2span,
 )
 from knowde.feature.parsing.primitive.time.parse.parsing import p_interval, p_jp
 
@@ -52,22 +53,19 @@ def str2edtf(string: str) -> str:
 
     区切り文字サポート [/-] e.g. yyyy[/MM[/dd]]
     """
-    s = string.strip().replace(" ", "")
+    s = string.strip()
     if MagicTime.BC in s:
         s = s.replace(MagicTime.BC, "")
         s = f"-{s}"
 
     # 20C -> 1901/2000 が厳密だが、19XXでよくね? 世紀
-    s = Season.replace(s)
-    if p_century.matches(s):
-        n = p_century.parse_string(s)[0]
-        n = int(n)
-        if n > 0:
-            c0 = n * 100 - 99
-            c1 = n * 100
-        else:
-            c0 = n * 100 + 1
-            c1 = n * 100 + 100
+    s, season = Season.replace(s)
+    if P_CENTURY.matches(s):
+        c0, c1 = century2span(s)
+        if season is not None:
+            c0 += season.offset
+            c1 = min(c0 + season.width, c1)
+
         return "/".join([f"{c:04}" if c >= 0 else f"{c:05}" for c in [c0, c1]])
 
     if p_interval().matches(s):
@@ -95,7 +93,7 @@ def str2edtf(string: str) -> str:
 
 def _to_year_edtf(s: str) -> str:
     """年のEDTF形式変換."""
-    if p_number.matches(s):
+    if P_NUMBER.matches(s):
         y = int(s)
         if abs(y) >= 10000:  # noqa: PLR2004
             return f"Y{y}"

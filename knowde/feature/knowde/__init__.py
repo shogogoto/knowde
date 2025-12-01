@@ -170,9 +170,12 @@ class KnowdeDetail(BaseModel):
         for k, v in self.knowdes.items():
             if v.sentence == sentence:
                 if v.uid.hex not in self.g:
-                    raise ValueError
+                    msg = "KnowdeDetail.get: not found uid in graph"
+                    raise ValueError(msg)
                 return k
-        raise ValueError
+
+        msg = f"'{sentence}' not found in knowde detail"
+        raise ValueError(msg)
 
     def succ(self, sentence: str, t: EdgeType) -> list[Knowde]:  # noqa: D102
         uid = self.get(sentence)

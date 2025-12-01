@@ -110,7 +110,8 @@ def reconnect_root_below(sn: SysNet, varnames: dict[KNode, str]) -> str | None:
             b = varnames[belows[0]]
             return f"CREATE ({r}) -[:{EdgeType.BELOW.arrow}]-> ({b})"
         case _:
-            raise ValueError
+            msg = "reconnect_root_below error"
+            raise ValueError(msg)
 
 
 type EdgeRel = tuple[KNode, KNode, EdgeType]

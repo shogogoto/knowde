@@ -43,6 +43,9 @@ from . import Series, parse_when
         ("1604/10/9 ~", "1604-10-09/.."),
         ("BC1C", "-0099/0000"),
         ("BC0C", "0001/0100"),
+        ("11C LATE ~ 13C MID", "1081/1261"),
+        ("11C LATE ~", "1081/.."),
+        ("~ 13C MID", "../1261"),
     ],
 )
 def test_parse_when(string: str, expected: str) -> None:

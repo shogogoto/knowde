@@ -32,7 +32,10 @@ from pyparsing import (
     printables,
 )
 
-from knowde.feature.parsing.primitive.time.errors import EndBeforeStartError
+from knowde.feature.parsing.primitive.time.errors import (
+    EndBeforeStartError,
+    ParseWhenError,
+)
 from knowde.feature.parsing.primitive.time.parse import parse_extime, str2edtf
 from knowde.shared.types import Duplicable
 from knowde.shared.util import TZ
@@ -56,10 +59,10 @@ def p_timespan() -> ParserElement:
         ]
     )
     sep = sep1 | sep2 | sep3
-    return edtf | edtf + sep + edtf | sep + edtf
+    return edtf | edtf + sep | edtf + sep + edtf | sep + edtf
 
 
-def parse_when(string: str) -> EDTFObject:
+def parse_when(string: str) -> EDTFObject:  # noqa: PLR0911
     """時間指定(extimeの組み合わせ)をパース."""
     res = p_timespan().searchString(string)
     ls = list(flatten(res.asList()))
@@ -68,27 +71,51 @@ def parse_when(string: str) -> EDTFObject:
     i = ls.index(INTV_SEP)
     match (i, len(ls)):
         case (0, 2):  # ~ extime
-            e = str2edtf(ls[1])
-            if "/" in e:
-                e = e.split("/")[1]
-            return parse_extime(f"../{e}")
+            return _parse_open_start(ls[1])
         case (1, 2):  # ex1 ~
-            s = str2edtf(ls[0])
-            if "/" in s:
-                s = s.split("/")[0]
-            return parse_extime(f"{s}/..")
+            return _parse_open_end(ls[0])
         case (1, 3):  # ex1 ~ ex2
-            f1 = str2edtf(ls[0])
-            f2 = str2edtf(ls[2])
-            e1 = parse_extime(f1)
-            e2 = parse_extime(f2)
-            if isinstance(e1, edtf.Interval):
-                f1 = str(e1).split("/")[0]
-            if isinstance(e2, edtf.Interval):
-                f2 = str(e2).split("/")[-1]
-            return parse_extime(f"{f1}/{f2}")
+            return _parse_between(ls[0], ls[2])
+        case (0, 3):  # ~ ex season
+            return _parse_open_start(f"{ls[1]} {ls[2]}")
+        case (2, 3):  # ex1 season ~
+            return _parse_open_end(f"{ls[0]} {ls[1]}")
+        case (2, 5):  # ex1 season ~ ex2 season
+            s1 = f"{ls[0]} {ls[1]}"
+            s2 = f"{ls[3]} {ls[4]}"
+            return _parse_between(s1, s2)
         case _:
-            raise ValueError
+            msg = f"{string}はフォーマット不正"
+            raise ParseWhenError(msg)
+
+
+def _parse_open_start(s1: str) -> EDTFObject:
+    """~ ex のパース."""
+    e = str2edtf(s1)
+    if "/" in e:
+        e = e.split("/")[1]
+    return parse_extime(f"../{e}")
+
+
+def _parse_open_end(s1: str) -> EDTFObject:
+    """Ex ~ のパース."""
+    s = str2edtf(s1)
+    if "/" in s:
+        s = s.split("/")[0]
+    return parse_extime(f"{s}/..")
+
+
+def _parse_between(s1: str, s2: str) -> EDTFObject:
+    """2つのtの間."""
+    f1 = str2edtf(s1)
+    f2 = str2edtf(s2)
+    e1 = parse_extime(f1)
+    e2 = parse_extime(f2)
+    if isinstance(e1, edtf.Interval):
+        f1 = str(e1).split("/")[0]
+    if isinstance(e2, edtf.Interval):
+        f2 = str(e2).split("/")[-1]
+    return parse_extime(f"{f1}/{f2}")
 
 
 class Series(BaseModel, arbitrary_types_allowed=True):
