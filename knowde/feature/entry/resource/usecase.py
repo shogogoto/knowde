@@ -36,12 +36,9 @@ async def save_resource_with_detail(
     path: list[str] | None = None,
     updated: datetime | None = None,
     do_print: bool = False,  # noqa: FBT001, FBT002
-) -> tuple[MResource, ResourceMeta, SysNet]:
+) -> tuple[MResource, ResourceMeta]:
     """テキストからResource内のKnowdeネットワークを永続化."""
     meta = ResourceMeta.from_str(txt, path, updated)
-    sn = try_parse2net(txt)
-    for k, v in ResourceMeta.to_dict(sn).items():
-        setattr(meta, k, v)
     lb = await save_or_move_resource(meta, ns)
     await _check_duplication(ns.user_id, meta.title)
     r = await LResource.nodes.get(uid=lb.uid)
@@ -51,19 +48,21 @@ async def save_resource_with_detail(
     if lb is None:
         msg = f"{meta.title} の保存に失敗しました"
         raise NotFoundError(msg)
-    dbmeta = MResource.freeze_dict(lb.__properties__)
-    cache = await lb.cached_stats.get_or_none()
-    await save_resource_stats_cache(dbmeta.uid, sn)
 
-    if cache is None:  # 新規作成
+    dbmeta = MResource.freeze_dict(lb.__properties__)
+    if await lb.cached_stats.get_or_none() is None:  # 新規作成
+        sn = try_parse2net(txt)
         await sn2db(sn, lb.uid, do_print)
-    if cache is not None and meta.txt_hash != dbmeta.txt_hash:  # 差分更新
+        await save_resource_stats_cache(dbmeta.uid, sn)
+    if meta.txt_hash != dbmeta.txt_hash:  # 差分更新
+        sn = try_parse2net(txt)
         await update_resource_diff(lb.uid, sn)
+        await save_resource_stats_cache(dbmeta.uid, sn)
 
     # ２重リソース不整合がないことを最終確認
     await fetch_namespace(ns.user_id)
 
-    return dbmeta, meta, sn
+    return dbmeta, meta
 
 
 async def save_text(
@@ -75,11 +74,12 @@ async def save_text(
 ) -> tuple[SysNet, MResource]:
     """テキストをリソース詳細として保存するラッパー."""
     ns = await fetch_namespace(to_uuid(user_id))
-    m, _meta, sn = await save_resource_with_detail(
+    m, _meta = await save_resource_with_detail(
         ns,
         s,
         list(path) if path is not None else None,
         updated,
         do_print,
     )
+    sn = try_parse2net(s)
     return sn, m

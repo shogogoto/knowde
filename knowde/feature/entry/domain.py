@@ -13,11 +13,11 @@ from pydantic_core import Url
 from knowde.feature.entry.mapper import Entry, MResource
 from knowde.feature.entry.resource.stats.domain import ResourceStats
 from knowde.feature.knowde import ResourceInfo
+from knowde.feature.parsing.meta_parse import meta_parse, title_parse
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.primitive.time import parse2dt
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.sysnet.sysnode import KNode
-from knowde.feature.parsing.title_parse import title_parse
 from knowde.shared.types import NXGraph
 
 from .errors import (
@@ -168,9 +168,13 @@ class ResourceMeta(BaseModel):
         updated: datetime | None = None,
     ) -> ResourceMeta:
         """文字列からリソースメタ情報を作成."""
+        pubs = [parse2dt(p) for p in meta_parse(s, "@published")]
         meta = cls(
             title=title_parse(s),
             txt_hash=hash(s),
+            authors=meta_parse(s, "@author"),
+            published=None if len(pubs) == 0 else pubs[0],
+            urls=[Url(u) for u in meta_parse(s, "@url")],
         )
         if path is not None:
             meta.path = tuple(path)

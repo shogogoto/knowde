@@ -1,4 +1,4 @@
-"""parsparse2nettsysnet."""
+"""parse tree to network."""
 
 from __future__ import annotations
 

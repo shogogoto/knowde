@@ -27,3 +27,22 @@ def title_parse(text: str) -> str:
             return stripped
 
     raise NonTitleError
+
+
+def meta_parse(text: str, mark: str) -> list[str]:
+    """txtから指定したmeta情報を取得する.
+
+    Args:
+        text: markdown text.
+        mark: meta情報のマーク
+
+    Returns:
+        The first line of meta.
+
+    """
+    metas = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith(mark):
+            metas.append(stripped[len(mark) :].strip())
+    return metas

@@ -64,7 +64,7 @@ async def post_text(
 ) -> dict[str, str]:
     """テキストからsysnetを読み取って永続化."""
     ns = await fetch_namespace(user.id)
-    m, _, _ = await save_resource_with_detail(ns, txt, path)
+    m, _ = await save_resource_with_detail(ns, txt, path)
     return {"resource_id": m.uid.hex}
 
 
