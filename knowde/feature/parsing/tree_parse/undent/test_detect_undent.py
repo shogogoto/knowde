@@ -5,8 +5,8 @@ from textwrap import dedent
 import pytest
 from lark.indenter import DedentError
 
-from knowde.feature.parsing.parser import create_parser
-from knowde.feature.parsing.parser.errors import UnexpectedPivotError
+from knowde.feature.parsing.tree_parse import create_parser
+from knowde.feature.parsing.tree_parse.errors import UnexpectedPivotError
 
 from . import detect_undent, front_pivot
 

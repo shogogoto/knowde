@@ -15,11 +15,11 @@ async def save_resource_stats_cache(
 ) -> LResourceStatsCache:
     """統計値を保存."""
     r: LResource = await LResource.nodes.get(uid=to_uuid(resource_uid).hex)
-    s: LResourceStatsCache | None = await r.cached_stats.get_or_none()
+    s = await r.cached_stats.get_or_none()
 
     stats = create_resource_stats(sn)
 
-    if s is not None:
+    if s is not None and isinstance(s, LResourceStatsCache):
         for k, v in stats.items():
             setattr(s, k, v)
         return await s.save()

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Set as AbstractSet
 from functools import cache
 
 from knowde.feature.parsing.primitive.term import Term
@@ -12,7 +13,7 @@ from knowde.feature.parsing.primitive.term.errors import MarkUncontainedError
 
 
 def get_refer_terms(
-    targets: set[Term],
+    targets: AbstractSet[Term],
     referred: frozenset[Term],
 ) -> frozenset[Term]:
     """referredを参照するmarktermのみを返す."""
@@ -44,7 +45,7 @@ def get_lookup(terms: frozenset[Term]) -> Lookup:
     return d
 
 
-def to_lookup(terms: set[Term]) -> Lookup:
+def to_lookup(terms: AbstractSet[Term]) -> Lookup:
     """markの依存関係グラフ."""
     referred = frozenset({t for t in terms if not t.has_mark()})
     lookup = get_lookup(referred)

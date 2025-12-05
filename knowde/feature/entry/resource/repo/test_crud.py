@@ -64,7 +64,8 @@ def sn() -> SysNet:  # noqa: D103
 @mark_async_test()
 async def test_save_and_restore(sn: SysNet) -> None:
     """永続化して元に戻す."""
-    m = ResourceMeta.of(sn)
+    d = ResourceMeta.to_dict(sn)
+    m = ResourceMeta.model_validate(d)
     rsrc = await LResource(**m.model_dump()).save()
     await sn2db(sn, rsrc.uid)
     r, _ = await restore_sysnet(rsrc.uid)

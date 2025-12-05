@@ -24,7 +24,7 @@ class Anchor(Path):
         """テキストファイルからメタ情報へ."""
         st = p.stat().st_mtime  # 最終更新日時
         t = datetime.fromtimestamp(st, tz=TZ)  # JST が neo4jに非対応
-        meta, _sn = ResourceMeta.from_str(p.read_text(encoding="utf-8"))
+        meta = ResourceMeta.from_str(p.read_text(encoding="utf-8"))
         meta.updated = t
         meta.path = p.relative_to(self).parts
         return meta

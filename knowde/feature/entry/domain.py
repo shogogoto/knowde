@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Literal, Self
+from typing import Literal
 from uuid import UUID
 
 import networkx as nx
@@ -13,15 +13,17 @@ from pydantic_core import Url
 from knowde.feature.entry.mapper import Entry, MResource
 from knowde.feature.entry.resource.stats.domain import ResourceStats
 from knowde.feature.knowde import ResourceInfo
+from knowde.feature.parsing.meta_parse import meta_parse, title_parse
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.primitive.time import parse2dt
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.sysnet.sysnode import KNode
-from knowde.feature.parsing.tree2net import parse2net
-from knowde.shared.errors import DomainError
 from knowde.shared.types import NXGraph
 
-from .errors import DuplicatedTitleError, EntryNotFoundError
+from .errors import (
+    EntryNotFoundError,
+    ResourceSaveOptimisticLockError,
+)
 
 
 class NameSpace(BaseModel):
@@ -45,7 +47,7 @@ class NameSpace(BaseModel):
             r = self.get_resource_or_none(e.name)
             if r is not None:
                 msg = f"'{e.name}'は既に登録済み"
-                raise DuplicatedTitleError(msg, r.path)
+                raise ResourceSaveOptimisticLockError(msg)
 
     def add_root(self, e: Entry) -> None:
         """user直下."""
@@ -138,7 +140,7 @@ class ResourceMeta(BaseModel):
         return tuple(ret)
 
     @classmethod
-    def of(cls, sn: SysNet) -> Self:
+    def to_dict(cls, sn: SysNet) -> dict[str, str | list[str] | date | None]:
         """Resource meta info from sysnet."""
         tokens = sn.meta
         pubs = [n for n in tokens if n.type == "PUBLISHED"]
@@ -146,23 +148,39 @@ class ResourceMeta(BaseModel):
             msg = "公開日(@published)は１つまで"
             raise ValueError(msg, pubs)
         pub = None if len(pubs) == 0 else parse2dt(pubs[0])
-        return cls(
-            authors=[str(n) for n in tokens if n.type == "AUTHOR"],
-            urls=[str(n) for n in tokens if n.type == "URL"],
-            published=pub,
-            title=sn.root,
-        )
+        return {
+            "authors": [str(n) for n in tokens if n.type == "AUTHOR"],
+            "urls": [str(n) for n in tokens if n.type == "URL"],
+            "published": pub,
+            "title": sn.root,
+        }
 
+    # parse を分離したい
+    # しかし titleの取得には parseが必要
+    # titleはtxtの一番上にあるので、そこだけをparseする
+    # title parseを作成する
+    # cache済みの場合は messageを変える
     @classmethod
-    def from_str(cls, s: str) -> tuple[ResourceMeta, SysNet]:
+    def from_str(
+        cls,
+        s: str,
+        path: list[str] | None = None,
+        updated: datetime | None = None,
+    ) -> ResourceMeta:
         """文字列からリソースメタ情報を作成."""
-        try:
-            sn = parse2net(s)
-        except Exception as e:
-            raise DomainError(msg=f"[{e.__class__.__name__}] {e!s}") from e
-        meta = ResourceMeta.of(sn)
-        meta.txt_hash = hash(s)  # ファイルに変更があったかをhash値で判断
-        return meta, sn
+        pubs = [parse2dt(p) for p in meta_parse(s, "@published")]
+        meta = cls(
+            title=title_parse(s),
+            txt_hash=hash(s),
+            authors=meta_parse(s, "@author"),
+            published=None if len(pubs) == 0 else pubs[0],
+            urls=[Url(u) for u in meta_parse(s, "@url")],
+        )
+        if path is not None:
+            meta.path = tuple(path)
+        if updated is not None:
+            meta.updated = updated
+        return meta
 
 
 class ResourceDetail(BaseModel):
@@ -176,7 +194,7 @@ class ResourceDetail(BaseModel):
 
 # LResource由来
 ResourceOrderKey = Literal["title", "published", "updated"]
-# authors は listと比較しないといけない
+# au3thors は listと比較しないといけない
 # パフォーマンス悪化を懸念してやめとこう、単なるメタデータってことで
 # やるんならauthorをLabelとして独立させてindexが効くようにすべし
 

@@ -1,4 +1,4 @@
-"""parsparse2nettsysnet."""
+"""parse tree to network."""
 
 from __future__ import annotations
 
@@ -9,8 +9,6 @@ from typing import TYPE_CHECKING
 
 import networkx as nx
 
-from knowde.feature.parsing.parser import get_leaves, parse2tree
-from knowde.feature.parsing.parser.testing import treeprint
 from knowde.feature.parsing.primitive.term.markresolver import MarkResolver
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.sysnet.sysfn import (
@@ -22,6 +20,7 @@ from knowde.feature.parsing.sysnet.sysfn.build_fn import (
     replace_quoterms,
 )
 from knowde.feature.parsing.sysnet.sysnode.merged_def import MergedDef
+from knowde.feature.parsing.tree_parse import get_leaves, parse2tree
 
 from .interpreter import SysNetInterpreter
 from .transformer import TSysArg
@@ -37,7 +36,8 @@ def parse2net(txt: str, do_print: bool = False) -> SysNet:  # noqa: FBT001 FBT00
     """文からsysnetへ."""
     t = parse2tree(txt, TSysArg())
     if do_print:
-        treeprint(t, True)  # noqa: FBT003
+        print(t.pretty())  # noqa: T201
+        print(t)  # noqa: T201
     si = SysNetInterpreter()
     si.visit(t)
     g = _build_graph(t, si.col)
