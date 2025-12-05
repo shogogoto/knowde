@@ -137,7 +137,7 @@ async def save_resource(m: ResourceMeta, ns: NameSpace) -> LResource | None:
 async def save_or_move_resource(
     m: ResourceMeta,
     ns: NameSpace,
-) -> LResource | None:
+) -> LResource:
     """移動を反映してsave."""
     # NSに重複したタイトルがあると困る
 

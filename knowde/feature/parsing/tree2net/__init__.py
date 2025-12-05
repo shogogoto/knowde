@@ -20,7 +20,7 @@ from knowde.feature.parsing.sysnet.sysfn.build_fn import (
     replace_quoterms,
 )
 from knowde.feature.parsing.sysnet.sysnode.merged_def import MergedDef
-from knowde.feature.parsing.tree_parser import get_leaves, parse2tree
+from knowde.feature.parsing.tree_parse import get_leaves, parse2tree
 
 from .interpreter import SysNetInterpreter
 from .transformer import TSysArg

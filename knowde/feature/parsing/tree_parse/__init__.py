@@ -11,8 +11,8 @@ from typing import TYPE_CHECKING, override
 from lark import Lark, Transformer, Tree, UnexpectedInput
 from lark.indenter import DedentError, Indenter
 
-from knowde.feature.parsing.tree_parser.errors import HEAD_ERR_EXS, UndedentError
-from knowde.feature.parsing.tree_parser.undent import detect_undent, front_pivot
+from knowde.feature.parsing.tree_parse.errors import HEAD_ERR_EXS, UndedentError
+from knowde.feature.parsing.tree_parse.undent import detect_undent, front_pivot
 
 if TYPE_CHECKING:
     from lark.visitors import TransformerChain
