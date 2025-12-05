@@ -1,34 +1,21 @@
 """file -> sentnet 変換が責務."""
 
-import sys
 import time
 from collections.abc import Generator
 from contextlib import contextmanager
 from cProfile import Profile
 
-from lark import LarkError
-
-from knowde.feature.parsing.primitive.term.errors import TermError
 from knowde.feature.parsing.sysnet import SysNet
-from knowde.feature.parsing.sysnet.errors import InterpreterError
 from knowde.feature.parsing.tree2net import parse2net
-from knowde.feature.parsing.tree_parse.errors import ParserError
-from knowde.shared.nxutil.errors import MultiEdgesError
+from knowde.shared.errors import DomainError
 
 
 def try_parse2net(s: str) -> SysNet:
     """エラーを握りつぶしたパース."""
     try:
         return parse2net(s)
-    except (
-        LarkError,
-        ParserError,
-        TermError,
-        InterpreterError,
-        MultiEdgesError,
-    ) as e:
-        print(f"{type(e).__name__}:", e)  # noqa: T201
-    sys.exit(1)
+    except Exception as e:
+        raise DomainError(msg=f"[{e.__class__.__name__}] {e!s}") from e
 
 
 @contextmanager

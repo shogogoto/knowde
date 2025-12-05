@@ -14,6 +14,7 @@ from knowde.feature.entry.namespace import (
 )
 from knowde.feature.entry.resource.repo.diff_update.repo import update_resource_diff
 from knowde.feature.entry.resource.repo.save import sn2db
+from knowde.feature.parsing.domain import try_parse2net
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.shared.errors.domain import NotFoundError
 from knowde.shared.types import UUIDy, to_uuid
@@ -37,8 +38,10 @@ async def save_resource_with_detail(
     do_print: bool = False,  # noqa: FBT001, FBT002
 ) -> tuple[MResource, ResourceMeta, SysNet]:
     """テキストからResource内のKnowdeネットワークを永続化."""
-    meta, sn = ResourceMeta.from_str(txt, path, updated)
-
+    meta = ResourceMeta.from_str(txt, path, updated)
+    sn = try_parse2net(txt)
+    for k, v in ResourceMeta.to_dict(sn).items():
+        setattr(meta, k, v)
     lb = await save_or_move_resource(meta, ns)
     await _check_duplication(ns.user_id, meta.title)
     r = await LResource.nodes.get(uid=lb.uid)

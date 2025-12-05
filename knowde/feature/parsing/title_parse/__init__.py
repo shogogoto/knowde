@@ -4,8 +4,10 @@
 それを回避したい
 """
 
+from knowde.shared.errors import DomainError
 
-class NonTitleError(Exception):
+
+class NonTitleError(DomainError):
     """タイトルが見つからない."""
 
 

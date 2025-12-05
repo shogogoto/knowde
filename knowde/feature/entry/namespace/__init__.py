@@ -30,7 +30,6 @@ from knowde.shared.errors.domain import NotFoundError
 from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.user.label import LUser
 from knowde.shared.user.schema import UserReadPublic
-from knowde.shared.util import TZ
 
 
 class ResourceMetas(RootModel[list[ResourceMeta]]):
@@ -148,7 +147,7 @@ async def save_or_move_resource(
 
     d = old.model_dump()
     d["uid"] = d["uid"].hex  # ハイフンありに変換されるとknowdeとの結びつかなくなる
-    d["updated"] = m.updated or datetime.now(tz=TZ)
+    d["updated"] = m.updated
     upd = await LResource(**d).save()  # reflesh
     owner = await upd.owner.get_or_none()
     parent = await upd.parent.get_or_none()

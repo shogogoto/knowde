@@ -1,6 +1,7 @@
 """用語関連."""
 
 from knowde.feature.parsing.primitive.heading import get_heading_path, get_headings
+from knowde.feature.parsing.title_parse import title_parse
 from knowde.feature.parsing.tree2net import parse2net
 from knowde.shared.nxutil import to_nested
 from knowde.shared.nxutil.edge_type import EdgeType
@@ -16,7 +17,8 @@ def test_duplicable() -> None:
                 +++ dup1 +++
             2
     """
-    _sn = parse2net(s)
+    sn = parse2net(s)
+    assert sn.root == title_parse(s)
 
 
 def test_add_resolved_edge() -> None:
