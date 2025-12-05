@@ -57,7 +57,7 @@ class Season(Enum):
 def century2span(s: str) -> tuple[int, int]:
     """世紀をstart, end に変換."""
     n = P_CENTURY.parse_string(s)[0]
-    n = int(n)
+    n = int(str(n))
     if n > 0:
         start = n * 100 - 99
         end = n * 100

@@ -153,8 +153,18 @@ class ResourceMeta(BaseModel):
             title=sn.root,
         )
 
+    # parse を分離したい
+    # しかし titleの取得には parseが必要
+    # titleはtxtの一番上にあるので、そこだけをparseする
+    # title parseを作成する
+    # cache済みの場合は messageを変える
     @classmethod
-    def from_str(cls, s: str) -> tuple[ResourceMeta, SysNet]:
+    def from_str(
+        cls,
+        s: str,
+        path: list[str] | None = None,
+        updated: datetime | None = None,
+    ) -> tuple[ResourceMeta, SysNet]:
         """文字列からリソースメタ情報を作成."""
         try:
             sn = parse2net(s)
@@ -162,6 +172,10 @@ class ResourceMeta(BaseModel):
             raise DomainError(msg=f"[{e.__class__.__name__}] {e!s}") from e
         meta = ResourceMeta.of(sn)
         meta.txt_hash = hash(s)  # ファイルに変更があったかをhash値で判断
+        if path is not None:
+            meta.path = tuple(path)
+        if updated is not None:
+            meta.updated = updated
         return meta, sn
 
 
@@ -176,7 +190,7 @@ class ResourceDetail(BaseModel):
 
 # LResource由来
 ResourceOrderKey = Literal["title", "published", "updated"]
-# authors は listと比較しないといけない
+# au3thors は listと比較しないといけない
 # パフォーマンス悪化を懸念してやめとこう、単なるメタデータってことで
 # やるんならauthorをLabelとして独立させてindexが効くようにすべし
 

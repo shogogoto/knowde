@@ -37,18 +37,14 @@ async def save_resource_with_detail(
     do_print: bool = False,  # noqa: FBT001, FBT002
 ) -> tuple[MResource, ResourceMeta, SysNet]:
     """テキストからResource内のKnowdeネットワークを永続化."""
-    meta, sn = ResourceMeta.from_str(txt)
-    if path is not None:
-        meta.path = tuple(path)
-    if updated is not None:
-        meta.updated = updated
+    meta, sn = ResourceMeta.from_str(txt, path, updated)
+
     lb = await save_or_move_resource(meta, ns)
     await _check_duplication(ns.user_id, meta.title)
     r = await LResource.nodes.get(uid=lb.uid)
     if updated is not None and r.updated != updated:
         msg = f"'{meta.title}'は同時に更新されたのでロールバック"
         raise ResourceSaveOptimisticLockError(msg)
-
     if lb is None:
         msg = f"{meta.title} の保存に失敗しました"
         raise NotFoundError(msg)
@@ -60,6 +56,9 @@ async def save_resource_with_detail(
         await sn2db(sn, lb.uid, do_print)
     if cache is not None and meta.txt_hash != dbmeta.txt_hash:  # 差分更新
         await update_resource_diff(lb.uid, sn)
+
+    # ２重リソース不整合がないことを最終確認
+    await fetch_namespace(ns.user_id)
 
     return dbmeta, meta, sn
 

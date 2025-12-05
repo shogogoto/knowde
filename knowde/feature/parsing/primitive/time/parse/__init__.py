@@ -5,6 +5,7 @@ from functools import cache
 from edtf import EDTFObject, parse_edtf
 from japanera import EraDate
 
+from knowde.feature.parsing.primitive.time.errors import ParseWhenError
 from knowde.feature.parsing.primitive.time.parse.const import (
     P_CENTURY,
     P_NUMBER,
@@ -18,7 +19,11 @@ from knowde.feature.parsing.primitive.time.parse.parsing import p_interval, p_jp
 def parse_extime(s: str) -> EDTFObject:
     """EDTF独自拡張."""
     formatted = str2edtf(s)
-    return parse_edtf(formatted)
+    ret = parse_edtf(formatted)
+    if isinstance(ret, EDTFObject):
+        return ret
+    msg = "EDTF表現に変換できません"
+    raise ParseWhenError(msg, s)
 
 
 def jp2edtf(string: str) -> str:

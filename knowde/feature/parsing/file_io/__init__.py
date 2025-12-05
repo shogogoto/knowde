@@ -34,13 +34,16 @@ class NxJsonalyzer(json.JSONEncoder):
         return super().default(o)
 
     @classmethod
-    def restore(cls, d: object) -> object:
+    def restore(cls, d: dict | object) -> object:
         """For json load."""
+        if not isinstance(d, dict):
+            return d
+
         if T_EDGE_KEY in d:
             d[T_EDGE_KEY] = EdgeType(d[T_EDGE_KEY])
         if "names" in d:
             d = Term.model_validate(d)
-        if "uid" in d:
+        if isinstance(d, dict) and "uid" in d:
             if d["n"] == DUMMY_SENTENCE:
                 d = DummySentence.model_validate(d)
             else:

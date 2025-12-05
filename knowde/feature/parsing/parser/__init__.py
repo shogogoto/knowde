@@ -6,7 +6,7 @@ from collections.abc import Hashable
 from functools import cache
 from pathlib import Path
 from textwrap import dedent
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 from lark import Lark, Transformer, Tree, UnexpectedInput
 from lark.indenter import DedentError, Indenter
@@ -21,12 +21,35 @@ if TYPE_CHECKING:
 class SampleIndenter(Indenter):
     """sample."""
 
-    NL_type = "_NL"
-    OPEN_PAREN_types = []  # noqa: RUF012
-    CLOSE_PAREN_types = []  # noqa: RUF012
-    INDENT_type = "_INDENT"
-    DEDENT_type = "_DEDENT"
-    tab_len = 4
+    @property
+    @override
+    def NL_type(self) -> str:
+        return "_NL"
+
+    @property
+    @override
+    def OPEN_PAREN_types(self) -> list[str]:
+        return []
+
+    @property
+    @override
+    def CLOSE_PAREN_types(self) -> list[str]:
+        return []
+
+    @property
+    @override
+    def INDENT_type(self) -> str:
+        return "_INDENT"
+
+    @property
+    @override
+    def DEDENT_type(self) -> str:
+        return "_DEDENT"
+
+    @property
+    @override
+    def tab_len(self) -> int:
+        return 4
 
 
 @cache

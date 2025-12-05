@@ -180,8 +180,8 @@ def _when2span(when: str) -> tuple[float, float]:
     e = obj.upper_strict()
     if s == e:
         e = _nudge_offset(e)
-    fs = s if s == float("-inf") else time.mktime(s)
-    fe = e if e == float("inf") else time.mktime(e)
+    fs = float("-inf") if s == float("-inf") else time.mktime(s)
+    fe = float("inf") if e == float("inf") else time.mktime(e)
     return fs, fe
 
 
