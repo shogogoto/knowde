@@ -17,7 +17,7 @@ class SaveResourceError(Exception):
     """リソースの保存に失敗した."""
 
 
-class DuplicatedTitleError(Exception):
+class DuplicatedTitleError(DomainError):
     """同一タイトルは1つだけ."""
 
 

@@ -50,11 +50,12 @@ async def save_resource_with_detail(
         raise NotFoundError(msg)
 
     dbmeta = MResource.freeze_dict(lb.__properties__)
-    if await lb.cached_stats.get_or_none() is None:  # 新規作成
+    cache = await r.cached_stats.get_or_none()
+    if cache is None:  # 新規作成
         sn = try_parse2net(txt)
         await sn2db(sn, lb.uid, do_print)
         await save_resource_stats_cache(dbmeta.uid, sn)
-    if meta.txt_hash != dbmeta.txt_hash:  # 差分更新
+    if cache is not None and meta.txt_hash != dbmeta.txt_hash:  # 差分更新
         sn = try_parse2net(txt)
         await update_resource_diff(lb.uid, sn)
         await save_resource_stats_cache(dbmeta.uid, sn)
