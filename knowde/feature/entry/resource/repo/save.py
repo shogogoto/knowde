@@ -69,10 +69,11 @@ def q_create_node(
     var = nvars.get(n)
     if var is None:
         raise ValueError
+
     match n:
         case Token() if n.type == "H1":
             pass
-        case Token():  # heading
+        case Token() if n.type.startswith("H"):  # heading
             uid = getattr(n, "uid", uuid4()).hex
             return f"CREATE ({var}:{t2labels(LHead)} {{val: '{n}', uid: '{uid}'}})"
         case Term():
