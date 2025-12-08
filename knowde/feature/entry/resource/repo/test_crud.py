@@ -4,7 +4,7 @@ import networkx as nx
 import pytest
 from pytest_unordered import unordered
 
-from knowde.conftest import mark_async_test
+from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.entry.domain import ResourceMeta
 from knowde.feature.entry.label import LResource
 from knowde.feature.entry.mapper import MResource
@@ -14,6 +14,7 @@ from knowde.feature.entry.resource.usecase import save_text
 from knowde.feature.parsing.primitive.heading import include_heading
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.tree2net import parse2net
+from knowde.feature.systats.nw1_n1 import get_detail
 from knowde.shared.errors.domain import NotFoundError
 from knowde.shared.user.label import LUser
 
@@ -76,10 +77,14 @@ async def test_save_and_restore(sn: SysNet) -> None:
     assert sn.whens == unordered(r.whens)
 
 
+@async_fixture()
+async def u() -> LUser:  # noqa: D103
+    return await LUser(email="one@gmail.com").save()
+
+
 @mark_async_test()
-async def test_restore_tops():
+async def test_restore_tops(u: LUser):
     """先端のHeadかSentenceまで復元."""
-    u = await LUser(email="one@gmail.com").save()
     s = """
     # title
       direct
@@ -107,9 +112,8 @@ async def test_restore_tops():
 
 
 @mark_async_test()
-async def test_restore_and_delete_individual():
+async def test_restore_and_delete_individual(u: LUser):
     """別のリソースの内容を取得しないことの確認."""
-    u = await LUser(email="one@gmail.com").save()
     s1 = """
     # title
       direct
@@ -155,3 +159,26 @@ async def test_restore_and_delete_individual():
 
     ns = await fetch_namespace(u.uid)
     assert len([n for n in ns.g.nodes if isinstance(n, MResource)]) == 1
+
+
+@mark_async_test()
+async def test_save_and_restore_quoterm(u: LUser):
+    """quotermによるbelow siblingの無限ループを回避."""
+    s1 = """
+    # title
+    ## h1
+      A: aaa
+    ### h12
+      B: bbb
+    ### h13
+      `A`
+        ccc
+        ddd
+    ## h21
+      `A`
+        xxx
+        yyy
+    """
+    _sn, mr1 = await save_text(u.uid, s1)
+    res, _uid = await restore_sysnet(mr1.uid)
+    assert res.access("aaa", get_detail) == unordered(["ccc", "ddd", "xxx", "yyy"])

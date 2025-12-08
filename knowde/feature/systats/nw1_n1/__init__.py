@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Hashable, Iterable
 from functools import cache
 from typing import TYPE_CHECKING, Final
 
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 type Nw1N1Fn = Callable[[SysNet, KNode], list[KNode]]
 
 
-def get_detail(g: nx.DiGraph, n: KNode) -> list[KNode]:
+def get_detail(g: nx.DiGraph, n: Hashable) -> list[KNode]:
     """詳細な記述."""
     vals = []
     sub = etype_subgraph(g, EdgeType.SIBLING, EdgeType.BELOW)

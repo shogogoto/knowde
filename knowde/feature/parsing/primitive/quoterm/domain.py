@@ -21,6 +21,10 @@ class Quoterm(Duplicable, frozen=True):
     ``で用語を囲むことで、その文の参照を置き、別ページなど他の場所で関連を作成できる
     """
 
+    def __repr__(self) -> str:
+        """Class representation."""
+        return f"Quoterm({self} {str(self.uid)[:8]}..)"
+
     @staticmethod
     def is_quoterm(n: Hashable) -> bool:
         """引用用語 or not."""

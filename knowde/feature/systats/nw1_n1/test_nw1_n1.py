@@ -39,7 +39,7 @@ def test_get_detail_parent() -> None:
     """
     sn = parse2net(s)
     assert get_detail(sn.g, "aaa") == []
-    assert get_detail(sn.g, "bbb") == ["b1", "b2"]  # [, "1b", "2b"]
+    assert sn.access("bbb", get_detail) == unordered(["b1", "b2", "1b", "2b"])
 
     assert get_parent_or_none(sn, "aaa") is None
     assert get_parent_or_none(sn, "b2") == "bbb"

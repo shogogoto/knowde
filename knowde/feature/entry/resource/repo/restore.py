@@ -11,6 +11,7 @@ from neomodel.async_.core import AsyncDatabase
 
 from knowde.feature.entry.label import LResource
 from knowde.feature.knowde.repo.cypher import q_call_sent_names
+from knowde.feature.parsing.primitive.quoterm.domain import Quoterm
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.primitive.time import WhenNode
 from knowde.feature.parsing.sysnet import SysNet
@@ -26,7 +27,7 @@ from knowde.shared.types import Duplicable, UUIDy, is_duplicable, to_uuid
 
 
 @cache
-def to_knowde(n: neo4j.graph.Node) -> KNode:
+def to_knowde(n: neo4j.graph.Node) -> KNode:  # noqa: PLR0911
     """neo4jから変換."""
     lb_name = next(iter(n.labels))
     val = n.get("val")
@@ -48,6 +49,8 @@ def to_knowde(n: neo4j.graph.Node) -> KNode:
                 if isinf(d[k]):
                     d[k] = None
             return WhenNode.model_validate(d)
+        case "Quoterm":
+            return Quoterm(n=val, uid=n.get("uid"))
         case _:
             props = n.items()
             raise ValueError(props, lb_name)
@@ -63,12 +66,12 @@ async def restore_tops(resource_uid: UUIDy) -> tuple[nx.DiGraph, dict[UUID, KNod
     q = """
         MATCH (root:Resource {uid: $uid})
         OPTIONAL MATCH (root)-[:BELOW|SIBLING*]->
-            (s:Head)-[r:BELOW|SIBLING]->(e:Head|Sentence)
+            (s:Head)-[r:BELOW|SIBLING]->(e:Head|Sentence|Quoterm)
         WHERE r IS NOT NULL AND e IS NOT NULL AND root IS NOT NULL
         RETURN r, s, e
         UNION
         MATCH (root:Resource {uid: $uid})
-        OPTIONAL MATCH (root)-[r:BELOW]->(e:Head|Sentence)
+        OPTIONAL MATCH (root)-[r:BELOW]->(e:Head|Sentence|Quoterm)
         WHERE r IS NOT NULL AND e IS NOT NULL AND root IS NOT NULL
         RETURN r, root as s, e
     """
@@ -99,8 +102,8 @@ async def restore_undersentnet(  # noqa: PLR0914
     """top以下のsentenceやdefのネットワークを復元."""
     various = "|".join([et.name for et in EdgeType if et != EdgeType.DEF])
     q = f"""
-        MATCH (s:Sentence {{resource_uid: $uid}})
-        OPTIONAL MATCH (s)-[r:{various}]->(e:Sentence|Interval)
+        MATCH (s:Sentence|Quoterm {{resource_uid: $uid}})
+        OPTIONAL MATCH (s)-[r:{various}]->(e:Sentence|Interval|Quterm)
         {q_call_sent_names("s")}
         RETURN s
             , COLLECT([e, r]) as ends
@@ -145,6 +148,15 @@ async def restore_graph(
     return g, uids, terms2
 
 
+def quoterm_sent_dict(g: nx.DiGraph, uids: dict[KNode, UUID]) -> dict[Quoterm, UUID]:
+    """引用用語と単文uidの辞書."""
+    d = {}
+    for qt in [n for n in g.nodes if isinstance(n, Quoterm)]:
+        sent = next(iter(EdgeType.QUOTERM.succ(g, qt)))
+        d[qt] = uids[sent]
+    return d
+
+
 async def restore_sysnet(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]]:
     """SysNetを復元."""
     g, uids, terms = await restore_graph(resource_uid)
@@ -152,5 +164,6 @@ async def restore_sysnet(resource_uid: UUIDy) -> tuple[SysNet, dict[KNode, UUID]
         add_def_edge(g, uids[uid], term)
     g_relabeled = nx.relabel_nodes(g, uids)
     uid_reverse = {v: k for k, v in uids.items()}
+    # quots = quoterm_sent_dict(g_relabeled, uid_reverse)
     title = str(uids[to_uuid(resource_uid)])
     return SysNet(g=g_relabeled, root=title), uid_reverse
