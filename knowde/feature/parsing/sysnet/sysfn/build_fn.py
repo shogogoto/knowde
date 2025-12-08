@@ -15,7 +15,7 @@ from . import get_ifdef, to_quoterm, to_sentence
 def replace_quoterms(g: nx.DiGraph, resolver: MarkResolver) -> None:
     """引用用語を1文に置換."""
     for qt in to_quoterm(g.nodes):
-        name = qt.replace("`", "")
+        name = str(qt.n).replace("`", "")
         term = resolver.lookup.get(name)
         if term is None:
             msg = f"'{name}'は用語として定義されていません"

@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 
 from lark import Token
 
+from knowde.feature.parsing.primitive.quoterm.domain import Quoterm
 from knowde.feature.parsing.primitive.template import Template
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.primitive.time import WhenNode
@@ -39,9 +40,9 @@ def to_term(vs: Iterable[Hashable]) -> list[Term]:
     return [*terms, *[v.term for v in vs if isinstance(v, Def)]]
 
 
-def to_quoterm(vs: Iterable[KNArg]) -> list[Token]:
+def to_quoterm(vs: Iterable[KNArg]) -> list[Quoterm]:
     """termのみを取り出す."""
-    return [v for v in vs if isinstance(v, Token) and v.type == "QUOTERM"]
+    return [v for v in vs if isinstance(v, Quoterm)]
 
 
 def arg2sentence(n: KNArg) -> str | DummySentence:
