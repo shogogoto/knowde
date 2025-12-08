@@ -7,8 +7,10 @@ from collections.abc import Callable, Iterable
 from enum import Enum
 from typing import TYPE_CHECKING, Self
 
+import networkx as nx
 from pydantic import BaseModel
 
+from knowde.feature.parsing.sysnet.sysnode import KNode
 from knowde.feature.systats.nw1_n1 import (
     Nw1N1Fn,
     get_conclusion,
@@ -28,10 +30,19 @@ if TYPE_CHECKING:
     from knowde.shared.types import Duplicable
 
 
+def to_nw1n1fn(f: Callable[[nx.DiGraph, KNode], list[KNode]]) -> Nw1N1Fn:
+    """型変換."""
+
+    def _f(sn: SysNet, n: KNode) -> list[KNode]:
+        return f(sn.g, n)
+
+    return _f
+
+
 class Nw1N1Ctx(Enum):
     """1nw1n文脈."""
 
-    DETAIL = (Nw1N1Label.DETAIL, get_detail, "")
+    DETAIL = (Nw1N1Label.DETAIL, to_nw1n1fn(get_detail), "")
     REFER = (Nw1N1Label.REFER, get_refer, ">>")
     REFERRED = (Nw1N1Label.REFERRED, get_referred, "<<")
     PREMISE = (Nw1N1Label.PREMISE, get_premise, "<-")

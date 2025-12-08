@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-import re
 from collections.abc import Hashable, Iterable
 from typing import TYPE_CHECKING
 
 from lark import Token
 
-from knowde.feature.parsing.primitive.quoterm.domain import Quoterm
 from knowde.feature.parsing.primitive.template import Template
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.primitive.time import WhenNode
@@ -20,7 +18,6 @@ from knowde.feature.parsing.sysnet.sysnode import (
     Def,
     DummySentence,
     KNArg,
-    KNode,
 )
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import Duplicable
@@ -38,11 +35,6 @@ def to_term(vs: Iterable[Hashable]) -> list[Term]:
     """termのみを取り出す."""
     terms = [n for n in vs if isinstance(n, Term)]
     return [*terms, *[v.term for v in vs if isinstance(v, Def)]]
-
-
-def to_quoterm(vs: Iterable[KNArg]) -> list[Quoterm]:
-    """termのみを取り出す."""
-    return [v for v in vs if isinstance(v, Quoterm)]
 
 
 def arg2sentence(n: KNArg) -> str | DummySentence:
@@ -85,7 +77,7 @@ def to_def(vs: Iterable[KNArg]) -> list[Def]:
     return [v for v in vs if isinstance(v, Def)]
 
 
-def get_ifdef(g: nx.DiGraph, n: KNode) -> KNArg:
+def get_ifdef(g: nx.DiGraph, n: Hashable) -> KNArg:
     """defがあれば返す."""
     if n not in g:
         msg = f"{n} is not in this graph."
@@ -103,21 +95,3 @@ def get_ifdef(g: nx.DiGraph, n: KNode) -> KNArg:
             return Def(term=n, sentence=s)
         case _:
             raise TypeError(n)
-
-
-QUOTERM_PETTERN = re.compile(r"^`.*`$")
-
-
-def is_enclosed_in_backticks(s: str) -> bool:
-    """引用用語 or not."""
-    return bool(QUOTERM_PETTERN.match(s))
-
-
-def get_ifquote(g: nx.DiGraph, n: KNArg) -> KNArg:
-    """引用用語ならdefを返す."""
-    if isinstance(n, str) and is_enclosed_in_backticks(n):
-        succ = EdgeType.QUOTERM.get_succ_or_none(g, n)
-        if succ is None:
-            raise TypeError
-        return get_ifdef(g, succ)
-    return None

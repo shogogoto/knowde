@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Final, Self, override
 from lark import Token
 from pydantic import BaseModel
 
+from knowde.feature.parsing.primitive.quoterm.domain import Quoterm
 from knowde.feature.parsing.primitive.template import Template
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.primitive.time import WhenNode
@@ -96,7 +97,7 @@ class DummySentence(Duplicable, frozen=True):
     n: str = DUMMY_SENTENCE
 
 
-type Sentency = str | Duplicable | WhenNode
+type Sentency = str | Duplicable | WhenNode | Quoterm
 type _KNElem = Sentency | Template  # 共通型
 type KNode = Term | _KNElem
 type KNArg = Def | _KNElem

@@ -1,5 +1,7 @@
 """用語関連."""
 
+from pytest_unordered import unordered
+
 from knowde.feature.parsing.meta_parse import title_parse
 from knowde.feature.parsing.primitive.heading import get_heading_path, get_headings
 from knowde.feature.parsing.tree2net import parse2net
@@ -169,15 +171,14 @@ def test_replace_quoterm() -> None:
             `A`
                 ccc
                 ddd
+            `A`
+                eee
+                fff
     """
 
     sn = parse2net(s)
     assert to_nested(sn.g, "aaa", EdgeType.SIBLING.succ) == {"bbb": {}}
-    # belowを1つに統合しようと思ったけどやめた
-    assert to_nested(sn.g, "aaa", EdgeType.BELOW.succ) == {
-        "aAA": {},
-        "ccc": {},
-    }
+    assert sn.access("aaa", EdgeType.BELOW.succ) == unordered(["aAA", "ccc", "eee"])
 
 
 def test_template() -> None:
