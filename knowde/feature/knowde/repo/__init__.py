@@ -1,5 +1,6 @@
 """repo."""
 
+from textwrap import indent
 from uuid import UUID
 
 from fastapi import status
@@ -17,7 +18,7 @@ from knowde.feature.knowde.repo.detail import fetch_knowdes_with_detail
 from knowde.shared.cypher import Paging
 from knowde.shared.errors import DomainError
 
-from .cypher import q_adjaceny_uids, q_stats, q_where_knowde
+from .cypher import q_adjacency_uids, q_stats, q_where_knowde
 
 
 def search_total(
@@ -53,7 +54,7 @@ async def search_knowde(
     """用語、文のいずれかでマッチするものを返す."""
     q = rf"""
         CALL () {{
-        {q_where_knowde(where)}
+        {indent(q_where_knowde(where), " " * 4)}
         }}
         WITH sent // 中間結果のサイズダウン
         {q_stats("sent", order_by)}
@@ -100,7 +101,7 @@ def adjacency_knowde(sent_uid: str) -> list[KAdjacency]:
     """隣接knowdeを返す."""
     q = rf"""
         MATCH (sent: Sentence {{uid: $uid}})
-        {q_adjaceny_uids("sent")}
+        {q_adjacency_uids("sent")}
         RETURN
             sent.uid as sent_uid
             , premises

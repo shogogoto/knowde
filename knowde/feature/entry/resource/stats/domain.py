@@ -195,7 +195,7 @@ def get_isolation(sn: SysNet) -> list[Hashable]:
             return False
         if has_dependency(sn, n):
             return False
-        detail = get_detail(sn, n)
+        detail = get_detail(sn.g, n)
         return len(detail) == 0
 
     # まず detail方向で絞る

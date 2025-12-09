@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Hashable, Iterable
 from functools import cache
 from typing import TYPE_CHECKING, Final
 
@@ -21,10 +21,10 @@ if TYPE_CHECKING:
 type Nw1N1Fn = Callable[[SysNet, KNode], list[KNode]]
 
 
-def get_detail(sn: SysNet, n: KNode) -> list[KNode]:
+def get_detail(g: nx.DiGraph, n: Hashable) -> list[KNode]:
     """詳細な記述."""
     vals = []
-    sub = etype_subgraph(sn.g, EdgeType.SIBLING, EdgeType.BELOW)
+    sub = etype_subgraph(g, EdgeType.SIBLING, EdgeType.BELOW)
     for below_s in EdgeType.BELOW.succ(sub, n):
         sibs = to_nodes(sub, below_s, EdgeType.SIBLING.succ)
         vals.extend([s for s in sibs if s])  # None排除
@@ -45,8 +45,8 @@ def parent_lookup(g: nx.DiGraph) -> dict:
         first_sibs = EdgeType.BELOW.succ(g, p)
         for s in first_sibs:
             lookup[s] = p
-            for _s in [e for e in to_nodes(g, s, EdgeType.SIBLING.succ) if e]:
-                lookup[_s] = p
+            for s_ in [e for e in to_nodes(g, s, EdgeType.SIBLING.succ) if e]:
+                lookup[s_] = p
     return lookup
 
 
@@ -58,38 +58,32 @@ def get_parent_or_none(sn: SysNet, n: KNode) -> KNode | None:
 
 def get_refer(sn: SysNet, n: KNode) -> list[KNode]:
     """引用・利用する側."""
-    vals = EdgeType.RESOLVED.pred(sn.g, n)
-    return list(vals)
+    return sn.access(n, EdgeType.RESOLVED.pred)
 
 
 def get_referred(sn: SysNet, n: KNode) -> list[KNode]:
     """引用される依存元."""
-    vals = EdgeType.RESOLVED.succ(sn.g, n)
-    return list(vals)
+    return sn.access(n, EdgeType.RESOLVED.succ)
 
 
 def get_premise(sn: SysNet, n: KNode) -> list[KNode]:
     """前提."""
-    vals = EdgeType.TO.pred(sn.g, n)
-    return list(vals)
+    return sn.access(n, EdgeType.TO.pred)
 
 
 def get_conclusion(sn: SysNet, n: KNode) -> list[KNode]:
     """帰結."""
-    vals = EdgeType.TO.succ(sn.g, n)
-    return list(vals)
+    return sn.access(n, EdgeType.TO.succ)
 
 
 def get_example(sn: SysNet, n: KNode) -> list[KNode]:
     """具体."""
-    vals = EdgeType.EXAMPLE.succ(sn.g, n)
-    return list(vals)
+    return sn.access(n, EdgeType.EXAMPLE.succ)
 
 
 def get_general(sn: SysNet, n: KNode) -> list[KNode]:
     """抽象."""
-    vals = EdgeType.EXAMPLE.pred(sn.g, n)
-    return list(vals)
+    return sn.access(n, EdgeType.EXAMPLE.pred)
 
 
 def recursively_nw1n1(fn: Nw1N1Fn, count: int) -> Nw1N1Fn:

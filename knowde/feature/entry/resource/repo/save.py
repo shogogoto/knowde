@@ -14,9 +14,10 @@ from neomodel import AsyncStructuredNode, StructuredNode, adb
 from pydantic import BaseModel
 
 from knowde.feature.entry.label import LHead, LResource
+from knowde.feature.parsing.primitive.quoterm.domain import Quoterm
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.primitive.time import WhenNode
-from knowde.shared.knowde.label import LInterval, LSentence, LTerm
+from knowde.shared.knowde.label import LInterval, LQuoterm, LSentence, LTerm
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import Duplicable, to_uuid
 
@@ -87,9 +88,12 @@ def q_create_node(
             d = n.model_dump(mode="json")
             d["val"] = d.pop("n")
             return f"CREATE ({var}:{t2labels(LInterval)} {propstr(d)})"
-        case str() | Duplicable():
+        case str() | Duplicable() | Quoterm():
+            t = t2labels(LQuoterm) if isinstance(n, Quoterm) else t2labels(LSentence)
             uid = getattr(n, "uid", uuid4()).hex
-            return f"CREATE ({var}:{t2labels(LSentence)} {{val: '{n}', uid: '{uid}', resource_uid: $uid}})"  # noqa: E501
+            return (
+                f"CREATE ({var}:{t} {{val: '{n}', uid: '{uid}', resource_uid: $uid}})"
+            )
         case _:
             return None
     return None

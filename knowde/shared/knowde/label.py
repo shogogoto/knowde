@@ -5,6 +5,7 @@ from __future__ import annotations
 from neomodel import (
     FloatProperty,
     FulltextIndex,
+    One,
     RelationshipFrom,
     RelationshipManager,
     RelationshipTo,
@@ -57,6 +58,16 @@ class LTerm(StructuredNode):
     )  # , max_length=MAX_CHARS)
     alias = RelationshipTo("LTerm", "ALIAS", cardinality=ZeroOrOne)
     sentence: RelationshipManager = RelationshipTo("LSentence", "DEF")
+
+
+class LQuoterm(StructuredNode):
+    """引用用語."""
+
+    __label__ = "Quoterm"
+    uid = UniqueIdProperty()
+    val = StringProperty(index=True, required=True)
+    term: RelationshipManager = RelationshipTo("LTerm", "QUOTE", cardinality=One)
+    resource_uid = StringProperty(require=True, index=True)  # 作成ユーザーID
 
 
 class LInterval(StructuredNode):

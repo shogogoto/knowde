@@ -2,32 +2,31 @@
 
 from __future__ import annotations
 
+from collections.abc import Hashable
 from functools import cached_property
-from typing import TYPE_CHECKING
 
 import networkx as nx
 from lark import Token
+from more_itertools import flatten
 from pydantic import BaseModel
 
 from knowde.feature.parsing.primitive.heading import get_headings
 from knowde.feature.parsing.primitive.template import Templates
+from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.primitive.time import Series, WhenNode
 from knowde.feature.parsing.sysnet.sysfn import (
     get_ifdef,
-    get_ifquote,
     to_sentence,
     to_template,
     to_term,
 )
 from knowde.shared.nxutil import to_nested
 from knowde.shared.nxutil.edge_type import EdgeType
+from knowde.shared.nxutil.types import Accessor
 from knowde.shared.types import Duplicable, NXGraph
 
 from .errors import SysNetNotFoundError
 from .sysnode import Def, KNArg, KNode, is_meta
-
-if TYPE_CHECKING:
-    from knowde.feature.parsing.primitive.term import Term
 
 
 # 様々なgetter機能を分離したいかも
@@ -37,11 +36,21 @@ class SysNet(BaseModel, frozen=True):
     root: str
     g: NXGraph
 
-    def get(self, n: KNode) -> KNArg:
+    def get(self, n: Hashable) -> KNArg:
         """文に紐づく用語があれば定義を返す."""
         self.check_contains(n)
-        q = get_ifquote(self.g, n)
-        return q or get_ifdef(self.g, n)
+        return get_ifdef(self.g, n)
+
+    def access(self, n: Hashable, f: Accessor) -> list[KNode]:
+        """用語引用の分も辿って取得."""
+        s = n
+        if isinstance(n, Def):
+            s = n.sentence
+        if isinstance(n, Term):
+            s = EdgeType.DEF.get_succ_or_none(self.g, n)
+        sents = [*EdgeType.QUOTERM.pred(self.g, s), s]
+        ls = flatten([f(self.g, s) for s in sents])
+        return list(ls)
 
     @cached_property
     def sentences(self) -> list[str | Duplicable]:
@@ -63,7 +72,10 @@ class SysNet(BaseModel, frozen=True):
     @cached_property
     def sentence_graph(self) -> nx.DiGraph:
         """文のみのGraph."""
-        return nx.subgraph(self.g, [s for s in self.sentences if isinstance(s, str)])
+        return nx.subgraph(
+            self.g,
+            [s for s in self.sentences if isinstance(s, (str, Duplicable))],
+        )
 
     @cached_property
     def _templates(self) -> Templates:

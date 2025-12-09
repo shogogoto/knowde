@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 
 import networkx as nx
 
+from knowde.feature.parsing.primitive.quoterm.domain import add_quoterm_edge
 from knowde.feature.parsing.primitive.term.markresolver import MarkResolver
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.sysnet.sysfn import (
@@ -17,7 +18,6 @@ from knowde.feature.parsing.sysnet.sysfn import (
 )
 from knowde.feature.parsing.sysnet.sysfn.build_fn import (
     add_resolved_edges,
-    replace_quoterms,
 )
 from knowde.feature.parsing.sysnet.sysnode.merged_def import MergedDef
 from knowde.feature.parsing.tree_parse import get_leaves, parse2tree
@@ -49,7 +49,7 @@ def _build_graph(tree: Tree, col: DirectedEdgeCollection) -> nx.MultiDiGraph:
     g, resolver = _extract_leaves(tree)
     col.set_edges(g)
     add_resolved_edges(g, resolver)
-    replace_quoterms(g, resolver)
+    add_quoterm_edge(g, resolver.lookup.get)
     return g
 
 

@@ -15,6 +15,7 @@ from knowde.feature.systats.nw1_n1 import (
     has_dependency,
     recursively_nw1n1,
 )
+from knowde.feature.systats.nw1_n1.ctxdetail import to_nw1n1fn
 
 
 def test_get_detail_parent() -> None:
@@ -37,8 +38,8 @@ def test_get_detail_parent() -> None:
                 2b
     """
     sn = parse2net(s)
-    assert get_detail(sn, "aaa") == []
-    assert get_detail(sn, "bbb") == ["b1", "b2", "1b", "2b"]
+    assert get_detail(sn.g, "aaa") == []
+    assert sn.access("bbb", get_detail) == unordered(["b1", "b2", "1b", "2b"])
 
     assert get_parent_or_none(sn, "aaa") is None
     assert get_parent_or_none(sn, "b2") == "bbb"
@@ -182,9 +183,10 @@ def test_get_detail_recursively() -> None:
 
     """
     sn = parse2net(s)
-    f1 = recursively_nw1n1(get_detail, 1)
+    detail_fn = to_nw1n1fn(get_detail)
+    f1 = recursively_nw1n1(detail_fn, 1)
     assert f1(sn, "1") == ["11", "12"]
-    f2 = recursively_nw1n1(get_detail, 3)
+    f2 = recursively_nw1n1(detail_fn, 3)
     assert f2(sn, "1") == [
         ["11", [["21", ["31", "32"]], ["22", ["33", "34"]]]],
         ["12", []],

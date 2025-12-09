@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from lark import Token, Transformer
 
+from knowde.feature.parsing.primitive.quoterm.domain import Quoterm
 from knowde.feature.parsing.primitive.template import Template
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.primitive.time import WhenNode
@@ -38,7 +39,7 @@ class TSysArg(Transformer):
     ANTONYM = lambda _, _tok: EdgeType.ANTI.both  # noqa: E731
     SIMILAR = lambda _, _tok: EdgeType.SIMILAR.both  # noqa: E731
     DUPLICABLE = lambda _, _tok: Duplicable(n=_stoken(_tok))  # noqa: E731
-    QUOTERM = lambda _, _tok: _stoken(_tok)  # noqa: E731
+    QUOTERM = lambda _, _tok: Quoterm(n=_stoken(_tok))  # noqa: E731
     TIME = lambda _, _tok: WhenNode.of(n=_stoken(_tok))  # noqa: E731
 
     # Resources
