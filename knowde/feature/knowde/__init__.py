@@ -166,7 +166,7 @@ class KnowdeDetail(BaseModel):
 
     uid: UUID
     g: NXGraph
-    knowdes: dict[UUID, Knowde]
+    knowdes: dict[str, Knowde]
     location: KnowdeLocation
 
     # テスト用メソッド
