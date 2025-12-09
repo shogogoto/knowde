@@ -220,3 +220,33 @@ async def test_details(u: LUser):
         "x3[X3(X31)]T(514)",
     ]
     # 旧nameクエリでは x2[X2] が取得できなかった x2 だけで名前取得できなかった
+
+
+@mark_async_test()
+async def test_score_with_quoterm(u: LUser):
+    """quotermありのスコア."""
+    s1 = """
+    # title
+    ## h1
+      A: aaa
+        -> direct
+    ### h12
+      `A`
+        ccc
+        ddd
+        -> to1
+    ## h21
+      `A`
+        xxx
+        yyy
+        -> to2
+            -> to21
+            -> to22
+      ahan
+        iyan1
+          ex. iyan2
+    """
+    _sn, _mr1 = await save_text(u.uid, s1)
+    result = await search_knowde("aaa", do_print=True)
+    assert result.data[0].stats.n_detail == 4  # noqa: PLR2004
+    assert result.data[0].stats.n_conclusion == 5  # noqa: PLR2004
