@@ -35,6 +35,7 @@ def q_detail_location(
     """Detail with location or not Query."""
     q_loc = q_location("sent") if is_location else ""
     return f"""
+        // q_detail_location
         UNWIND $uids as uid
         MATCH (sent: Sentence {{uid: uid}})
         {q_call_sent_names("sent")}
@@ -68,9 +69,12 @@ def _row2knowde(sent, names, alias, when, stats) -> Knowde:
 def fetch_knowdes_with_detail(
     uids: Iterable[str],
     order_by: OrderBy | None = OrderBy(),
+    do_print: bool = False,  # noqa: FBT001, FBT002
 ) -> dict[UUID, Knowde]:
     """文のuuidリストから名前などの付属情報を返す."""
     q = q_detail_location(order_by=order_by)
+    if do_print:
+        print(q)  # noqa: T201
     rows, _ = db.cypher_query(q, params={"uids": list(uids)})
     d = {}
     for row in rows:
@@ -79,7 +83,7 @@ def fetch_knowdes_with_detail(
         d[uid] = _row2knowde(sent, names, alias, when, stats)
     diff = set(uids) - set(d.keys())
     if len(diff) > 0:
-        msg = f"fail to fetch_nodes_by_ids: {[UUID(e) for e in diff]}"
+        msg = f"knowde取得に漏れがある: {[UUID(e) for e in diff]}"
         raise NotFoundError(msg)
     return d
 
@@ -189,7 +193,7 @@ def chains_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: F
         msg = f"{uid} sentence not found"
         raise NotFoundError(msg)
 
-    d = fetch_knowdes_with_detail(g.nodes)
+    d = fetch_knowdes_with_detail(g.nodes, do_print=do_print)
     d2 = fetch_knowdes_with_detail_and_location([uid.hex])
     return KnowdeDetail(
         uid=uid,

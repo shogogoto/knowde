@@ -45,7 +45,10 @@ async def search_resources(  # noqa: PLR0917
         MATCH (r:Resource WHERE r.title CONTAINS $s)
             -[:STATS]->(stat:ResourceStatsCache)
             , (u:User)<-[:OWNED|PARENT]-*(r)
-        WHERE u.username CONTAINS $u OR u.display_name CONTAINS $u
+        WHERE
+            u.username CONTAINS $u
+            OR u.display_name CONTAINS $u
+            OR u.uid CONTAINS $u
 
         WITH r, stat, u
         ORDER BY {", ".join(skeys)} {((desc and "DESC") or "ASC")}

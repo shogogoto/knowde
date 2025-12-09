@@ -164,13 +164,11 @@ async def test_restore_and_delete_individual(u: LUser):
 @mark_async_test()
 async def test_save_and_restore_quoterm(u: LUser):
     """quotermによるbelow siblingの無限ループを回避."""
-    s1 = """
+    s = """
     # title
     ## h1
       A: aaa
     ### h12
-      B: bbb
-    ### h13
       `A`
         ccc
         ddd
@@ -179,6 +177,6 @@ async def test_save_and_restore_quoterm(u: LUser):
         xxx
         yyy
     """
-    _sn, mr1 = await save_text(u.uid, s1)
+    _sn, mr1 = await save_text(u.uid, s)
     res, _uid = await restore_sysnet(mr1.uid)
     assert res.access("aaa", get_detail) == unordered(["ccc", "ddd", "xxx", "yyy"])

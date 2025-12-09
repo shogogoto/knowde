@@ -80,7 +80,11 @@ class Knowde(BaseModel, frozen=True):
         a = self.additional
         t = f"[{self.term}]" if self.term else ""
         when = f"T({a.when})" if a is not None and a.when else ""
+        # stats = f"S({self.stats})" if self.stats else ""
         return f"{self.sentence}{t}{when}"
+
+    def __repr__(self) -> str:  # noqa: D105
+        return str(self)
 
     def when(self) -> str:  # noqa: D102
         a = self.additional
@@ -162,7 +166,7 @@ class KnowdeDetail(BaseModel):
 
     uid: UUID
     g: NXGraph
-    knowdes: dict[str, Knowde]
+    knowdes: dict[UUID, Knowde]
     location: KnowdeLocation
 
     # テスト用メソッド

@@ -86,24 +86,23 @@ def q_stats(tgt: str, order_by: OrderBy | None = None) -> str:
 def q_call_sent_names(var: str) -> str:
     """単文の名前を取得."""
     return f"""
-    CALL ({var}) {{
-        OPTIONAL MATCH ({var})<-[r:DEF]-(t1:Term)
-        OPTIONAL MATCH p = (t1)-[:ALIAS]->*(t2:Term)
-        WITH p, LENGTH(p) as len, r
-        ORDER BY len DESC
-        LIMIT 1
-        RETURN nodes(p) as names
-            , r.alias AS alias
-    }}
+        CALL ({var}) {{
+            OPTIONAL MATCH ({var})<-[r:DEF]-(t1:Term)
+            OPTIONAL MATCH p = (t1)-[:ALIAS]->*(t2:Term)
+            WITH p, LENGTH(p) as len, r
+            ORDER BY len DESC
+            LIMIT 1
+            RETURN nodes(p) as names
+                , r.alias AS alias
+        }}
     """
 
 
-@q_indent
 def q_where_knowde(p: WherePhrase = WherePhrase.CONTAINS) -> str:
     """検索文字列が含まれている文と用語に紐づく文を返す."""
     where_phrase = f"{p.value} $s"
     return f"""
-        // 検索文字列が含まれる文
+        // 検索文字列が含まれる文 q_where_knowde
         MATCH (sent1: Sentence WHERE sent1.val {where_phrase})
         {q_call_sent_names("sent1")}
         RETURN sent1 as sent, names
@@ -117,9 +116,10 @@ def q_where_knowde(p: WherePhrase = WherePhrase.CONTAINS) -> str:
     """
 
 
-def q_adjaceny_uids(sent_var: str) -> str:
+def q_adjacency_uids(sent_var: str) -> str:
     """隣接する文のIDを返す."""
     return f"""
+    // q_adjacency_uid
         CALL ({sent_var}) {{
             OPTIONAL MATCH ({sent_var})<-[:TO]-(premise:Sentence)
             OPTIONAL MATCH ({sent_var})-[:TO]->(conclusion:Sentence)
