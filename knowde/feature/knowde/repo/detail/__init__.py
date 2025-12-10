@@ -170,7 +170,7 @@ def chains_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: F
             // Logic Chain
             {q_chain("sent", EdgeType.TO, indent_len=4)}
             UNION
-            {q_chain("sent", EdgeType.REF, indent_len=4)}
+            {q_chain("sent", EdgeType.RESOLVED, indent_len=4)}
             UNION
             {q_chain("sent", EdgeType.EXAMPLE, indent_len=4)}
         }}

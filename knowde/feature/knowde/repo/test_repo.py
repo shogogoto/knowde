@@ -247,6 +247,6 @@ async def test_score_with_quoterm(u: LUser):
           ex. iyan2
     """
     _sn, _mr1 = await save_text(u.uid, s1)
-    result = await search_knowde("aaa", do_print=True)
+    result = await search_knowde("aaa")
     assert result.data[0].stats.n_detail == 4  # noqa: PLR2004
     assert result.data[0].stats.n_conclusion == 5  # noqa: PLR2004
