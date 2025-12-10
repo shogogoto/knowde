@@ -17,13 +17,14 @@ from knowde.feature.knowde.repo.clause import OrderBy
 from knowde.feature.knowde.repo.cypher import (
     build_location_res,
     q_call_sent_names,
+    q_chain,
     q_location,
     q_stats,
     q_upper,
 )
 from knowde.feature.parsing.primitive.term import Term
 from knowde.shared.errors.domain import NotFoundError, NotUniqueError
-from knowde.shared.knowde.label import LSentence
+from knowde.shared.knowde.label import LQuoterm, LSentence
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import to_uuid
 
@@ -83,7 +84,7 @@ def fetch_knowdes_with_detail(
         d[uid] = _row2knowde(sent, names, alias, when, stats)
     diff = set(uids) - set(d.keys())
     if len(diff) > 0:
-        msg = f"knowde取得に漏れがある: {[UUID(e) for e in diff]}"
+        msg = f"knowde取得に{len(diff)}個の漏れがある: {list(diff)}"
         raise NotFoundError(msg)
     return d
 
@@ -147,52 +148,56 @@ def knowde_upper(uid: UUID) -> LSentence:
 
 def chains_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: FBT001, FBT002
     """knowdeの依存chain全てを含めた詳細."""
-    q = """
-        MATCH (sent: Sentence {uid: $uid})
-        CALL (sent) {
-            // detail がない場合にMATCHしなくなる
+    q = f"""
+        MATCH (s: Sentence {{uid: $uid}})
+        OPTIONAL MATCH (s)<-[:QUOTERM]-(qt: Quoterm)
+        WITH COLLECT(qt) AS qts, s
+        UNWIND [s] + qts AS sent
+        WITH DISTINCT sent, s
+        CALL (sent) {{
+            // detail がない場合にsentが返らなくなるのを防ぐ
             RETURN (sent) as start, null as end, null as type
             UNION
             // Part Chain
-            MATCH (sent)-[r:BELOW]->(:Sentence)
+            MATCH (sent)-[r:BELOW]->(:Sentence|Quoterm)
             RETURN startNode(r) as start, endNode(r) as end, type(r) as type
             UNION
-            MATCH (sent)-[:BELOW]->(below:Sentence)
-                -[rs:SIBLING|BELOW]->*(:Sentence)
+            MATCH (sent)-[:BELOW]->(below:Sentence|Quoterm)
+                -[rs:SIBLING|BELOW]->*(:Sentence|Quoterm)
             UNWIND rs as r
             RETURN startNode(r) as start, endNode(r) as end, type(r) as type
             UNION
             // Logic Chain
-            MATCH (p1:Sentence)-[r:TO]-(p2:Sentence)-[:TO]-*(sent)
-            RETURN startNode(r) as start, endNode(r) as end, type(r) as type
+            {q_chain("sent", EdgeType.TO, indent_len=4)}
             UNION
-            // Ref Chain
-            MATCH (:Sentence)-[r:RESOLVED]-(:Sentence)
-                -[:RESOLVED]-*(sent)
-            RETURN startNode(r) as start, endNode(r) as end, type(r) as type
-        }
+            {q_chain("sent", EdgeType.RESOLVED, indent_len=4)}
+            UNION
+            {q_chain("sent", EdgeType.EXAMPLE, indent_len=4)}
+        }}
         RETURN start, end, type
         """
     if do_print:
         print(q)  # noqa: T201
-    res = db.cypher_query(
+    rows, _ = db.cypher_query(
         q,
         params={"uid": uid.hex},
         resolve_objects=True,
     )
     g = nx.MultiDiGraph()
-    for row in res[0]:
+    d = {}
+    for row in rows:
         start, end, type_ = row
+        start = uid.hex if isinstance(start, LQuoterm) else start.uid
         if type_ is None:
-            g.add_node(start.uid)
+            g.add_node(start)
             continue
+        end = uid.hex if isinstance(end, LQuoterm) else end.uid
         t: EdgeType = getattr(EdgeType, type_)
-        t.add_edge(g, start.uid, end.uid)
+        t.add_edge(g, start, end)
 
     if len(g.nodes) == 0:
         msg = f"{uid} sentence not found"
         raise NotFoundError(msg)
-
     d = fetch_knowdes_with_detail(g.nodes, do_print=do_print)
     d2 = fetch_knowdes_with_detail_and_location([uid.hex])
     return KnowdeDetail(

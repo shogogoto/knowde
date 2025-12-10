@@ -19,6 +19,7 @@ import itertools
 from collections.abc import Hashable, Iterable
 from uuid import UUID
 
+import networkx as nx
 from networkx import DiGraph
 from pydantic import BaseModel, Field
 
@@ -186,6 +187,11 @@ class KnowdeDetail(BaseModel):
         succs = list(t.succ(self.g, uid))
         return [self.knowdes[s] for s in succs]
 
+    def pred(self, sentence: str, t: EdgeType) -> list[Knowde]:  # noqa: D102
+        uid = self.get(sentence)
+        preds = list(t.pred(self.g, uid))
+        return [self.knowdes[s] for s in preds]
+
     def part(self, tgt: str) -> set[Knowde]:
         """targetも含めて返す."""
         uid = self.get(tgt)
@@ -204,13 +210,6 @@ class KnowdeDetail(BaseModel):
         ns = to_nodes(self.g, uid, succ)
         return {self.knowdes.get(s) for s in ns if s is not None}
 
-    @property
-    def graph(self) -> DiGraph:  # noqa: D102
-        g = DiGraph()
-
-        for u, v, attr in self.g.edges(data=True):
-            uu = self.knowdes.get(u)
-            vv = self.knowdes.get(v)
-            if uu is not None and vv is not None:
-                g.add_edge(uu, vv, **attr)
-        return g
+    def relabeled(self) -> DiGraph:
+        """UUIDstr node をknowdeに置き換えたgraphを返す."""
+        return nx.relabel_nodes(self.g, self.knowdes)
