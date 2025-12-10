@@ -318,3 +318,43 @@ async def test_location_by_by_regression(u: LUser):
     tgt = LSentence.nodes.first(val="最も偉大な論理学者の一人")
     res = client.get(f"/knowde/sentence/{tgt.uid}")
     assert res.is_success
+
+
+# @pytest.mark.skip
+@mark_async_test()
+async def test_chain_quoterm_rel(u: LUser):
+    """quotermの関係も含めて返せるか確認."""
+    s = """
+        # title
+            A: aaa
+                -> direct
+        ## h1
+            `A`
+                -> to1
+                ex. ex1
+                xe. ab1
+                <- from1
+        ## h2
+            `A`
+                xxx
+                -> to2
+    """
+
+    _sn, _r = await save_text(u.uid, s)
+    tgt = LSentence.nodes.first(val="aaa")
+    d = chains_knowde(UUID(tgt.uid))
+
+    assert [k.sentence for k in d.succ("aaa", EdgeType.TO)] == unordered([
+        "direct",
+        "to1",
+        "to2",
+    ])
+    assert [k.sentence for k in d.pred("aaa", EdgeType.TO)] == unordered([
+        "from1",
+    ])
+    assert [k.sentence for k in d.succ("aaa", EdgeType.EXAMPLE)] == unordered([
+        "ex1",
+    ])
+    assert [k.sentence for k in d.pred("aaa", EdgeType.EXAMPLE)] == unordered([
+        "ab1",
+    ])
