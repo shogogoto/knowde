@@ -17,6 +17,7 @@ from knowde.feature.knowde.repo.clause import OrderBy
 from knowde.feature.knowde.repo.cypher import (
     build_location_res,
     q_call_sent_names,
+    q_chain,
     q_location,
     q_stats,
     q_upper,
@@ -147,13 +148,13 @@ def knowde_upper(uid: UUID) -> LSentence:
 
 def chains_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: FBT001, FBT002
     """knowdeの依存chain全てを含めた詳細."""
-    q = """
-        MATCH (s: Sentence {uid: $uid})
+    q = f"""
+        MATCH (s: Sentence {{uid: $uid}})
         OPTIONAL MATCH (s)<-[:QUOTERM]-(qt: Quoterm)
         WITH COLLECT(qt) AS qts, s
         UNWIND [s] + qts AS sent
         WITH DISTINCT sent, s
-        CALL (sent) {
+        CALL (sent) {{
             // detail がない場合にsentが返らなくなるのを防ぐ
             RETURN (sent) as start, null as end, null as type
             UNION
@@ -167,19 +168,12 @@ def chains_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: F
             RETURN startNode(r) as start, endNode(r) as end, type(r) as type
             UNION
             // Logic Chain
-            MATCH (p1:Sentence|Quoterm)-[r:TO]-(p2:Sentence|Quoterm)-[:TO]-*(sent)
-            RETURN startNode(r) as start, endNode(r) as end, type(r) as type
+            {q_chain("sent", EdgeType.TO, indent_len=4)}
             UNION
-            // Ref Chain
-            MATCH (:Sentence|Quoterm)-[r:RESOLVED]-(:Sentence|Quoterm)
-                -[:RESOLVED]-*(sent)
-            RETURN startNode(r) as start, endNode(r) as end, type(r) as type
+            {q_chain("sent", EdgeType.REF, indent_len=4)}
             UNION
-            // Eample Chain
-            MATCH (:Sentence|Quoterm)-[r:EXAMPLE]-(:Sentence|Quoterm)
-                -[:EXAMPLE]-*(sent)
-            RETURN startNode(r) as start, endNode(r) as end, type(r) as type
-        }
+            {q_chain("sent", EdgeType.EXAMPLE, indent_len=4)}
+        }}
         RETURN start, end, type
         """
     if do_print:

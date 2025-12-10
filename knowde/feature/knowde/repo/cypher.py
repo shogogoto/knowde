@@ -86,6 +86,17 @@ def q_stats(tgt: str, order_by: OrderBy | None = None) -> str:
         """
 
 
+def q_chain(var: str, et: EdgeType, indent_len: int = 0) -> str:
+    """同一関係パスによるstart,end,type."""
+    s = f"""
+        // {et.name} Chain
+        MATCH (:Sentence|Quoterm)-[r:{et.name}]-(:Sentence|Quoterm)
+            -[:{et.name}]-*({var})
+        RETURN startNode(r) as start, endNode(r) as end, type(r) as type
+    """
+    return indent(s, " " * indent_len)
+
+
 def q_call_sent_names(var: str) -> str:
     """単文の名前を取得."""
     return f"""
