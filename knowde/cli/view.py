@@ -8,11 +8,11 @@ from typing import IO, TYPE_CHECKING
 import click
 from tabulate import tabulate
 
-from knowde.feature.systats.types import Nw1N1Label
+from knowde.feature.parsing.sysnet.systats.types import Nw1N1Label
 
 if TYPE_CHECKING:
-    from knowde.feature.systats.nw1_n1.scorable import NRecursiveWeight
-    from knowde.feature.systats.types import Nw1N1Recursive
+    from knowde.feature.parsing.sysnet.systats.nw1_n1.scorable import NRecursiveWeight
+    from knowde.feature.parsing.sysnet.systats.types import Nw1N1Recursive
 
 
 @click.group("view")
