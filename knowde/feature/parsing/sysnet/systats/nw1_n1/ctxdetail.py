@@ -11,7 +11,7 @@ import networkx as nx
 from pydantic import BaseModel
 
 from knowde.feature.parsing.sysnet.sysnode import KNode
-from knowde.feature.systats.nw1_n1 import (
+from knowde.feature.parsing.sysnet.systats.nw1_n1 import (
     Nw1N1Fn,
     get_conclusion,
     get_detail,
@@ -22,7 +22,7 @@ from knowde.feature.systats.nw1_n1 import (
     get_referred,
     recursively_nw1n1,
 )
-from knowde.feature.systats.types import Nw1N1Label, Nw1N1Recursive
+from knowde.feature.parsing.sysnet.systats.types import Nw1N1Label, Nw1N1Recursive
 
 if TYPE_CHECKING:
     from knowde.feature.parsing.sysnet import SysNet

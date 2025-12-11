@@ -13,8 +13,8 @@ from knowde.feature.entry.resource.repo.delete import delete_resource
 from knowde.feature.entry.resource.usecase import save_text
 from knowde.feature.parsing.primitive.heading import include_heading
 from knowde.feature.parsing.sysnet import SysNet
+from knowde.feature.parsing.sysnet.systats.nw1_n1 import get_detail
 from knowde.feature.parsing.tree2net import parse2net
-from knowde.feature.systats.nw1_n1 import get_detail
 from knowde.shared.errors.domain import NotFoundError
 from knowde.shared.user.label import LUser
 

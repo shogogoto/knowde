@@ -48,6 +48,8 @@ async def save_resource_with_detail(
     if lb is None:
         msg = f"{meta.title} の保存に失敗しました"
         raise NotFoundError(msg)
+    # ２重リソース不整合がないことを最終確認
+    await fetch_namespace(ns.user_id)
 
     dbmeta = MResource.freeze_dict(lb.__properties__)
     cache = await r.cached_stats.get_or_none()
@@ -59,9 +61,6 @@ async def save_resource_with_detail(
         sn = try_parse2net(txt)
         await update_resource_diff(lb.uid, sn)
         await save_resource_stats_cache(dbmeta.uid, sn)
-
-    # ２重リソース不整合がないことを最終確認
-    await fetch_namespace(ns.user_id)
 
     return dbmeta, meta
 
