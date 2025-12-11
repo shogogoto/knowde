@@ -13,8 +13,8 @@ async def u() -> LUser:  # noqa: D103
 
 
 @mark_async_test()
-async def test_distractor_sent2term(u: LUser):
-    """単文に対して用語選択肢を当てる."""
+async def test_list_distractor_candidates(u: LUser):
+    """距離指定で誤答肢候補を列挙."""
     s = """
     # title
         A: aaa
@@ -24,11 +24,21 @@ async def test_distractor_sent2term(u: LUser):
     """
 
     await save_text(u.uid, s)
-    sent = LSentence.nodes.first(val="aaa")
 
+    sent = LSentence.nodes.first(val="aaa")
     c = await list_distractor_candidates(sent.uid)
     assert len(c) == 3  # noqa: PLR2004
     c = await list_distractor_candidates(sent.uid, dist=1)
     assert len(c) == 2  # noqa: PLR2004
     c = await list_distractor_candidates(sent.uid, dist=2)
     assert len(c) == 3  # noqa: PLR2004
+
+    c = await list_distractor_candidates(sent.uid, dist=1, has_term=True)
+    assert len(c) == 1
+    c = await list_distractor_candidates(sent.uid, dist=2, has_term=True)
+    assert len(c) == 2  # noqa: PLR2004
+
+
+@mark_async_test()
+async def test_choose_distractor_by_score(u: LUser):
+    """誤答候補から誤答を選択する."""
