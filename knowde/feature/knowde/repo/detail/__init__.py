@@ -26,7 +26,7 @@ from knowde.feature.parsing.primitive.term import Term
 from knowde.shared.errors.domain import NotFoundError, NotUniqueError
 from knowde.shared.knowde.label import LQuoterm, LSentence
 from knowde.shared.nxutil.edge_type import EdgeType
-from knowde.shared.types import to_uuid
+from knowde.shared.types import UUIDy, to_uuid
 
 
 def q_detail_location(
@@ -68,7 +68,7 @@ def _row2knowde(sent, names, alias, when, stats) -> Knowde:
 
 
 async def fetch_knowdes_with_detail(
-    uids: Iterable[str],
+    uids: Iterable[UUIDy],
     order_by: OrderBy | None = OrderBy(),
     do_print: bool = False,  # noqa: FBT001, FBT002
 ) -> dict[UUID, Knowde]:
@@ -76,7 +76,10 @@ async def fetch_knowdes_with_detail(
     q = q_detail_location(order_by=order_by)
     if do_print:
         print(q)  # noqa: T201
-    rows, _ = await adb.cypher_query(q, params={"uids": list(uids)})
+    rows, _ = await adb.cypher_query(
+        q,
+        params={"uids": [to_uuid(uid).hex for uid in uids]},
+    )
     d = {}
     for row in rows:
         sent, names, alias, when, stats = row

@@ -109,6 +109,8 @@ async def adjacency_knowde(sent_uid: str) -> list[KAdjacency]:
             , refers
             , referreds
             , details
+            , abstracts
+            , examples
         """
     res = await adb.cypher_query(q, params={"uid": sent_uid})
     uids = res2uidstrs(res)
@@ -122,6 +124,8 @@ async def adjacency_knowde(sent_uid: str) -> list[KAdjacency]:
             refers,
             referreds,
             details,
+            abstracts,
+            examples,
         ) = row
         adj = KAdjacency(
             center=knowdes[sent],
@@ -130,6 +134,8 @@ async def adjacency_knowde(sent_uid: str) -> list[KAdjacency]:
             conclusions=[knowdes[c] for c in conclusions],
             refers=[knowdes[r] for r in refers],
             referreds=[knowdes[r] for r in referreds],
+            abstracts=[knowdes[a] for a in abstracts],
+            examples=[knowdes[e] for e in examples],
         )
         ls.append(adj)
     return ls

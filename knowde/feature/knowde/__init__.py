@@ -143,6 +143,8 @@ class KAdjacency(BaseModel):
     conclusions: list[Knowde]
     refers: list[Knowde]
     referreds: list[Knowde]
+    abstracts: list[Knowde]
+    examples: list[Knowde]
 
     def __str__(self) -> str:
         """For display in CLI."""
