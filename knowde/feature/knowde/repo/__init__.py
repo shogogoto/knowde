@@ -5,7 +5,7 @@ from uuid import UUID
 
 from fastapi import status
 from more_itertools import collapse
-from neomodel import db
+from neomodel import adb, db
 
 from knowde.feature.entry.namespace import resource_infos_by_resource_uids
 from knowde.feature.knowde import (
@@ -67,7 +67,7 @@ async def search_knowde(
         print(q)  # noqa: T201
     rows, _ = db.cypher_query(q, params={"s": s})
     uids = res2uidstrs(rows)
-    d = fetch_knowdes_with_detail(uids, order_by=order_by)
+    d = await fetch_knowdes_with_detail(uids, order_by=order_by)
     ls: list[Knowde] = []
     for row in rows:
         sent_uid = row[0]
@@ -97,7 +97,7 @@ def res2uidstrs(res: tuple) -> set[str]:
     return set(filter(is_valid_uuid, collapse(res, base_type=UUID)))
 
 
-def adjacency_knowde(sent_uid: str) -> list[KAdjacency]:
+async def adjacency_knowde(sent_uid: str) -> list[KAdjacency]:
     """隣接knowdeを返す."""
     q = rf"""
         MATCH (sent: Sentence {{uid: $uid}})
@@ -110,9 +110,9 @@ def adjacency_knowde(sent_uid: str) -> list[KAdjacency]:
             , referreds
             , details
         """
-    res = db.cypher_query(q, params={"uid": sent_uid})
+    res = await adb.cypher_query(q, params={"uid": sent_uid})
     uids = res2uidstrs(res)
-    knowdes = fetch_knowdes_with_detail(list(uids))
+    knowdes = await fetch_knowdes_with_detail(list(uids))
     ls = []
     for row in res[0]:
         (

@@ -31,6 +31,6 @@ async def search_by_text(
 
 
 @knowde_router().get("/sentence/{sentence_id}")
-def detail(sentence_id: str, user: TrackUser = None) -> KnowdeDetail:
+async def detail(sentence_id: str, user: TrackUser = None) -> KnowdeDetail:
     """knowde詳細."""
-    return chains_knowde(to_uuid(sentence_id))
+    return await chains_knowde(to_uuid(sentence_id))

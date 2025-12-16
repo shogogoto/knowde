@@ -50,7 +50,7 @@ async def test_search_knowde_by_txt(u: LUser):
     assert [a.sentence for a in res.data] == unordered(["a", "ちん", "bA123"])
 
     a = LSentence.nodes.get(val="xxx")
-    adjs = adjacency_knowde(a.uid)
+    adjs = await adjacency_knowde(a.uid)
     assert adjs[0].referreds[0].sentence == "{x}yy"
 
 
@@ -209,9 +209,9 @@ async def test_details(u: LUser):
         # do_print=True,
     )
     d1 = LSentence.nodes.get(val="detail1")
-    adjs1 = adjacency_knowde(d1.uid)
+    adjs1 = await adjacency_knowde(d1.uid)
     d2 = LSentence.nodes.get(val="detail2")
-    adjs2 = adjacency_knowde(d2.uid)
+    adjs2 = await adjacency_knowde(d2.uid)
 
     assert [str(k) for k in adjs1[0].details] == ["d1T(114)", "d2", "d3"]
     assert [str(k) for k in adjs2[0].details] == [

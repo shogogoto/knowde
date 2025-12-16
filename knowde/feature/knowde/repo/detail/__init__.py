@@ -5,7 +5,7 @@ from uuid import UUID
 
 import networkx as nx
 from more_itertools import flatten
-from neomodel import db
+from neomodel import adb, db
 
 from knowde.feature.knowde import (
     Additional,
@@ -67,7 +67,7 @@ def _row2knowde(sent, names, alias, when, stats) -> Knowde:
     )
 
 
-def fetch_knowdes_with_detail(
+async def fetch_knowdes_with_detail(
     uids: Iterable[str],
     order_by: OrderBy | None = OrderBy(),
     do_print: bool = False,  # noqa: FBT001, FBT002
@@ -76,7 +76,7 @@ def fetch_knowdes_with_detail(
     q = q_detail_location(order_by=order_by)
     if do_print:
         print(q)  # noqa: T201
-    rows, _ = db.cypher_query(q, params={"uids": list(uids)})
+    rows, _ = await adb.cypher_query(q, params={"uids": list(uids)})
     d = {}
     for row in rows:
         sent, names, alias, when, stats = row
@@ -89,7 +89,7 @@ def fetch_knowdes_with_detail(
     return d
 
 
-def fetch_knowdes_with_detail_and_location(
+async def fetch_knowdes_with_detail_and_location(
     uids: Iterable[str],
     order_by: OrderBy | None = OrderBy(),
 ) -> dict[str, tuple[Knowde, KnowdeLocation]]:
@@ -114,7 +114,7 @@ def fetch_knowdes_with_detail_and_location(
     d, d_loc, d_parents = _to_knowde()
     # それぞれの parents を集めて一括 parent detial取得
     puids = set(flatten(d_parents.values()))
-    parent_dk = fetch_knowdes_with_detail(puids)
+    parent_dk = await fetch_knowdes_with_detail(puids)
     retval = {}
     for k, v in d.items():
         parents = [parent_dk[uid] for uid in d_parents[k]]
@@ -146,7 +146,7 @@ def knowde_upper(uid: UUID) -> LSentence:
     return LSentence(**rows[0][0]._properties)  # noqa: SLF001
 
 
-def chains_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: FBT001, FBT002
+async def chains_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: FBT001, FBT002
     """knowdeの依存chain全てを含めた詳細."""
     q = f"""
         MATCH (s: Sentence {{uid: $uid}})
@@ -198,8 +198,8 @@ def chains_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: F
     if len(g.nodes) == 0:
         msg = f"{uid} sentence not found"
         raise NotFoundError(msg)
-    d = fetch_knowdes_with_detail(g.nodes, do_print=do_print)
-    d2 = fetch_knowdes_with_detail_and_location([uid.hex])
+    d = await fetch_knowdes_with_detail(g.nodes, do_print=do_print)
+    d2 = await fetch_knowdes_with_detail_and_location([uid.hex])
     return KnowdeDetail(
         uid=uid,
         g=g,
