@@ -149,7 +149,10 @@ def knowde_upper(uid: UUID) -> LSentence:
     return LSentence(**rows[0][0]._properties)  # noqa: SLF001
 
 
-async def chains_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: FBT001, FBT002
+async def chains_knowde(
+    uids: Iterable[UUIDy],
+    do_print: bool = False,  # noqa: FBT001, FBT002
+) -> KnowdeDetail:
     """knowdeの依存chain全てを含めた詳細."""
     q = f"""
         MATCH (s: Sentence {{uid: $uid}})
@@ -179,33 +182,35 @@ async def chains_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # n
         }}
         RETURN start, end, type
         """
+
+    uids = [to_uuid(uid) for uid in uids]
     if do_print:
         print(q)  # noqa: T201
     rows, _ = db.cypher_query(
         q,
-        params={"uid": uid.hex},
+        params={"uid": uids[0].hex},
         resolve_objects=True,
     )
     g = nx.MultiDiGraph()
     d = {}
     for row in rows:
         start, end, type_ = row
-        start = uid.hex if isinstance(start, LQuoterm) else start.uid
+        start = uids[0].hex if isinstance(start, LQuoterm) else start.uid
         if type_ is None:
             g.add_node(start)
             continue
-        end = uid.hex if isinstance(end, LQuoterm) else end.uid
+        end = uids[0].hex if isinstance(end, LQuoterm) else end.uid
         t: EdgeType = getattr(EdgeType, type_)
         t.add_edge(g, start, end)
 
     if len(g.nodes) == 0:
-        msg = f"{uid} sentence not found"
+        msg = f"{uids[0]} sentence not found"
         raise NotFoundError(msg)
     d = await fetch_knowdes_with_detail(g.nodes, do_print=do_print)
-    d2 = await fetch_knowdes_with_detail_and_location([uid.hex])
+    d2 = await fetch_knowdes_with_detail_and_location([uids[0].hex])
     return KnowdeDetail(
-        uid=uid,
+        uid=uids[0],
         g=g,
         knowdes=d,
-        location=d2[uid.hex][1],
+        location=d2[uids[0].hex][1],
     )

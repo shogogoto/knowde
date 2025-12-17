@@ -120,7 +120,7 @@ async def test_detail_networks_to_or_resolved_edges(u: LUser):
     """IDによる詳細 TO/RESOLVED関係."""
     await setup(u)
     s = LSentence.nodes.get(val="0")
-    detail_0 = await chains_knowde(UUID(s.uid))
+    detail_0 = await chains_knowde([s.uid])
     assert [k.sentence for k in detail_0.succ("0", EdgeType.TO)] == unordered([
         "1",
         "2",
@@ -187,7 +187,7 @@ async def test_detail_no_below_no_header(u: LUser):
     """
     _sn, _r = await save_text(u.uid, s)
     s = LSentence.nodes.get(val="a")
-    d = await chains_knowde(UUID(s.uid))
+    d = await chains_knowde([s.uid])
     assert [k.sentence for k in d.part("a")] == ["a"]
     assert d.location.headers == []
     assert d.location.user.id.hex == u.uid
@@ -204,7 +204,7 @@ async def test_detail_no_below_no_header_with_parent(u: LUser):
     """
     _sn, _r = await save_text(u.uid, s)
     s = LSentence.nodes.get(val="a")
-    d = await chains_knowde(UUID(s.uid))
+    d = await chains_knowde([s.uid])
     assert [k.sentence for k in d.part("a")] == ["a"]
     assert [k.sentence for k in d.location.parents] == ["parent"]
     assert d.location.headers == []
@@ -225,7 +225,7 @@ async def test_detail_no_header(u: LUser):
     """
     _sn, _r = await save_text(u.uid, s)
     s = LSentence.nodes.get(val="a")
-    d = await chains_knowde(UUID(s.uid))
+    d = await chains_knowde([s.uid])
     assert [k.sentence for k in d.part("a")] == unordered(["a", "b", "c"])
     assert d.location.parents == []
     assert d.location.headers == []
@@ -342,19 +342,13 @@ async def test_chain_quoterm_rel(u: LUser):
 
     _sn, _r = await save_text(u.uid, s)
     tgt = LSentence.nodes.first(val="aaa")
-    d = await chains_knowde(UUID(tgt.uid))
+    d = await chains_knowde([tgt.uid])
 
     assert [k.sentence for k in d.succ("aaa", EdgeType.TO)] == unordered([
         "direct",
         "to1",
         "to2",
     ])
-    assert [k.sentence for k in d.pred("aaa", EdgeType.TO)] == unordered([
-        "from1",
-    ])
-    assert [k.sentence for k in d.succ("aaa", EdgeType.EXAMPLE)] == unordered([
-        "ex1",
-    ])
-    assert [k.sentence for k in d.pred("aaa", EdgeType.EXAMPLE)] == unordered([
-        "ab1",
-    ])
+    assert [k.sentence for k in d.pred("aaa", EdgeType.TO)] == ["from1"]
+    assert [k.sentence for k in d.succ("aaa", EdgeType.EXAMPLE)] == ["ex1"]
+    assert [k.sentence for k in d.pred("aaa", EdgeType.EXAMPLE)] == ["ab1"]

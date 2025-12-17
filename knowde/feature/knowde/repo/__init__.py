@@ -17,6 +17,7 @@ from knowde.feature.knowde.repo.clause import OrderBy, WherePhrase
 from knowde.feature.knowde.repo.detail import fetch_knowdes_with_detail
 from knowde.shared.cypher import Paging
 from knowde.shared.errors import DomainError
+from knowde.shared.types import UUIDy, to_uuid
 
 from .cypher import q_adjacency_uids, q_stats, q_where_knowde
 
@@ -97,13 +98,14 @@ def res2uidstrs(res: tuple) -> set[str]:
     return set(filter(is_valid_uuid, collapse(res, base_type=UUID)))
 
 
-async def adjacency_knowde(sent_uid: str) -> list[KAdjacency]:
+async def adjacency_knowde(sent_uids: list[UUIDy]) -> list[KAdjacency]:
     """隣接knowdeを返す."""
     q = rf"""
-        MATCH (sent: Sentence {{uid: $uid}})
+        UNWIND $uids AS uid
+        MATCH (sent: Sentence {{uid: uid}})
         {q_adjacency_uids("sent")}
         RETURN
-            sent.uid as sent_uid
+            sent.uid AS sent_uid
             , premises
             , conclusions
             , refers
@@ -112,11 +114,14 @@ async def adjacency_knowde(sent_uid: str) -> list[KAdjacency]:
             , abstracts
             , examples
         """
-    res = await adb.cypher_query(q, params={"uid": sent_uid})
-    uids = res2uidstrs(res)
+    rows, _ = await adb.cypher_query(
+        q,
+        params={"uids": [to_uuid(uid).hex for uid in sent_uids]},
+    )
+    uids = res2uidstrs(rows)
     knowdes = await fetch_knowdes_with_detail(list(uids))
     ls = []
-    for row in res[0]:
+    for row in rows:
         (
             sent,
             premises,
