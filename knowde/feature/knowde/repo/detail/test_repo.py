@@ -292,7 +292,7 @@ async def test_fetch_multi_chains(u: LUser):
     c_ddd = chains.get("ddd")
     assert [p.sentence for p in c_aaa.part("aaa")] == unordered(["aaa", "bbb", "ccc"])
     assert [p.sentence for p in c_ddd.location.parents] == ["parent"]
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011
         c_ddd.part("aaa")
     # nxprint(c_aaa.relabeled())
     # nxprint(c_ddd.relabeled())
