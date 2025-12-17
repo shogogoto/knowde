@@ -12,11 +12,9 @@ from neomodel import adb, db
 from knowde.feature.knowde import (
     Additional,
     Knowde,
+    KnowdeChain,
     KnowdeChains,
     KnowdeLocation,
-)
-from knowde.feature.knowde import (
-    KnowdeChain as KnowdeChain,
 )
 from knowde.feature.knowde.repo.clause import OrderBy
 from knowde.feature.knowde.repo.cypher import (

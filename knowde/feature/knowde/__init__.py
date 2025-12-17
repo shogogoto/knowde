@@ -124,7 +124,7 @@ class LocationWithoutParents(BaseModel):
     headers: list[UidStr]
 
     # for debug
-    # def __str__(self) -> str:  # noqa: D105
+    # def __str__(self) -> str:
     #     return f"{self.user.username} {'>'.join([h.val for h in self.headers])}"
 
 
@@ -221,6 +221,7 @@ class KnowdeChains(RootModel[list[KnowdeChain]]):
     """knowdeチェーンたち."""
 
     def get(self, sentence: str) -> KnowdeChain:
+        """単文で返す."""
         for chain in self.root:
             uid = chain.uid
             kn = chain.knowdes[uid.hex]
