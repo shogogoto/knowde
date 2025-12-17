@@ -4,7 +4,8 @@ from functools import cache
 
 from fastapi import APIRouter, Depends
 
-from knowde.feature.knowde import KnowdeDetail, KnowdeSearchResult
+from knowde.feature.knowde import KnowdeChain as KnowdeChain
+from knowde.feature.knowde import KnowdeChains, KnowdeSearchResult
 from knowde.feature.knowde.repo import search_knowde
 from knowde.feature.knowde.repo.cypher import WherePhrase
 from knowde.feature.knowde.repo.detail import chains_knowde
@@ -31,6 +32,6 @@ async def search_by_text(
 
 
 @knowde_router().get("/sentence/{sentence_id}")
-async def detail(sentence_id: str, user: TrackUser = None) -> KnowdeDetail:
+async def detail(sentence_id: str, user: TrackUser = None) -> KnowdeChains:
     """knowde詳細."""
     return await chains_knowde([sentence_id])

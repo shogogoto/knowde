@@ -21,7 +21,7 @@ from uuid import UUID
 
 import networkx as nx
 from networkx import DiGraph
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, RootModel
 
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.entry.resource.stats.domain import ResourceStats
@@ -124,8 +124,8 @@ class LocationWithoutParents(BaseModel):
     headers: list[UidStr]
 
     # for debug
-    def __str__(self) -> str:  # noqa: D105
-        return f"{self.user.username} {'>'.join([h.val for h in self.headers])}"
+    # def __str__(self) -> str:  # noqa: D105
+    #     return f"{self.user.username} {'>'.join([h.val for h in self.headers])}"
 
 
 class KnowdeLocation(LocationWithoutParents):
@@ -164,7 +164,7 @@ class KAdjacency(BaseModel):
         return s
 
 
-class KnowdeDetail(BaseModel):
+class KnowdeChain(BaseModel):
     """詳細."""
 
     uid: UUID
@@ -215,3 +215,16 @@ class KnowdeDetail(BaseModel):
     def relabeled(self) -> DiGraph:
         """UUIDstr node をknowdeに置き換えたgraphを返す."""
         return nx.relabel_nodes(self.g, self.knowdes)
+
+
+class KnowdeChains(RootModel[list[KnowdeChain]]):
+    """knowdeチェーンたち."""
+
+    def get(self, sentence: str) -> KnowdeChain:
+        for chain in self.root:
+            uid = chain.uid
+            kn = chain.knowdes[uid.hex]
+            if kn.sentence == sentence:
+                return chain
+        msg = f"'{sentence}' not found in knowde chains"
+        raise KeyError(msg)
