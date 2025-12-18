@@ -11,17 +11,7 @@ import networkx as nx
 from pydantic import BaseModel
 
 from knowde.feature.parsing.sysnet.sysnode import KNode
-from knowde.feature.parsing.sysnet.systats.nw1_n1 import (
-    Nw1N1Fn,
-    get_conclusion,
-    get_detail,
-    get_example,
-    get_general,
-    get_premise,
-    get_refer,
-    get_referred,
-    recursively_nw1n1,
-)
+from knowde.feature.parsing.sysnet.systats.nw1_n1 import Nw1N1Fn, NwOp
 from knowde.feature.parsing.sysnet.systats.types import Nw1N1Label, Nw1N1Recursive
 
 if TYPE_CHECKING:
@@ -42,13 +32,13 @@ def to_nw1n1fn(f: Callable[[nx.DiGraph, KNode], list[KNode]]) -> Nw1N1Fn:
 class Nw1N1Ctx(Enum):
     """1nw1n文脈."""
 
-    DETAIL = (Nw1N1Label.DETAIL, to_nw1n1fn(get_detail), "")
-    REFER = (Nw1N1Label.REFER, get_refer, ">>")
-    REFERRED = (Nw1N1Label.REFERRED, get_referred, "<<")
-    PREMISE = (Nw1N1Label.PREMISE, get_premise, "<-")
-    CONCLUSION = (Nw1N1Label.CONCLUSION, get_conclusion, "->")
-    EXAMPLE = (Nw1N1Label.EXAMPLE, get_example, "ex.")
-    GENERAL = (Nw1N1Label.GENERAL, get_general, "xe.")
+    DETAIL = (Nw1N1Label.DETAIL, to_nw1n1fn(NwOp.get_detail), "")
+    REFER = (Nw1N1Label.REFER, NwOp.get_refer, ">>")
+    REFERRED = (Nw1N1Label.REFERRED, NwOp.get_referred, "<<")
+    PREMISE = (Nw1N1Label.PREMISE, NwOp.get_premise, "<-")
+    CONCLUSION = (Nw1N1Label.CONCLUSION, NwOp.get_conclusion, "->")
+    EXAMPLE = (Nw1N1Label.EXAMPLE, NwOp.get_example, "ex.")
+    GENERAL = (Nw1N1Label.GENERAL, NwOp.get_general, "xe.")
 
     label: Nw1N1Label
     fn: Nw1N1Fn
@@ -95,7 +85,7 @@ class Nw1N1Detail(BaseModel, frozen=True):
         d = {}
         for v in self.values:
             n_rec = self._get_n_rec(v.label)
-            fn = recursively_nw1n1(v.fn, n_rec)
+            fn = NwOp.recursively_nw1n1(v.fn, n_rec)
             d[v.label.value] = apply_nest(fn(sn, n), sn.expand)
         return d
 

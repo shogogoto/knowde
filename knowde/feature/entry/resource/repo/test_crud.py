@@ -13,7 +13,7 @@ from knowde.feature.entry.resource.repo.delete import delete_resource
 from knowde.feature.entry.resource.usecase import save_text
 from knowde.feature.parsing.primitive.heading import include_heading
 from knowde.feature.parsing.sysnet import SysNet
-from knowde.feature.parsing.sysnet.systats.nw1_n1 import get_detail
+from knowde.feature.parsing.sysnet.systats.nw1_n1 import NwOp
 from knowde.feature.parsing.tree2net import parse2net
 from knowde.shared.errors.domain import NotFoundError
 from knowde.shared.user.label import LUser
@@ -179,4 +179,4 @@ async def test_save_and_restore_quoterm(u: LUser):
     """
     _sn, mr1 = await save_text(u.uid, s)
     res, _uid = await restore_sysnet(mr1.uid)
-    assert res.access("aaa", get_detail) == unordered(["ccc", "ddd", "xxx", "yyy"])
+    assert res.access("aaa", NwOp.get_detail) == unordered(["ccc", "ddd", "xxx", "yyy"])

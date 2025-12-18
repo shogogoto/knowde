@@ -9,7 +9,7 @@ from more_itertools import collapse
 from pydantic import BaseModel, Field
 
 from knowde.feature.parsing.sysnet.sysnode import KNArg, KNode
-from knowde.feature.parsing.sysnet.systats.nw1_n1 import recursively_nw1n1
+from knowde.feature.parsing.sysnet.systats.nw1_n1 import NwOp
 from knowde.feature.parsing.sysnet.systats.nw1_n1.ctxdetail import Nw1N1Ctx, Nw1N1Label
 
 if TYPE_CHECKING:
@@ -46,7 +46,7 @@ class CtxScorable(BaseModel, frozen=True):
         """Instantiate."""
         sn.check_contains(n)
         ctx = Nw1N1Ctx.from_label(rw.label)
-        rec_f = recursively_nw1n1(ctx.fn, rw.n_rec)
+        rec_f = NwOp.recursively_nw1n1(ctx.fn, rw.n_rec)
         return cls(label=rw.label, ls=rec_f(sn, n), weight=rw.weight)
 
 

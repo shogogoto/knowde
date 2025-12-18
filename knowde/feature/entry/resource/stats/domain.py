@@ -13,8 +13,7 @@ from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.sysnet.sysnode import KNArg
 from knowde.feature.parsing.sysnet.systats.nw1_n1 import (
-    get_detail,
-    get_parent_or_none,
+    NwOp,
     has_dependency,
 )
 from knowde.shared.nxutil.edge_type import EdgeType, etype_subgraph, is_leaf, is_root
@@ -190,12 +189,12 @@ def get_isolation(sn: SysNet) -> list[Hashable]:
 
     def include_isolation_node(n: Hashable) -> bool:
         """parentもなく、詳細もなく、TOなどの関係もない."""
-        parent = get_parent_or_none(sn, n)
+        parent = NwOp.get_parent_or_none(sn, n)
         if parent is not None:
             return False
         if has_dependency(sn, n):
             return False
-        detail = get_detail(sn.g, n)
+        detail = NwOp.get_detail(sn.g, n)
         return len(detail) == 0
 
     # まず detail方向で絞る
