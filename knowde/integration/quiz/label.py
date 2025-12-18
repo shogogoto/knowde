@@ -1,14 +1,18 @@
 """neomodel label."""
 
 from neomodel import (
+    ArrayProperty,
     AsyncOne,
     AsyncRelationshipManager,
     AsyncRelationshipTo,
     AsyncStructuredNode,
     BooleanProperty,
     DateTimeProperty,
+    StringProperty,
     UniqueIdProperty,
 )
+
+from knowde.integration.quiz.domain.domain import QuizStatementType
 
 
 class LQuiz(AsyncStructuredNode):
@@ -17,6 +21,7 @@ class LQuiz(AsyncStructuredNode):
     __label__ = "Quiz"
     uid = UniqueIdProperty()
     # リンク切れ状態を明示して壊れたことが分かるようにして再構成を促す
+    statement = StringProperty(required=True, choices=QuizStatementType)
     is_link_broken = BooleanProperty(default=False)
     created = DateTimeProperty()
 
@@ -32,3 +37,13 @@ class LQuiz(AsyncStructuredNode):
         "LSentence",
         "DITRACT",
     )
+
+
+class LAnswer(AsyncStructuredNode):
+    """回答."""
+
+    __label__ = "Answer"
+    uid = UniqueIdProperty()
+    created = DateTimeProperty()
+    is_corrent = BooleanProperty()  # 正答 or not
+    selected_ids = ArrayProperty()
