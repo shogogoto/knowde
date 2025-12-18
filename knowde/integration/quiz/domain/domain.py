@@ -1,6 +1,6 @@
 """quiz domain."""
 
-from enum import StrEnum
+from enum import Enum, StrEnum
 from textwrap import indent
 
 from pydantic import BaseModel, Field
@@ -18,10 +18,10 @@ class QuizStatementType(StrEnum):
     SENT2TERM = "$@に合う用語を当ててください"
     TERM2SENT = "$@に合う単文を当ててください"
 
-    # 提示したEdgeTypeと関連する単文を答えさせる
-    REL2SENT = "関係$@で繋がる単文を当ててください"
+    # 提示したEdgeTypeと関連する単文 or 定義を答えさせる
+    EDGE2SENT = "$@と関係$@で繋がる単文を当ててください"
     # 提示した単文と対象間のEdgeTypeを答えさせる
-    SENT2REL = "$@から$@への関係を当ててください"
+    SENT2EDGE = "$@から$@への関係を当ててください"
     PATH = "$@の経路を当ててください"
 
     def inject(self, vals: list[str]) -> str:
@@ -35,6 +35,39 @@ class QuizStatementType(StrEnum):
         )
 
 
+# EdgeTypeとの重複あり
+#   問題文への表示を司る
+class QuizTargetRel(StrEnum):
+    """クイズ対象との関係."""
+
+    PARENT = "親"
+    DETAIL = "詳細"  # belowとその兄弟
+    PREMISE = "前提"
+    CONCLUSION = "結論"
+    # 分かりにくい表現
+    REFERRED = "用語被参照"
+    REFEER = "用語参照"
+    ABSTRACT = "抽象"
+    EXAMPLE = "具体"
+
+
+class QuizOption(BaseModel, frozen=True):
+    """クイズ選択肢."""
+
+    val: str | Def
+    rel: QuizTargetRel | None = None
+
+    @classmethod
+    def create(  # noqa: D102
+        cls,
+        sentence: str,
+        names: list[str] | None = None,
+        rel: QuizTargetRel | None = None,
+    ):
+        val = Def.create(sentence, names=names)
+        return cls(val=val, rel=rel)
+
+
 # 便利なgetterを備えるのみ
 class QuizSource(BaseModel, frozen=True):
     """クイズ生成のための情報源."""
@@ -42,17 +75,16 @@ class QuizSource(BaseModel, frozen=True):
     statement_type: QuizStatementType
     # テストしやすいので UUIDではなくstrへ
     target_id: str
-    distractor_ids: list[str]
-    uids: dict[str, str | Def]
+    optins: dict[str, QuizOption]
 
     @property
-    def tgt(self) -> str | Def:  # noqa: D102
-        return self.uids[self.target_id]
+    def tgt(self) -> QuizOption:  # noqa: D102
+        return self.optins[self.target_id]
 
     @property
     def tgt_def(self) -> Def:
         """クイズ対象."""
-        tgt = self.uids[self.target_id]
+        tgt = self.optins[self.target_id].val
         if isinstance(tgt, Def):
             return tgt
         msg = "クイズ対象が用語を持たない"
@@ -61,34 +93,20 @@ class QuizSource(BaseModel, frozen=True):
     @property
     def tgt_sent(self) -> str:
         """クイズ対象の単文."""
-        if isinstance(self.tgt, Def):
-            return str(self.tgt.sentence)
-        return self.tgt
+        tgt = self.optins[self.target_id].val
+        if isinstance(tgt, Def):
+            return str(tgt.sentence)
+        return tgt
 
     @property
     def distractor_defs(self) -> dict[str, Def]:
         """誤答肢の定義."""
-        dists = {id_: self.uids[id_] for id_ in self.distractor_ids}
+        dists = {k: v.val for k, v in self.optins.items() if k != self.target_id}
         defs = {k: v for k, v in dists.items() if isinstance(v, Def)}
         if len(defs) != len(dists):
             msg = "誤答肢に用語なし単文が含まれている"
             raise QuizOptionsMustBeDefError(msg)
         return defs
-
-
-def create_quiz_sent2term(src: QuizSource, quiz_id: str):
-    """単文から用語を選ぶ問題文を作成."""
-    t = src.statement_type
-    return Quiz(
-        uid=quiz_id,
-        statement=t.inject([src.tgt_sent]),
-        # 選択肢に正解を含めるとは限らないケース
-        options={
-            src.target_id: str(src.tgt_def.term),
-            **{k: str(v.term) for k, v in src.distractor_defs.items()},
-        },
-        correct=[src.target_id],
-    )
 
 
 class Quiz(BaseModel, frozen=True):
@@ -100,10 +118,11 @@ class Quiz(BaseModel, frozen=True):
     options: dict[str, str] = Field(title="選択肢")
     correct: list[str] = Field(title="正解")
 
+    @property
     def string(self) -> str:
         """問題文."""
         s = f"{self.statement}\n"
-        ops = [indent(op, "*  ") for op in self.options.values()]
+        ops = [indent(op, "  * ") for op in self.options.values()]
         s += "\n".join(ops)
         return s
 
@@ -130,3 +149,7 @@ class Answer(BaseModel, frozen=True):
         selected = set(self.selected)
         correct = set(self.quiz.correct)
         return selected == correct
+
+
+class QuizRel(Enum):
+    """関係クイズ用の."""

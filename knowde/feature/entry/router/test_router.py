@@ -126,6 +126,7 @@ async def test_restore_regression2() -> None:
     assert res.is_success
 
 
+# たまにCIでコケる
 @mark_async_test()
 async def test_delete_entry_router() -> None:
     """所有者がエントリを削除できる."""

@@ -30,28 +30,29 @@ TDDを意識すべし
 
 import pytest
 
-from knowde.feature.parsing.sysnet.sysnode import Def
+from knowde.integration.quiz.domain.build import (
+    create_quiz_sent2term,
+    create_quiz_term2sent,
+)
 from knowde.integration.quiz.errors import AnswerError
 
 from .domain import (
+    QuizOption,
     QuizSource,
     QuizStatementType,
-    create_quiz_sent2term,
 )
 
 
-def test_quiz_statement():
-    """問題文の生成."""
-    # 単文→用語当て
+def test_quiz_sent2term():
+    """用語当て問題."""
     src = QuizSource(
         statement_type=QuizStatementType.SENT2TERM,
         target_id="1",
-        distractor_ids=["2", "3", "4"],
-        uids={
-            "1": Def.create("aaa", ["A"]),
-            "2": Def.create("bbb", ["B"]),
-            "3": Def.create("ccc", ["C"]),
-            "4": Def.create("ddd", ["D"]),
+        optins={
+            "1": QuizOption.create("aaa", ["A"]),
+            "2": QuizOption.create("bbb", ["B"]),
+            "3": QuizOption.create("ccc", ["C"]),
+            "4": QuizOption.create("ddd", ["D"]),
         },
     )
 
@@ -70,3 +71,68 @@ def test_quiz_statement():
     assert not ans2.is_corrent()
     assert not ans3.is_corrent()
     assert not ans4.is_corrent()
+
+
+def test_quiz_term2sent():
+    """単文当て問題."""
+    src = QuizSource(
+        statement_type=QuizStatementType.TERM2SENT,
+        target_id="1",
+        optins={
+            "1": QuizOption.create("aaa", ["A"]),
+            "2": QuizOption.create("bbb", ["B"]),
+            "3": QuizOption.create("ccc", ["C"]),
+            "4": QuizOption.create("ddd", ["D"]),
+        },
+    )
+
+    q = create_quiz_term2sent(src, "q001")
+    assert q.statement == QuizStatementType.TERM2SENT.inject(["A"])
+    ans0 = q.answer(["1"])
+    ans1 = q.answer(["1", "4"])
+    ans2 = q.answer(["2"])
+    ans3 = q.answer(["2", "3", "4"])
+    ans4 = q.answer([])
+    with pytest.raises(AnswerError):
+        q.answer(["999"])
+
+    assert ans0.is_corrent()
+    assert not ans1.is_corrent()
+    assert not ans2.is_corrent()
+    assert not ans3.is_corrent()
+    assert not ans4.is_corrent()
+
+
+# @pytest.mark.skip
+# def test_quiz_edge2sent_lv1():
+#     """クイズ対象と関係にマッチするもの当て問題(1階層."""
+#     s = """
+#         # title
+#             aaa
+#             bbb
+#             ccc
+#                 Detail1: ccc1
+#                 Detail2: ccc2
+#                 Detail3: ccc3
+#                 -> ccc4
+#                     DetailCcc4: detail ga ~
+#                     -> ccc5
+#                 <- cccA
+#                 <- cccB
+#                     <- cccB1
+#     """
+#     sn = parse2net(s)
+#     src = QuizSource(
+#         statement_type=QuizStatementType.EDGE2SENT,
+#         target_id="1",
+#     )
+#
+#     q = create_quiz_edge2sent(src, "q001")
+#
+#     "'aaa'と兄弟関係で繋がる単文を当ててください"
+#     nxprint(sn.g, True)
+#     # 詳細はどれか
+#     # 結論はどれか
+#     # 前提はどれか
+#     # 前提の前提はどれか 2階関係クイズ
+#     # クイズ対象からの関係を表すクラスを作るか
