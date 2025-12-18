@@ -10,8 +10,10 @@ def create_quiz_sent2term(src: QuizSource, quiz_id: str) -> ReadableQuiz:
     return ReadableQuiz(
         uid=quiz_id,
         statement=t.inject([src.tgt_sent]),
-        # 選択肢に正解を含めるとは限らないケース
-        options=src.term_options(),
+        options={
+            src.target_id: str(src.tgt_def.term),
+            **{k: str(v.term) for k, v in src.source_defs.items()},
+        },
         correct=[src.target_id],
     )
 
@@ -22,7 +24,10 @@ def create_quiz_term2sent(src: QuizSource, quiz_id: str) -> ReadableQuiz:
     return ReadableQuiz(
         uid=quiz_id,
         statement=t.inject([str(src.tgt_def.term)]),
-        options=src.sentence_options(),
+        options={
+            src.target_id: str(src.tgt_sent),
+            **{k: str(v.sentence) for k, v in src.source_defs.items()},
+        },
         correct=[src.target_id],
     )
 
@@ -34,7 +39,7 @@ def create_quiz_edge2str(
 ) -> ReadableQuiz:
     """関係から単文を選ぶ問題文を作成."""
     t = src.statement_type
-    rel = src.tgt.rel
+    rel = src.target.rel
     if rel is None:
         raise ValueError
     correct_ids = [
@@ -44,10 +49,9 @@ def create_quiz_edge2str(
     ]
     return ReadableQuiz(
         uid=quiz_id,
-        statement=t.inject([str(src.tgt.val), rel]),
+        statement=t.inject([str(src.target.val), rel]),
         options={
-            **{k: str(src.sources[k].val) for k in correct_ids},
-            **{k: str(v.val) for k, v in src.distractors.items()},
+            **{k: str(v.val) for k, v in src.sources.items()},
         },
         correct=correct_ids,
     )

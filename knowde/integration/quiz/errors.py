@@ -9,3 +9,7 @@ class QuizOptionsMustBeDefError(DomainError):
 
 class AnswerError(DomainError):
     """回答エラー."""
+
+
+class QuizDuplicateError(DomainError):
+    """同一クイズ重複エラー."""

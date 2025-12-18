@@ -2,10 +2,15 @@
 
 from textwrap import indent
 
-from pydantic import BaseModel, Field
+from more_itertools import duplicates_everseen
+from pydantic import BaseModel, Field, model_validator
 
 from knowde.feature.parsing.sysnet.sysnode import Def
-from knowde.integration.quiz.errors import AnswerError, QuizOptionsMustBeDefError
+from knowde.integration.quiz.errors import (
+    AnswerError,
+    QuizDuplicateError,
+    QuizOptionsMustBeDefError,
+)
 
 from .parts import QuizOption, QuizStatementType
 
@@ -18,17 +23,24 @@ class QuizSource(BaseModel, frozen=True):
 
     statement_type: QuizStatementType
     target_id: str  # テストしやすいので UUIDではなくstrへ
+    target: QuizOption
     # targetが答えになるとは限らない
     sources: dict[str, QuizOption] = Field(title="クイズの元となるメンバ")
 
-    @property
-    def tgt(self) -> QuizOption:  # noqa: D102
-        return self.sources[self.target_id]
+    @model_validator(mode="after")
+    def option_duplicate_check(self):
+        """重複チェック."""
+        options = [self.target, *list(self.sources.values())]
+        dups = list(duplicates_everseen(options))
+        if len(dups) > 0:
+            msg = f"同一のクイズ選択肢が指定されています: {dups}"
+            raise QuizDuplicateError(msg)
+        return self
 
     @property
     def tgt_def(self) -> Def:
         """クイズ対象."""
-        tgt = self.sources[self.target_id].val
+        tgt = self.target.val
         if isinstance(tgt, Def):
             return tgt
         msg = "クイズ対象が用語を持たない"
@@ -37,38 +49,20 @@ class QuizSource(BaseModel, frozen=True):
     @property
     def tgt_sent(self) -> str:
         """クイズ対象の単文."""
-        tgt = self.sources[self.target_id].val
+        tgt = self.target.val
         if isinstance(tgt, Def):
             return str(tgt.sentence)
         return str(tgt)
 
     @property
-    def distractors(self) -> dict[str, QuizOption]:
-        """誤答肢."""
-        return {k: v for k, v in self.sources.items() if k != self.target_id}
-
-    @property
-    def distractor_defs(self) -> dict[str, Def]:
+    def source_defs(self) -> dict[str, Def]:
         """誤答肢の定義."""
-        dists = {k: v.val for k, v in self.distractors.items()}
+        dists = {k: v.val for k, v in self.sources.items()}
         defs = {k: v for k, v in dists.items() if isinstance(v, Def)}
         if len(defs) != len(dists):
             msg = "誤答肢に用語なし単文が含まれている"
             raise QuizOptionsMustBeDefError(msg)
         return defs
-
-    def sentence_options(self) -> dict[str, str]:
-        """文字列化した選択肢."""
-        return {
-            self.target_id: str(self.tgt_sent),
-            **{k: str(v.sentence) for k, v in self.distractor_defs.items()},
-        }
-
-    def term_options(self) -> dict[str, str]:
-        """文字列化した選択肢."""
-        return {
-            **{k: str(v.val) for k, v in self.sources.items()},
-        }
 
 
 class ReadableQuiz(BaseModel, frozen=True):
