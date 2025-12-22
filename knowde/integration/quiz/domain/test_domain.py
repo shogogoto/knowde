@@ -12,7 +12,7 @@ from knowde.integration.quiz.domain.build import (
     create_quiz_sent2term,
     create_quiz_term2sent,
 )
-from knowde.integration.quiz.domain.parts import QuizRel, path2edgetypes
+from knowde.integration.quiz.domain.parts import QuizRel, path2edgetypes, to_detail_rel
 from knowde.integration.quiz.errors import AnswerError, QuizDuplicateError
 from knowde.shared.nxutil.edge_type import EdgeType
 
@@ -167,12 +167,8 @@ def test_path2edgetypes():
                     -> to
                         T4: todetail
                         -> ccc5
-                    <- ccca
                     <- cccb
                         <- cccb1
-                    ex. ex1
-                        ex. ex2
-                    xe. ab1
     """
     sn = parse2net(s)
     assert path2edgetypes(sn.g, "ccc", "ccc1") == ([EdgeType.BELOW], True)
@@ -180,29 +176,59 @@ def test_path2edgetypes():
     assert path2edgetypes(sn.g, "ccc", "parent") == ([EdgeType.BELOW], False)
     assert path2edgetypes(sn.g, "parent", "ccc") == ([EdgeType.BELOW], True)
     assert path2edgetypes(sn.g, "ccc", "ccc3") == (
-        [
-            EdgeType.BELOW,
-            EdgeType.SIBLING,
-            EdgeType.SIBLING,
-        ],
+        [EdgeType.BELOW, *[EdgeType.SIBLING] * 2],
         True,
     )
     assert path2edgetypes(sn.g, "ccc3", "ccc") == (
-        [
-            EdgeType.BELOW,
-            EdgeType.SIBLING,
-            EdgeType.SIBLING,
-        ],
+        [EdgeType.BELOW, *[EdgeType.SIBLING] * 2],
         False,
     )
-    assert path2edgetypes(sn.g, "ccc", "ccc5") == ([EdgeType.TO, EdgeType.TO], True)
-    assert path2edgetypes(sn.g, "ccc5", "ccc") == ([EdgeType.TO, EdgeType.TO], False)
-    assert path2edgetypes(sn.g, "ccc", "cccb1") == ([EdgeType.TO, EdgeType.TO], False)
-    assert path2edgetypes(sn.g, "cccb1", "ccc") == ([EdgeType.TO, EdgeType.TO], True)
+    assert path2edgetypes(sn.g, "ccc", "ccc5") == ([EdgeType.TO] * 2, True)
+    assert path2edgetypes(sn.g, "ccc5", "ccc") == ([EdgeType.TO] * 2, False)
+    assert path2edgetypes(sn.g, "ccc", "cccb1") == ([EdgeType.TO] * 2, False)
+    assert path2edgetypes(sn.g, "cccb1", "ccc") == ([EdgeType.TO] * 2, True)
 
 
-#
-#
-# def test_edgetypes2rel():
-#     """関係リストからクイズ関係を得る."""
-#     assert QuizRel.of([EdgeType.BELOW]) == QuizRel.PARENT
+def test_to_detail_rel():
+    """親子関係変換."""
+    # 変換しない
+    assert to_detail_rel([]) == []
+    assert to_detail_rel([EdgeType.SIBLING]) == [EdgeType.SIBLING]
+    assert to_detail_rel([EdgeType.TO]) == [EdgeType.TO]
+
+    # 複数兄弟を含めて1つに変換
+    assert to_detail_rel([EdgeType.BELOW]) == [QuizRel.DETAIL]
+    one = [EdgeType.BELOW, *[EdgeType.SIBLING] * 3]
+    assert to_detail_rel(one) == [QuizRel.DETAIL]
+
+    # 2つあれば2つに
+    assert to_detail_rel([*one, *one]) == [QuizRel.DETAIL] * 2
+
+    # 混じってる
+    assert to_detail_rel([*one, EdgeType.TO, *one]) == [
+        QuizRel.DETAIL,
+        EdgeType.TO,
+        QuizRel.DETAIL,
+    ]
+
+
+def test_edgetypes2rel():
+    """関係リストからクイズ関係を得る."""
+    one = [EdgeType.BELOW, *[EdgeType.SIBLING] * 3]
+    # detail
+    assert QuizRel.of([EdgeType.BELOW], True) == [QuizRel.DETAIL]  # noqa: FBT003
+    assert QuizRel.of(one * 2, True) == [QuizRel.DETAIL, QuizRel.DETAIL]  # noqa: FBT003
+    assert QuizRel.of([EdgeType.BELOW], False) == [QuizRel.PARENT]  # noqa: FBT003
+    assert QuizRel.of(one * 2, False) == [QuizRel.PARENT] * 2  # noqa: FBT003
+    # to
+    assert QuizRel.of([EdgeType.TO, EdgeType.TO], True) == [QuizRel.CONCLUSION] * 2  # noqa: FBT003
+    assert QuizRel.of([EdgeType.TO, EdgeType.TO], False) == [QuizRel.PREMISE] * 2  # noqa: FBT003
+    # 混在
+    assert QuizRel.of([*one, EdgeType.TO, *one], True) == [  # noqa: FBT003
+        # detail to detail
+        QuizRel.DETAIL,
+        QuizRel.CONCLUSION,
+        QuizRel.DETAIL,
+    ]
+    # 複雑なパターンは網羅できてなさそうだが、そんなクイズ要るか?
+    # 一旦ペンディング
