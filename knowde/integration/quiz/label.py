@@ -16,12 +16,15 @@ from knowde.integration.quiz.domain.domain import QuizStatementType
 
 
 class LQuiz(AsyncStructuredNode):
-    """クイズ."""
+    """クイズ.
+
+    ここの情報だけから問題を生成できる
+    """
 
     __label__ = "Quiz"
     uid = UniqueIdProperty()
+    statement_type = StringProperty(required=True, choices=QuizStatementType)
     # リンク切れ状態を明示して壊れたことが分かるようにして再構成を促す
-    statement = StringProperty(required=True, choices=QuizStatementType)
     is_link_broken = BooleanProperty(default=False)
     created = DateTimeProperty()
 
@@ -33,9 +36,9 @@ class LQuiz(AsyncStructuredNode):
     )
 
     # 誤答肢を指す
-    ditract: AsyncRelationshipManager = AsyncRelationshipTo(  # type: ignore  # noqa: PGH003
+    option: AsyncRelationshipManager = AsyncRelationshipTo(  # type: ignore  # noqa: PGH003
         "LSentence",
-        "DITRACT",
+        "QUIZ_OPTION",
     )
 
 

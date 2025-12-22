@@ -15,13 +15,22 @@ from knowde.integration.quiz.errors import (
 from .parts import QuizOption, QuizStatementType
 
 
+class QuizSourceIdCase(BaseModel, frozen=True):
+    """quiz source用id容れ."""
+
+    quiz_id: str
+    statement_type: QuizStatementType  # build方法を指定してくれる
+    target_id: str
+    source_ids: set[str]
+
+
 class QuizSource(BaseModel, frozen=True):
     """クイズ生成のための情報源.
 
     便利なgetterを備えるのみ
     """
 
-    statement_type: QuizStatementType
+    statement_type: QuizStatementType  # build方法を指定してくれる
     target_id: str  # テストしやすいので UUIDではなくstrへ
     target: QuizOption
     # targetが答えになるとは限らない

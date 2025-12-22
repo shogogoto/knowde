@@ -1,31 +1,7 @@
 """quiz domain test.
 
-この単文の用語はどれ
-この用語の説明はどれ
-
-
-きめ細かい問題
-この詳細はどれ 1つ正解
-この親はどれ 1つ正解
-この前提はどれ 2つ正解
-
-
-# 多段関係
-この前提の前提はどれ
-
-複数選択がマルになるケースにも対応する
-
-
-流れ
-クイズ作成
-問題文を見て答える Answer
-
-全然進まん
-TDDを意識すべし
-クイズの具体例を列挙してテストケースへ
-その実現方法を考える方向でブレークダウン
-その中で適宜細かいテストを作成する
-
+多段関係 ex. この前提の前提はどれ
+複数選択がマルになるケースにも対応する.
 """
 
 import pytest
@@ -36,8 +12,9 @@ from knowde.integration.quiz.domain.build import (
     create_quiz_sent2term,
     create_quiz_term2sent,
 )
-from knowde.integration.quiz.domain.parts import QuizRel
+from knowde.integration.quiz.domain.parts import QuizRel, path2edgetypes
 from knowde.integration.quiz.errors import AnswerError, QuizDuplicateError
+from knowde.shared.nxutil.edge_type import EdgeType
 
 from .domain import (
     QuizOption,
@@ -174,3 +151,58 @@ def test_quiz_edge2sent_lv1():
     assert not q.answer(["2", "4"]).is_corrent()
     # 前提の前提はどれか 2階関係クイズ
     # クイズ対象からの関係を表すクラスを作るか
+
+
+def test_path2edgetypes():
+    """Graph pathからedgetypeのリストを得る."""
+    s = """
+        # title
+            aaa
+            bbb
+            parent
+                c: ccc
+                    T1: ccc1
+                    T2: ccc2
+                    T3: ccc3
+                    -> to
+                        T4: todetail
+                        -> ccc5
+                    <- ccca
+                    <- cccb
+                        <- cccb1
+                    ex. ex1
+                        ex. ex2
+                    xe. ab1
+    """
+    sn = parse2net(s)
+    assert path2edgetypes(sn.g, "ccc", "ccc1") == ([EdgeType.BELOW], True)
+    assert path2edgetypes(sn.g, "ccc1", "ccc") == ([EdgeType.BELOW], False)
+    assert path2edgetypes(sn.g, "ccc", "parent") == ([EdgeType.BELOW], False)
+    assert path2edgetypes(sn.g, "parent", "ccc") == ([EdgeType.BELOW], True)
+    assert path2edgetypes(sn.g, "ccc", "ccc3") == (
+        [
+            EdgeType.BELOW,
+            EdgeType.SIBLING,
+            EdgeType.SIBLING,
+        ],
+        True,
+    )
+    assert path2edgetypes(sn.g, "ccc3", "ccc") == (
+        [
+            EdgeType.BELOW,
+            EdgeType.SIBLING,
+            EdgeType.SIBLING,
+        ],
+        False,
+    )
+    assert path2edgetypes(sn.g, "ccc", "ccc5") == ([EdgeType.TO, EdgeType.TO], True)
+    assert path2edgetypes(sn.g, "ccc5", "ccc") == ([EdgeType.TO, EdgeType.TO], False)
+    assert path2edgetypes(sn.g, "ccc", "cccb1") == ([EdgeType.TO, EdgeType.TO], False)
+    assert path2edgetypes(sn.g, "cccb1", "ccc") == ([EdgeType.TO, EdgeType.TO], True)
+
+
+#
+#
+# def test_edgetypes2rel():
+#     """関係リストからクイズ関係を得る."""
+#     assert QuizRel.of([EdgeType.BELOW]) == QuizRel.PARENT

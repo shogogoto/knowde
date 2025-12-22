@@ -3,10 +3,13 @@
 from collections.abc import Hashable
 from enum import StrEnum
 
+import networkx as nx
+from more_itertools import pairwise
 from pydantic import BaseModel
 
 from knowde.feature.parsing.primitive.mark import inject2placeholder
 from knowde.feature.parsing.sysnet.sysnode import Def
+from knowde.shared.nxutil.edge_type import EdgeType
 
 QUIZ_PLACEHOLDER = "$@"
 
@@ -44,10 +47,56 @@ class QuizRel(StrEnum):
     PREMISE = "前提"
     CONCLUSION = "結論"
     # 分かりにくい表現
-    REF_BY = "用語被参照"
     REF = "用語参照"
+    REF_BY = "用語被参照"
     GENERAL = "一般"
     EXAMPLE = "具体例"
+
+    # @classmethod
+    # def of(cls, edge_types: Sequence[EdgeType]) -> "QuizRel":
+    #     """クイズ関係タイプへ変換."""
+    #     # match (etype, is_forward):
+    #     #     case (EdgeType.TO, True):    return QuizRel.CONCLUSION
+    #     #     case (EdgeType.TO, False):   return QuizRel.PREMISE
+    #     #     case (EdgeType.EXAMPLE, True): return QuizRel.EXAMPLE
+    #     #     case (EdgeType.EXAMPLE, False): return QuizRel.GENERAL
+    #     #     case (EdgeType.RESOLVED, True): return QuizRel.REF_BY
+    #     #     case (EdgeType.RESOLVED, False): return QuizRel.REF
+    #     #
+    #     # if is_forward:
+    #     #     if EdgeType.TO in ets:
+    #     #         return QuizRel.CONCLUSION
+    #     #     if EdgeType.EXAMPLE in ets:
+    #     #         return QuizRel.EXAMPLE
+    #     #     if EdgeType.RESOLVED in ets:
+    #     #         return QuizRel.REF_BY
+    #     # if EdgeType.TO in ets:
+    #     #     return QuizRel.PREMISE
+    #     # if EdgeType.EXAMPLE in ets:
+    #     #     return QuizRel.GENERAL
+    #     # if EdgeType.RESOLVED in ets:
+    #     #     return QuizRel.REF
+    #
+    #     raise ValueError
+
+
+def path2edgetypes(
+    g: nx.DiGraph,
+    s: Hashable,
+    e: Hashable,
+) -> tuple[list[EdgeType], bool]:
+    """クイズ関係タイプへ変換."""
+    try:
+        # 正順
+        p = nx.shortest_path(g, source=s, target=e)
+        is_forward = True
+    except (nx.NetworkXNoPath, nx.NodeNotFound):
+        # 逆順
+        p = nx.shortest_path(g, source=e, target=s)
+        is_forward = False
+    ets = [EdgeType.get_edgetype(g, u, v) for u, v in pairwise(p)]
+    # 単一要素のリストの場合に方向の判別がつかなくなるからis_forwardを返す
+    return ets, is_forward
 
 
 class QuizOption(BaseModel, frozen=True):

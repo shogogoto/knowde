@@ -106,6 +106,20 @@ class EdgeType(StrEnum):
         """cypherの矢印表現."""
         return f"{self.name}"
 
+    @classmethod
+    def get_edgetype(cls, g: nx.DiGraph, u: Hashable, v: Hashable) -> EdgeType:
+        """関係タイプの取得."""
+        data = g.get_edge_data(u, v, default={})
+        t = data.get("type")
+        if t is not None:
+            return cls[t]
+        if t is not None and t in cls:
+            return t
+        for val in data.values():
+            return val["type"]
+        msg = f"{u}と{v}の間に関係はない"
+        raise MultiEdgesError(msg)
+
 
 @cache
 def etype_subgraph(g: nx.DiGraph, *ts: EdgeType) -> nx.DiGraph:
