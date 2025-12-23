@@ -193,7 +193,8 @@ def test_to_detail_rel():
     """親子関係変換."""
     # 変換しない
     assert to_detail_rel([]) == []
-    assert to_detail_rel([EdgeType.SIBLING]) == [EdgeType.SIBLING]
+    assert to_detail_rel([EdgeType.SIBLING]) == [QuizRel.PEER]
+    assert to_detail_rel([EdgeType.SIBLING] * 3) == [QuizRel.PEER]
     assert to_detail_rel([EdgeType.TO]) == [EdgeType.TO]
 
     # 複数兄弟を含めて1つに変換

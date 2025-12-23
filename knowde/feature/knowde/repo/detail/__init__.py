@@ -32,7 +32,7 @@ from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import UUIDy, to_uuid
 
 
-def q_detail_location(
+def q_knowde_detail(
     is_location: bool = False,  # noqa: FBT001, FBT002
     order_by: OrderBy | None = OrderBy(),
 ) -> str:
@@ -74,9 +74,9 @@ async def fetch_knowdes_with_detail(
     uids: Iterable[UUIDy],
     order_by: OrderBy | None = OrderBy(),
     do_print: bool = False,  # noqa: FBT001, FBT002
-) -> dict[UUID, Knowde]:
+) -> dict[str, Knowde]:
     """文のuuidリストから名前などの付属情報を返す."""
-    q = q_detail_location(order_by=order_by)
+    q = q_knowde_detail(order_by=order_by)
     if do_print:
         print(q)  # noqa: T201
     rows, _ = await adb.cypher_query(
@@ -100,7 +100,7 @@ async def fetch_knowdes_with_detail_and_location(
     order_by: OrderBy | None = OrderBy(),
 ) -> dict[str, tuple[Knowde, KnowdeLocation]]:
     """詳細とlocation付きで返す."""
-    q = q_detail_location(is_location=True, order_by=order_by)
+    q = q_knowde_detail(is_location=True, order_by=order_by)
     rows, _ = db.cypher_query(
         q,
         params={"uids": [to_uuid(uid).hex for uid in uids]},

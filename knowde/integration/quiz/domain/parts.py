@@ -4,7 +4,7 @@ from collections.abc import Hashable, Sequence
 from enum import StrEnum
 from functools import cache
 from itertools import islice
-from typing import Any, Final, Self
+from typing import Any, Self
 
 import networkx as nx
 from more_itertools import pairwise
@@ -55,17 +55,8 @@ def path2edgetypes(
         p = nx.shortest_path(g, source=e, target=s)
         is_forward = False
     ets = [EdgeType.get_edgetype(g, u, v) for u, v in pairwise(p)]
-    # 単一要素のリストの場合に方向の判別がつかなくなるからis_forwardを返す
+    # to, to が premise * 2 か conclusion * 2 か判別できるように is_forward を返す
     return ets, is_forward
-
-
-_REL_MAP: Final = [
-    # type, backward, forward
-    (EdgeType.BELOW, "PARENT", "DETAIL"),
-    (EdgeType.TO, "PREMISE", "CONCLUSION"),
-    (EdgeType.EXAMPLE, "GENERAL", "EXAMPLE"),
-    (EdgeType.RESOLVED, "REF_BY", "REF"),
-]
 
 
 class QuizRel(StrEnum):
@@ -73,6 +64,8 @@ class QuizRel(StrEnum):
 
     PARENT = "親"
     DETAIL = "詳細"  # belowとその兄弟
+    PEER = "同階層"
+
     PREMISE = "前提"
     CONCLUSION = "結論"
     # 分かりにくい表現
@@ -90,6 +83,7 @@ class QuizRel(StrEnum):
             EdgeType.RESOLVED: cls.REFERRED,
             EdgeType.EXAMPLE: cls.EXAMPLE,
             cls.DETAIL: cls.DETAIL,
+            cls.PEER: cls.PEER,
         }
 
     @classmethod
@@ -101,6 +95,7 @@ class QuizRel(StrEnum):
             EdgeType.RESOLVED: cls.REFER,
             EdgeType.EXAMPLE: cls.GENERAL,
             cls.DETAIL: cls.PARENT,
+            cls.PEER: cls.PEER,
         }
 
     @classmethod
@@ -134,26 +129,23 @@ def count_consecutive_val(seq: Sequence, i_start: int, val: Any):
 
 def to_detail_rel(ets: Sequence[EdgeType | QuizRel]) -> Sequence[EdgeType | QuizRel]:
     """詳細関係への変換."""
+    retval = list(ets)
     if EdgeType.BELOW not in ets:
+        if EdgeType.SIBLING in ets:
+            i = ets.index(EdgeType.SIBLING)
+            n = count_consecutive_val(ets, i, EdgeType.SIBLING)
+            retval[i : i + n + 1] = [QuizRel.PEER]
+            return to_detail_rel(retval)
+
         return ets
     i = ets.index(EdgeType.BELOW)
-    retval = list(ets)
+
     try:
         n = count_consecutive_val(retval, i + 1, EdgeType.SIBLING)
         retval[i : i + n + 1] = [QuizRel.DETAIL]
     except IndexError:  # [BELOW]
         return [QuizRel.DETAIL]
     return to_detail_rel(retval)
-
-
-# BELOW SIBLING * => DETAIL
-# TO is_forward => CONCLUSION
-# TO is_backward => PREMISE
-
-
-# EdgeTypeとの重複あり
-#   問題文への表示を司る
-#   NwN1Labelと被ってる
 
 
 class QuizOption(BaseModel, frozen=True):

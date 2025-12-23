@@ -1,27 +1,51 @@
 """quiz domain."""
 
+from collections.abc import Iterable
 from textwrap import indent
 
-from more_itertools import duplicates_everseen
+from more_itertools import duplicates_everseen, flatten
 from pydantic import BaseModel, Field, model_validator
 
+from knowde.feature.knowde import Knowde
 from knowde.feature.parsing.sysnet.sysnode import Def
 from knowde.integration.quiz.errors import (
     AnswerError,
     QuizDuplicateError,
     QuizOptionsMustBeDefError,
 )
+from knowde.shared.types import NXGraph
 
 from .parts import QuizOption, QuizStatementType
 
 
-class QuizSourceIdCase(BaseModel, frozen=True):
+class QuizSourceContainer(BaseModel, frozen=True):
     """quiz source用id容れ."""
 
     quiz_id: str
     statement_type: QuizStatementType  # build方法を指定してくれる
     target_id: str
     source_ids: set[str]
+    g: NXGraph  # EdgeType-QuizRel用
+
+    @staticmethod
+    def concat_uids_for_batch_fetch(
+        cases: Iterable["QuizSourceContainer"],
+    ) -> Iterable[str]:
+        """一括詳細取得用にuidをまとめる."""
+        # 都度 fetchしてたら通信が無駄に増えて遅い
+        return set(flatten([[c.target_id, *c.source_ids] for c in cases]))
+
+    def to_source(self, uid2kn: dict[str, Knowde]) -> "QuizSource":
+        """変換."""
+        return QuizSource(
+            statement_type=self.statement_type,
+            target_id=self.target_id,
+            target=QuizOption(val=uid2kn[self.target_id].to_str_or_def()),
+            sources={
+                uid: QuizOption(val=uid2kn[uid].to_str_or_def())
+                for uid in self.source_ids
+            },
+        )
 
 
 class QuizSource(BaseModel, frozen=True):

@@ -26,6 +26,7 @@ from pydantic import BaseModel, Field, RootModel
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.entry.resource.stats.domain import ResourceStats
 from knowde.feature.parsing.primitive.term import Term
+from knowde.feature.parsing.sysnet.sysnode import Def
 from knowde.shared.nxutil import to_nodes
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import NXGraph
@@ -90,6 +91,11 @@ class Knowde(BaseModel, frozen=True):
     def when(self) -> str:  # noqa: D102
         a = self.additional
         return f"T({a.when})" if a is not None and a.when else ""
+
+    def to_str_or_def(self) -> str | Def:  # noqa: D102
+        if self.term is None:
+            return self.sentence
+        return Def(term=self.term, sentence=self.sentence)
 
 
 class ResourceInfo(BaseModel):

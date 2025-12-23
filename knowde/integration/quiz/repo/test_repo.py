@@ -1,6 +1,12 @@
 """誤答肢の生成."""
 
-from knowde.conftest import async_fixture
+from knowde.conftest import async_fixture, mark_async_test
+from knowde.feature.entry.resource.usecase import save_text
+from knowde.integration.quiz.repo.repo import (
+    create_term2sent_quiz,
+    restore_quiz_sources,
+)
+from knowde.shared.knowde.label import LSentence
 from knowde.shared.user.label import LUser
 
 
@@ -10,34 +16,37 @@ async def u() -> LUser:  # noqa: D103
 
 
 # クイズ作って質問を見て答えて成績を見る
-# @pytest.mark.skip
-# @mark_async_test()
-# async def test_create_quiz(u: LUser):
-#     """クイズを永続化."""
-#     s = """
-#         # title
-#             aaa
-#             bbb
-#             parent
-#                 c: ccc
-#                     T1: ccc1
-#                     T2: ccc2
-#                     T3: ccc3
-#                     -> to
-#                         T4: todetail
-#                         -> ccc5
-#                     <- ccca
-#                     <- cccb
-#                         <- cccb1
-#                     ex. ex1
-#                         ex. ex2
-#                     xe. ab1
-#     """
-#     _sn, _m = await save_text(u.uid, s)
-#     sent = LSentence.nodes.first(val="ccc")
-#     quiz_uid = await create_term2sent_quiz(sent.uid, radius=15, n_option=16)
-#
-#     qs = await restore_quiz([quiz_uid])
-#     # # sleep(1000)
-#     #
-#     raise AssertionError
+@mark_async_test()
+async def test_create_quiz(u: LUser):
+    """クイズを永続化."""
+    s = """
+        # title
+            aaa
+            bbb
+            parent
+                c: ccc
+                    T1: ccc1
+                    T2: ccc2
+                    T3: ccc3
+                    -> to
+                        T4: todetail
+                        -> ccc5
+                    <- ccca
+                    <- cccb
+                        <- cccb1
+                    ex. ex1
+                        ex. ex2
+                    xe. ab1
+    """
+    # T4: todetail -[親]-> parent -[前提]-> ccc が見つかってしまう
+    # そんなクイズは非直感的で要らない気がする
+    # でもそれは選択肢決定ロジックの責任ということで
+
+    _sn, _m = await save_text(u.uid, s)
+    sent = LSentence.nodes.first(val="ccc")
+    n_option = 16
+    quiz_uid = await create_term2sent_quiz(sent.uid, radius=99, n_option=n_option)
+    srcs = await restore_quiz_sources([quiz_uid])
+    assert len(srcs) == 1
+    src = srcs[0]
+    assert len(src.sources) == n_option - 1
