@@ -32,24 +32,26 @@ def create_quiz_term2sent(src: QuizSource, quiz_id: str) -> ReadableQuiz:
     )
 
 
-def create_quiz_edge2str(
+def create_quiz_edge2sent(
     src: QuizSource,
     quiz_id: str,
-    corrent_rel: QuizRel,
+    corrent_rels: list[QuizRel],
 ) -> ReadableQuiz:
     """関係から単文を選ぶ問題文を作成."""
     t = src.statement_type
-    rel = src.target.rel
-    if rel is None:
+    rels = src.target.rels
+    if rels is None:
         raise ValueError
+
+    rels_stmt = "の".join([str(r) for r in rels])
     correct_ids = [
         k
         for k, v in src.sources.items()
-        if v.rel == corrent_rel and k != src.target_id  # 自信は選択肢になり得ない
+        if v.rels == corrent_rels and k != src.target_id  # 自信は選択肢になり得ない
     ]
     return ReadableQuiz(
         uid=quiz_id,
-        statement=t.inject([str(src.target.val), rel]),
+        statement=t.inject([str(src.target.val), rels_stmt]),
         options={
             **{k: str(v.val) for k, v in src.sources.items()},
         },

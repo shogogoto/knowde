@@ -6,9 +6,10 @@
 
 import pytest
 
+from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.tree2net import parse2net
 from knowde.integration.quiz.domain.build import (
-    create_quiz_edge2str,
+    create_quiz_edge2sent,
     create_quiz_sent2term,
     create_quiz_term2sent,
 )
@@ -107,60 +108,14 @@ def test_quiz_term2sent():
     assert not ans4.is_corrent()
 
 
-def test_quiz_edge2sent_lv1():
-    """クイズ対象と関係にマッチするもの当て問題(1階層)."""
+@pytest.fixture()
+def sn() -> SysNet:  # noqa: D103
     s = """
         # title
             aaa
             bbb
             parent
                 C: ccc
-                    Detail1: ccc1
-                    Detail2: ccc2
-                    Detail3: ccc3
-                    -> to
-                        T1: todetail
-                        -> ccc5
-                    <- cccA
-                    <- cccB
-                        <- cccB1
-    """
-    sn = parse2net(s)
-    src = QuizSource(
-        statement_type=QuizStatementType.EDGE2SENT,
-        target_id="1",  # 問いの対象
-        target=QuizOption(val=sn.get("ccc"), rel=QuizRel.DETAIL),
-        sources={
-            "2": QuizOption(val=sn.get("ccc1"), rel=QuizRel.DETAIL),
-            "3": QuizOption(val=sn.get("to"), rel=QuizRel.CONCLUSION),
-            "4": QuizOption(val=sn.get("cccA"), rel=QuizRel.PREMISE),
-            "5": QuizOption(val=sn.get("cccB"), rel=QuizRel.PREMISE),
-            "6": QuizOption(val=sn.get("parent"), rel=QuizRel.PARENT),
-        },
-    )
-
-    # 詳細はどれか
-    q = create_quiz_edge2str(src, "q001", QuizRel.DETAIL)
-    assert q.statement == "'C: ccc'と'詳細'関係で繋がる単文を当ててください"
-    assert q.answer(["2"]).is_corrent()
-    assert not q.answer(["3"]).is_corrent()
-
-    # 結論はどれか
-    q = create_quiz_edge2str(src, "q002", QuizRel.CONCLUSION)
-    assert q.answer(["3"]).is_corrent()
-    assert not q.answer(["2", "4"]).is_corrent()
-    # 前提の前提はどれか 2階関係クイズ
-    # クイズ対象からの関係を表すクラスを作るか
-
-
-def test_path2edgetypes():
-    """Graph pathからedgetypeのリストを得る."""
-    s = """
-        # title
-            aaa
-            bbb
-            parent
-                c: ccc
                     T1: ccc1
                     T2: ccc2
                     T3: ccc3
@@ -170,7 +125,41 @@ def test_path2edgetypes():
                     <- cccb
                         <- cccb1
     """
-    sn = parse2net(s)
+    return parse2net(s)
+
+
+def test_quiz_edge2sent_lv1(sn: SysNet):
+    """クイズ対象と関係にマッチするもの当て問題(1階層)."""
+    src = QuizSource(
+        statement_type=QuizStatementType.EDGE2SENT,
+        target_id="1",  # 問いの対象
+        target=QuizOption(val=sn.get("ccc"), rels=[QuizRel.DETAIL]),
+        sources={
+            "2": QuizOption(val=sn.get("ccc1"), rels=[QuizRel.DETAIL]),
+            "3": QuizOption(val=sn.get("to"), rels=[QuizRel.CONCLUSION]),
+            "4": QuizOption(val=sn.get("cccb"), rels=[QuizRel.PREMISE]),
+            "5": QuizOption(val=sn.get("cccb1"), rels=[QuizRel.PREMISE]),
+            "6": QuizOption(val=sn.get("parent"), rels=[QuizRel.PARENT]),
+        },
+    )
+
+    # 詳細はどれか
+    q = create_quiz_edge2sent(src, "q001", [QuizRel.DETAIL])
+    assert q.statement == "'C: ccc'と'詳細'関係で繋がる単文を当ててください"
+    assert q.answer(["2"]).is_corrent()
+    assert not q.answer(["3"]).is_corrent()
+
+    # 結論はどれか
+    q = create_quiz_edge2sent(src, "q002", [QuizRel.CONCLUSION])
+    assert q.answer(["3"]).is_corrent()
+    assert not q.answer(["2", "4"]).is_corrent()
+    assert not q.answer(["3", "4"]).is_corrent()
+    # 前提の前提はどれか 2階関係クイズ
+    # クイズ対象からの関係を表すクラスを作るか
+
+
+def test_path2edgetypes(sn: SysNet):
+    """Graph pathからedgetypeのリストを得る."""
     assert path2edgetypes(sn.g, "ccc", "ccc1") == ([EdgeType.BELOW], True)
     assert path2edgetypes(sn.g, "ccc1", "ccc") == ([EdgeType.BELOW], False)
     assert path2edgetypes(sn.g, "ccc", "parent") == ([EdgeType.BELOW], False)

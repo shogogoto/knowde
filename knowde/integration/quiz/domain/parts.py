@@ -152,7 +152,7 @@ class QuizOption(BaseModel, frozen=True):
     """クイズ選択肢."""
 
     val: str | Def | Hashable
-    rel: QuizRel | None = None
+    rels: Sequence[QuizRel] | None = None
 
     @classmethod
     def create(  # noqa: D102
