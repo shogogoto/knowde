@@ -12,7 +12,7 @@ from neomodel import (
     UniqueIdProperty,
 )
 
-from knowde.integration.quiz.domain.domain import QuizStatementType
+from knowde.integration.quiz.domain.domain import QuizType
 
 
 class LQuiz(AsyncStructuredNode):
@@ -23,7 +23,7 @@ class LQuiz(AsyncStructuredNode):
 
     __label__ = "Quiz"
     uid = UniqueIdProperty()
-    statement_type = StringProperty(required=True, choices=QuizStatementType)
+    statement_type = StringProperty(required=True, choices=QuizType)
     # リンク切れ状態を明示して壊れたことが分かるようにして再構成を促す
     is_link_broken = BooleanProperty(default=False)
     created = DateTimeProperty()

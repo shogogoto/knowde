@@ -15,7 +15,7 @@ from knowde.feature.knowde.repo.detail import fetch_knowdes_with_detail
 from knowde.integration.quiz.domain.domain import (
     QuizSource,
     QuizSourceContainer,
-    QuizStatementType,
+    QuizType,
 )
 from knowde.integration.quiz.repo.select_option.distract import (
     list_candidates_by_radius,
@@ -67,7 +67,7 @@ async def create_term2sent_quiz(
             "quiz_uid": quiz_uid.hex,
             "target_uid": to_uuid(target_sent_uid).hex,
             "dist_uids": [u.hex for u in opt_uids],
-            "statement_type": QuizStatementType.TERM2SENT.name,
+            "statement_type": QuizType.TERM2SENT.name,
             "now": now.isoformat(),
         },
     )
@@ -110,7 +110,7 @@ async def restore_quiz_sources(
         quiz, tgt_uid, opt_uids, paths = row
         case = QuizSourceContainer(
             quiz_id=quiz.get("uid"),
-            statement_type=QuizStatementType[quiz.get("statement_type")],
+            statement_type=QuizType[quiz.get("statement_type")],
             target_id=tgt_uid,
             source_ids=set(opt_uids),
             g=graph_neo4j2nx(paths),

@@ -17,16 +17,16 @@ from knowde.shared.nxutil.edge_type import EdgeType
 QUIZ_PLACEHOLDER = "$@"
 
 
-class QuizStatementType(StrEnum):
+class QuizType(StrEnum):
     """問題文の種類."""
 
     SENT2TERM = "$@に合う用語を当ててください"
     TERM2SENT = "$@に合う文を当ててください"
 
     # 提示したEdgeTypeと関連する単文 or 定義を答えさせる
-    EDGE2SENT = "$@と$@関係で繋がる単文を当ててください"
+    REL2SENT = "$@と$@関係で繋がる単文を当ててください"
     # 提示した単文と対象間のEdgeTypeを答えさせる
-    SENT2EDGE = "$@から$@への関係を当ててください"
+    SENT2REL = "$@から$@への関係を当ててください"
     PATH = "$@の経路を当ててください"
 
     def inject(self, vals: list[str]) -> str:

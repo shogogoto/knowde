@@ -15,14 +15,14 @@ from knowde.integration.quiz.errors import (
 )
 from knowde.shared.types import NXGraph
 
-from .parts import QuizOption, QuizStatementType
+from .parts import QuizOption, QuizType
 
 
 class QuizSourceContainer(BaseModel, frozen=True):
     """quiz source用id容れ."""
 
     quiz_id: str
-    statement_type: QuizStatementType  # build方法を指定してくれる
+    statement_type: QuizType  # build方法を指定してくれる
     target_id: str
     source_ids: set[str]
     g: NXGraph  # EdgeType-QuizRel用
@@ -54,7 +54,7 @@ class QuizSource(BaseModel, frozen=True):
     便利なgetterを備えるのみ
     """
 
-    statement_type: QuizStatementType  # build方法を指定してくれる
+    statement_type: QuizType  # build方法を指定してくれる
     target_id: str  # テストしやすいので UUIDではなくstrへ
     target: QuizOption
     # targetが答えになるとは限らない
@@ -101,7 +101,6 @@ class QuizSource(BaseModel, frozen=True):
 class ReadableQuiz(BaseModel, frozen=True):
     """「読める状態」の問題文と選択肢を備えたクイズ."""
 
-    uid: str = Field(title="クイズID")
     # 既に読める状態の問題文や選択肢
     statement: str = Field(title="問題文")
     options: dict[str, str] = Field(title="選択肢")

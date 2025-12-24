@@ -1,15 +1,13 @@
-"""quiz 組み立て."""
+"""ReadableQuizを組み立てる."""
 
 from knowde.integration.quiz.domain.domain import QuizSource, ReadableQuiz
-from knowde.integration.quiz.domain.parts import QuizRel
+from knowde.integration.quiz.domain.parts import QuizRel, QuizType
 
 
-def create_quiz_sent2term(src: QuizSource, quiz_id: str) -> ReadableQuiz:
+def tobe_readable_sent2term(src: QuizSource) -> ReadableQuiz:
     """単文から用語を選ぶ問題文を作成."""
-    t = src.statement_type
     return ReadableQuiz(
-        uid=quiz_id,
-        statement=t.inject([src.tgt_sent]),
+        statement=QuizType.SENT2TERM.inject([src.tgt_sent]),
         options={
             src.target_id: str(src.tgt_def.term),
             **{k: str(v.term) for k, v in src.source_defs.items()},
@@ -18,12 +16,10 @@ def create_quiz_sent2term(src: QuizSource, quiz_id: str) -> ReadableQuiz:
     )
 
 
-def create_quiz_term2sent(src: QuizSource, quiz_id: str) -> ReadableQuiz:
+def tobe_readable_term2sent(src: QuizSource) -> ReadableQuiz:
     """用語から単文を選ぶ問題文を作成."""
-    t = src.statement_type
     return ReadableQuiz(
-        uid=quiz_id,
-        statement=t.inject([str(src.tgt_def.term)]),
+        statement=QuizType.TERM2SENT.inject([str(src.tgt_def.term)]),
         options={
             src.target_id: str(src.tgt_sent),
             **{k: str(v.sentence) for k, v in src.source_defs.items()},
@@ -32,13 +28,11 @@ def create_quiz_term2sent(src: QuizSource, quiz_id: str) -> ReadableQuiz:
     )
 
 
-def create_quiz_edge2sent(
+def tobe_readable_rel2sent(
     src: QuizSource,
-    quiz_id: str,
     corrent_rels: list[QuizRel],
 ) -> ReadableQuiz:
     """関係から単文を選ぶ問題文を作成."""
-    t = src.statement_type
     rels = src.target.rels
     if rels is None:
         raise ValueError
@@ -50,8 +44,7 @@ def create_quiz_edge2sent(
         if v.rels == corrent_rels and k != src.target_id  # 自信は選択肢になり得ない
     ]
     return ReadableQuiz(
-        uid=quiz_id,
-        statement=t.inject([str(src.target.val), rels_stmt]),
+        statement=QuizType.REL2SENT.inject([str(src.target.val), rels_stmt]),
         options={
             **{k: str(v.val) for k, v in src.sources.items()},
         },

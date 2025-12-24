@@ -9,9 +9,9 @@ import pytest
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.tree2net import parse2net
 from knowde.integration.quiz.domain.build import (
-    create_quiz_edge2sent,
-    create_quiz_sent2term,
-    create_quiz_term2sent,
+    tobe_readable_rel2sent,
+    tobe_readable_sent2term,
+    tobe_readable_term2sent,
 )
 from knowde.integration.quiz.domain.parts import QuizRel, path2edgetypes, to_detail_rel
 from knowde.integration.quiz.errors import AnswerError, QuizDuplicateError
@@ -20,7 +20,7 @@ from knowde.shared.nxutil.edge_type import EdgeType
 from .domain import (
     QuizOption,
     QuizSource,
-    QuizStatementType,
+    QuizType,
 )
 
 
@@ -28,7 +28,7 @@ def test_duplicate_source():
     """重複チェック."""
     with pytest.raises(QuizDuplicateError):
         QuizSource(
-            statement_type=QuizStatementType.SENT2TERM,
+            statement_type=QuizType.SENT2TERM,
             target_id="1",
             target=QuizOption.create("aaa", ["A"]),
             sources={
@@ -37,7 +37,7 @@ def test_duplicate_source():
         )
     with pytest.raises(QuizDuplicateError):
         QuizSource(
-            statement_type=QuizStatementType.SENT2TERM,
+            statement_type=QuizType.SENT2TERM,
             target_id="1",
             target=QuizOption.create("aaa", ["A"]),
             sources={
@@ -50,7 +50,7 @@ def test_duplicate_source():
 def test_quiz_sent2term():
     """用語当て問題."""
     src = QuizSource(
-        statement_type=QuizStatementType.SENT2TERM,
+        statement_type=QuizType.SENT2TERM,
         target_id="1",
         target=QuizOption.create("aaa", ["A"]),
         sources={
@@ -59,9 +59,9 @@ def test_quiz_sent2term():
             "4": QuizOption.create("ddd", ["D"]),
         },
     )
-    q = create_quiz_sent2term(src, "q001")
+    q = tobe_readable_sent2term(src)
     assert set(q.options.values()) == {"A", "B", "C", "D"}
-    assert q.statement == QuizStatementType.SENT2TERM.inject(["aaa"])
+    assert q.statement == QuizType.SENT2TERM.inject(["aaa"])
     ans0 = q.answer(["1"])
     ans1 = q.answer(["1", "4"])
     ans2 = q.answer(["2"])
@@ -80,7 +80,7 @@ def test_quiz_sent2term():
 def test_quiz_term2sent():
     """単文当て問題."""
     src = QuizSource(
-        statement_type=QuizStatementType.TERM2SENT,
+        statement_type=QuizType.TERM2SENT,
         target_id="1",
         target=QuizOption.create("aaa", ["A"]),
         sources={
@@ -90,9 +90,9 @@ def test_quiz_term2sent():
         },
     )
 
-    q = create_quiz_term2sent(src, "q001")
+    q = tobe_readable_term2sent(src)
     assert set(q.options.values()) == {"aaa", "bbb", "ccc", "ddd"}
-    assert q.statement == QuizStatementType.TERM2SENT.inject(["A"])
+    assert q.statement == QuizType.TERM2SENT.inject(["A"])
     ans0 = q.answer(["1"])
     ans1 = q.answer(["1", "4"])
     ans2 = q.answer(["2"])
@@ -128,10 +128,10 @@ def sn() -> SysNet:  # noqa: D103
     return parse2net(s)
 
 
-def test_quiz_edge2sent_lv1(sn: SysNet):
+def test_quiz_rel2sent_lv1(sn: SysNet):
     """クイズ対象と関係にマッチするもの当て問題(1階層)."""
     src = QuizSource(
-        statement_type=QuizStatementType.EDGE2SENT,
+        statement_type=QuizType.REL2SENT,
         target_id="1",  # 問いの対象
         target=QuizOption(val=sn.get("ccc"), rels=[QuizRel.DETAIL]),
         sources={
@@ -144,13 +144,13 @@ def test_quiz_edge2sent_lv1(sn: SysNet):
     )
 
     # 詳細はどれか
-    q = create_quiz_edge2sent(src, "q001", [QuizRel.DETAIL])
+    q = tobe_readable_rel2sent(src, [QuizRel.DETAIL])
     assert q.statement == "'C: ccc'と'詳細'関係で繋がる単文を当ててください"
     assert q.answer(["2"]).is_corrent()
     assert not q.answer(["3"]).is_corrent()
 
     # 結論はどれか
-    q = create_quiz_edge2sent(src, "q002", [QuizRel.CONCLUSION])
+    q = tobe_readable_rel2sent(src, [QuizRel.CONCLUSION])
     assert q.answer(["3"]).is_corrent()
     assert not q.answer(["2", "4"]).is_corrent()
     assert not q.answer(["3", "4"]).is_corrent()
