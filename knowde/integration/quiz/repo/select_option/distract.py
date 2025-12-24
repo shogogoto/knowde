@@ -21,7 +21,8 @@ from pydantic import Field, TypeAdapter
 from knowde.shared.types import UUIDy, to_uuid
 
 
-async def list_candidates_in_resource(
+# list_candidates_by_radiusで呼ぶからこれを直接呼ぶことはなさそう
+async def _list_candidates_in_resource(
     target_sent_id: UUIDy,
     has_term: bool = False,  # noqa: FBT001, FBT002
 ):
@@ -46,10 +47,13 @@ r_adapter = TypeAdapter(Radius)
 
 async def list_candidates_by_radius(
     target_sent_id: UUIDy,
-    radius: Radius,
+    radius: Radius | None = None,
     has_term: bool = False,  # noqa: FBT001, FBT002
 ) -> list[UUID]:
     """距離指定で選択肢候補を列挙."""
+    if radius is None:
+        return await _list_candidates_in_resource(target_sent_id, has_term=has_term)
+
     radius = r_adapter.validate_python(radius)
     q_term = "<-[:DEF]-(:Term)" if has_term else ""
     q = f"""
@@ -65,6 +69,9 @@ async def list_candidates_by_radius(
     )
     return [row[0] for row in rows]
 
+
+# def list_candidates_by_rel_type(target_sent_id: UUIDy):
+#     pass
 
 # # 詳細や結論などの特定の関係内から探す
 # # scoreでソートできたほうが良い

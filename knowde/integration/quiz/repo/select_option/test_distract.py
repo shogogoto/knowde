@@ -9,8 +9,8 @@ from knowde.shared.knowde.label import LSentence
 from knowde.shared.user.label import LUser
 
 from .distract import (
+    _list_candidates_in_resource,
     list_candidates_by_radius,
-    list_candidates_in_resource,
 )
 
 
@@ -31,9 +31,9 @@ async def test_list_candidates_in_resource(u: LUser):
     """
     await save_text(u.uid, s)
     sent = LSentence.nodes.first(val="aaa")
-    c = await list_candidates_in_resource(sent.uid)
+    c = await _list_candidates_in_resource(sent.uid)
     assert len(c) == 3  # noqa: PLR2004
-    c = await list_candidates_in_resource(sent.uid, has_term=True)
+    c = await _list_candidates_in_resource(sent.uid, has_term=True)
     assert len(c) == 2  # noqa: PLR2004
 
 
