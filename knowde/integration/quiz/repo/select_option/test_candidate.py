@@ -8,7 +8,7 @@ from knowde.feature.entry.resource.usecase import save_text
 from knowde.shared.knowde.label import LSentence
 from knowde.shared.user.label import LUser
 
-from .distract import (
+from .candidate import (
     _list_candidates_in_resource,
     list_candidates_by_radius,
 )

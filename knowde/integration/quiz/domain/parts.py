@@ -171,3 +171,10 @@ class QuizOption(BaseModel, frozen=True):
             msg = "rel is None"
             raise ValueError(msg)
         return "の".join([str(r) for r in self.rels])
+
+    @property
+    def sentence(self) -> str:
+        """単文表現."""
+        if isinstance(self.val, Def):
+            return str(self.val.sentence)
+        return str(self.val)

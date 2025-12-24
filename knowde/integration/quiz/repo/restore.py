@@ -61,10 +61,3 @@ async def restore_quiz_sources(
     uids = QuizSourceContainer.concat_uids_for_batch_fetch(containers)
     kns = await fetch_knowdes_with_detail(uids)
     return [c.to_source(kns) for c in containers]
-    # for sid in c.source_ids:
-    #     tgt = kns[c.target_id]
-    #     src = kns[sid]
-    #     print(
-    #         f"{src} -> {tgt}",
-    #         QuizRel.of(*path2edgetypes(c.g, sid, c.target_id)),
-    #     )

@@ -11,7 +11,7 @@ from pydantic import Field, TypeAdapter
 from knowde.integration.quiz.domain.domain import (
     QuizType,
 )
-from knowde.integration.quiz.repo.select_option.distract import (
+from knowde.integration.quiz.repo.select_option.candidate import (
     list_candidates_by_radius,
 )
 from knowde.shared.types import UUIDy, to_uuid
@@ -21,9 +21,13 @@ type NOption = Annotated[int, Field(gt=2, title="選択肢の数")]
 nopt_adapter = TypeAdapter(NOption)
 
 
+# async def pickup_options()
+
+
 # 誤答肢選択戦略
-async def create_term2sent_quiz(
+async def create_quiz(  # noqa: PLR0917
     target_sent_uid: UUIDy,
+    statement_type: QuizType,
     radius: int | None = None,
     n_option: int = 4,  # 選択肢の数
     now: datetime | None = None,
@@ -58,7 +62,7 @@ async def create_term2sent_quiz(
             "quiz_uid": quiz_uid.hex,
             "target_uid": to_uuid(target_sent_uid).hex,
             "dist_uids": [u.hex for u in opt_uids],
-            "statement_type": QuizType.TERM2SENT.name,
+            "statement_type": statement_type.name,
             "now": now.isoformat(),
         },
     )

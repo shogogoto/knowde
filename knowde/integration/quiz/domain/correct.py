@@ -21,6 +21,6 @@ def correct_is_specific_rels(src: QuizSource, rels: list[QuizRel]) -> CorrectStr
     """特定の関係を正答とする."""
 
     def _f(uid: str) -> bool:
-        return src.get(uid).rels == rels and uid != src.target_id
+        return src.get_by_id(uid).rels == rels and uid != src.target_id
 
     return _f

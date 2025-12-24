@@ -15,7 +15,7 @@ from knowde.integration.quiz.errors import (
 )
 from knowde.shared.types import NXGraph
 
-from .parts import QuizOption, QuizType
+from .parts import QuizOption, QuizRel, QuizType, path2edgetypes
 
 
 class QuizSourceContainer(BaseModel, frozen=True):
@@ -42,7 +42,10 @@ class QuizSourceContainer(BaseModel, frozen=True):
             target_id=self.target_id,
             target=QuizOption(val=uid2kn[self.target_id].to_str_or_def()),
             sources={
-                uid: QuizOption(val=uid2kn[uid].to_str_or_def())
+                uid: QuizOption(
+                    val=uid2kn[uid].to_str_or_def(),
+                    rels=QuizRel.of(*path2edgetypes(self.g, uid, self.target_id)),
+                )
                 for uid in self.source_ids
             },
         )
@@ -102,11 +105,21 @@ class QuizSource(BaseModel, frozen=True):
         """選択肢ids."""
         return [*self.sources.keys(), self.target_id]
 
-    def get(self, option_id: str) -> QuizOption:
+    def get_by_id(self, option_id: str) -> QuizOption:
         """Target or sourceを返す."""
         if option_id == self.target_id:
             return self.target
         return self.sources[option_id]
+
+    def get_by_sent(self, sent: str) -> QuizOption:
+        """単文指定でTarget or sourceを返す."""
+        if sent == self.tgt_sent:
+            return self.target
+        for option in self.sources.values():
+            if sent == option.sentence:
+                return option
+        msg = f"{sent} not found"
+        raise KeyError(msg)
 
     def filter_by(self, fn: Callable[[str], bool]) -> list[str]:
         """ソースを絞り込む."""
