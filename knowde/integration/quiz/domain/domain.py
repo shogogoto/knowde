@@ -1,6 +1,6 @@
 """quiz domain."""
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from textwrap import indent
 
 from more_itertools import duplicates_everseen, flatten
@@ -96,6 +96,21 @@ class QuizSource(BaseModel, frozen=True):
             msg = "誤答肢に用語なし単文が含まれている"
             raise QuizOptionsMustBeDefError(msg)
         return defs
+
+    @property
+    def ids(self) -> list[str]:
+        """選択肢ids."""
+        return [*self.sources.keys(), self.target_id]
+
+    def get(self, option_id: str) -> QuizOption:
+        """Target or sourceを返す."""
+        if option_id == self.target_id:
+            return self.target
+        return self.sources[option_id]
+
+    def filter_by(self, fn: Callable[[str], bool]) -> list[str]:
+        """ソースを絞り込む."""
+        return [k for k in self.ids if fn(k)]
 
 
 class ReadableQuiz(BaseModel, frozen=True):

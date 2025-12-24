@@ -163,3 +163,11 @@ class QuizOption(BaseModel, frozen=True):
     ):
         val = Def.create(sentence, names=names)
         return cls(val=val, rel=rel)
+
+    @property
+    def rels_stmt(self) -> str:
+        """選択肢の関係の文言."""
+        if self.rels is None:
+            msg = "rel is None"
+            raise ValueError(msg)
+        return "の".join([str(r) for r in self.rels])
