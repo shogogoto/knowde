@@ -13,7 +13,7 @@ from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.util import TZ
 
 
-# 誤答肢選択戦略
+# idを渡すだけでロジックは分離
 async def create_quiz(  # noqa: PLR0917
     target_sent_uid: UUIDy,
     statement_type: QuizType,

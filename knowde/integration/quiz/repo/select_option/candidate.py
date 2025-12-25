@@ -1,6 +1,6 @@
 """誤答肢.
 
->>誤答肢は、受験者たちの一般的な誤解やよくある間違いに基づくもので、
+>>誤答肢(distractor)は、受験者たちの一般的な誤解やよくある間違いに基づくもので、
 >>正解の選択肢と混同しやすいなど合理的に誤解され得る内容でなければなりません.
 
 正解は簡単に決まる
@@ -20,7 +20,7 @@ from pydantic import Field, TypeAdapter
 from knowde.shared.types import UUIDy, to_uuid
 
 
-# list_candidates_by_radiusで呼ぶからこれを直接呼ぶことはなさそう
+# list_candidates_by_radiusで呼べるからこれを直接呼ぶことはなさそう
 async def _list_candidates_in_resource(
     target_sent_id: UUIDy,
     has_term: bool = False,  # noqa: FBT001, FBT002

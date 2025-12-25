@@ -8,9 +8,13 @@ from knowde.integration.quiz.repo.repo import (
     create_quiz,
 )
 from knowde.integration.quiz.repo.restore import restore_quiz_sources
-from knowde.integration.quiz.repo.select_option.selector import select_random_options
+from knowde.integration.quiz.repo.select_option.candidate import (
+    list_candidates_by_radius,
+)
 from knowde.shared.knowde.label import LSentence
 from knowde.shared.user.label import LUser
+
+from .select_option.sample import sample_options_ramdomly
 
 u = async_fixture()(fx_u)
 
@@ -21,21 +25,15 @@ async def test_create_restore_term2sent(u: LUser):
     """クイズを永続化&復元."""
     sent = LSentence.nodes.first(val="ccc")
     n_option = 5
-    quiz_uid = await create_quiz(
-        sent.uid,
-        QuizType.TERM2SENT,
-        option_uids=await select_random_options(
-            sent.uid,
-            radius=99,
-            n_option=n_option,
-            has_term=True,
-        ),
-    )
+    cand_uids = await list_candidates_by_radius(sent.uid, radius=99, has_term=True)
+    sample_uids = sample_options_ramdomly(cand_uids, n_option=n_option)
+    quiz_uid = await create_quiz(sent.uid, QuizType.TERM2SENT, sample_uids)
     srcs = await restore_quiz_sources([quiz_uid])
     assert len(srcs) == 1
     src = srcs[0]
     assert len(src.sources) == n_option - 1
     rq = build_readable(src)
+    # print(rq.string)
     assert rq.answer([src.get_id_by_sent("ccc")]).is_corrent()
     assert not rq.answer([src.get_id_by_sent("ccc1")]).is_corrent()
 
@@ -45,16 +43,9 @@ async def test_create_restore_sent2term(u: LUser):
     """クイズを永続化&復元."""
     sent = LSentence.nodes.first(val="ccc")
     n_option = 5
-    quiz_uid = await create_quiz(
-        sent.uid,
-        QuizType.SENT2TERM,
-        option_uids=await select_random_options(
-            sent.uid,
-            radius=99,
-            n_option=n_option,
-            has_term=True,
-        ),
-    )
+    cand_uids = await list_candidates_by_radius(sent.uid, radius=99, has_term=True)
+    sample_uids = sample_options_ramdomly(cand_uids, n_option=n_option)
+    quiz_uid = await create_quiz(sent.uid, QuizType.SENT2TERM, sample_uids)
     srcs = await restore_quiz_sources([quiz_uid])
     src = srcs[0]
     # print(src.model_dump_json(indent=2))

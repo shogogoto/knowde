@@ -1,4 +1,12 @@
-"""quiz router."""
+"""quiz router.
+
+クイズ作成
+クイズ回答
+回答一覧
+クイズ一覧
+対象固定
+
+"""
 
 from fastapi import APIRouter
 
