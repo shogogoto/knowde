@@ -44,7 +44,7 @@ class QuizSourceContainer(BaseModel, frozen=True):
             sources={
                 uid: QuizOption(
                     val=uid2kn[uid].to_str_or_def(),
-                    rels=QuizRel.of(*path2edgetypes(self.g, uid, self.target_id)),
+                    rels=QuizRel.of(*path2edgetypes(self.g, self.target_id, uid)),
                 )
                 for uid in self.source_ids
             },

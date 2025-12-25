@@ -11,7 +11,6 @@ DBから直接探すのがいい sysnetを復元するのは非効率
 作っていける
 """
 
-from collections.abc import Iterable
 from typing import Annotated
 from uuid import UUID
 
@@ -72,26 +71,3 @@ async def list_candidates_by_radius(
 
 # def list_candidates_by_rel_type(target_sent_id: UUIDy):
 #     pass
-
-# # 詳細や結論などの特定の関係内から探す
-# # scoreでソートできたほうが良い
-# async def list_candidates_by_rel_type(target_sent_id: UUIDy):
-#     pass
-
-
-# random
-async def choose_distractor(cand_uuids: Iterable[UUIDy], n_choose: int):
-    """誤答肢を候補から選ぶ.
-
-    cand_uuids: 誤答肢候補のuidのリスト
-    n_choose: 選ぶ数
-    """
-    # uids = [to_uuid(uid).hex for uid in cand_uuids]
-    # kns = await fetch_knowdes_with_detail(uids)
-
-    # print("*" * 100)
-    # print(kns)
-    # cand_uuidsから詳細を取得
-
-    # その中から返すものを絞る
-    # まずはランダムに3つ返すだけにするか

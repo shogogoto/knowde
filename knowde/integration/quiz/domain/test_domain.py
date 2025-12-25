@@ -7,7 +7,6 @@
 import pytest
 
 from knowde.feature.parsing.sysnet import SysNet
-from knowde.feature.parsing.tree2net import parse2net
 from knowde.integration.quiz.domain.build import (
     tobe_readable_rel2sent,
     tobe_readable_sent2term,
@@ -15,6 +14,7 @@ from knowde.integration.quiz.domain.build import (
 )
 from knowde.integration.quiz.domain.parts import QuizRel, path2edgetypes, to_detail_rel
 from knowde.integration.quiz.errors import AnswerError, QuizDuplicateError
+from knowde.integration.quiz.fixture import fx_sn
 from knowde.shared.nxutil.edge_type import EdgeType
 
 from .domain import (
@@ -108,24 +108,7 @@ def test_quiz_term2sent():
     assert not ans4.is_corrent()
 
 
-@pytest.fixture()
-def sn() -> SysNet:  # noqa: D103
-    s = """
-        # title
-            aaa
-            bbb
-            parent
-                C: ccc
-                    T1: ccc1
-                    T2: ccc2
-                    T3: ccc3
-                    -> to
-                        T4: todetail
-                        -> ccc5
-                    <- cccb
-                        <- cccb1
-    """
-    return parse2net(s)
+sn = pytest.fixture(fx_sn)
 
 
 def test_quiz_rel2sent_lv1(sn: SysNet):
@@ -156,6 +139,10 @@ def test_quiz_rel2sent_lv1(sn: SysNet):
     assert not q.answer(["3", "4"]).is_corrent()
     # 前提の前提はどれか 2階関係クイズ
     # クイズ対象からの関係を表すクラスを作るか
+
+
+def test_quiz_rel2sent_random(sn: SysNet):
+    """関係クイズの答えを陽に設定したくない."""
 
 
 def test_path2edgetypes(sn: SysNet):

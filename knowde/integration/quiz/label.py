@@ -41,6 +41,11 @@ class LQuiz(AsyncStructuredNode):
         "QUIZ_OPTION",
     )
 
+    correct: AsyncRelationshipManager = AsyncRelationshipTo(  # type: ignore  # noqa: PGH003
+        "LAnswer",
+        "QUIZ_CORRECT",
+    )
+
 
 class LAnswer(AsyncStructuredNode):
     """回答."""
