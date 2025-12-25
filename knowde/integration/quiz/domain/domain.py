@@ -121,6 +121,14 @@ class QuizSource(BaseModel, frozen=True):
         msg = f"{sent} not found"
         raise KeyError(msg)
 
+    def get_id_by_sent(self, sent: str) -> str:
+        """単文指定でidを返す."""
+        key = next((k for k in self.ids if self.get_by_id(k).sentence == sent), None)
+        if key is None:
+            msg = f"{sent} not found"
+            raise KeyError(msg)
+        return key
+
     def filter_by(self, fn: Callable[[str], bool]) -> list[str]:
         """ソースを絞り込む."""
         return [k for k in self.ids if fn(k)]

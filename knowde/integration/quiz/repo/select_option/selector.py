@@ -12,6 +12,7 @@ from uuid import UUID
 
 from pydantic import Field, TypeAdapter
 
+from knowde.integration.quiz.errors import OverRangeSampleError
 from knowde.integration.quiz.repo.select_option.candidate import (
     list_candidates_by_radius,
 )
@@ -25,8 +26,12 @@ async def select_random_options(
     target_sent_uid: UUIDy,
     radius: int | None = None,
     n_option: int = 4,  # 選択肢の数
+    has_term: bool = False,  # noqa: FBT001, FBT002
 ) -> list[UUID]:
     """対象の指定半径からランダムに選ぶ."""
     n_sample = nopt_adapter.validate_python(n_option) - 1  # target分を引く
-    uids = await list_candidates_by_radius(target_sent_uid, radius)
+    uids = await list_candidates_by_radius(target_sent_uid, radius, has_term)
+    if n_sample > len(uids):
+        msg = f"サンプル数が候補数より大きい: {n_sample} > {len(uids)}"
+        raise OverRangeSampleError(msg)
     return [to_uuid(uid) for uid in random.sample(uids, n_sample)]

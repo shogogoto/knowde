@@ -8,9 +8,9 @@ import pytest
 
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.integration.quiz.domain.build import (
-    tobe_readable_rel2sent,
-    tobe_readable_sent2term,
-    tobe_readable_term2sent,
+    build_readable_rel2sent,
+    build_readable_sent2term,
+    build_readable_term2sent,
 )
 from knowde.integration.quiz.domain.parts import QuizRel, path2edgetypes, to_detail_rel
 from knowde.integration.quiz.errors import AnswerError, QuizDuplicateError
@@ -59,7 +59,7 @@ def test_quiz_sent2term():
             "4": QuizOption.create("ddd", ["D"]),
         },
     )
-    q = tobe_readable_sent2term(src)
+    q = build_readable_sent2term(src)
     assert set(q.options.values()) == {"A", "B", "C", "D"}
     assert q.statement == QuizType.SENT2TERM.inject(["aaa"])
     ans0 = q.answer(["1"])
@@ -90,7 +90,7 @@ def test_quiz_term2sent():
         },
     )
 
-    q = tobe_readable_term2sent(src)
+    q = build_readable_term2sent(src)
     assert set(q.options.values()) == {"aaa", "bbb", "ccc", "ddd"}
     assert q.statement == QuizType.TERM2SENT.inject(["A"])
     ans0 = q.answer(["1"])
@@ -127,13 +127,13 @@ def test_quiz_rel2sent_lv1(sn: SysNet):
     )
 
     # 詳細はどれか
-    q = tobe_readable_rel2sent(src, [QuizRel.DETAIL])
+    q = build_readable_rel2sent(src, [QuizRel.DETAIL])
     assert q.statement == "'C: ccc'と'詳細'関係で繋がる単文を当ててください"
     assert q.answer(["2"]).is_corrent()
     assert not q.answer(["3"]).is_corrent()
 
     # 結論はどれか
-    q = tobe_readable_rel2sent(src, [QuizRel.CONCLUSION])
+    q = build_readable_rel2sent(src, [QuizRel.CONCLUSION])
     assert q.answer(["3"]).is_corrent()
     assert not q.answer(["2", "4"]).is_corrent()
     assert not q.answer(["3", "4"]).is_corrent()

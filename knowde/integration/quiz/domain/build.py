@@ -8,13 +8,13 @@ from knowde.integration.quiz.domain.domain import QuizSource, ReadableQuiz
 from knowde.integration.quiz.domain.parts import QuizRel, QuizType
 
 
-def tobe_readable(src: QuizSource) -> ReadableQuiz:
+def build_readable(src: QuizSource) -> ReadableQuiz:
     """読めるクイズを作成."""
     match src.statement_type:
         case QuizType.SENT2TERM:
-            return tobe_readable_sent2term(src)
+            return build_readable_sent2term(src)
         case QuizType.TERM2SENT:
-            return tobe_readable_term2sent(src)
+            return build_readable_term2sent(src)
         # case QuizType.REL2SENT:
         #     return tobe_readable_rel2sent(
         #         src,
@@ -25,7 +25,7 @@ def tobe_readable(src: QuizSource) -> ReadableQuiz:
             raise ValueError(msg)
 
 
-def tobe_readable_sent2term(src: QuizSource) -> ReadableQuiz:
+def build_readable_sent2term(src: QuizSource) -> ReadableQuiz:
     """単文から用語を選ぶ問題文を作成."""
     return ReadableQuiz(
         statement=QuizType.SENT2TERM.inject([src.tgt_sent]),
@@ -37,7 +37,7 @@ def tobe_readable_sent2term(src: QuizSource) -> ReadableQuiz:
     )
 
 
-def tobe_readable_term2sent(src: QuizSource) -> ReadableQuiz:
+def build_readable_term2sent(src: QuizSource) -> ReadableQuiz:
     """用語から単文を選ぶ問題文を作成."""
     return ReadableQuiz(
         statement=QuizType.TERM2SENT.inject([str(src.tgt_def.term)]),
@@ -49,7 +49,7 @@ def tobe_readable_term2sent(src: QuizSource) -> ReadableQuiz:
     )
 
 
-def tobe_readable_rel2sent(
+def build_readable_rel2sent(
     src: QuizSource,
     corrects: list[QuizRel],
 ) -> ReadableQuiz:
