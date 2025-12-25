@@ -7,7 +7,7 @@ class QuizOptionsMustBeDefError(DomainError):
     """クイズ対象はDefでなければならない."""
 
 
-class OutOfRangeSampleError(DomainError):
+class SamplingError(DomainError):
     """選択肢サンプル数が不正."""
 
 

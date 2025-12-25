@@ -10,7 +10,8 @@ from knowde.shared.user.label import LUser
 #   <- importの補完がでなくなる
 #   使用先でpytest.fixureにこれを渡して得た変数を使う
 #  ex. sn = pytest.fixture(fx_sn)
-def fx_sn() -> SysNet:  # noqa: D103
+def fx_sn() -> SysNet:
+    """用語は5個しかない."""
     s = """
         # title
             aaa

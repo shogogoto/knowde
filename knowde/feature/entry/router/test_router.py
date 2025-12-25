@@ -126,18 +126,17 @@ async def test_restore_regression2() -> None:
     assert res.is_success
 
 
-# たまにCIでコケる
 @mark_async_test()
 async def test_delete_entry_router() -> None:
     """所有者がエントリを削除できる."""
     client, h1 = auth_header()
     _, h2 = auth_header("two@gmail.com")
-    u = await LUser.nodes.first()
+    u = await LUser.nodes.get(email="user@example.com")
     _sn, r = await save_text(u.uid, "# title\n")
 
     # check owner
     res = client.delete(f"/entry/{r.uid}", headers=h2)
-    assert res.status_code == status.HTTP_403_FORBIDDEN
+    assert res.status_code == status.HTTP_403_FORBIDDEN  # たまにCIでコケる
     res = client.delete(f"/entry/{r.uid}", headers=h1)
     assert res.is_success
 
