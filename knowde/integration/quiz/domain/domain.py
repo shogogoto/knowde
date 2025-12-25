@@ -38,6 +38,7 @@ class QuizSourceContainer(BaseModel, frozen=True):
     def to_source(self, uid2kn: dict[str, Knowde]) -> "QuizSource":
         """変換."""
         return QuizSource(
+            quiz_id=self.quiz_id,
             statement_type=self.statement_type,
             target_id=self.target_id,
             target=QuizOption(val=uid2kn[self.target_id].to_str_or_def()),
@@ -57,6 +58,7 @@ class QuizSource(BaseModel, frozen=True):
     便利なgetterを備えるのみ
     """
 
+    quiz_id: str
     statement_type: QuizType  # build方法を指定してくれる
     target_id: str  # テストしやすいので UUIDではなくstrへ
     target: QuizOption
@@ -138,6 +140,7 @@ class ReadableQuiz(BaseModel, frozen=True):
     """「読める状態」の問題文と選択肢を備えたクイズ."""
 
     # 既に読める状態の問題文や選択肢
+    quiz_id: str
     statement: str = Field(title="問題文")
     options: dict[str, str] = Field(title="選択肢")
     correct: list[str] = Field(title="正解")

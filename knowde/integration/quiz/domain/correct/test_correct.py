@@ -1,5 +1,7 @@
 """正答の指定ロジック."""
 
+import uuid
+
 import pytest
 
 from knowde.feature.parsing.sysnet import SysNet
@@ -13,6 +15,7 @@ sn = pytest.fixture(fx_sn)
 def test_correct_rel_by_id(sn: SysNet):
     """クイズ対象と指定選択肢間の関係を正答にする."""
     _src = QuizSource(
+        quiz_id=uuid.uuid4().hex,
         statement_type=QuizType.REL2SENT,
         target_id="1",  # 問いの対象
         target=QuizOption(val=sn.get("ccc"), rels=[QuizRel.DETAIL]),

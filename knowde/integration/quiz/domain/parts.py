@@ -1,7 +1,7 @@
 """構成要素となる部品."""
 
 from collections.abc import Hashable, Sequence
-from enum import StrEnum
+from enum import StrEnum, auto
 from functools import cache
 from itertools import islice
 from typing import Any, Self
@@ -20,19 +20,34 @@ QUIZ_PLACEHOLDER = "$@"
 class QuizType(StrEnum):
     """問題文の種類."""
 
-    SENT2TERM = "$@に合う用語を当ててください"
-    TERM2SENT = "$@に合う文を当ててください"
+    SENT2TERM = auto()
+    TERM2SENT = auto()
 
     # 提示したEdgeTypeと関連する単文 or 定義を答えさせる
-    REL2SENT = "$@と$@関係で繋がる単文を当ててください"
+    REL2SENT = auto()
     # 提示した単文と対象間のEdgeTypeを答えさせる
-    SENT2REL = "$@から$@への関係を当ててください"
-    PATH = "$@の経路を当ててください"
+    SENT2REL = auto()
+    PATH = auto()
+
+    @property
+    def template(self) -> str:
+        """日本語のテンプレート文を返すプロパティ.
+
+        Enumのvalueに設定するとFastAPIのparamにその文字列が反映されて望ましくない
+        なので、templateを返すプロパティを定義する
+        """
+        return {
+            QuizType.SENT2TERM: "$@に合う用語を当ててください",
+            QuizType.TERM2SENT: "$@に合う文を当ててください",
+            QuizType.REL2SENT: "$@と$@関係で繋がる単文を当ててください",
+            QuizType.SENT2REL: "$@から$@への関係を当ててください",
+            QuizType.PATH: "$@の経路を当ててください",
+        }[self]
 
     def inject(self, vals: list[str]) -> str:
         """プレースホルダーを置き換えて返す."""
         return inject2placeholder(
-            str(self),
+            self.template,
             vals,
             QUIZ_PLACEHOLDER,
             surround_pre="'",

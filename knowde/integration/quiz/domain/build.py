@@ -28,6 +28,7 @@ def build_readable(src: QuizSource) -> ReadableQuiz:
 def build_readable_sent2term(src: QuizSource) -> ReadableQuiz:
     """単文から用語を選ぶ問題文を作成."""
     return ReadableQuiz(
+        quiz_id=src.quiz_id,
         statement=QuizType.SENT2TERM.inject([src.tgt_sent]),
         options={
             src.target_id: str(src.tgt_def.term),
@@ -40,6 +41,7 @@ def build_readable_sent2term(src: QuizSource) -> ReadableQuiz:
 def build_readable_term2sent(src: QuizSource) -> ReadableQuiz:
     """用語から単文を選ぶ問題文を作成."""
     return ReadableQuiz(
+        quiz_id=src.quiz_id,
         statement=QuizType.TERM2SENT.inject([str(src.tgt_def.term)]),
         options={
             src.target_id: str(src.tgt_sent),
@@ -55,6 +57,7 @@ def build_readable_rel2sent(
 ) -> ReadableQuiz:
     """関係から単文を選ぶ問題文を作成."""
     return ReadableQuiz(
+        quiz_id=src.quiz_id,
         statement=QuizType.REL2SENT.inject([str(src.target.val), src.target.rels_stmt]),
         options={
             **{k: str(v.val) for k, v in src.sources.items()},

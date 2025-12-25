@@ -22,7 +22,7 @@ u = async_fixture()(fx_u)
 # クイズ作って質問を見て答える
 @mark_async_test()
 async def test_create_restore_term2sent(u: LUser):
-    """クイズを永続化&復元."""
+    """単文当てクイズを永続化&復元."""
     sent = LSentence.nodes.first(val="ccc")
     n_option = 5
     cand_uids = await list_candidates_by_radius(sent.uid, radius=99, has_term=True)
@@ -40,7 +40,7 @@ async def test_create_restore_term2sent(u: LUser):
 
 @mark_async_test()
 async def test_create_restore_sent2term(u: LUser):
-    """クイズを永続化&復元."""
+    """用語当てクイズを永続化&復元."""
     sent = LSentence.nodes.first(val="ccc")
     n_option = 5
     cand_uids = await list_candidates_by_radius(sent.uid, radius=99, has_term=True)
