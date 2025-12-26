@@ -26,7 +26,7 @@ async def u() -> LUser:  # noqa: D103
         B: bbb
         C: ccc
     """
-    u = await LUser(email="quiz@ex.com").save()
+    u = await LUser(email="select_option@ex.com").save()
     await save_text(u.uid, s)
     return u
 
