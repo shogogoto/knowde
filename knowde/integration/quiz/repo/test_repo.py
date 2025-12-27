@@ -34,8 +34,8 @@ async def test_create_restore_term2sent(u: LUser):
     assert len(src.sources) == n_option - 1
     rq = build_readable(src)
     # print(rq.string)
-    assert rq.answer([src.get_id_by_sent("ccc")]).is_corrent()
-    assert not rq.answer([src.get_id_by_sent("ccc1")]).is_corrent()
+    assert rq.is_correct([src.get_id_by_sent("ccc")])
+    assert not rq.is_correct([src.get_id_by_sent("ccc1")])
 
 
 @mark_async_test()
@@ -51,5 +51,5 @@ async def test_create_restore_sent2term(u: LUser):
     # print(src.model_dump_json(indent=2))
     rq = build_readable(src)
     # print(rq.string)
-    assert rq.answer([src.get_id_by_sent("ccc")]).is_corrent()
-    assert not rq.answer([src.get_id_by_sent("ccc1")]).is_corrent()
+    assert rq.is_correct([src.get_id_by_sent("ccc")])
+    assert not rq.is_correct([src.get_id_by_sent("ccc1")])

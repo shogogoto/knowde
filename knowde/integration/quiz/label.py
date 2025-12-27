@@ -1,7 +1,6 @@
 """neomodel label."""
 
 from neomodel import (
-    ArrayProperty,
     AsyncOne,
     AsyncRelationshipManager,
     AsyncRelationshipTo,
@@ -53,5 +52,14 @@ class LAnswer(AsyncStructuredNode):
     __label__ = "Answer"
     uid = UniqueIdProperty()
     created = DateTimeProperty()
-    is_corrent = BooleanProperty()  # 正答 or not
-    selected_ids = ArrayProperty()
+
+    answer_of: AsyncRelationshipManager = AsyncRelationshipTo(  # type: ignore  # noqa: PGH003
+        "LQuiz",
+        "ANSWER_OF",
+        cardinality=AsyncOne,
+    )
+
+    select: AsyncRelationshipManager = AsyncRelationshipTo(  # type: ignore  # noqa: PGH003
+        "LSentence",
+        "SELECT",
+    )

@@ -11,8 +11,8 @@ class SamplingError(DomainError):
     """選択肢サンプル数が不正."""
 
 
-class AnswerError(DomainError):
-    """回答エラー."""
+class InvalidAnswerOptionError(DomainError):
+    """回答選択肢が範囲外."""
 
 
 class QuizDuplicateError(DomainError):

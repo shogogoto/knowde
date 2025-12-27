@@ -69,5 +69,9 @@ async def list_candidates_by_radius(
     return [row[0] for row in rows]
 
 
-# def list_candidates_by_rel_type(target_sent_id: UUIDy):
-#     pass
+def list_candidates_by_rel_type(target_sent_id: UUIDy):
+    """特定の関係内から探す."""
+
+
+def list_candidate_high_score():
+    """スコアの上位から候補を出す."""

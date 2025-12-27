@@ -4,6 +4,7 @@ from knowde.feature.entry.resource.usecase import save_text
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.tree2net import parse2net
 from knowde.shared.user.label import LUser
+from knowde.shared.user.testing import aregister
 
 
 # pytest.fixtureでデコレートしない
@@ -31,7 +32,7 @@ def fx_sn() -> SysNet:
 
 
 async def fx_u() -> LUser:  # noqa: D103
-    user = await LUser(email="quiz@ex.com").save()
+    user = await aregister(email="quiz@ex.com")
     s = """
         # title
             aaa

@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field, model_validator
 from knowde.feature.knowde import Knowde
 from knowde.feature.parsing.sysnet.sysnode import Def
 from knowde.integration.quiz.errors import (
-    AnswerError,
+    InvalidAnswerOptionError,
     QuizDuplicateError,
     QuizOptionsMustBeDefError,
 )
@@ -153,26 +153,21 @@ class ReadableQuiz(BaseModel, frozen=True):
         s += "\n".join(ops)
         return s
 
-    def answer(self, selected: list[str]) -> "Answer":
-        """適切な選択肢を回答する."""
+    # TODO:  何も答えないのが正解、というパターンも欲しい  # noqa: FIX002, TD002, TD003
+    def is_correct(self, selected: list[str]) -> bool:
+        """正解かどうか."""
         for s in selected:
             if s not in self.options:
                 msg = f"選択肢に存在しない回答; {s} not in {list(self.options.keys())}"
-                raise AnswerError(msg)
+                raise InvalidAnswerOptionError(msg)
+        s = set(selected)
+        correct = set(self.correct)
+        return s == correct
 
-        return Answer(selected=selected, quiz=self)
 
-
-# TODO:  何も答えないのが正解、というパターンも欲しい  # noqa: FIX002, TD002, TD003
 class Answer(BaseModel, frozen=True):
-    """回答."""
+    """誰がいつ何を選択して回答したか、とその正誤."""
 
-    # answer_uid: str
     selected: list[str]  # 複数選択可
+    is_correct: bool
     quiz: ReadableQuiz
-
-    def is_corrent(self) -> bool:
-        """正解かどうか."""
-        selected = set(self.selected)
-        correct = set(self.quiz.correct)
-        return selected == correct

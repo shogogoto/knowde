@@ -15,7 +15,7 @@ from knowde.integration.quiz.domain.build import (
     build_readable_term2sent,
 )
 from knowde.integration.quiz.domain.parts import QuizRel, path2edgetypes, to_detail_rel
-from knowde.integration.quiz.errors import AnswerError, QuizDuplicateError
+from knowde.integration.quiz.errors import InvalidAnswerOptionError, QuizDuplicateError
 from knowde.integration.quiz.fixture import fx_sn
 from knowde.shared.nxutil.edge_type import EdgeType
 
@@ -67,19 +67,13 @@ def test_quiz_sent2term():
     q = build_readable_sent2term(src)
     assert set(q.options.values()) == {"A", "B", "C", "D"}
     assert q.statement == QuizType.SENT2TERM.inject(["aaa"])
-    ans0 = q.answer(["1"])
-    ans1 = q.answer(["1", "4"])
-    ans2 = q.answer(["2"])
-    ans3 = q.answer(["2", "3", "4"])
-    ans4 = q.answer([])
-    with pytest.raises(AnswerError):
-        q.answer(["999"])
-
-    assert ans0.is_corrent()
-    assert not ans1.is_corrent()
-    assert not ans2.is_corrent()
-    assert not ans3.is_corrent()
-    assert not ans4.is_corrent()
+    assert q.is_correct(["1"])
+    assert not q.is_correct(["1", "4"])
+    assert not q.is_correct(["2"])
+    assert not q.is_correct(["2", "3", "4"])
+    assert not q.is_correct([])
+    with pytest.raises(InvalidAnswerOptionError):
+        q.is_correct(["999"])
 
 
 def test_quiz_term2sent():
@@ -99,19 +93,13 @@ def test_quiz_term2sent():
     q = build_readable_term2sent(src)
     assert set(q.options.values()) == {"aaa", "bbb", "ccc", "ddd"}
     assert q.statement == QuizType.TERM2SENT.inject(["A"])
-    ans0 = q.answer(["1"])
-    ans1 = q.answer(["1", "4"])
-    ans2 = q.answer(["2"])
-    ans3 = q.answer(["2", "3", "4"])
-    ans4 = q.answer([])
-    with pytest.raises(AnswerError):
-        q.answer(["999"])
-
-    assert ans0.is_corrent()
-    assert not ans1.is_corrent()
-    assert not ans2.is_corrent()
-    assert not ans3.is_corrent()
-    assert not ans4.is_corrent()
+    assert q.is_correct(["1"])
+    assert not q.is_correct(["1", "4"])
+    assert not q.is_correct(["2"])
+    assert not q.is_correct(["2", "3", "4"])
+    assert not q.is_correct([])
+    with pytest.raises(InvalidAnswerOptionError):
+        q.is_correct(["999"])
 
 
 sn = pytest.fixture(fx_sn)
@@ -136,14 +124,14 @@ def test_quiz_rel2sent_lv1(sn: SysNet):
     # 詳細はどれか
     q = build_readable_rel2sent(src, [QuizRel.DETAIL])
     assert q.statement == "'C: ccc'と'詳細'関係で繋がる単文を当ててください"
-    assert q.answer(["2"]).is_corrent()
-    assert not q.answer(["3"]).is_corrent()
+    assert q.is_correct(["2"])
+    assert not q.is_correct(["3"])
 
     # 結論はどれか
     q = build_readable_rel2sent(src, [QuizRel.CONCLUSION])
-    assert q.answer(["3"]).is_corrent()
-    assert not q.answer(["2", "4"]).is_corrent()
-    assert not q.answer(["3", "4"]).is_corrent()
+    assert q.is_correct(["3"])
+    assert not q.is_correct(["2", "4"])
+    assert not q.is_correct(["3", "4"])
     # 前提の前提はどれか 2階関係クイズ
     # クイズ対象からの関係を表すクラスを作るか
 
