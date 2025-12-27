@@ -3,16 +3,14 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import AsyncGenerator
 from typing import TYPE_CHECKING
 
 from fastapi import status
 from fastapi.testclient import TestClient
-from httpx import ASGITransport, AsyncClient
+from httpx import AsyncClient
 
 from knowde.api import api
-from knowde.config.env import Settings
-from knowde.conftest import async_fixture, mark_async_test
+from knowde.conftest import mark_async_test
 from knowde.feature.entry.namespace import create_folder, create_resource
 from knowde.feature.entry.namespace.sync import Anchor
 from knowde.feature.entry.namespace.test_namespace import files  # noqa: F401
@@ -23,6 +21,7 @@ from knowde.feature.user.routers.repo.client import (
     AuthPost,
 )
 from knowde.shared.user.label import LUser
+from knowde.shared.user.testing import async_auth_header
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -153,27 +152,6 @@ async def test_delete_entry_router() -> None:
     assert res.status_code == status.HTTP_404_NOT_FOUND
 
 
-@async_fixture()
-async def aclient() -> AsyncGenerator[AsyncClient, None]:  # noqa: D103
-    s = Settings()
-    async with AsyncClient(
-        transport=ASGITransport(app=api),
-        base_url=s.KNOWDE_URL,
-    ) as client:
-        yield client
-
-
-async def async_auth_header(aclient: AsyncClient) -> dict[str, str]:  # noqa: D103
-    email = "one@gmail.com"
-    password = "password"  # noqa: S105
-    d = {"email": email, "password": password}
-    res = await aclient.post("/auth/register", json=d)
-    d = {"username": email, "password": password}
-    res = await aclient.post("/auth/jwt/login", data=d)
-    token = res.json()["access_token"]
-    return {"Authorization": f"Bearer {token}"}
-
-
 def reqfile(s: str, fname: str, p: Path):  # noqa: D103
     f = p / fname
     f.write_text(s)
@@ -181,16 +159,16 @@ def reqfile(s: str, fname: str, p: Path):  # noqa: D103
 
 
 @mark_async_test()
-async def test_post_resource_locking_new(aclient: AsyncClient, tmp_path: Path):
+async def test_post_resource_locking_new(ac: AsyncClient, tmp_path: Path):
     """リソース作成が同時に起きないようにロック."""
-    h = await async_auth_header(aclient)
+    h = await async_auth_header()
 
     s = """
         # title1
             aaa
     """
-    task1 = aclient.post("/resource", headers=h, files=reqfile(s, "a.txt", tmp_path))
-    task2 = aclient.post("/resource", headers=h, files=reqfile(s, "b.txt", tmp_path))
+    task1 = ac.post("/resource", headers=h, files=reqfile(s, "a.txt", tmp_path))
+    task2 = ac.post("/resource", headers=h, files=reqfile(s, "b.txt", tmp_path))
 
     results = await asyncio.gather(
         task1,
@@ -201,9 +179,9 @@ async def test_post_resource_locking_new(aclient: AsyncClient, tmp_path: Path):
 
 
 @mark_async_test()
-async def test_post_resource_locking_upd(aclient: AsyncClient, tmp_path: Path):
+async def test_post_resource_locking_upd(ac: AsyncClient, tmp_path: Path):
     """リソース更新が同時に起きないようにロック."""
-    h = await async_auth_header(aclient)
+    h = await async_auth_header()
 
     s = """
         # title1
@@ -220,8 +198,8 @@ async def test_post_resource_locking_upd(aclient: AsyncClient, tmp_path: Path):
             ccc
     """
 
-    task1 = aclient.post("/resource", headers=h, files=reqfile(upd, "a.txt", tmp_path))
-    task2 = aclient.post("/resource", headers=h, files=reqfile(upd, "b.txt", tmp_path))
+    task1 = ac.post("/resource", headers=h, files=reqfile(upd, "a.txt", tmp_path))
+    task2 = ac.post("/resource", headers=h, files=reqfile(upd, "b.txt", tmp_path))
 
     results = await asyncio.gather(
         task1,
@@ -232,18 +210,18 @@ async def test_post_resource_locking_upd(aclient: AsyncClient, tmp_path: Path):
 
 @mark_async_test()
 async def test_post_resource_with_parse_error_message(
-    aclient: AsyncClient,
+    ac: AsyncClient,
     tmp_path: Path,
 ):
     """テキストファイルのフォーマット不備を指摘するエラーメッセージを返す."""
-    h = await async_auth_header(aclient)
+    h = await async_auth_header()
     s1 = """
         # title1
             aaa
                     bbb
                 ccc
     """
-    res = await aclient.post(
+    res = await ac.post(
         "/resource",
         headers=h,
         files=reqfile(s1, "a.txt", tmp_path),
@@ -257,7 +235,7 @@ async def test_post_resource_with_parse_error_message(
             aaa
             ccc
     """
-    res = await aclient.post(
+    res = await ac.post(
         "/resource",
         headers=h,
         files=reqfile(s2, "a.txt", tmp_path),
