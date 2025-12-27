@@ -140,6 +140,8 @@ def q_adjacency_uids(sent_var: str) -> str:
             OPTIONAL MATCH ({sent_var})<-[:RESOLVED]-(referred:Sentence)
             OPTIONAL MATCH ({sent_var})-[:RESOLVED]->(refer:Sentence)
             OPTIONAL MATCH ({sent_var})-[:BELOW]->(detail1:Sentence)
+            OPTIONAL MATCH ({sent_var})<-[:EXAMPLE]-(abstract:Sentence)
+            OPTIONAL MATCH ({sent_var})-[:EXAMPLE]->(example:Sentence)
             // 近接1階層分だか SIB or BELOW で全てを辿るのではない
             OPTIONAL MATCH (detail1)-[:SIBLING]->*(detail2:Sentence)
             UNWIND [detail1, detail2] as detail
@@ -149,6 +151,8 @@ def q_adjacency_uids(sent_var: str) -> str:
                 , COLLECT(DISTINCT referred.uid) as referreds
                 , COLLECT(DISTINCT refer.uid) as refers
                 , COLLECT(DISTINCT detail.uid) as details
+                , COLLECT(DISTINCT abstract.uid) as abstracts
+                , COLLECT(DISTINCT example.uid) as examples
         }}
     """
 

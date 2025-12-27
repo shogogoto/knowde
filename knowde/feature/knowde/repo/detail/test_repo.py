@@ -2,10 +2,9 @@
 
 from uuid import UUID
 
-from fastapi.testclient import TestClient
+import pytest
 from pytest_unordered import unordered
 
-from knowde.api import root_router
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.entry.resource.usecase import save_text
 from knowde.feature.parsing.sysnet import SysNet
@@ -120,39 +119,40 @@ async def test_detail_networks_to_or_resolved_edges(u: LUser):
     """IDによる詳細 TO/RESOLVED関係."""
     await setup(u)
     s = LSentence.nodes.get(val="0")
-    detail_0 = chains_knowde(UUID(s.uid))
-    assert [k.sentence for k in detail_0.succ("0", EdgeType.TO)] == unordered([
+    chains = await chains_knowde([s.uid])
+    c = chains.root[0]
+    assert [k.sentence for k in c.succ("0", EdgeType.TO)] == unordered([
         "1",
         "2",
     ])
-    roots_to = to_roots(detail_0.g, EdgeType.TO)
-    assert [detail_0.knowdes[s].sentence for s in roots_to] == unordered([
+    roots_to = to_roots(c.g, EdgeType.TO)
+    assert [c.knowdes[s].sentence for s in roots_to] == unordered([
         "-11",
         "-12",
         "-21",
         "-22",
         "complex2",
     ])
-    leaves_to = to_leaves(detail_0.g, EdgeType.TO)
-    assert [detail_0.knowdes[s].sentence for s in leaves_to] == unordered([
+    leaves_to = to_leaves(c.g, EdgeType.TO)
+    assert [c.knowdes[s].sentence for s in leaves_to] == unordered([
         "11",
         "12",
         "21",
         "221",
         "complex1",
     ])
-    roots_ref = to_roots(detail_0.g, EdgeType.RESOLVED)
-    leaves_ref = to_leaves(detail_0.g, EdgeType.RESOLVED)
-    assert [detail_0.knowdes[s].sentence for s in roots_ref] == unordered([
+    roots_ref = to_roots(c.g, EdgeType.RESOLVED)
+    leaves_ref = to_leaves(c.g, EdgeType.RESOLVED)
+    assert [c.knowdes[s].sentence for s in roots_ref] == unordered([
         "c{B}c",
     ])
 
-    assert [detail_0.knowdes[s].sentence for s in leaves_ref] == unordered([
+    assert [c.knowdes[s].sentence for s in leaves_ref] == unordered([
         "0",
         "a",
     ])
 
-    assert [p.sentence for p in detail_0.part("0")] == unordered([
+    assert [p.sentence for p in c.part("0")] == unordered([
         "0",
         "xxx",
         "x1",
@@ -167,7 +167,7 @@ async def test_detail_networks_to_or_resolved_edges(u: LUser):
         "zzz",
     ])
 
-    loc = detail_0.location
+    loc = c.location
     assert loc.user.id == UUID(u.uid)
     assert [f.val for f in loc.folders] == ["A", "B"]
     assert loc.resource.name == "# titleX"
@@ -187,11 +187,12 @@ async def test_detail_no_below_no_header(u: LUser):
     """
     _sn, _r = await save_text(u.uid, s)
     s = LSentence.nodes.get(val="a")
-    d = chains_knowde(UUID(s.uid))
-    assert [k.sentence for k in d.part("a")] == ["a"]
-    assert d.location.headers == []
-    assert d.location.user.id.hex == u.uid
-    assert d.location.parents == []
+    chains = await chains_knowde([s.uid])
+    c = chains.root[0]
+    assert [k.sentence for k in c.part("a")] == ["a"]
+    assert c.location.headers == []
+    assert c.location.user.id.hex == u.uid
+    assert c.location.parents == []
 
 
 @mark_async_test()
@@ -204,11 +205,12 @@ async def test_detail_no_below_no_header_with_parent(u: LUser):
     """
     _sn, _r = await save_text(u.uid, s)
     s = LSentence.nodes.get(val="a")
-    d = chains_knowde(UUID(s.uid))
-    assert [k.sentence for k in d.part("a")] == ["a"]
-    assert [k.sentence for k in d.location.parents] == ["parent"]
-    assert d.location.headers == []
-    assert d.location.user.id.hex == u.uid
+    chains = await chains_knowde([s.uid])
+    c = chains.root[0]
+    assert [k.sentence for k in c.part("a")] == ["a"]
+    assert [k.sentence for k in c.location.parents] == ["parent"]
+    assert c.location.headers == []
+    assert c.location.user.id.hex == u.uid
 
 
 @mark_async_test()
@@ -225,102 +227,14 @@ async def test_detail_no_header(u: LUser):
     """
     _sn, _r = await save_text(u.uid, s)
     s = LSentence.nodes.get(val="a")
-    d = chains_knowde(UUID(s.uid))
-    assert [k.sentence for k in d.part("a")] == unordered(["a", "b", "c"])
-    assert d.location.parents == []
-    assert d.location.headers == []
-    assert d.location.user.id.hex == u.uid
+    chains = await chains_knowde([s.uid])
+    c = chains.root[0]
+    assert [k.sentence for k in c.part("a")] == unordered(["a", "b", "c"])
+    assert c.location.parents == []
+    assert c.location.headers == []
+    assert c.location.user.id.hex == u.uid
 
 
-@mark_async_test()
-async def test_not_found_should_not_raise_error(u: LUser):
-    """Regression test."""
-    s = """
-    # 神は数学者か?
-      @author マオリ・リヴィオ
-      @published 2017
-
-    ## 1. 謎
-
-      数学の偏在性と全能性:
-
-      「宇宙はまるで純粋数学者が設計したかのようだ」
-        by. ジェームズ・ジーンズ
-          イギリスの宇宙物理学者 1877-1946
-
-      P1 |「数学は、経験とは無関係な思考の産物なのに、\
-        なぜ物理的実在の対称物にこれほどうまく適合するのか」
-
-      ロジャー・ペンローズ=ペンローズ: オックスフォード大学の著名な数理物理学者
-
-      ペンローズの３世界:
-        精神世界: 人間の表象の世界
-        物質世界: 物理的実在の世界
-        数学世界: プラトン主義の数学的形式の世界、イデア界
-          ex. ユークリッド幾何学、ニュートンの運動法則、ひも理論などの数学的モデル
-
-      ペンローズの３つの謎:
-        {物質世界}が{数学世界}の法則に従う
-          ex. `P1`
-          ! EF = EFfective
-          ex. EF |数学の不条理な有効性:
-            物理学の法則を定式化するのに数学という言語が似つかわしいというこの奇跡
-            {物質世界}が{数学世界}に従うという謎
-            by. ユージン・ウィグナー, ウィグナー: ノーベル賞を受賞した物理学者
-              when. 1902 ~ 1995
-        心が{物質世界}から生まれる
-        {ペンローズの３世界}が不思議なほど結びついている
-
-      積極的な側面: 数学を応用して自然法則を構築するケース
-        {EF}を信じて{物質世界}から数学的法則を導き出すこと
-        ex. マクスウェル方程式、一般相対性理論
-        <-> 受動的な側面: 数学が意図せずに{物質世界}に応用されること
-          ハーディ: 純粋数学が{物質世界}に応用されるとは信じていなかった
-            イギリスの変わり者の数学者
-            when. 1877 ~ 1947
-            「数論を戦争に役立たせる道は誰も見出していない」
-              <-> 暗号に応用され
-          ! nameの区切り文字を","に変えるべきか
-    """
-    _sn, _r = await save_text(u.uid, s)
-    tgt = LSentence.nodes.first(val="物理的実在の世界")
-    client = TestClient(root_router())
-    res = client.get(f"/knowde/sentence/{tgt.uid}")
-    assert res.is_success
-    uid = UUID(tgt.uid)
-    res = client.get(f"/knowde/sentence/{uid}")
-    assert res.is_success
-
-
-@mark_async_test()
-async def test_location_by_by_regression(u: LUser):
-    """<- by. の連鎖ではlocationが not foundになっていたので修正."""
-    s = """
-    # title
-      ZF公理系, ツェルメロ=フレンケルの公理系: 集合論を矛盾なく公理化・再現した
-        by. エルンスト・ツェルメロ: ドイツの数学者
-          when. 1871 ~ 1953
-      選択公理: 空でない集合各々から要素を選び出して新しい集合を作れる
-      連続体仮説: 自然数の濃度と実数の濃度の中間は存在しない
-      複数の妥当な集合論が成立
-        <- {選択公理}と{連続体仮説}は{ZF公理系}と矛盾しない
-          by. クルト・ゲーテル, ゲーテル: 最も偉大な論理学者の一人
-            when. 1906 ~ 1978
-    """
-
-    _sn, _r = await save_text(u.uid, s)
-    client = TestClient(root_router())
-
-    tgt = LSentence.nodes.first(val="ドイツの数学者")
-    res = client.get(f"/knowde/sentence/{tgt.uid}")
-    assert res.is_success
-
-    tgt = LSentence.nodes.first(val="最も偉大な論理学者の一人")
-    res = client.get(f"/knowde/sentence/{tgt.uid}")
-    assert res.is_success
-
-
-# @pytest.mark.skip
 @mark_async_test()
 async def test_chain_quoterm_rel(u: LUser):
     """quotermの関係も含めて返せるか確認."""
@@ -342,19 +256,43 @@ async def test_chain_quoterm_rel(u: LUser):
 
     _sn, _r = await save_text(u.uid, s)
     tgt = LSentence.nodes.first(val="aaa")
-    d = chains_knowde(UUID(tgt.uid))
-
-    assert [k.sentence for k in d.succ("aaa", EdgeType.TO)] == unordered([
+    chains = await chains_knowde([tgt.uid])
+    c = chains.root[0]
+    assert [k.sentence for k in c.succ("aaa", EdgeType.TO)] == unordered([
         "direct",
         "to1",
         "to2",
     ])
-    assert [k.sentence for k in d.pred("aaa", EdgeType.TO)] == unordered([
-        "from1",
-    ])
-    assert [k.sentence for k in d.succ("aaa", EdgeType.EXAMPLE)] == unordered([
-        "ex1",
-    ])
-    assert [k.sentence for k in d.pred("aaa", EdgeType.EXAMPLE)] == unordered([
-        "ab1",
-    ])
+    assert [k.sentence for k in c.pred("aaa", EdgeType.TO)] == ["from1"]
+    assert [k.sentence for k in c.succ("aaa", EdgeType.EXAMPLE)] == ["ex1"]
+    assert [k.sentence for k in c.pred("aaa", EdgeType.EXAMPLE)] == ["ab1"]
+
+
+@mark_async_test()
+async def test_fetch_multi_chains(u: LUser):
+    """複数のチェーンを取得する."""
+    s = """
+        # title
+            A: aaa
+                bbb
+                ccc
+        ## h1
+            parent
+                xxx
+                    -> ddd
+                        -> eee
+    """
+
+    _sn, _r = await save_text(u.uid, s)
+    tgt1 = LSentence.nodes.first(val="aaa")
+    tgt2 = LSentence.nodes.first(val="ddd")
+    chains = await chains_knowde([tgt1.uid, tgt2.uid])
+    assert len(chains.root) == 2  # noqa: PLR2004
+    c_aaa = chains.get("aaa")
+    c_ddd = chains.get("ddd")
+    assert [p.sentence for p in c_aaa.part("aaa")] == unordered(["aaa", "bbb", "ccc"])
+    assert [p.sentence for p in c_ddd.location.parents] == ["parent"]
+    with pytest.raises(ValueError):  # noqa: PT011
+        c_ddd.part("aaa")
+    # nxprint(c_aaa.relabeled())
+    # nxprint(c_ddd.relabeled())

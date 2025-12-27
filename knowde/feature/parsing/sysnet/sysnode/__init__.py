@@ -45,8 +45,15 @@ class Def(IDef, frozen=True):
     sentence: str | DummySentence
 
     @classmethod
-    def create(cls, sentence: str, names: list[str], alias: str | None = None) -> Self:
+    def create(
+        cls,
+        sentence: str,
+        names: list[str] | None = None,
+        alias: str | None = None,
+    ) -> Self:
         """便利コンストラクタ."""
+        if names is None:
+            names = []
         t = Term.create(*names, alias=alias)
         return cls(term=t, sentence=sentence)
 

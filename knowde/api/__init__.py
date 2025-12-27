@@ -18,6 +18,7 @@ from knowde.config.env import Settings
 from knowde.feature.entry.router import entry_router
 from knowde.feature.knowde.router import knowde_router
 from knowde.feature.user.routers import auth_router, user_router
+from knowde.integration.quiz.router.router import quiz_router
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
@@ -55,6 +56,7 @@ api.include_router(auth_router())
 api.include_router(user_router())
 api.include_router(entry_router())
 api.include_router(knowde_router())
+api.include_router(quiz_router())
 
 
 def is_pytest_running() -> bool:  # noqa: D103
