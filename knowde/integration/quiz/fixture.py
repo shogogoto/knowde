@@ -33,6 +33,9 @@ def fx_sn() -> SysNet:
 
 async def fx_u() -> LUser:  # noqa: D103
     user = await aregister(email="quiz@ex.com")
+    u: LUser = await LUser.nodes.get(email=user.email)
+    u.username = "quiz"
+    await u.save()
     s = """
         # title
             aaa

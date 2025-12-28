@@ -7,7 +7,9 @@ from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.entry.resource.usecase import save_text
 from knowde.integration.quiz.errors import SamplingError
 from knowde.integration.quiz.fixture import fx_u
-from knowde.integration.quiz.repo.select_option.selector import select_random_options
+from knowde.integration.quiz.repo.select_option.selector import (
+    retry_select_random_options,
+)
 from knowde.shared.knowde.label import LSentence
 from knowde.shared.user.label import LUser
 
@@ -68,7 +70,7 @@ async def test_select_sample_retry(uu: LUser):
     sent = LSentence.nodes.first(val="ccc")
 
     with pytest.raises(SamplingError):
-        await select_random_options(sent.uid, radius=1, n_option=100, n_retry=100)
+        await retry_select_random_options(sent.uid, radius=1, n_option=100, n_retry=100)
 
     #  使用しているfixtureでは用語は4つまでしかない
-    await select_random_options(sent.uid, radius=1, n_option=4, n_retry=5)
+    await retry_select_random_options(sent.uid, radius=1, n_option=4, n_retry=5)

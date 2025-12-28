@@ -16,7 +16,7 @@ from knowde.integration.quiz.repo.select_option.sample import sample_options_ran
 from knowde.shared.types import UUIDy
 
 
-async def select_random_options(
+async def retry_select_random_options(
     target_sent_uid: UUIDy,
     radius: int,
     n_option: int,  # 選択肢の数

@@ -34,13 +34,13 @@ from uuid import UUID
 from fastapi import APIRouter
 
 from knowde.integration.quiz.domain.build import build_readable
-from knowde.integration.quiz.domain.domain import ReadableQuiz
+from knowde.integration.quiz.domain.domain import Answer, ReadableQuiz
 from knowde.integration.quiz.repo.repo import create_answer
 from knowde.integration.quiz.repo.restore import restore_quiz_sources
 from knowde.integration.quiz.router.params import AnswerParam, CreateQuizParam
-from knowde.integration.quiz.router.response import AnswerResult
 from knowde.integration.quiz.router.usecase import create_term2sent_quiz_usecase
 from knowde.shared.user.router_util import ActiveUser, TrackUser
+from knowde.shared.user.schema import UserReadPublic
 
 _r = APIRouter(prefix="/quiz", tags=["quiz"])
 
@@ -59,7 +59,7 @@ async def answer_quiz_api(
     quiz_id: UUID,
     param: AnswerParam,
     user: ActiveUser,
-) -> AnswerResult:
+) -> Answer:
     """クイズに回答."""
     srcs = await restore_quiz_sources([quiz_id])
     rq = build_readable(srcs[0])
@@ -70,10 +70,17 @@ async def answer_quiz_api(
         is_correct=is_correct,
         user_uid=user.uid,
     )
-    return AnswerResult(
+
+    # 正解がどれかや他の選択肢の解説など
+    #   クイズチェーンに繋がるような情報も返す
+    #   過去の回答も返す(正答率)
+    #
+    return Answer(
         answer_uid=answer_uid,
+        selected=param.selected,
         is_correct=is_correct,
         quiz=rq,
+        who=UserReadPublic.model_validate(user.model_dump()),
     )
 
 

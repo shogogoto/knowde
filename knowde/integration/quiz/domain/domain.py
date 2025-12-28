@@ -2,6 +2,7 @@
 
 from collections.abc import Callable, Iterable
 from textwrap import indent
+from uuid import UUID
 
 from more_itertools import duplicates_everseen, flatten
 from pydantic import BaseModel, Field, model_validator
@@ -14,6 +15,7 @@ from knowde.integration.quiz.errors import (
     QuizOptionsMustBeDefError,
 )
 from knowde.shared.types import NXGraph
+from knowde.shared.user.schema import UserReadPublic
 
 from .parts import QuizOption, QuizRel, QuizType, path2edgetypes
 
@@ -146,6 +148,11 @@ class ReadableQuiz(BaseModel, frozen=True):
     correct: list[str] = Field(title="正解")
 
     @property
+    def distractors(self) -> list[str]:
+        """誤答肢."""
+        return [op for op in self.options if op not in self.correct]
+
+    @property
     def string(self) -> str:
         """問題文."""
         s = f"{self.statement}\n"
@@ -168,6 +175,8 @@ class ReadableQuiz(BaseModel, frozen=True):
 class Answer(BaseModel, frozen=True):
     """誰がいつ何を選択して回答したか、とその正誤."""
 
+    answer_uid: UUID
     selected: list[str]  # 複数選択可
     is_correct: bool
     quiz: ReadableQuiz
+    who: UserReadPublic

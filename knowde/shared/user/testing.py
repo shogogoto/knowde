@@ -3,10 +3,11 @@
 from collections.abc import AsyncGenerator
 
 from httpx import ASGITransport, AsyncClient
+from neomodel import StringProperty
 
 from knowde.api import api
 from knowde.config.env import Settings
-from knowde.shared.user.label import LUser
+from knowde.shared.user.label import LowerEmailProperty, LUser
 
 
 async def async_client() -> AsyncGenerator[AsyncClient]:  # noqa: D103
@@ -20,20 +21,24 @@ async def async_client() -> AsyncGenerator[AsyncClient]:  # noqa: D103
 
 _PW = "password"
 
+type Stry = str | StringProperty | LowerEmailProperty
 
-async def async_auth_header(email="one@gmail.com") -> dict[str, str]:  # noqa: D103
+
+async def async_auth_header(email: Stry = "one@gmail.com") -> dict[str, str]:  # noqa: D103
     await aregister(email)
     return await aauth_header(email)
 
 
-async def aregister(email="one@gmail.com") -> LUser:  # noqa: D103
+async def aregister(  # noqa: D103
+    email: Stry = "one@gmail.com",
+) -> LUser:
     async for ac in async_client():
         d = {"email": email, "password": _PW}
         await ac.post("/auth/register", json=d)
     return await LUser.nodes.get(email=email)
 
 
-async def aauth_header(email="one@gmail.com") -> dict[str, str]:  # noqa: D103
+async def aauth_header(email: Stry = "one@gmail.com") -> dict[str, str]:  # noqa: D103
     async for ac in async_client():
         d = {"username": email, "password": _PW}
         res = await ac.post("/auth/jwt/login", data=d)
