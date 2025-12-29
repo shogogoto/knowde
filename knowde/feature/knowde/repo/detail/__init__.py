@@ -1,16 +1,19 @@
 """detail repo."""
 
+import operator
 from collections.abc import Iterable
+from functools import reduce
 from uuid import UUID
 
 import networkx as nx
 from more_itertools import flatten
-from neomodel import db
+from neomodel import adb, db
 
 from knowde.feature.knowde import (
     Additional,
     Knowde,
-    KnowdeDetail,
+    KnowdeChain,
+    KnowdeChains,
     KnowdeLocation,
 )
 from knowde.feature.knowde.repo.clause import OrderBy
@@ -26,10 +29,10 @@ from knowde.feature.parsing.primitive.term import Term
 from knowde.shared.errors.domain import NotFoundError, NotUniqueError
 from knowde.shared.knowde.label import LQuoterm, LSentence
 from knowde.shared.nxutil.edge_type import EdgeType
-from knowde.shared.types import to_uuid
+from knowde.shared.types import UUIDy, to_uuid
 
 
-def q_detail_location(
+def q_knowde_detail(
     is_location: bool = False,  # noqa: FBT001, FBT002
     order_by: OrderBy | None = OrderBy(),
 ) -> str:
@@ -67,16 +70,19 @@ def _row2knowde(sent, names, alias, when, stats) -> Knowde:
     )
 
 
-def fetch_knowdes_with_detail(
-    uids: Iterable[str],
+async def fetch_knowdes_with_detail(
+    uids: Iterable[UUIDy],
     order_by: OrderBy | None = OrderBy(),
     do_print: bool = False,  # noqa: FBT001, FBT002
-) -> dict[UUID, Knowde]:
+) -> dict[str, Knowde]:
     """文のuuidリストから名前などの付属情報を返す."""
-    q = q_detail_location(order_by=order_by)
+    q = q_knowde_detail(order_by=order_by)
     if do_print:
         print(q)  # noqa: T201
-    rows, _ = db.cypher_query(q, params={"uids": list(uids)})
+    rows, _ = await adb.cypher_query(
+        q,
+        params={"uids": [to_uuid(uid).hex for uid in uids]},
+    )
     d = {}
     for row in rows:
         sent, names, alias, when, stats = row
@@ -89,13 +95,16 @@ def fetch_knowdes_with_detail(
     return d
 
 
-def fetch_knowdes_with_detail_and_location(
-    uids: Iterable[str],
+async def fetch_knowdes_with_detail_and_location(
+    uids: Iterable[UUIDy],
     order_by: OrderBy | None = OrderBy(),
 ) -> dict[str, tuple[Knowde, KnowdeLocation]]:
     """詳細とlocation付きで返す."""
-    q = q_detail_location(is_location=True, order_by=order_by)
-    rows, _ = db.cypher_query(q, params={"uids": list(uids)})
+    q = q_knowde_detail(is_location=True, order_by=order_by)
+    rows, _ = db.cypher_query(
+        q,
+        params={"uids": [to_uuid(uid).hex for uid in uids]},
+    )
 
     def _to_knowde():
         d = {}
@@ -114,7 +123,7 @@ def fetch_knowdes_with_detail_and_location(
     d, d_loc, d_parents = _to_knowde()
     # それぞれの parents を集めて一括 parent detial取得
     puids = set(flatten(d_parents.values()))
-    parent_dk = fetch_knowdes_with_detail(puids)
+    parent_dk = await fetch_knowdes_with_detail(puids)
     retval = {}
     for k, v in d.items():
         parents = [parent_dk[uid] for uid in d_parents[k]]
@@ -146,10 +155,14 @@ def knowde_upper(uid: UUID) -> LSentence:
     return LSentence(**rows[0][0]._properties)  # noqa: SLF001
 
 
-def chains_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: FBT001, FBT002
+async def chains_knowde(
+    uids: Iterable[UUIDy],
+    do_print: bool = False,  # noqa: FBT001, FBT002
+) -> KnowdeChains:
     """knowdeの依存chain全てを含めた詳細."""
     q = f"""
-        MATCH (s: Sentence {{uid: $uid}})
+        UNWIND $uids AS uid
+        MATCH (s: Sentence {{uid: uid}})
         OPTIONAL MATCH (s)<-[:QUOTERM]-(qt: Quoterm)
         WITH COLLECT(qt) AS qts, s
         UNWIND [s] + qts AS sent
@@ -174,35 +187,40 @@ def chains_knowde(uid: UUID, do_print: bool = False) -> KnowdeDetail:  # noqa: F
             UNION
             {q_chain("sent", EdgeType.EXAMPLE, indent_len=4)}
         }}
-        RETURN start, end, type
-        """
+        RETURN s.uid, start, end, type
+    """
+    uids = [to_uuid(uid).hex for uid in uids]
     if do_print:
         print(q)  # noqa: T201
-    rows, _ = db.cypher_query(
-        q,
-        params={"uid": uid.hex},
-        resolve_objects=True,
-    )
-    g = nx.MultiDiGraph()
-    d = {}
+
+    rows, _ = db.cypher_query(q, params={"uids": uids}, resolve_objects=True)
+    g_dict = {uid: nx.MultiDiGraph() for uid in uids}
     for row in rows:
-        start, end, type_ = row
-        start = uid.hex if isinstance(start, LQuoterm) else start.uid
+        tgt_uid, start, end, type_ = row
+        g = g_dict[tgt_uid]
+        start = tgt_uid if isinstance(start, LQuoterm) else start.uid
         if type_ is None:
             g.add_node(start)
             continue
-        end = uid.hex if isinstance(end, LQuoterm) else end.uid
+        end = tgt_uid if isinstance(end, LQuoterm) else end.uid
         t: EdgeType = getattr(EdgeType, type_)
         t.add_edge(g, start, end)
 
-    if len(g.nodes) == 0:
-        msg = f"{uid} sentence not found"
-        raise NotFoundError(msg)
-    d = fetch_knowdes_with_detail(g.nodes, do_print=do_print)
-    d2 = fetch_knowdes_with_detail_and_location([uid.hex])
-    return KnowdeDetail(
-        uid=uid,
-        g=g,
-        knowdes=d,
-        location=d2[uid.hex][1],
+    for g in g_dict.values():
+        if len(g.nodes) == 0:
+            msg = f"{uids[0]} sentence not found"
+            raise NotFoundError(msg)
+    nodes = reduce(operator.or_, [set(g.nodes) for g in g_dict.values()])
+    d = await fetch_knowdes_with_detail(nodes, do_print=do_print)
+    d2 = await fetch_knowdes_with_detail_and_location(uids)
+    return KnowdeChains(
+        root=[
+            KnowdeChain(
+                uid=to_uuid(uid),
+                g=g_dict[uid],
+                knowdes={n: d[n] for n in g_dict[uid].nodes},
+                location=d2[uid][1],
+            )
+            for uid in uids
+        ],
     )

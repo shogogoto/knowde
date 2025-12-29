@@ -58,7 +58,7 @@ def _extract_leaves(tree: Tree) -> tuple[nx.MultiDiGraph, MarkResolver]:
     leaves = get_leaves(tree)
     check_duplicated_sentence(leaves)
     mdefs, stddefs, mt = MergedDef.create_and_parted(to_def(leaves))
-    g = nx.MultiDiGraph()
+    g = nx.MultiDiGraph()  # 同じノード間で複数エッジを表現できるように
     [md.add_edge(g) for md in mdefs]
     [d.add_edge(g) for d in stddefs]
     return g, MarkResolver.create(mt)

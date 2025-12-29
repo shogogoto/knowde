@@ -2,20 +2,12 @@
 
 from pytest_unordered import unordered
 
-from knowde.feature.parsing.tree2net import parse2net
-from knowde.feature.systats.nw1_n1 import (
-    get_conclusion,
-    get_detail,
-    get_example,
-    get_general,
-    get_parent_or_none,
-    get_premise,
-    get_refer,
-    get_referred,
+from knowde.feature.parsing.sysnet.systats.nw1_n1 import (
+    NwOp,
     has_dependency,
-    recursively_nw1n1,
 )
-from knowde.feature.systats.nw1_n1.ctxdetail import to_nw1n1fn
+from knowde.feature.parsing.sysnet.systats.nw1_n1.ctxdetail import to_nw1n1fn
+from knowde.feature.parsing.tree2net import parse2net
 
 
 def test_get_detail_parent() -> None:
@@ -38,16 +30,16 @@ def test_get_detail_parent() -> None:
                 2b
     """
     sn = parse2net(s)
-    assert get_detail(sn.g, "aaa") == []
-    assert sn.access("bbb", get_detail) == unordered(["b1", "b2", "1b", "2b"])
+    assert NwOp.get_detail(sn.g, "aaa") == []
+    assert sn.access("bbb", NwOp.get_detail) == unordered(["b1", "b2", "1b", "2b"])
 
-    assert get_parent_or_none(sn, "aaa") is None
-    assert get_parent_or_none(sn, "b2") == "bbb"
-    assert get_parent_or_none(sn, "b21") == "b2"
-    assert get_parent_or_none(sn, "b22") == "b2"
-    assert get_parent_or_none(sn, "b23") == "b2"
-    assert get_parent_or_none(sn, "# h1") is None
-    assert get_parent_or_none(sn, "## h2") is None
+    assert NwOp.get_parent_or_none(sn, "aaa") is None
+    assert NwOp.get_parent_or_none(sn, "b2") == "bbb"
+    assert NwOp.get_parent_or_none(sn, "b21") == "b2"
+    assert NwOp.get_parent_or_none(sn, "b22") == "b2"
+    assert NwOp.get_parent_or_none(sn, "b23") == "b2"
+    assert NwOp.get_parent_or_none(sn, "# h1") is None
+    assert NwOp.get_parent_or_none(sn, "## h2") is None
 
 
 def test_has_dependency() -> None:
@@ -85,17 +77,17 @@ def test_refer_referred() -> None:
             E{D}: eee
     """
     sn = parse2net(s)
-    assert get_refer(sn, "aaa") == unordered(["b{A}b", "c{A}c"])
-    assert get_refer(sn, "b{A}b") == []
-    assert get_refer(sn, "c{A}c") == ["d{C}d"]
-    assert get_refer(sn, "d{C}d") == ["eee"]
-    assert get_refer(sn, "eee") == []
+    assert NwOp.get_refer(sn, "aaa") == unordered(["b{A}b", "c{A}c"])
+    assert NwOp.get_refer(sn, "b{A}b") == []
+    assert NwOp.get_refer(sn, "c{A}c") == ["d{C}d"]
+    assert NwOp.get_refer(sn, "d{C}d") == ["eee"]
+    assert NwOp.get_refer(sn, "eee") == []
 
-    assert get_referred(sn, "aaa") == []
-    assert get_referred(sn, "b{A}b") == ["aaa"]
-    assert get_referred(sn, "c{A}c") == ["aaa"]
-    assert get_referred(sn, "d{C}d") == ["c{A}c"]
-    assert get_referred(sn, "eee") == ["d{C}d"]
+    assert NwOp.get_referred(sn, "aaa") == []
+    assert NwOp.get_referred(sn, "b{A}b") == ["aaa"]
+    assert NwOp.get_referred(sn, "c{A}c") == ["aaa"]
+    assert NwOp.get_referred(sn, "d{C}d") == ["c{A}c"]
+    assert NwOp.get_referred(sn, "eee") == ["d{C}d"]
 
 
 def test_premise_conclusion() -> None:
@@ -113,8 +105,8 @@ def test_premise_conclusion() -> None:
 
     """
     sn = parse2net(s)
-    assert get_premise(sn, "bbb") == ["aaa"]
-    assert get_conclusion(sn, "bbb") == ["ddd"]
+    assert NwOp.get_premise(sn, "bbb") == ["aaa"]
+    assert NwOp.get_conclusion(sn, "bbb") == ["ddd"]
 
 
 def test_example_general() -> None:
@@ -129,8 +121,8 @@ def test_example_general() -> None:
                     ex. a23
     """
     sn = parse2net(s)
-    assert get_example(sn, "aaa") == ["a1", "a2"]
-    assert get_general(sn, "a22") == ["a2"]
+    assert NwOp.get_example(sn, "aaa") == ["a1", "a2"]
+    assert NwOp.get_general(sn, "a22") == ["a2"]
 
 
 def test_recursively() -> None:
@@ -146,18 +138,18 @@ def test_recursively() -> None:
                 -> ggg
     """
     sn = parse2net(s)
-    f1 = recursively_nw1n1(get_conclusion, 1)
+    f1 = NwOp.recursively_nw1n1(NwOp.get_conclusion, 1)
     assert f1(sn, "aaa") == ["bbb", "ccc", "ggg"]
-    f2 = recursively_nw1n1(get_conclusion, 2)
+    f2 = NwOp.recursively_nw1n1(NwOp.get_conclusion, 2)
     assert f2(sn, "aaa") == [["bbb", []], ["ccc", ["ddd", "fff"]], ["ggg", []]]
-    f3 = recursively_nw1n1(get_conclusion, 3)
+    f3 = NwOp.recursively_nw1n1(NwOp.get_conclusion, 3)
     assert f3(sn, "aaa") == [
         ["bbb", []],
         ["ccc", [["ddd", ["eee"]], ["fff", []]]],
         ["ggg", []],
     ]
     for i in range(4, 7):
-        f4 = recursively_nw1n1(get_conclusion, i)
+        f4 = NwOp.recursively_nw1n1(NwOp.get_conclusion, i)
         assert f4(sn, "aaa") == [
             ["bbb", []],
             ["ccc", [["ddd", [["eee", []]]], ["fff", []]]],
@@ -183,10 +175,10 @@ def test_get_detail_recursively() -> None:
 
     """
     sn = parse2net(s)
-    detail_fn = to_nw1n1fn(get_detail)
-    f1 = recursively_nw1n1(detail_fn, 1)
+    detail_fn = to_nw1n1fn(NwOp.get_detail)
+    f1 = NwOp.recursively_nw1n1(detail_fn, 1)
     assert f1(sn, "1") == ["11", "12"]
-    f2 = recursively_nw1n1(detail_fn, 3)
+    f2 = NwOp.recursively_nw1n1(detail_fn, 3)
     assert f2(sn, "1") == [
         ["11", [["21", ["31", "32"]], ["22", ["33", "34"]]]],
         ["12", []],
@@ -206,9 +198,9 @@ def test_get_refer_recursively() -> None:
             G: g{F}
     """
     sn = parse2net(s)
-    f1 = recursively_nw1n1(get_refer, 1)
+    f1 = NwOp.recursively_nw1n1(NwOp.get_refer, 1)
     assert f1(sn, "aaa") == ["b{A}"]
-    f2 = recursively_nw1n1(get_refer, 3)
+    f2 = NwOp.recursively_nw1n1(NwOp.get_refer, 3)
     assert f2(sn, "aaa") == [["b{A}", [["c{B}", ["d{C}"]]]]]
-    f3 = recursively_nw1n1(get_refer, 5)
+    f3 = NwOp.recursively_nw1n1(NwOp.get_refer, 5)
     assert f3(sn, "aaa") == [["b{A}", [["c{B}", [["d{C}", [["e{D}", ["f{E}"]]]]]]]]]
