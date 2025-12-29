@@ -142,7 +142,7 @@ class ReadableQuiz(BaseModel, frozen=True):
     """「読める状態」の問題文と選択肢を備えたクイズ."""
 
     # 既に読める状態の問題文や選択肢
-    quiz_id: str
+    quiz_id: UUID
     statement: str = Field(title="問題文")
     options: dict[str, str] = Field(title="選択肢")
     correct: list[str] = Field(title="正解")

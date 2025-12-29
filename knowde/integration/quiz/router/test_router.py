@@ -36,7 +36,9 @@ async def test_sent2term(ac: AsyncClient, u: LUser):
     クイズチェーンとは
         閲覧に能動的なユーザー操作の循環を与えるもの
             単文一覧を眺めたり、その関係を追ったりできるだけでは復習する動機に欠ける
-
+        よく間違えるクイズを取得したり
+        user単位fetch
+        クイズ単位fetch
 
     """
     sent = LSentence.nodes.first(val="ccc")

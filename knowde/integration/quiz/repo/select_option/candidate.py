@@ -32,8 +32,7 @@ async def _list_candidates_in_resource(
         OPTIONAL MATCH (s:Sentence {{resource_uid: sent.resource_uid}})
             {q_term}
         WHERE s.uid <> sent.uid
-        RETURN
-            s.uid
+        RETURN DISTINCT s.uid
     """
     uid = to_uuid(target_sent_id).hex
     rows, _ = await adb.cypher_query(q, params={"sent_uid": uid})
@@ -60,7 +59,7 @@ async def list_candidates_by_radius(
         // dist=1.. にすることで sent_uidを含めない
         OPTIONAL MATCH p = (sent)-[]-{{1, {radius}}}(e:Sentence)
             {q_term}
-        RETURN e.uid
+        RETURN DISTINCT e.uid
     """
     rows, _ = await adb.cypher_query(
         q,

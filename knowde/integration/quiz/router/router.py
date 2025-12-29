@@ -35,7 +35,7 @@ from fastapi import APIRouter
 
 from knowde.integration.quiz.domain.build import build_readable
 from knowde.integration.quiz.domain.domain import Answer, ReadableQuiz
-from knowde.integration.quiz.repo.repo import create_answer
+from knowde.integration.quiz.repo.create import create_answer
 from knowde.integration.quiz.repo.restore import restore_quiz_sources
 from knowde.integration.quiz.router.params import AnswerParam, CreateQuizParam
 from knowde.integration.quiz.router.usecase import create_term2sent_quiz_usecase
