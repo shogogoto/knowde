@@ -20,7 +20,7 @@ import pytest
 
 from knowde.integration.quiz.errors import SamplingError
 
-from . import sample_options_randomly
+from .sample import sample_options_randomly
 
 
 def test_out_of_range_sample_error():

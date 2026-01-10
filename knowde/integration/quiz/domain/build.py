@@ -1,6 +1,6 @@
 """ReadableQuizを組み立てる."""
 
-from knowde.integration.quiz.domain.correct import (
+from knowde.integration.quiz.domain.correct.correct import (
     correct_specific_rels,
     correct_target,
 )

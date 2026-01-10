@@ -23,7 +23,7 @@ from .parts import QuizOption, QuizRel, QuizType, path2edgetypes
 class QuizSourceContainer(BaseModel, frozen=True):
     """quiz source用id容れ."""
 
-    quiz_id: str
+    quiz_id: UUID
     statement_type: QuizType  # build方法を指定してくれる
     target_id: str
     source_ids: set[str]
@@ -60,7 +60,7 @@ class QuizSource(BaseModel, frozen=True):
     便利なgetterを備えるのみ
     """
 
-    quiz_id: str
+    quiz_id: UUID
     statement_type: QuizType  # build方法を指定してくれる
     target_id: str  # テストしやすいので UUIDではなくstrへ
     target: QuizOption

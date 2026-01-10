@@ -12,7 +12,9 @@ from knowde.integration.quiz.errors import SamplingError
 from knowde.integration.quiz.repo.select_option.candidate import (
     list_candidates_by_radius,
 )
-from knowde.integration.quiz.repo.select_option.sample import sample_options_randomly
+from knowde.integration.quiz.repo.select_option.sample.sample import (
+    sample_options_randomly,
+)
 from knowde.shared.types import UUIDy
 
 
