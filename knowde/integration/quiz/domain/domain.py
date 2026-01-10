@@ -105,9 +105,10 @@ class QuizSource(BaseModel, frozen=True):
         return defs
 
     @property
-    def ids(self) -> list[str]:
+    def ids(self) -> set[str]:
         """選択肢ids."""
-        return [*self.sources.keys(), self.target_id]
+        # target_idとsource_idsで重複する場合があるのでsetにする
+        return {*self.sources.keys(), self.target_id}
 
     def get_by_id(self, option_id: str) -> QuizOption:
         """Target or sourceを返す."""

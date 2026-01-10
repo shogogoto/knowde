@@ -19,6 +19,14 @@ from knowde.shared.cypher import Paging
 from knowde.shared.types import UUIDy, to_uuid
 
 
+async def _to_result(total: int, ids: list[str]) -> ReadableQuizResult:
+    srcs = await restore_quiz_sources(ids)
+    return ReadableQuizResult(
+        data=ReadableQuizCollection(root=[build_readable(src) for src in srcs]),
+        total=total,
+    )
+
+
 async def list_quiz_by_user_ids(
     user_uids: Iterable[UUIDy],
     paging: Paging = Paging(),
@@ -40,12 +48,7 @@ async def list_quiz_by_user_ids(
             **paging.params,
         },
     )
-    total, ids = rows[0]
-    srcs = await restore_quiz_sources(ids)
-    return ReadableQuizResult(
-        data=ReadableQuizCollection(root=[build_readable(src) for src in srcs]),
-        total=total,
-    )
+    return await _to_result(*rows[0])
 
 
 async def list_quiz_by_sentence_ids(
@@ -69,17 +72,30 @@ async def list_quiz_by_sentence_ids(
             **paging.params,
         },
     )
-    total, ids = rows[0]
-    srcs = await restore_quiz_sources(ids)
-    return ReadableQuizResult(
-        data=ReadableQuizCollection(root=[build_readable(src) for src in srcs]),
-        total=total,
-    )
+    return await _to_result(*rows[0])
 
 
-async def list_quiz_by_optioned(quiz_uid: UUIDy):
-    """クイズのオプションにあるクイズを列挙する."""
+async def list_quiz_by_optioned(
+    quiz_uids: list[UUIDy],
+    paging: Paging = Paging(),
+):
+    """クイズのオプションにあるクイズを列挙する.
+
+    オプションのオプション ... みたいな関係を取るには
+    """
+    q = """
+        MATCH (quiz: Quiz {uid: $quiz_uid})
+        OPTIONAL MATCH p = SHORTEST 1 (quiz)-[:!QUIZ_OPTION|QUIZ_TARGET]-*(opt)
+        RETURN
+            COLLECT(opt.uid) AS options
+            , COLLECT(p) AS paths
+    """
+    rows, _ = await adb.cypher_query(q, params={"quiz_uid": to_uuid(quiz_uids).hex})
+    return await _to_result(*rows[0])
 
 
-# async def list_quiz_by_selected():
-#     """."""
+async def list_quiz_by_selected(
+    quiz_uids: list[UUIDy],
+    paging: Paging = Paging(),
+):
+    """回答で選択された対象のクイズを列挙する."""
