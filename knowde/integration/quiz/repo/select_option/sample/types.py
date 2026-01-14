@@ -1,4 +1,11 @@
-"""選択肢選定ロジック."""
+"""選択肢選定ロジック.
+
+list_candidateに依存
+    候補の列挙1
+
+
+
+"""
 
 from enum import StrEnum, auto
 
@@ -13,7 +20,7 @@ class SelectOptionType(StrEnum):
     TOP_SCORE = auto()
 
 
-def select_by_option_type(t: SelectOptionType, n_option: int):
+async def select_by_option_type(t: SelectOptionType, n_option: int):  # noqa: RUF029
     """選択肢選定ロジックから選択肢を取得."""
     match t:
         case SelectOptionType.RADIUS_RANDOM:

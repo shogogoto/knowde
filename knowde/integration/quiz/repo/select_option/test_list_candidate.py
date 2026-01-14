@@ -7,7 +7,7 @@ from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.entry.resource.usecase import save_text
 from knowde.integration.quiz.errors import SamplingError
 from knowde.integration.quiz.fixture import fx_u
-from knowde.integration.quiz.repo.select_option.selector import (
+from knowde.integration.quiz.repo.select_option.retry_sample import (
     retry_select_random_options,
 )
 from knowde.shared.knowde.label import LSentence
@@ -61,11 +61,16 @@ async def test_list_candidates_by_radius(u: LUser):
     assert len(c) == 2  # noqa: PLR2004
 
 
+@mark_async_test()
+async def test_list_candidates_by_rel_type(u: LUser):
+    """対象と特定の関係をもつ候補を列挙する."""
+
+
 uu = async_fixture()(fx_u)
 
 
 @mark_async_test()
-async def test_select_sample_retry(uu: LUser):
+async def test_retry_select_sample(uu: LUser):
     """選択肢の数を満たすようにretryを繰り返す."""
     sent = LSentence.nodes.first(val="ccc")
 

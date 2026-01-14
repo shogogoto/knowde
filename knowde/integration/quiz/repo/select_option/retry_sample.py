@@ -18,6 +18,10 @@ from knowde.integration.quiz.repo.select_option.sample.sample import (
 from knowde.shared.types import UUIDy
 
 
+# TODO:  サンプリング方法を注入できるように変更する  # noqa: FIX002, TD002, TD003
+# 候補取得関数
+# サンプリング関数
+# その結果、サンプル数がn_optionに届くまで条件を
 async def retry_select_random_options(
     target_sent_uid: UUIDy,
     radius: int,

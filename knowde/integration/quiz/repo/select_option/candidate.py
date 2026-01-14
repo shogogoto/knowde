@@ -45,7 +45,7 @@ r_adapter = TypeAdapter(Radius)
 
 async def list_candidates_by_radius(
     target_sent_id: UUIDy,
-    radius: Radius | None = None,
+    radius: Radius | None = None,  # Noneの時にリソース内全てを返す
     has_term: bool = False,  # noqa: FBT001, FBT002
 ) -> list[UUID]:
     """距離指定で選択肢候補を列挙."""
@@ -69,8 +69,8 @@ async def list_candidates_by_radius(
 
 
 def list_candidates_by_rel_type(target_sent_id: UUIDy):
-    """特定の関係内から探す."""
+    """対象と特定の関係をもつ候補を列挙する."""
 
 
-def list_candidate_high_score():
+def list_candidate_high_score(target_sent_id: UUIDy):
     """スコアの上位から候補を出す."""
