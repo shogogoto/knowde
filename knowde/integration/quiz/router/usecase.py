@@ -8,7 +8,7 @@ from knowde.integration.quiz.repo.select_option.candidate import (
     list_candidates_by_radius,
 )
 from knowde.integration.quiz.repo.select_option.sample.sample import (
-    sample_options_randomly,
+    sample_safe,
 )
 from knowde.integration.quiz.router.params import CreateQuizParam
 from knowde.shared.types import UUIDy
@@ -31,7 +31,7 @@ async def create_term2sent_quiz_usecase(
         radius=param.radius,
         has_term=True,
     )
-    sample_uids = sample_options_randomly(cand_uids, n_option=param.n_option)
+    sample_uids = sample_safe(cand_uids, n_option=param.n_option)
 
     quiz_uid = await create_quiz(
         param.target_sent_uid,

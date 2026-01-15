@@ -13,7 +13,7 @@ from knowde.integration.quiz.repo.select_option.candidate import (
     list_candidates_by_radius,
 )
 from knowde.integration.quiz.repo.select_option.sample.sample import (
-    sample_options_randomly,
+    sample_safe,
 )
 from knowde.shared.types import UUIDy
 
@@ -45,7 +45,7 @@ async def retry_select_random_options(
             break
         last_n_cand = len(cand_uids)
         try:
-            return sample_options_randomly(cand_uids, n_option=n_option)
+            return sample_safe(cand_uids, n_option=n_option)
         except SamplingError:
             r += 1
             continue

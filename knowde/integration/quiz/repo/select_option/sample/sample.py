@@ -12,11 +12,11 @@ from knowde.integration.quiz.errors import SamplingError
 from knowde.shared.types import UUIDy, to_uuid
 
 
-def sample_options_randomly(
+def sample_safe(
     candidate_uids: Sequence[UUIDy],
     n_option: int,  # 選択肢の数 Noneでは
 ) -> list[UUID]:
-    """対象の指定半径からランダムに選ぶ."""
+    """選択肢数だけ選ぶのを保証する."""
     if len(candidate_uids) != len(set(candidate_uids)):
         msg = f"選択肢候補が重複している: {candidate_uids}"
         raise SamplingError(msg)

@@ -9,7 +9,7 @@ from knowde.integration.quiz.repo.select_option.candidate import (
     list_candidates_by_radius,
 )
 from knowde.integration.quiz.repo.select_option.sample.sample import (
-    sample_options_randomly,
+    sample_safe,
 )
 from knowde.shared.knowde.label import LSentence
 from knowde.shared.user.label import LUser
@@ -28,7 +28,7 @@ async def test_create_restore_term2sent(u: LUser):
     sent = LSentence.nodes.first(val="ccc")
     n_option = 5
     cand_uids = await list_candidates_by_radius(sent.uid, radius=99, has_term=True)
-    sample_uids = sample_options_randomly(cand_uids, n_option=n_option)
+    sample_uids = sample_safe(cand_uids, n_option=n_option)
     quiz_uid = await create_quiz(sent.uid, QuizType.TERM2SENT, sample_uids)
     srcs = await restore_quiz_sources([quiz_uid])
     assert len(srcs) == 1
@@ -46,7 +46,7 @@ async def test_create_restore_sent2term(u: LUser):
     sent = LSentence.nodes.first(val="ccc")
     n_option = 5
     cand_uids = await list_candidates_by_radius(sent.uid, radius=99, has_term=True)
-    sample_uids = sample_options_randomly(cand_uids, n_option=n_option)
+    sample_uids = sample_safe(cand_uids, n_option=n_option)
     quiz_uid = await create_quiz(sent.uid, QuizType.SENT2TERM, sample_uids)
     srcs = await restore_quiz_sources([quiz_uid])
     src = srcs[0]

@@ -61,12 +61,12 @@ async def test_list_candidates_by_radius(u: LUser):
     assert len(c) == 2  # noqa: PLR2004
 
 
+uu = async_fixture()(fx_u)
+
+
 @mark_async_test()
 async def test_list_candidates_by_rel_type(u: LUser):
     """対象と特定の関係をもつ候補を列挙する."""
-
-
-uu = async_fixture()(fx_u)
 
 
 @mark_async_test()

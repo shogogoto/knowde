@@ -20,17 +20,17 @@ import pytest
 
 from knowde.integration.quiz.errors import SamplingError
 
-from .sample import sample_options_randomly
+from .sample import sample_safe
 
 
 def test_out_of_range_sample_error():
     """候補が足りないときに選択肢数を候補数に合わせる."""
     with pytest.raises(SamplingError):  # 候補1は無意味
-        sample_options_randomly([], n_option=1)
+        sample_safe([], n_option=1)
     cand_uids = [uuid4() for _ in range(5)]
     with pytest.raises(SamplingError):
-        sample_options_randomly(cand_uids, n_option=1)  # 選択肢数足りない
-    sample_options_randomly(cand_uids, n_option=2)
+        sample_safe(cand_uids, n_option=1)  # 選択肢数足りない
+    sample_safe(cand_uids, n_option=2)
 
     with pytest.raises(SamplingError):
-        sample_options_randomly(cand_uids, n_option=100)  # 候補より選択肢多い
+        sample_safe(cand_uids, n_option=100)  # 候補より選択肢多い
