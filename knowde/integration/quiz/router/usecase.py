@@ -1,16 +1,16 @@
 """usecase."""
 
+from knowde.integration.quiz.candidate.candidate import (
+    list_candidates_by_radius,
+)
 from knowde.integration.quiz.domain.build import build_readable
 from knowde.integration.quiz.domain.domain import ReadableQuiz
 from knowde.integration.quiz.repo.create import create_quiz
 from knowde.integration.quiz.repo.restore import restore_quiz_sources
-from knowde.integration.quiz.repo.select_option.candidate import (
-    list_candidates_by_radius,
-)
-from knowde.integration.quiz.repo.select_option.sample.sample import (
+from knowde.integration.quiz.router.params import CreateQuizParam
+from knowde.integration.quiz.sampling.sample_safe import (
     sample_safe,
 )
-from knowde.integration.quiz.router.params import CreateQuizParam
 from knowde.shared.types import UUIDy
 
 

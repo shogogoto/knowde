@@ -7,7 +7,7 @@ from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.entry.resource.usecase import save_text
 from knowde.integration.quiz.errors import SamplingError
 from knowde.integration.quiz.fixture import fx_u
-from knowde.integration.quiz.repo.select_option.retry_sample import (
+from knowde.integration.quiz.sampling.retry_sample import (
     retry_select_random_options,
 )
 from knowde.shared.knowde.label import LSentence

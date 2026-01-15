@@ -1,14 +1,14 @@
 """誤答肢の生成."""
 
 from knowde.conftest import async_fixture, mark_async_test
+from knowde.integration.quiz.candidate.candidate import (
+    list_candidates_by_radius,
+)
 from knowde.integration.quiz.domain.build import build_readable
 from knowde.integration.quiz.domain.parts import QuizType
 from knowde.integration.quiz.fixture import fx_u
 from knowde.integration.quiz.repo.restore import restore_quiz_sources
-from knowde.integration.quiz.repo.select_option.candidate import (
-    list_candidates_by_radius,
-)
-from knowde.integration.quiz.repo.select_option.sample.sample import (
+from knowde.integration.quiz.sampling.sample_safe import (
     sample_safe,
 )
 from knowde.shared.knowde.label import LSentence

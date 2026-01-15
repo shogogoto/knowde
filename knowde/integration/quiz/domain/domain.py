@@ -15,7 +15,6 @@ from knowde.integration.quiz.errors import (
     QuizOptionsMustBeDefError,
 )
 from knowde.shared.types import NXGraph
-from knowde.shared.user.schema import UserReadPublic
 
 from .parts import QuizOption, QuizRel, QuizType, path2edgetypes
 
@@ -171,13 +170,3 @@ class ReadableQuiz(BaseModel, frozen=True):
         s = set(selected)
         correct = set(self.correct)
         return s == correct
-
-
-class Answer(BaseModel, frozen=True):
-    """誰がいつ何を選択して回答したか、とその正誤."""
-
-    answer_uid: UUID
-    selected: list[str]  # 複数選択可
-    is_correct: bool
-    quiz: ReadableQuiz
-    who: UserReadPublic

@@ -8,7 +8,7 @@ from knowde.integration.quiz.repo.quiz_repo import (
     list_quiz_by_sentence_ids,
     list_quiz_by_user_ids,
 )
-from knowde.integration.quiz.repo.select_option.retry_sample import (
+from knowde.integration.quiz.sampling.retry_sample import (
     retry_select_random_options,
 )
 from knowde.shared.knowde.label import LSentence

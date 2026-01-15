@@ -3,7 +3,8 @@
 from httpx import AsyncClient
 
 from knowde.conftest import async_fixture, mark_async_test
-from knowde.integration.quiz.domain.domain import Answer, ReadableQuiz
+from knowde.integration.quiz.answer.domain import Answer
+from knowde.integration.quiz.domain.domain import ReadableQuiz
 from knowde.integration.quiz.domain.parts import QuizType
 from knowde.integration.quiz.fixture import fx_u
 from knowde.integration.quiz.router.params import CreateQuizParam

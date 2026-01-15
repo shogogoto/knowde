@@ -8,11 +8,11 @@
 
 from uuid import UUID
 
-from knowde.integration.quiz.errors import SamplingError
-from knowde.integration.quiz.repo.select_option.candidate import (
+from knowde.integration.quiz.candidate.candidate import (
     list_candidates_by_radius,
 )
-from knowde.integration.quiz.repo.select_option.sample.sample import (
+from knowde.integration.quiz.errors import SamplingError
+from knowde.integration.quiz.sampling.sample_safe import (
     sample_safe,
 )
 from knowde.shared.types import UUIDy
