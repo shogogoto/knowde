@@ -23,11 +23,10 @@ class QuizType(StrEnum):
     SENT2TERM = auto()
     TERM2SENT = auto()
 
-    # 提示したEdgeTypeと関連する単文 or 定義を答えさせる
-    REL2SENT = auto()
-    # 提示した単文と対象間のEdgeTypeを答えさせる
-    SENT2REL = auto()
-    PATH = auto()
+    # 関係当てクイズ: 単文のペアの関係を当てる. 関係の選択肢
+    PAIR2REL = auto()
+    # ペア当てクイズ: 対象単文と特定の関係にある単文を当てる. 単文を列挙
+    REL2PAIR = auto()
 
     @property
     def template(self) -> str:
@@ -39,9 +38,8 @@ class QuizType(StrEnum):
         return {
             QuizType.SENT2TERM: "$@に合う用語を当ててください",
             QuizType.TERM2SENT: "$@に合う文を当ててください",
-            QuizType.REL2SENT: "$@と$@関係で繋がる単文を当ててください",
-            QuizType.SENT2REL: "$@から$@への関係を当ててください",
-            QuizType.PATH: "$@の経路を当ててください",
+            QuizType.PAIR2REL: "$@から$@への関係を当ててください",
+            QuizType.REL2PAIR: "$@と$@関係で繋がる単文を当ててください",
         }[self]
 
     def inject(self, vals: list[str]) -> str:

@@ -30,7 +30,7 @@ def test_duplicate_source():
     """重複チェック."""
     with pytest.raises(QuizDuplicateError):
         QuizSource(
-            quiz_id=uuid.uuid4().hex,
+            quiz_id=uuid.uuid4(),
             statement_type=QuizType.SENT2TERM,
             target_id="1",
             target=QuizOption.create("aaa", ["A"]),
@@ -40,7 +40,7 @@ def test_duplicate_source():
         )
     with pytest.raises(QuizDuplicateError):
         QuizSource(
-            quiz_id=uuid.uuid4().hex,
+            quiz_id=uuid.uuid4(),
             statement_type=QuizType.SENT2TERM,
             target_id="1",
             target=QuizOption.create("aaa", ["A"]),
@@ -108,8 +108,8 @@ sn = pytest.fixture(fx_sn)
 def test_quiz_rel2sent_lv1(sn: SysNet):
     """クイズ対象と関係にマッチするもの当て問題(1階層)."""
     src = QuizSource(
-        quiz_id=uuid.uuid4().hex,
-        statement_type=QuizType.REL2SENT,
+        quiz_id=uuid.uuid4(),
+        statement_type=QuizType.REL2PAIR,
         target_id="1",  # 問いの対象
         target=QuizOption(val=sn.get("ccc"), rels=[QuizRel.DETAIL]),
         sources={

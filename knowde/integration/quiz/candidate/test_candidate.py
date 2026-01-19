@@ -5,11 +5,7 @@ from pydantic import ValidationError
 
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.entry.resource.usecase import save_text
-from knowde.integration.quiz.errors import SamplingError
 from knowde.integration.quiz.fixture import fx_u
-from knowde.integration.quiz.sampling.retry_sample import (
-    retry_select_random_options,
-)
 from knowde.shared.knowde.label import LSentence
 from knowde.shared.user.label import LUser
 
@@ -64,18 +60,7 @@ async def test_list_candidates_by_radius(u: LUser):
 uu = async_fixture()(fx_u)
 
 
-@mark_async_test()
-async def test_list_candidates_by_rel_type(u: LUser):
-    """対象と特定の関係をもつ候補を列挙する."""
-
-
-@mark_async_test()
-async def test_retry_select_sample(uu: LUser):
-    """選択肢の数を満たすようにretryを繰り返す."""
-    sent = LSentence.nodes.first(val="ccc")
-
-    with pytest.raises(SamplingError):
-        await retry_select_random_options(sent.uid, radius=1, n_option=100, n_retry=100)
-
-    #  使用しているfixtureでは用語は4つまでしかない
-    await retry_select_random_options(sent.uid, radius=1, n_option=4, n_retry=5)
+# @mark_async_test()
+# async def test_list_candidates_by_rel_type(uu: LUser):
+#     """対象と特定の関係をもつ候補を列挙する."""
+#     await fetch_knowdes_with_detail()

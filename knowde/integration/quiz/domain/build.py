@@ -58,7 +58,7 @@ def build_readable_rel2sent(
     """関係から単文を選ぶ問題文を作成."""
     return ReadableQuiz(
         quiz_id=src.quiz_id,
-        statement=QuizType.REL2SENT.inject([str(src.target.val), src.target.rels_stmt]),
+        statement=QuizType.REL2PAIR.inject([str(src.target.val), src.target.rels_stmt]),
         options={
             **{k: str(v.val) for k, v in src.sources.items()},
         },

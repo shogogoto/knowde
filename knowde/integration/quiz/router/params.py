@@ -2,7 +2,9 @@
 
 from pydantic import BaseModel
 
+from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.integration.quiz.domain.parts import QuizType
+from knowde.integration.quiz.sampling.types import SamplingType
 
 
 class CreateQuizParam(BaseModel, frozen=True):
@@ -10,8 +12,11 @@ class CreateQuizParam(BaseModel, frozen=True):
 
     target_sent_uid: str
     quiz_type: QuizType
-    radius: int
-    n_option: int
+    cand_type: CandidateType
+    sampling_type: SamplingType
+    n_option: int = 4
+    allow_multiple_anwser: bool = False
+    allow_no_correct_option: bool = False
 
 
 class AnswerParam(BaseModel, frozen=True):

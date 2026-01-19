@@ -1,33 +1,24 @@
-"""選択肢選定ロジック.
-
-list_candidateに依存
-    候補の列挙1
-
-
-
-"""
+"""選択肢選定ロジック."""
 
 from enum import StrEnum, auto
 
 
-class SelectOptionType(StrEnum):
+class SamplingType(StrEnum):
     """選択肢選定ロジックの種類."""
 
-    # radiusは自動調整されるから指定しなくてよい
-    # 候補数の指定は共通しているので、それは引数として渡す
-    RADIUS_RANDOM = auto()
-    RESOURCE_RANDOM = auto()
+    RANDOM = auto()
+    CLOSER = auto()  # 近いものか順に選ぶ
     TOP_SCORE = auto()
 
 
-async def select_by_option_type(t: SelectOptionType, n_option: int):  # noqa: RUF029
+async def sample_by_type(t: SamplingType, n_option: int):  # noqa: RUF029
     """選択肢選定ロジックから選択肢を取得."""
     match t:
-        case SelectOptionType.RADIUS_RANDOM:
+        case SamplingType.RANDOM:
             pass
-        case SelectOptionType.RESOURCE_RANDOM:
+        case SamplingType.CLOSER:
             pass
-        case SelectOptionType.TOP_SCORE:
+        case SamplingType.TOP_SCORE:
             pass
 
 

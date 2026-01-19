@@ -10,7 +10,7 @@ from knowde.integration.quiz.domain.domain import ReadableQuiz
 from knowde.integration.quiz.repo.create import create_answer
 from knowde.integration.quiz.repo.restore import restore_quiz_sources
 from knowde.integration.quiz.router.params import AnswerParam, CreateQuizParam
-from knowde.integration.quiz.router.usecase import create_term2sent_quiz_usecase
+from knowde.integration.quiz.router.usecase import create_quiz_uc
 from knowde.shared.user.router_util import ActiveUser, TrackUser
 from knowde.shared.user.schema import UserReadPublic
 
@@ -23,9 +23,10 @@ async def create_quiz_api(
     user: TrackUser,  # optionalだからTrackUserを使用
 ) -> ReadableQuiz:
     """クイズを新規作成."""
-    return await create_term2sent_quiz_usecase(param, user.uid if user else None)
+    return await create_quiz_uc(param, user.uid if user else None)
 
 
+# ------------------------------------------------------------------------------
 @_r.post("/answer/{quiz_id}")
 async def answer_quiz_api(
     quiz_id: UUID,

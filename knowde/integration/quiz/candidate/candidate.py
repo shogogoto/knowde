@@ -68,9 +68,24 @@ async def list_candidates_by_radius(
     return [row[0] for row in rows]
 
 
-def list_candidates_by_rel_type(target_sent_id: UUIDy):
-    """対象と特定の関係をもつ候補を列挙する."""
-
-
-def list_candidate_high_score(target_sent_id: UUIDy):
+async def list_top_scoring_candidates(
+    target_sent_id: UUIDy,
+    n_candidate: int,
+    has_term: bool = False,  # noqa: FBT001, FBT002
+) -> list[UUID]:
     """スコアの上位から候補を出す."""
+    q_term = "<-[:DEF]-(:Term)" if has_term else ""
+
+    q = f"""
+        MATCH (sent:Sentence {{uid: $sent_uid}})
+        // dist=1.. にすることで sent_uidを含めない
+        OPTIONAL MATCH p = (sent)-[]-{{1, {n_candidate}}}(e:Sentence)
+            {q_term}
+        RETURN DISTINCT e.uid
+    """
+    rows, _ = await adb.cypher_query(
+        q,
+        params={"sent_uid": to_uuid(target_sent_id).hex},
+    )
+    return [row[0] for row in rows]
+    return []

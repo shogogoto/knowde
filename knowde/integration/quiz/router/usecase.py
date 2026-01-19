@@ -14,7 +14,7 @@ from knowde.integration.quiz.sampling.sample_safe import (
 from knowde.shared.types import UUIDy
 
 
-async def create_term2sent_quiz_usecase(
+async def create_quiz_uc(
     param: CreateQuizParam,
     user_uid: UUIDy | None = None,
 ) -> ReadableQuiz:
