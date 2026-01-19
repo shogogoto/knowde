@@ -23,8 +23,10 @@ class OrderBy(BaseModel):
     n_conclusion: int = 1
     n_refer: int = 1
     n_referred: int = 1
-    dist_axiom: int = 1
-    dist_leaf: int = 1
+    n_abstract: int = 1
+    n_example: int = 1
+    # dist_axiom: int = 1
+    # dist_leaf: int = 1
     desc: bool = True  # スコアの高い順がデフォルト
 
     def score_prop(self) -> str:

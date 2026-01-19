@@ -54,7 +54,7 @@ async def test_search_knowde_by_txt(u: LUser):
     assert adjs[0].referreds[0].sentence == "{x}yy"
 
 
-def get_stats_by_id(uid: UUIDy) -> list[int] | None:
+def get_stats_by_id_for_test(uid: UUIDy) -> list[int] | None:
     """systats相当のものをDBから取得する(動作確認用)."""
     q = rf"""
         MATCH (tgt:Sentence) WHERE tgt.uid= $uid
@@ -63,8 +63,8 @@ def get_stats_by_id(uid: UUIDy) -> list[int] | None:
         RETURN
             st.n_premise
             , st.n_conclusion
-            , st.dist_axiom
-            , st.dist_leaf
+            , st.n_abstract
+            , st.n_example
             , st.n_referred
             , st.n_refer
             , st.n_detail
@@ -109,11 +109,11 @@ async def test_stats_from_db(u: LUser):
     """
     _, r = await save_text(u.uid, s)
     _sn, uids = await restore_sysnet(r.uid)
-    assert get_stats_by_id(uids["0"]) == [6, 7, 2, 3, 0, 0, 0]
-    assert get_stats_by_id(uids["1"]) == [7, 2, 3, 1, 0, 0, 0]
-    assert get_stats_by_id(uids["a"]) == [0, 0, 0, 0, 2, 0, 0]
-    assert get_stats_by_id(uids["b{A}b"]) == [0, 0, 0, 0, 1, 1, 0]
-    assert get_stats_by_id(uids["detail"]) == [0, 0, 0, 0, 0, 0, 5]
+    assert get_stats_by_id_for_test(uids["0"]) == [6, 7, 0, 0, 0, 0, 0]
+    assert get_stats_by_id_for_test(uids["1"]) == [7, 2, 0, 0, 0, 0, 0]
+    assert get_stats_by_id_for_test(uids["a"]) == [0, 0, 0, 0, 2, 0, 0]
+    assert get_stats_by_id_for_test(uids["b{A}b"]) == [0, 0, 0, 0, 1, 1, 0]
+    assert get_stats_by_id_for_test(uids["detail"]) == [0, 0, 0, 0, 0, 0, 5]
 
 
 @mark_async_test()
@@ -199,6 +199,10 @@ async def test_details(u: LUser):
                 x4
                     x5
                     x6
+    ## other
+        detail3
+            dd1
+            dd2
 
     """
     _, r = await save_text(u.uid, s)
@@ -209,7 +213,7 @@ async def test_details(u: LUser):
         # do_print=True,
     )
     d1 = LSentence.nodes.get(val="detail1")
-    adjs1 = await adjacency_knowde([d1.uid])
+    adjs1 = await adjacency_knowde([d1.uid], do_print=True)
     d2 = LSentence.nodes.get(val="detail2")
     adjs2 = await adjacency_knowde([d2.uid])
 
@@ -237,7 +241,7 @@ async def test_score_with_quoterm(u: LUser):
         -> to1
     ## h21
       `A`
-        xxx
+        zzz
         yyy
         -> to2
             -> to21
@@ -248,5 +252,8 @@ async def test_score_with_quoterm(u: LUser):
     """
     _sn, _mr1 = await save_text(u.uid, s1)
     result = await search_knowde("aaa")
+    # zzz, yyy, ahan, iyan1の4つがdetalになる
     assert result.data[0].stats.n_detail == 4  # noqa: PLR2004
     assert result.data[0].stats.n_conclusion == 5  # noqa: PLR2004
+    # assert result.data[0].stats.dist_axiom == 0
+    # assert result.data[0].stats.dist_leaf == 1

@@ -63,4 +63,4 @@ uu = async_fixture()(fx_u)
 # @mark_async_test()
 # async def test_list_candidates_by_rel_type(uu: LUser):
 #     """対象と特定の関係をもつ候補を列挙する."""
-#     await fetch_knowdes_with_detail()
+#     await search_knowde("", do_print=True)

@@ -50,8 +50,8 @@ class KStats(BaseModel, frozen=True):
     n_conclusion: int = Field(ge=-100, le=1000)
     n_refer: int = Field(ge=-100, le=1000)
     n_referred: int = Field(ge=-100, le=1000)
-    dist_axiom: int = Field(ge=-100, le=1000)
-    dist_leaf: int = Field(ge=-100, le=1000)
+    # dist_axiom: int = Field(ge=-100, le=1000)
+    # dist_leaf: int = Field(ge=-100, le=1000)
     score: int | None = Field(default=None, ge=-100, le=1000)
 
     def __str__(self) -> str:  # noqa: D105
@@ -61,8 +61,8 @@ class KStats(BaseModel, frozen=True):
             self.n_conclusion,
             self.n_refer,
             self.n_referred,
-            self.dist_axiom,
-            self.dist_leaf,
+            # self.dist_axiom,
+            # self.dist_leaf,
             self.score,
         ]
         return str(ls)

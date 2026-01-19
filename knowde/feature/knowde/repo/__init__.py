@@ -42,7 +42,9 @@ def search_total(
         return res[0][0][0]
     except IndexError as e:
         msg = "Failed to get total count from query result."
-        raise DomainError(msg=msg, status_code=status.HTTP_502_BAD_GATEWAY) from e
+        err = DomainError(msg=msg)
+        err.status_code = status.HTTP_502_BAD_GATEWAY
+        raise err from e
 
 
 async def search_knowde(
@@ -98,12 +100,15 @@ def res2uidstrs(res: tuple) -> set[str]:
     return set(filter(is_valid_uuid, collapse(res, base_type=UUID)))
 
 
-async def adjacency_knowde(sent_uids: list[UUIDy]) -> list[KAdjacency]:
+async def adjacency_knowde(
+    sent_uids: list[UUIDy],
+    do_print: bool = False,  # noqa: FBT001, FBT002
+) -> list[KAdjacency]:
     """隣接knowdeを返す."""
     q = rf"""
         UNWIND $uids AS uid
         MATCH (sent: Sentence {{uid: uid}})
-        {q_adjacency_uids("sent")}
+        {q_adjacency_uids("sent", "sent")}
         RETURN
             sent.uid AS sent_uid
             , premises
@@ -114,6 +119,8 @@ async def adjacency_knowde(sent_uids: list[UUIDy]) -> list[KAdjacency]:
             , abstracts
             , examples
         """
+    if do_print:
+        print(q)  # noqa: T201
     rows, _ = await adb.cypher_query(
         q,
         params={"uids": [to_uuid(uid).hex for uid in sent_uids]},
