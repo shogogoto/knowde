@@ -25,17 +25,32 @@ from .cypher import q_adjacency_uids, q_stats, q_where_knowde
 def search_total(
     s: str,
     where: WherePhrase = WherePhrase.CONTAINS,
+    resource_uids: list[UUIDy] | None = None,
 ) -> int:
     """検索文字列にマッチするknowde総数."""
+    q_rsrc = (
+        ""
+        if resource_uids is None or len(resource_uids) == 0
+        else """
+        WHERE sent.resource_uid IN $resource_uids
+    """
+    )
     q_tot = f"""
         CALL () {{
         {q_where_knowde(where)}
         }}
+        WITH sent
+            {q_rsrc}
         RETURN COUNT(sent)
     """
     res = db.cypher_query(
         q_tot,
-        params={"s": s},
+        params={
+            "s": s,
+            "resource_uids": [to_uuid(uid).hex for uid in resource_uids]
+            if resource_uids
+            else [],
+        },
     )
 
     try:
@@ -47,19 +62,29 @@ def search_total(
         raise err from e
 
 
-async def search_knowde(
+async def search_knowde(  # noqa: PLR0917
     s: str,
     where: WherePhrase = WherePhrase.CONTAINS,
     paging: Paging = Paging(),
     order_by: OrderBy | None = OrderBy(),
+    resource_uids: list[UUIDy] | None = None,
     do_print: bool = False,  # noqa: FBT001, FBT002
 ) -> KnowdeSearchResult:
     """用語、文のいずれかでマッチするものを返す."""
+    q_rsrc = (
+        ""
+        if resource_uids is None or len(resource_uids) == 0
+        else """
+        WHERE sent.resource_uid IN $resource_uids
+    """
+    )
+
     q = rf"""
         CALL () {{
         {indent(q_where_knowde(where), " " * 4)}
         }}
         WITH sent // 中間結果のサイズダウン
+            {q_rsrc}
         {q_stats("sent", order_by)}
         {(order_by.phrase() if order_by else "")}
         {paging.phrase()}
@@ -68,7 +93,15 @@ async def search_knowde(
         """
     if do_print:
         print(q)  # noqa: T201
-    rows, _ = db.cypher_query(q, params={"s": s})
+    rows, _ = db.cypher_query(
+        q,
+        params={
+            "s": s,
+            "resource_uids": [to_uuid(uid).hex for uid in resource_uids]
+            if resource_uids
+            else [],
+        },
+    )
     uids = res2uidstrs(rows)
     d = await fetch_knowdes_with_detail(uids, order_by=order_by)
     ls: list[Knowde] = []
@@ -77,7 +110,7 @@ async def search_knowde(
         kst = d[sent_uid]
         ls.append(kst)
     return KnowdeSearchResult(
-        total=search_total(s, where),
+        total=search_total(s, where, resource_uids),
         data=ls,
         resource_infos=await resource_infos_by_resource_uids({
             k.resource_uid for k in ls

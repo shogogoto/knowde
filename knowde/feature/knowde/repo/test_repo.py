@@ -54,6 +54,38 @@ async def test_search_knowde_by_txt(u: LUser):
     assert adjs[0].referreds[0].sentence == "{x}yy"
 
 
+@mark_async_test()
+async def test_search_knowde_with_resource_uid(u: LUser):
+    """リソースで検索範囲を絞る."""
+    s1 = """
+        # title1
+            111
+            222
+            333
+    """
+
+    s2 = """
+        # title2
+            aaa
+            bbb
+            ccc
+            ddd
+    """
+    _, r1 = await save_text(u.uid, s1)
+    _, r2 = await save_text(u.uid, s2)
+    res = await search_knowde("")
+    assert res.total == 7  # noqa: PLR2004
+    res = await search_knowde("", resource_uids=[r1.uid], do_print=True)
+    assert len(res.data) == 3  # noqa: PLR2004
+    assert res.total == 3  # noqa: PLR2004
+    res = await search_knowde("", resource_uids=[r2.uid])
+    assert len(res.data) == 4  # noqa: PLR2004
+    assert res.total == 4  # noqa: PLR2004
+    res = await search_knowde("", resource_uids=[r1.uid, r2.uid])
+    assert len(res.data) == 7  # noqa: PLR2004
+    assert res.total == 7  # noqa: PLR2004
+
+
 def get_stats_by_id_for_test(uid: UUIDy) -> list[int] | None:
     """systats相当のものをDBから取得する(動作確認用)."""
     q = rf"""
