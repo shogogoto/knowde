@@ -17,6 +17,8 @@ from uuid import UUID
 from neomodel import adb
 from pydantic import Field, TypeAdapter
 
+from knowde.feature.knowde.repo.clause import OrderBy
+from knowde.feature.knowde.repo.cypher import q_stats
 from knowde.shared.types import UUIDy, to_uuid
 
 
@@ -68,6 +70,7 @@ async def list_candidates_by_radius(
     return [row[0] for row in rows]
 
 
+# 重要な単文を選択肢に混ぜて単純接触効果による学習効果を狙う
 async def list_top_scoring_candidates(
     target_sent_id: UUIDy,
     n_candidate: int,
@@ -75,17 +78,22 @@ async def list_top_scoring_candidates(
 ) -> list[UUID]:
     """スコアの上位から候補を出す."""
     q_term = "<-[:DEF]-(:Term)" if has_term else ""
-
+    order_by = OrderBy()
     q = f"""
-        MATCH (sent:Sentence {{uid: $sent_uid}})
-        // dist=1.. にすることで sent_uidを含めない
-        OPTIONAL MATCH p = (sent)-[]-{{1, {n_candidate}}}(e:Sentence)
+        MATCH (tgt:Sentence {{uid: $sent_uid}})
+        MATCH (sent: Sentence {{resource_uid: tgt.resource_uid}})
             {q_term}
-        RETURN DISTINCT e.uid
+        WHERE sent.uid <> tgt.uid // 対象を除く
+        {q_stats("sent", order_by)}
+        {(order_by.phrase())}
+        LIMIT $n_candidate
+        RETURN DISTINCT sent.uid
     """
     rows, _ = await adb.cypher_query(
         q,
-        params={"sent_uid": to_uuid(target_sent_id).hex},
+        params={
+            "sent_uid": to_uuid(target_sent_id).hex,
+            "n_candidate": n_candidate,
+        },
     )
     return [row[0] for row in rows]
-    return []

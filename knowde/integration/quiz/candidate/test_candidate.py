@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from knowde.conftest import async_fixture, mark_async_test
+from knowde.conftest import mark_async_test
 from knowde.feature.entry.resource.usecase import save_text
 from knowde.integration.quiz.fixture import fx_u
 from knowde.shared.knowde.label import LSentence
@@ -12,13 +12,13 @@ from knowde.shared.user.label import LUser
 from .candidate import (
     _list_candidates_in_resource,
     list_candidates_by_radius,
+    list_top_scoring_candidates,
 )
 
 
-@async_fixture()
 async def u() -> LUser:  # noqa: D103
     s = """
-    # title
+    # title2
         A: aaa
             xxxx
         B: bbb
@@ -30,8 +30,9 @@ async def u() -> LUser:  # noqa: D103
 
 
 @mark_async_test()
-async def test_list_candidates_in_resource(u: LUser):
+async def test_list_candidates_in_resource():
     """リソース内検索."""
+    await u()
     sent = LSentence.nodes.first(val="aaa")
     c = await _list_candidates_in_resource(sent.uid)
     assert len(c) == 3  # noqa: PLR2004
@@ -40,8 +41,9 @@ async def test_list_candidates_in_resource(u: LUser):
 
 
 @mark_async_test()
-async def test_list_candidates_by_radius(u: LUser):
+async def test_list_candidates_by_radius():
     """距離指定で誤答肢候補を列挙."""
+    await u()
     sent = LSentence.nodes.first(val="aaa")
     with pytest.raises(ValidationError):
         await list_candidates_by_radius(sent.uid, radius=-999)
@@ -57,10 +59,15 @@ async def test_list_candidates_by_radius(u: LUser):
     assert len(c) == 2  # noqa: PLR2004
 
 
-uu = async_fixture()(fx_u)
+@mark_async_test()
+async def test_list_top_scoring_candidates():
+    """対象と特定の関係をもつ候補を列挙する."""
+    await fx_u()
+    sent = LSentence.nodes.first(val="aaa")
+    # 用語ありなのは5個
+    res = await list_top_scoring_candidates(sent.uid, 999, has_term=True)
+    assert len(res) == 5  # noqa: PLR2004
 
-
-# @mark_async_test()
-# async def test_list_candidates_by_rel_type(uu: LUser):
-#     """対象と特定の関係をもつ候補を列挙する."""
-#     await search_knowde("", do_print=True)
+    # 単文全てで16個 (対象を除く)
+    res = await list_top_scoring_candidates(sent.uid, 999, has_term=False)
+    assert len(res) == 15  # noqa: PLR2004
