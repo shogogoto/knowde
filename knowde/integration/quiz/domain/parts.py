@@ -38,8 +38,8 @@ class QuizType(StrEnum):
         return {
             QuizType.SENT2TERM: "$@に合う用語を当ててください",
             QuizType.TERM2SENT: "$@に合う文を当ててください",
-            QuizType.PAIR2REL: "$@から$@への関係を当ててください",
             QuizType.REL2PAIR: "$@と$@関係で繋がる単文を当ててください",
+            QuizType.PAIR2REL: "$@から$@への関係を当ててください",
         }[self]
 
     def inject(self, vals: list[str]) -> str:
@@ -175,7 +175,7 @@ class QuizOption(BaseModel, frozen=True):
         rel: QuizRel | None = None,
     ):
         val = Def.create(sentence, names=names)
-        return cls(val=val, rel=rel)
+        return cls(val=val, rels=rel)
 
     @property
     def rels_stmt(self) -> str:

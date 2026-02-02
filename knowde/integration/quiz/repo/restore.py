@@ -37,24 +37,33 @@ async def restore_quiz_sources(
         MATCH (quiz: Quiz {uid: quiz_id})
         OPTIONAL MATCH (quiz)-[:QUIZ_TARGET]->(tgt)
         OPTIONAL MATCH (quiz)-[:QUIZ_OPTION]->(opt)
-        OPTIONAL MATCH p = SHORTEST 1 (tgt)-[:!QUIZ_OPTION|QUIZ_TARGET]-*(opt)
+        OPTIONAL MATCH (quiz)-[:CORRECT]->(crct)
+        WITH quiz, tgt, crct
+            , [opt, crct] AS srcs
+        UNWIND srcs AS src
+        OPTIONAL MATCH p = SHORTEST 1 (tgt)
+            -[:!QUIZ_OPTION|QUIZ_TARGET]-*(src)
         RETURN
             quiz
             , tgt.uid
-            , COLLECT(opt.uid) AS options
+            , COLLECT(src.uid) AS options
             , COLLECT(p) AS paths
+            , COLLECT(crct.uid) AS corrects
+
     """
     uids = [to_uuid(uid).hex for uid in quiz_ids]
     rows, _ = await adb.cypher_query(q, params={"quiz_ids": uids})
 
     containers: list[QuizSourceContainer] = []
     for row in rows:
-        quiz, tgt_uid, opt_uids, paths = row
+        quiz, tgt_uid, opt_uids, paths, crct_uids = row
+        crct_uids = set(crct_uids)
         case = QuizSourceContainer(
             quiz_id=quiz.get("uid"),
             statement_type=QuizType[quiz.get("statement_type")],
             target_id=tgt_uid,
-            source_ids=set(opt_uids),
+            correct_ids=crct_uids,
+            source_ids=set(opt_uids).union(crct_uids),
             g=graph_neo4j2nx(paths),
         )
         containers.append(case)

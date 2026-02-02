@@ -8,7 +8,7 @@ from knowde.integration.quiz.domain.parts import QuizRel
 type CorrectStrategy = Callable[[str], bool]
 
 
-def correct_target(src: QuizSource) -> CorrectStrategy:
+def correct_is_target(src: QuizSource) -> CorrectStrategy:
     """クイズ対象を正答とする."""
 
     def _f(uid: str) -> bool:
@@ -17,7 +17,7 @@ def correct_target(src: QuizSource) -> CorrectStrategy:
     return _f
 
 
-def correct_specific_rels(src: QuizSource, rels: list[QuizRel]) -> CorrectStrategy:
+def correct_is_specific_rels(src: QuizSource, rels: list[QuizRel]) -> CorrectStrategy:
     """特定の関係を正答とする."""
 
     def _f(uid: str) -> bool:

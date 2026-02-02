@@ -10,7 +10,7 @@ import pytest
 
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.integration.quiz.domain.build import (
-    build_readable_rel2sent,
+    build_readable_rel2pair_with_corrects,
     build_readable_sent2term,
     build_readable_term2sent,
 )
@@ -54,7 +54,7 @@ def test_duplicate_source():
 def test_quiz_sent2term():
     """用語当て問題."""
     src = QuizSource(
-        quiz_id=uuid.uuid4().hex,
+        quiz_id=uuid.uuid4(),
         statement_type=QuizType.SENT2TERM,
         target_id="1",
         target=QuizOption.create("aaa", ["A"]),
@@ -79,7 +79,7 @@ def test_quiz_sent2term():
 def test_quiz_term2sent():
     """単文当て問題."""
     src = QuizSource(
-        quiz_id=uuid.uuid4().hex,
+        quiz_id=uuid.uuid4(),
         statement_type=QuizType.TERM2SENT,
         target_id="1",
         target=QuizOption.create("aaa", ["A"]),
@@ -122,13 +122,13 @@ def test_quiz_rel2sent_lv1(sn: SysNet):
     )
 
     # 詳細はどれか
-    q = build_readable_rel2sent(src, [QuizRel.DETAIL])
+    q = build_readable_rel2pair_with_corrects(src, [QuizRel.DETAIL])
     assert q.statement == "'C: ccc'と'詳細'関係で繋がる単文を当ててください"
     assert q.is_correct(["2"])
     assert not q.is_correct(["3"])
 
     # 結論はどれか
-    q = build_readable_rel2sent(src, [QuizRel.CONCLUSION])
+    q = build_readable_rel2pair_with_corrects(src, [QuizRel.CONCLUSION])
     assert q.is_correct(["3"])
     assert not q.is_correct(["2", "4"])
     assert not q.is_correct(["3", "4"])

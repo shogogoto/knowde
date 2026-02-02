@@ -25,6 +25,7 @@ class QuizSourceContainer(BaseModel, frozen=True):
     quiz_id: UUID
     statement_type: QuizType  # build方法を指定してくれる
     target_id: str
+    correct_ids: set[str]
     source_ids: set[str]
     g: NXGraph  # EdgeType-QuizRel用
 
@@ -50,6 +51,7 @@ class QuizSourceContainer(BaseModel, frozen=True):
                 )
                 for uid in self.source_ids
             },
+            correct_ids=self.correct_ids,
         )
 
 
@@ -64,6 +66,7 @@ class QuizSource(BaseModel, frozen=True):
     target_id: str  # テストしやすいので UUIDではなくstrへ
     target: QuizOption
     # targetが答えになるとは限らない
+    correct_ids: set[str] = Field(default_factory=set)
     sources: dict[str, QuizOption] = Field(title="クイズの元となるメンバ")
 
     @model_validator(mode="after")
@@ -145,6 +148,7 @@ class ReadableQuiz(BaseModel, frozen=True):
     quiz_id: UUID
     statement: str = Field(title="問題文")
     options: dict[str, str] = Field(title="選択肢")
+    # 順番が大事になる問題もあるかもしれない
     correct: list[str] = Field(title="正解")
 
     @property

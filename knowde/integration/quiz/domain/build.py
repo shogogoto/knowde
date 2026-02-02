@@ -1,8 +1,8 @@
 """ReadableQuizを組み立てる."""
 
 from knowde.integration.quiz.domain.correct.correct import (
-    correct_specific_rels,
-    correct_target,
+    correct_is_specific_rels,
+    correct_is_target,
 )
 from knowde.integration.quiz.domain.domain import QuizSource, ReadableQuiz
 from knowde.integration.quiz.domain.parts import QuizRel, QuizType
@@ -15,10 +15,13 @@ def build_readable(src: QuizSource) -> ReadableQuiz:
             return build_readable_sent2term(src)
         case QuizType.TERM2SENT:
             return build_readable_term2sent(src)
-        # case QuizType.REL2SENT:
-        #     return tobe_readable_rel2sent(
+        case QuizType.REL2PAIR:
+            return build_readable_rel2pair(src)
+        # case QuizType.REL2PAIR:
+        #     return build_readable_rel2pair(
         #         src,
-        #         src.filter_by(correct_is_target(src))
+        #         # [c for c in src.corrects]
+        #         # src.filter_by(correct_rels_by_id(src, src.corrects)),
         #     )
         case _:
             msg = f"unknown statement type: {src.statement_type}"
@@ -34,7 +37,7 @@ def build_readable_sent2term(src: QuizSource) -> ReadableQuiz:
             src.target_id: str(src.tgt_def.term),
             **{k: str(v.term) for k, v in src.source_defs.items()},
         },
-        correct=src.filter_by(correct_target(src)),
+        correct=src.filter_by(correct_is_target(src)),
     )
 
 
@@ -47,20 +50,40 @@ def build_readable_term2sent(src: QuizSource) -> ReadableQuiz:
             src.target_id: str(src.tgt_sent),
             **{k: str(v.sentence) for k, v in src.source_defs.items()},
         },
-        correct=src.filter_by(correct_target(src)),
+        correct=src.filter_by(correct_is_target(src)),
     )
 
 
-def build_readable_rel2sent(
+def build_readable_rel2pair(src: QuizSource) -> ReadableQuiz:
+    """用語間の関係を選ぶ問題文を作成."""
+    return ReadableQuiz(
+        quiz_id=src.quiz_id,
+        statement=QuizType.REL2PAIR.inject(
+            [
+                str(src.target.val),
+                *[src.sources[c].rels_stmt for c in src.correct_ids],
+            ],
+        ),
+        options={
+            **{k: str(v.val) for k, v in src.sources.items()},
+        },
+        correct=list(src.correct_ids),
+    )
+
+
+def build_readable_rel2pair_with_corrects(
     src: QuizSource,
     corrects: list[QuizRel],
 ) -> ReadableQuiz:
     """関係から単文を選ぶ問題文を作成."""
     return ReadableQuiz(
         quiz_id=src.quiz_id,
-        statement=QuizType.REL2PAIR.inject([str(src.target.val), src.target.rels_stmt]),
+        statement=QuizType.REL2PAIR.inject([
+            str(src.target.val),
+            src.target.rels_stmt,
+        ]),
         options={
             **{k: str(v.val) for k, v in src.sources.items()},
         },
-        correct=src.filter_by(correct_specific_rels(src, corrects)),
+        correct=src.filter_by(correct_is_specific_rels(src, corrects)),
     )
