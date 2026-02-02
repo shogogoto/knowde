@@ -84,6 +84,27 @@ async def test_create_restore_rel2pair(u: LUser):
         assert not rq.is_correct([src.get_id_by_sent(inc)])
 
 
-# @mark_async_test()
-# async def test_create_restore_rel2pair():
-#     """関係からペア当てクイズ."""
+@mark_async_test()
+async def test_create_restore_pair2rel(u: LUser):
+    """ペアの関係当てクイズ."""
+    tgt = LSentence.nodes.first(val="ccc")
+    pair = LSentence.nodes.first(val="parent")
+    n_option = 4
+
+    cand_uids = await list_candidates_by_radius(tgt.uid, radius=3)
+    sample_uids = sample_safe(cand_uids, n_option=n_option)
+    quiz_uid = await create_quiz(
+        tgt.uid,
+        QuizType.PAIR2REL,
+        sample_uids,
+        [pair.uid],
+    )
+    srcs = await restore_quiz_sources([quiz_uid])
+    src = srcs[0]
+    # print(src.model_dump_json(indent=2))
+    rq = build_readable(src)
+    # print(rq.string)
+    assert rq.is_correct([src.get_id_by_sent("parent")])
+    incorrects = [s.sentence for s in src.sources.values() if s.sentence != "parent"]
+    for inc in incorrects:
+        assert not rq.is_correct([src.get_id_by_sent(inc)])

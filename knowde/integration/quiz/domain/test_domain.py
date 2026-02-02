@@ -10,7 +10,7 @@ import pytest
 
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.integration.quiz.domain.build import (
-    build_readable_rel2pair_with_corrects,
+    build_readable_rel2pair,
     build_readable_sent2term,
     build_readable_term2sent,
 )
@@ -112,6 +112,7 @@ def test_quiz_rel2sent_lv1(sn: SysNet):
         statement_type=QuizType.REL2PAIR,
         target_id="1",  # 問いの対象
         target=QuizOption(val=sn.get("ccc"), rels=[QuizRel.DETAIL]),
+        correct_ids={"2"},
         sources={
             "2": QuizOption(val=sn.get("ccc1"), rels=[QuizRel.DETAIL]),
             "3": QuizOption(val=sn.get("to"), rels=[QuizRel.CONCLUSION]),
@@ -122,13 +123,14 @@ def test_quiz_rel2sent_lv1(sn: SysNet):
     )
 
     # 詳細はどれか
-    q = build_readable_rel2pair_with_corrects(src, [QuizRel.DETAIL])
+    q = build_readable_rel2pair(src)
     assert q.statement == "'C: ccc'と'詳細'関係で繋がる単文を当ててください"
     assert q.is_correct(["2"])
     assert not q.is_correct(["3"])
 
+    src2 = src.model_copy(update={"correct_ids": {"3"}})
     # 結論はどれか
-    q = build_readable_rel2pair_with_corrects(src, [QuizRel.CONCLUSION])
+    q = build_readable_rel2pair(src2)
     assert q.is_correct(["3"])
     assert not q.is_correct(["2", "4"])
     assert not q.is_correct(["3", "4"])

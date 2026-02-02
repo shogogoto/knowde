@@ -1,11 +1,11 @@
 """ReadableQuizを組み立てる."""
 
+# srcのquiz_typeを見に行かない関数たちは誤用のリスクあり
 from knowde.integration.quiz.domain.correct.correct import (
-    correct_is_specific_rels,
     correct_is_target,
 )
 from knowde.integration.quiz.domain.domain import QuizSource, ReadableQuiz
-from knowde.integration.quiz.domain.parts import QuizRel, QuizType
+from knowde.integration.quiz.domain.parts import QuizType
 
 
 def build_readable(src: QuizSource) -> ReadableQuiz:
@@ -17,12 +17,8 @@ def build_readable(src: QuizSource) -> ReadableQuiz:
             return build_readable_term2sent(src)
         case QuizType.REL2PAIR:
             return build_readable_rel2pair(src)
-        # case QuizType.REL2PAIR:
-        #     return build_readable_rel2pair(
-        #         src,
-        #         # [c for c in src.corrects]
-        #         # src.filter_by(correct_rels_by_id(src, src.corrects)),
-        #     )
+        case QuizType.PAIR2REL:
+            return build_readable_pair2rel(src)
         case _:
             msg = f"unknown statement type: {src.statement_type}"
             raise ValueError(msg)
@@ -55,7 +51,7 @@ def build_readable_term2sent(src: QuizSource) -> ReadableQuiz:
 
 
 def build_readable_rel2pair(src: QuizSource) -> ReadableQuiz:
-    """用語間の関係を選ぶ問題文を作成."""
+    """単文と特定の関係になっている単文(ペア)を当てる問題文を作成."""
     return ReadableQuiz(
         quiz_id=src.quiz_id,
         statement=QuizType.REL2PAIR.inject(
@@ -71,19 +67,21 @@ def build_readable_rel2pair(src: QuizSource) -> ReadableQuiz:
     )
 
 
-def build_readable_rel2pair_with_corrects(
-    src: QuizSource,
-    corrects: list[QuizRel],
-) -> ReadableQuiz:
-    """関係から単文を選ぶ問題文を作成."""
+# それらしい選択肢をでっち上げる版も作るかは要検討
+def build_readable_pair2rel(src: QuizSource) -> ReadableQuiz:
+    """ペアから関係を当てる問題文を作成."""
     return ReadableQuiz(
         quiz_id=src.quiz_id,
-        statement=QuizType.REL2PAIR.inject([
-            str(src.target.val),
-            src.target.rels_stmt,
-        ]),
+        statement=QuizType.PAIR2REL.inject(
+            [
+                str(src.target.val),
+                *[src.sources[c].sentence for c in src.correct_ids],
+            ],
+        ),
+        # relsが空になる場合はあり得ない
         options={
-            **{k: str(v.val) for k, v in src.sources.items()},
+            # **{k: str([r.value for r in v.rels]) for k, v in src.sources.items()},
+            **{k: str(v.rels) for k, v in src.sources.items()},
         },
-        correct=src.filter_by(correct_is_specific_rels(src, corrects)),
+        correct=list(src.correct_ids),
     )
