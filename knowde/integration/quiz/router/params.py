@@ -7,8 +7,21 @@ from knowde.integration.quiz.domain.parts import QuizType
 from knowde.integration.quiz.sampling.types import SamplingType
 
 
+class BatchCreateQuizParam(BaseModel, frozen=True):
+    """一括クイズ作成."""
+
+    resource_uid: str
+    n_quiz: int
+    quiz_type: QuizType
+    cand_type: CandidateType
+    sampling_type: SamplingType
+    n_option: int = 4
+    allow_multiple_anwser: bool = False
+    allow_no_correct_option: bool = False
+
+
 class CreateQuizParam(BaseModel, frozen=True):
-    """クイズ作成パラメータ."""
+    """指定単文からクイズ作成."""
 
     target_sent_uid: str
     quiz_type: QuizType
@@ -17,6 +30,12 @@ class CreateQuizParam(BaseModel, frozen=True):
     n_option: int = 4
     allow_multiple_anwser: bool = False
     allow_no_correct_option: bool = False
+
+
+# create_quizの引数そのまま
+# 欲しくなったら実装
+# class CreateQuizManuallyParam(BaseModel, frozen=True):
+#     """選択肢などすべてユーザーが選ぶ."""
 
 
 class AnswerParam(BaseModel, frozen=True):

@@ -7,7 +7,7 @@ class SamplingType(StrEnum):
     """選択肢選定ロジックの種類."""
 
     RANDOM = auto()
-    CLOSER = auto()  # 近いものか順に選ぶ
+    CLOSER = auto()  # 近い順に選ぶ
     TOP_SCORE = auto()
 
 

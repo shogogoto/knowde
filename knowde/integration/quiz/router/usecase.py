@@ -1,10 +1,10 @@
 """usecase."""
 
 from knowde.integration.quiz.candidate.candidate import (
-    list_candidates_by_radius,
+    list_candidates,
 )
 from knowde.integration.quiz.domain.build import build_readable
-from knowde.integration.quiz.domain.domain import ReadableQuiz
+from knowde.integration.quiz.domain.domain import ReadableQuizList
 from knowde.integration.quiz.repo.create import create_quiz
 from knowde.integration.quiz.repo.restore import restore_quiz_sources
 from knowde.integration.quiz.router.params import CreateQuizParam
@@ -17,19 +17,12 @@ from knowde.shared.types import UUIDy
 async def create_quiz_uc(
     param: CreateQuizParam,
     user_uid: UUIDy | None = None,
-) -> ReadableQuiz:
-    """単文当てクイズ作成UC."""
-    # 候補選択ロジックをparamで指定するのは難しい
-    # ハードコードしてしまっていて微妙
-    # 候補選択ロジックの引数の共通化ができれば、Enumで切り替えを実現できそう
-    #   n_option, has_termは共通
-    #   半径はランダムとスコアで非共通な引数
-    #      retryによる半径調整やスコア
-    #
-    cand_uids = await list_candidates_by_radius(
+) -> ReadableQuizList:
+    """単文当てクイズ作成usecase."""
+    cand_uids = await list_candidates(
         param.target_sent_uid,
-        radius=param.radius,
-        has_term=True,
+        param.cand_type,
+        must_has_term=True,
     )
     sample_uids = sample_safe(cand_uids, n_option=param.n_option)
 
@@ -40,4 +33,4 @@ async def create_quiz_uc(
         user_uid=user_uid,
     )
     srcs = await restore_quiz_sources([quiz_uid])
-    return build_readable(srcs[0])
+    return ReadableQuizList(root=[build_readable(s) for s in srcs])

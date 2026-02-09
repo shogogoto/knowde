@@ -9,7 +9,10 @@ from knowde.integration.quiz.answer.repo import create_answer
 from knowde.integration.quiz.domain.build import build_readable
 from knowde.integration.quiz.domain.domain import ReadableQuiz
 from knowde.integration.quiz.repo.restore import restore_quiz_sources
-from knowde.integration.quiz.router.params import AnswerParam, CreateQuizParam
+from knowde.integration.quiz.router.params import (
+    AnswerParam,
+    CreateQuizParam,
+)
 from knowde.integration.quiz.router.usecase import create_quiz_uc
 from knowde.shared.user.router_util import ActiveUser, TrackUser
 from knowde.shared.user.schema import UserReadPublic
@@ -22,8 +25,17 @@ async def create_quiz_api(
     param: CreateQuizParam,
     user: TrackUser,  # optionalだからTrackUserを使用
 ) -> ReadableQuiz:
-    """クイズを新規作成."""
-    return await create_quiz_uc(param, user.uid if user else None)
+    """単文指定してクイズを作成."""
+    qs = await create_quiz_uc(param, user.uid if user else None)
+    return qs.root[0]
+
+
+# @_r.post("")
+# async def batch_create_quiz_api(
+#     param: BatchCreateQuizParam,
+#     user: TrackUser,  # optionalだからTrackUserを使用
+# ) -> ReadableQuiz:
+#     """リソースからいい感じにクイズを一括作成."""
 
 
 # ------------------------------------------------------------------------------

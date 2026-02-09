@@ -19,16 +19,17 @@ from pydantic import Field, TypeAdapter
 
 from knowde.feature.knowde.repo.clause import OrderBy
 from knowde.feature.knowde.repo.cypher import q_stats
+from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.shared.types import UUIDy, to_uuid
 
 
 # list_candidates_by_radiusで呼べるからこれを直接呼ぶことはなさそう
 async def _list_candidates_in_resource(
     target_sent_id: UUIDy,
-    has_term: bool = False,  # noqa: FBT001, FBT002
+    must_has_term: bool = False,  # noqa: FBT001, FBT002
 ):
     """リソース内全ての単文を選択肢候補として列挙."""
-    q_term = "<-[:DEF]-(:Term)" if has_term else ""
+    q_term = "<-[:DEF]-(:Term)" if must_has_term else ""
     q = f"""
         MATCH (sent:Sentence {{uid: $sent_uid}})
         OPTIONAL MATCH (s:Sentence {{resource_uid: sent.resource_uid}})
@@ -48,14 +49,17 @@ r_adapter = TypeAdapter(Radius)
 async def list_candidates_by_radius(
     target_sent_id: UUIDy,
     radius: Radius | None = None,  # Noneの時にリソース内全てを返す
-    has_term: bool = False,  # noqa: FBT001, FBT002
+    must_has_term: bool = False,  # noqa: FBT001, FBT002
 ) -> list[UUID]:
     """距離指定で選択肢候補を列挙."""
     if radius is None:
-        return await _list_candidates_in_resource(target_sent_id, has_term=has_term)
+        return await _list_candidates_in_resource(
+            target_sent_id,
+            must_has_term=must_has_term,
+        )
 
     radius = r_adapter.validate_python(radius)
-    q_term = "<-[:DEF]-(:Term)" if has_term else ""
+    q_term = "<-[:DEF]-(:Term)" if must_has_term else ""
     q = f"""
         MATCH (sent:Sentence {{uid: $sent_uid}})
         // dist=1.. にすることで sent_uidを含めない
@@ -74,10 +78,10 @@ async def list_candidates_by_radius(
 async def list_top_scoring_candidates(
     target_sent_id: UUIDy,
     n_candidate: int,
-    has_term: bool = False,  # noqa: FBT001, FBT002
+    must_has_term: bool = False,  # noqa: FBT001, FBT002
 ) -> list[UUID]:
     """スコアの上位から候補を出す."""
-    q_term = "<-[:DEF]-(:Term)" if has_term else ""
+    q_term = "<-[:DEF]-(:Term)" if must_has_term else ""
     order_by = OrderBy()
     q = f"""
         MATCH (tgt:Sentence {{uid: $sent_uid}})
@@ -97,3 +101,23 @@ async def list_top_scoring_candidates(
         },
     )
     return [row[0] for row in rows]
+
+
+async def list_candidates(
+    target_sent_id: UUIDy,
+    t: CandidateType,
+    must_has_term: bool = False,  # noqa: FBT001, FBT002
+) -> list[UUID]:
+    """タイプに従って候補を返す."""
+    if t.is_radius_type():
+        return await list_candidates_by_radius(
+            target_sent_id,
+            must_has_term=must_has_term,
+            **t.config,
+        )
+
+    return await list_top_scoring_candidates(
+        target_sent_id,
+        must_has_term=must_has_term,
+        **t.config,
+    )

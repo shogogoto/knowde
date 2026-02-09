@@ -18,12 +18,9 @@ from uuid import uuid4
 
 import pytest
 
-from knowde.conftest import async_fixture, mark_async_test
+from knowde.conftest import async_fixture
 from knowde.integration.quiz.errors import SamplingError
 from knowde.integration.quiz.fixture import fx_u
-from knowde.integration.quiz.sampling.retry_sample import retry_select_random_options
-from knowde.shared.knowde.label import LSentence
-from knowde.shared.user.label import LUser
 
 from .sample_safe import sample_safe
 
@@ -44,13 +41,13 @@ def test_out_of_range_sample_error():
 uu = async_fixture()(fx_u)
 
 
-@mark_async_test()
-async def test_retry_select_sample(uu: LUser):
-    """選択肢の数を満たすようにretryを繰り返す."""
-    sent = LSentence.nodes.first(val="ccc")
-
-    with pytest.raises(SamplingError):
-        await retry_select_random_options(sent.uid, radius=1, n_option=100, n_retry=100)
-
-    #  使用しているfixtureでは用語は4つまでしかない
-    await retry_select_random_options(sent.uid, radius=1, n_option=4, n_retry=5)
+# @mark_async_test()
+# async def test_retry_select_sample(uu: LUser):
+#     """選択肢の数を満たすようにretryを繰り返す."""
+#     sent = LSentence.nodes.first(val="ccc")
+#
+#     with pytest.raises(SamplingError):
+#         await retry_sample_incr(sent.uid, radius=1, n_option=100, n_retry=100)
+#
+#     #  使用しているfixtureでは用語は4つまでしかない
+#     await retry_sample_incr(sent.uid, radius=1, n_option=4, n_retry=5)

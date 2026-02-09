@@ -5,7 +5,7 @@ from textwrap import indent
 from uuid import UUID
 
 from more_itertools import duplicates_everseen, flatten
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, RootModel, model_validator
 
 from knowde.feature.knowde import Knowde
 from knowde.feature.parsing.sysnet.sysnode import Def
@@ -174,3 +174,7 @@ class ReadableQuiz(BaseModel, frozen=True):
         s = set(selected)
         correct = set(self.correct)
         return s == correct
+
+
+class ReadableQuizList(RootModel[list[ReadableQuiz]]):
+    """可読クイズリスト."""

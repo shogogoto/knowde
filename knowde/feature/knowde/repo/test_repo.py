@@ -75,7 +75,7 @@ async def test_search_knowde_with_resource_uid(u: LUser):
     _, r2 = await save_text(u.uid, s2)
     res = await search_knowde("")
     assert res.total == 7  # noqa: PLR2004
-    res = await search_knowde("", resource_uids=[r1.uid], do_print=True)
+    res = await search_knowde("", resource_uids=[r1.uid])
     assert len(res.data) == 3  # noqa: PLR2004
     assert res.total == 3  # noqa: PLR2004
     res = await search_knowde("", resource_uids=[r2.uid])

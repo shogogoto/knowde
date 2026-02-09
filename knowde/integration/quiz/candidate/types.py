@@ -13,10 +13,11 @@ class CandidateType(StrEnum):
     WHOLE = auto()  # 全体が候補
 
     # スコア上位指定
-    TOP_ELITE = auto()  # 本当にスコアが高い上位
-    TOP_NORMAL = auto()  # 上位20件程度 ほどよく関連がある
-    TOP_WIDE = auto()  # 上位50件程度 バラエティに富む
+    TOP_ELITE = auto()
+    TOP_NORMAL = auto()
+    TOP_WIDE = auto()
 
+    @property
     def config(self) -> dict:
         """候補出し用パラメータを返す."""
         return {
@@ -24,9 +25,9 @@ class CandidateType(StrEnum):
             CandidateType.MID:        {"radius": 4},
             CandidateType.FAR:        {"radius": 6},
             CandidateType.WHOLE:      {"radius": None},
-            CandidateType.TOP_ELITE:  {"n": 5},
-            CandidateType.TOP_NORMAL: {"n": 10},
-            CandidateType.TOP_WIDE:   {"n": 30},
+            CandidateType.TOP_ELITE:  {"n_candidate": 5},
+            CandidateType.TOP_NORMAL: {"n_candidate": 10},
+            CandidateType.TOP_WIDE:   {"n_candidate": 30},
         }[self]  # fmt: skip
 
     def is_radius_type(self) -> bool:

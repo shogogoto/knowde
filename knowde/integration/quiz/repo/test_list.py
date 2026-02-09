@@ -1,6 +1,8 @@
 """列挙系."""
 
 from knowde.conftest import async_fixture, mark_async_test
+from knowde.integration.quiz.candidate.candidate import list_candidates
+from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.integration.quiz.domain.parts import QuizType
 from knowde.integration.quiz.fixture import fx_u
 from knowde.integration.quiz.repo.create import create_quiz
@@ -8,9 +10,7 @@ from knowde.integration.quiz.repo.quiz_repo import (
     list_quiz_by_sentence_ids,
     list_quiz_by_user_ids,
 )
-from knowde.integration.quiz.sampling.retry_sample import (
-    retry_select_random_options,
-)
+from knowde.integration.quiz.sampling.sample_safe import sample_safe
 from knowde.shared.knowde.label import LSentence
 from knowde.shared.types import UUIDy
 from knowde.shared.user.label import LUser
@@ -19,12 +19,12 @@ u = async_fixture()(fx_u)
 
 
 async def _f(sent_id: UUIDy):
-    return await retry_select_random_options(
+    cand_uids = await list_candidates(
         sent_id,
-        radius=3,
-        n_option=4,
-        has_term=True,
+        CandidateType.NEAR,
+        must_has_term=True,
     )
+    return sample_safe(cand_uids, n_option=4)
 
 
 async def setup(sent_id: UUIDy, user_id: UUIDy) -> list[str]:

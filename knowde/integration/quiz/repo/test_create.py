@@ -27,7 +27,7 @@ async def test_create_restore_term2sent(u: LUser):
     """単文当てクイズを永続化&復元."""
     sent = LSentence.nodes.first(val="ccc")
     n_option = 5
-    cand_uids = await list_candidates_by_radius(sent.uid, radius=99, has_term=True)
+    cand_uids = await list_candidates_by_radius(sent.uid, radius=99, must_has_term=True)
     sample_uids = sample_safe(cand_uids, n_option=n_option)
     quiz_uid = await create_quiz(sent.uid, QuizType.TERM2SENT, sample_uids)
     srcs = await restore_quiz_sources([quiz_uid])
@@ -45,7 +45,7 @@ async def test_create_restore_sent2term(u: LUser):
     """用語当てクイズを永続化&復元."""
     sent = LSentence.nodes.first(val="ccc")
     n_option = 5
-    cand_uids = await list_candidates_by_radius(sent.uid, radius=99, has_term=True)
+    cand_uids = await list_candidates_by_radius(sent.uid, radius=99, must_has_term=True)
     sample_uids = sample_safe(cand_uids, n_option=n_option)
     quiz_uid = await create_quiz(sent.uid, QuizType.SENT2TERM, sample_uids)
     srcs = await restore_quiz_sources([quiz_uid])
@@ -108,3 +108,5 @@ async def test_create_restore_pair2rel(u: LUser):
     incorrects = [s.sentence for s in src.sources.values() if s.sentence != "parent"]
     for inc in incorrects:
         assert not rq.is_correct([src.get_id_by_sent(inc)])
+
+    # sleep(1000)
