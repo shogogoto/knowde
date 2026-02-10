@@ -1,0 +1,30 @@
+"""回答ドメイン."""
+
+from uuid import UUID
+
+from pydantic import BaseModel, RootModel
+
+from knowde.integration.quiz.domain.domain import ReadableQuiz
+from knowde.shared.util import Neo4jDateTime
+
+
+class Answer(BaseModel, frozen=True):
+    """誰がいつ何を選択して回答したか、とその正誤."""
+
+    answer_uid: UUID
+    quiz_uid: UUID
+    selected: list[str]  # 複数選択可
+    who: UUID
+    is_correct: bool
+    created: Neo4jDateTime
+
+
+class Answers(RootModel[list[Answer]]):
+    """回答一覧."""
+
+
+class QuizAnswers(BaseModel, frozen=True):
+    """クイズに対する回答集."""
+
+    rq: ReadableQuiz
+    answers: list[Answer]

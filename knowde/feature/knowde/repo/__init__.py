@@ -5,7 +5,7 @@ from uuid import UUID
 
 from fastapi import status
 from more_itertools import collapse
-from neomodel import db
+from neomodel import adb, db
 
 from knowde.feature.entry.namespace import resource_infos_by_resource_uids
 from knowde.feature.knowde import (
@@ -17,6 +17,7 @@ from knowde.feature.knowde.repo.clause import OrderBy, WherePhrase
 from knowde.feature.knowde.repo.detail import fetch_knowdes_with_detail
 from knowde.shared.cypher import Paging
 from knowde.shared.errors import DomainError
+from knowde.shared.types import UUIDy, to_uuid
 
 from .cypher import q_adjacency_uids, q_stats, q_where_knowde
 
@@ -24,39 +25,66 @@ from .cypher import q_adjacency_uids, q_stats, q_where_knowde
 def search_total(
     s: str,
     where: WherePhrase = WherePhrase.CONTAINS,
+    resource_uids: list[UUIDy] | None = None,
 ) -> int:
     """検索文字列にマッチするknowde総数."""
+    q_rsrc = (
+        ""
+        if resource_uids is None or len(resource_uids) == 0
+        else """
+        WHERE sent.resource_uid IN $resource_uids
+    """
+    )
     q_tot = f"""
         CALL () {{
         {q_where_knowde(where)}
         }}
+        WITH sent
+            {q_rsrc}
         RETURN COUNT(sent)
     """
     res = db.cypher_query(
         q_tot,
-        params={"s": s},
+        params={
+            "s": s,
+            "resource_uids": [to_uuid(uid).hex for uid in resource_uids]
+            if resource_uids
+            else [],
+        },
     )
 
     try:
         return res[0][0][0]
     except IndexError as e:
         msg = "Failed to get total count from query result."
-        raise DomainError(msg=msg, status_code=status.HTTP_502_BAD_GATEWAY) from e
+        err = DomainError(msg=msg)
+        err.status_code = status.HTTP_502_BAD_GATEWAY
+        raise err from e
 
 
-async def search_knowde(
+async def search_knowde(  # noqa: PLR0917
     s: str,
     where: WherePhrase = WherePhrase.CONTAINS,
     paging: Paging = Paging(),
     order_by: OrderBy | None = OrderBy(),
+    resource_uids: list[UUIDy] | None = None,
     do_print: bool = False,  # noqa: FBT001, FBT002
 ) -> KnowdeSearchResult:
     """用語、文のいずれかでマッチするものを返す."""
+    q_rsrc = (
+        ""
+        if resource_uids is None or len(resource_uids) == 0
+        else """
+        WHERE sent.resource_uid IN $resource_uids
+    """
+    )
+
     q = rf"""
         CALL () {{
         {indent(q_where_knowde(where), " " * 4)}
         }}
         WITH sent // 中間結果のサイズダウン
+            {q_rsrc}
         {q_stats("sent", order_by)}
         {(order_by.phrase() if order_by else "")}
         {paging.phrase()}
@@ -65,16 +93,24 @@ async def search_knowde(
         """
     if do_print:
         print(q)  # noqa: T201
-    rows, _ = db.cypher_query(q, params={"s": s})
+    rows, _ = db.cypher_query(
+        q,
+        params={
+            "s": s,
+            "resource_uids": [to_uuid(uid).hex for uid in resource_uids]
+            if resource_uids
+            else [],
+        },
+    )
     uids = res2uidstrs(rows)
-    d = fetch_knowdes_with_detail(uids, order_by=order_by)
+    d = await fetch_knowdes_with_detail(uids, order_by=order_by)
     ls: list[Knowde] = []
     for row in rows:
         sent_uid = row[0]
         kst = d[sent_uid]
         ls.append(kst)
     return KnowdeSearchResult(
-        total=search_total(s, where),
+        total=search_total(s, where, resource_uids),
         data=ls,
         resource_infos=await resource_infos_by_resource_uids({
             k.resource_uid for k in ls
@@ -97,24 +133,35 @@ def res2uidstrs(res: tuple) -> set[str]:
     return set(filter(is_valid_uuid, collapse(res, base_type=UUID)))
 
 
-def adjacency_knowde(sent_uid: str) -> list[KAdjacency]:
+async def adjacency_knowde(
+    sent_uids: list[UUIDy],
+    do_print: bool = False,  # noqa: FBT001, FBT002
+) -> list[KAdjacency]:
     """隣接knowdeを返す."""
     q = rf"""
-        MATCH (sent: Sentence {{uid: $uid}})
-        {q_adjacency_uids("sent")}
+        UNWIND $uids AS uid
+        MATCH (sent: Sentence {{uid: uid}})
+        {q_adjacency_uids("sent", "sent")}
         RETURN
-            sent.uid as sent_uid
+            sent.uid AS sent_uid
             , premises
             , conclusions
             , refers
             , referreds
             , details
+            , abstracts
+            , examples
         """
-    res = db.cypher_query(q, params={"uid": sent_uid})
-    uids = res2uidstrs(res)
-    knowdes = fetch_knowdes_with_detail(list(uids))
+    if do_print:
+        print(q)  # noqa: T201
+    rows, _ = await adb.cypher_query(
+        q,
+        params={"uids": [to_uuid(uid).hex for uid in sent_uids]},
+    )
+    uids = res2uidstrs(rows)
+    knowdes = await fetch_knowdes_with_detail(list(uids))
     ls = []
-    for row in res[0]:
+    for row in rows:
         (
             sent,
             premises,
@@ -122,6 +169,8 @@ def adjacency_knowde(sent_uid: str) -> list[KAdjacency]:
             refers,
             referreds,
             details,
+            abstracts,
+            examples,
         ) = row
         adj = KAdjacency(
             center=knowdes[sent],
@@ -130,6 +179,8 @@ def adjacency_knowde(sent_uid: str) -> list[KAdjacency]:
             conclusions=[knowdes[c] for c in conclusions],
             refers=[knowdes[r] for r in refers],
             referreds=[knowdes[r] for r in referreds],
+            abstracts=[knowdes[a] for a in abstracts],
+            examples=[knowdes[e] for e in examples],
         )
         ls.append(adj)
     return ls

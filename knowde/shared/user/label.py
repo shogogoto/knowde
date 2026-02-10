@@ -34,7 +34,7 @@ class LAccount(AsyncStructuredNode):
     account_id = StringProperty()
     account_email = EmailProperty()
 
-    user: AsyncRelationshipManager = AsyncRelationshipFrom(
+    user: AsyncRelationshipManager = AsyncRelationshipFrom(  # type: ignore  # noqa: PGH003
         "LUser",
         "OAUTH",
         cardinality=AsyncZeroOrOne,
@@ -76,4 +76,4 @@ class LUser(AsyncStructuredNode):
         max_lenght=MAX_LEN_USERNAME,
         fulltext_index=FulltextIndex(),
     )
-    accounts: AsyncRelationshipManager = AsyncRelationshipTo(LAccount, "OAUTH")
+    accounts: AsyncRelationshipManager = AsyncRelationshipTo(LAccount, "OAUTH")  # type: ignore  # noqa: PGH003

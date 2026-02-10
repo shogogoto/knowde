@@ -1,13 +1,15 @@
 """pytest hooks."""
 
-from collections.abc import Callable, Generator
+from collections.abc import AsyncGenerator, Callable, Generator
 
 import pytest
 import pytest_asyncio
+from httpx import AsyncClient
 from neomodel import adb, db
 
 from knowde.api.middleware.logging.log_config import clear_logging, setup_logging
 from knowde.config.env import Settings
+from knowde.shared.user.testing import async_client
 
 
 def pytest_configure() -> None:
@@ -63,3 +65,9 @@ def control_app_logging(request: pytest.FixtureRequest) -> Generator[None, None,
     setup_logging()
     yield
     clear_logging()
+
+
+@async_fixture()
+async def ac() -> AsyncGenerator[AsyncClient]:  # noqa: D103
+    async for client in async_client():
+        yield client

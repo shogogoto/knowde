@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import re
 from functools import cache, cached_property
-from typing import Final
 
 from pydantic import BaseModel
 from regex import regex
@@ -94,23 +93,21 @@ def split_pattern(m_open: str, m_close: str, delimiter: str) -> re.Pattern:
     return re.compile(pattern)
 
 
-PLACE_HOLDER: Final = "$@"
-
-
 def inject2placeholder(
     s: str,
     values: list[str],
-    prefix: str = "",
-    suffix: str = "",
+    place_holder: str,
+    surround_pre: str = "",
+    surround_post: str = "",
 ) -> str:
     """プレースホルダーに順次文字列を埋め込む."""
     ret = s
-    n_ph = ret.count(PLACE_HOLDER)
+    n_ph = ret.count(place_holder)
     n_v = len(values)
     if n_ph != n_v:
         msg = f"プレースホルダー数{ret} != 置換する値の数{values}"
         raise PlaceHolderMappingError(msg)
-    c = re.compile(r"\$\@")
+    c = re.compile(re.escape(place_holder))
     for v in values:
-        ret = c.sub(prefix + v + suffix, ret, count=1)
+        ret = c.sub(surround_pre + v + surround_post, ret, count=1)
     return ret

@@ -2,7 +2,7 @@
 
 import pytest
 
-from . import PLACE_HOLDER, Marker, inject2placeholder
+from . import Marker, inject2placeholder
 from .errors import EmptyMarkError, MarkContainsMarkError, PlaceHolderMappingError
 
 BRACE_MARKER = Marker(m_open="{", m_close="}")  # 波括弧
@@ -55,22 +55,22 @@ def test_replace_placeholder() -> None:
     s1 = "xx{def}xx"
     s2 = "xx{def}xx{def2}"
 
-    assert BRACE_MARKER.replace(s1, PLACE_HOLDER) == "xx$@xx"
-    assert BRACE_MARKER.replace(s2, *[PLACE_HOLDER] * 2) == "xx$@xx$@"
+    assert BRACE_MARKER.replace(s1, "$@") == "xx$@xx"
+    assert BRACE_MARKER.replace(s2, *["$@"] * 2) == "xx$@xx$@"
 
 
 def test_inject2placeholder() -> None:
     """placeholderに文字を挿入."""
     s1 = "xx$@xx"
     s2 = "xx$@xx$@"  # $@ * 2
-    assert inject2placeholder(s1, ["def"]) == "xxdefxx"
-    assert inject2placeholder(s2, ["def", "def2"]) == "xxdefxxdef2"
+    assert inject2placeholder(s1, ["def"], "$@") == "xxdefxx"
+    assert inject2placeholder(s2, ["def", "def2"], "$@") == "xxdefxxdef2"
 
     with pytest.raises(PlaceHolderMappingError):  # 2 != 1
-        inject2placeholder(s2, ["d1"])
+        inject2placeholder(s2, ["d1"], "$@")
 
     with pytest.raises(PlaceHolderMappingError):  # 2 != 3
-        inject2placeholder(s2, ["d1", "d2", "d3"])
+        inject2placeholder(s2, ["d1", "d2", "d3"], "$@")
 
 
 def test_pick_nesting() -> None:

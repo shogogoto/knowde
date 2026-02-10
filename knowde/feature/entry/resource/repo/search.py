@@ -54,8 +54,7 @@ async def search_resources(  # noqa: PLR0917
         ORDER BY {", ".join(skeys)} {((desc and "DESC") or "ASC")}
 
         WITH COLLECT({{r:r, stat:stat, u:u}}) AS results
-        RETURN SIZE(results) AS total
-            , results[$offset..$offset + $limit] AS page
+        {paging.return_stmt("results")}
     """
 
     if do_print:
@@ -64,8 +63,7 @@ async def search_resources(  # noqa: PLR0917
     params = {
         "s": search_str,
         "u": search_user,
-        "offset": paging.skip,
-        "limit": paging.size,
+        **paging.params,
     }
 
     rows, _ = await AsyncDatabase().cypher_query(q, params=params)

@@ -40,6 +40,9 @@ def q_root_path(tgt: str, var: str, t: str) -> str:
 
 def q_stats(tgt: str, order_by: OrderBy | None = None) -> str:
     """関係統計の取得cypher."""
+    # // {q_leaf_path(tgt, "p_leaf", EdgeType.TO.name)}
+    # // {q_root_path(tgt, "p_axiom", EdgeType.TO.name)}
+    # {q_adjacency_uids("tgts", all_chain=True)}
     return f"""
         // q_stats
         CALL ({tgt}) {{
@@ -49,37 +52,27 @@ def q_stats(tgt: str, order_by: OrderBy | None = None) -> str:
             WITH DISTINCT tgts
                 , {tgt}
 
-            OPTIONAL MATCH (tgts)<-[:TO]-{{1,}}(premise:Sentence)
-            OPTIONAL MATCH (tgts)-[:TO]->{{1,}}(conclusion:Sentence)
-            {q_leaf_path(tgt, "p_leaf", EdgeType.TO.name)}
-            {q_root_path(tgt, "p_axiom", EdgeType.TO.name)}
-            OPTIONAL MATCH (tgts)<-[:RESOLVED]-{{1,}}(referred:Sentence)
-            OPTIONAL MATCH (tgts)-[:RESOLVED]->{{1,}}(refer:Sentence)
-            OPTIONAL MATCH (tgts)-[:BELOW]->(:Sentence)
-                -[:SIBLING|BELOW]->*(detail:Sentence)
-            WITH COLLECT(DISTINCT premise) as premises
-                , COLLECT(DISTINCT conclusion) as conclusions
-                , COLLECT(DISTINCT referred) as referreds
-                , COLLECT(DISTINCT refer) as refers
-                , COLLECT(DISTINCT detail) as details
-                , p_axiom
-                , p_leaf
+            {q_adjacency_uids("tgts", tgt, all_chain=True)}
             WITH
               SIZE(premises) AS n_premise
             , SIZE(conclusions) AS n_conclusion
-            , MAX(coalesce(length(p_axiom), 0)) AS dist_axiom
-            , MAX(coalesce(length(p_leaf), 0)) AS dist_leaf
+            //, MAX(coalesce(length(p_axiom), 0)) AS dist_axiom
+            //, MAX(coalesce(length(p_leaf), 0)) AS dist_leaf
             , SIZE(referreds) AS n_referred
             , SIZE(refers) AS n_refer
             , SIZE(details) AS n_detail
+            , SIZE(abstracts) AS n_abstract
+            , SIZE(examples) AS n_example
             RETURN {{
                 n_premise: n_premise
                 , n_conclusion: n_conclusion
-                , dist_axiom: dist_axiom
-                , dist_leaf: dist_leaf
+                // , dist_axiom: dist_axiom
+                // , dist_leaf: dist_leaf
                 , n_referred: n_referred
                 , n_refer: n_refer
                 , n_detail: n_detail
+                , n_abstract: n_abstract
+                , n_example: n_example
                 {(order_by.score_prop() if order_by else "")}
             }} AS stats
         }}
@@ -119,37 +112,55 @@ def q_where_knowde(p: WherePhrase = WherePhrase.CONTAINS) -> str:
         // 検索文字列が含まれる文 q_where_knowde
         MATCH (sent1: Sentence WHERE sent1.val {where_phrase})
         {q_call_sent_names("sent1")}
-        RETURN sent1 as sent, names
+        RETURN sent1 AS sent, names
         UNION
         // 検索文字列が含まれる用語
         MATCH (term2: Term WHERE term2.val {where_phrase}),
         (n1)-[:ALIAS]-*(term2: Term)-[:ALIAS]-*(n2: Term)
             -[:DEF]->(sent3: Sentence)
-        UNWIND [n2, n1] as name3
-        RETURN sent3 as sent, COLLECT(DISTINCT name3) as names
+        UNWIND [n2, n1] AS name3
+        RETURN sent3 AS sent, COLLECT(DISTINCT name3) AS names
     """
 
 
-def q_adjacency_uids(sent_var: str) -> str:
+def q_adjacency_uids(
+    sent_var: str,
+    aggregate_var: str,
+    all_chain: bool = False,  # noqa: FBT001, FBT002
+) -> str:
     """隣接する文のIDを返す."""
-    return f"""
-    // q_adjacency_uid
-        CALL ({sent_var}) {{
-            OPTIONAL MATCH ({sent_var})<-[:TO]-(premise:Sentence)
-            OPTIONAL MATCH ({sent_var})-[:TO]->(conclusion:Sentence)
-            OPTIONAL MATCH ({sent_var})<-[:RESOLVED]-(referred:Sentence)
-            OPTIONAL MATCH ({sent_var})-[:RESOLVED]->(refer:Sentence)
-            OPTIONAL MATCH ({sent_var})-[:BELOW]->(detail1:Sentence)
-            // 近接1階層分だか SIB or BELOW で全てを辿るのではない
+    dist = "" if all_chain else "1"
+    q_detail = (
+        f"""
+            OPTIONAL MATCH ({sent_var})-[:BELOW]->(:Sentence)
+                -[:SIBLING|BELOW]->*(detail:Sentence)
+        """
+        if all_chain
+        else f"""
+            OPTIONAL MATCH ({sent_var})-[:BELOW]->{{1,{dist}}}(detail1:Sentence)
             OPTIONAL MATCH (detail1)-[:SIBLING]->*(detail2:Sentence)
-            UNWIND [detail1, detail2] as detail
-            RETURN
-                COLLECT(DISTINCT premise.uid) as premises
-                , COLLECT(DISTINCT conclusion.uid) as conclusions
-                , COLLECT(DISTINCT referred.uid) as referreds
-                , COLLECT(DISTINCT refer.uid) as refers
-                , COLLECT(DISTINCT detail.uid) as details
-        }}
+            UNWIND [detail1, detail2] AS detail
+        """
+    )
+
+    return f"""
+        // q_adjacency_uid
+        OPTIONAL MATCH ({sent_var})<-[:TO]-{{1,{dist}}}(premise:Sentence)
+        OPTIONAL MATCH ({sent_var})-[:TO]->{{1,{dist}}}(conclusion:Sentence)
+        OPTIONAL MATCH ({sent_var})<-[:RESOLVED]-{{1,{dist}}}(referred:Sentence)
+        OPTIONAL MATCH ({sent_var})-[:RESOLVED]->{{1,{dist}}}(refer:Sentence)
+        OPTIONAL MATCH ({sent_var})<-[:EXAMPLE]-{{1,{dist}}}(abstract:Sentence)
+        OPTIONAL MATCH ({sent_var})-[:EXAMPLE]->{{1,{dist}}}(example:Sentence)
+        {q_detail}
+        WITH
+            {aggregate_var} // ここで集計する単位が決まる
+            , COLLECT(DISTINCT premise.uid) AS premises
+            , COLLECT(DISTINCT conclusion.uid) AS conclusions
+            , COLLECT(DISTINCT referred.uid) AS referreds
+            , COLLECT(DISTINCT refer.uid) AS refers
+            , COLLECT(DISTINCT detail.uid) AS details
+            , COLLECT(DISTINCT abstract.uid) AS abstracts
+            , COLLECT(DISTINCT example.uid) AS examples
     """
 
 

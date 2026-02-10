@@ -18,3 +18,17 @@ class Paging(BaseModel):
         return f"""
         SKIP {self.skip} LIMIT {self.size}
         """
+
+    @property
+    def params(self) -> dict[str, int]:
+        """cypher引数."""
+        return {"offset": self.skip, "limit": self.size}
+
+    @staticmethod
+    def return_stmt(var: str) -> str:
+        """ページのRETURN文."""
+        return f"""
+            RETURN
+                SIZE({var}) AS total
+                , {var}[$offset..$offset + $limit] AS page
+        """

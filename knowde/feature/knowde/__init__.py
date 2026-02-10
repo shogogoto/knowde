@@ -21,11 +21,12 @@ from uuid import UUID
 
 import networkx as nx
 from networkx import DiGraph
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, RootModel
 
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.entry.resource.stats.domain import ResourceStats
 from knowde.feature.parsing.primitive.term import Term
+from knowde.feature.parsing.sysnet.sysnode import Def
 from knowde.shared.nxutil import to_nodes
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import NXGraph
@@ -49,8 +50,8 @@ class KStats(BaseModel, frozen=True):
     n_conclusion: int = Field(ge=-100, le=1000)
     n_refer: int = Field(ge=-100, le=1000)
     n_referred: int = Field(ge=-100, le=1000)
-    dist_axiom: int = Field(ge=-100, le=1000)
-    dist_leaf: int = Field(ge=-100, le=1000)
+    # dist_axiom: int = Field(ge=-100, le=1000)
+    # dist_leaf: int = Field(ge=-100, le=1000)
     score: int | None = Field(default=None, ge=-100, le=1000)
 
     def __str__(self) -> str:  # noqa: D105
@@ -60,8 +61,8 @@ class KStats(BaseModel, frozen=True):
             self.n_conclusion,
             self.n_refer,
             self.n_referred,
-            self.dist_axiom,
-            self.dist_leaf,
+            # self.dist_axiom,
+            # self.dist_leaf,
             self.score,
         ]
         return str(ls)
@@ -90,6 +91,11 @@ class Knowde(BaseModel, frozen=True):
     def when(self) -> str:  # noqa: D102
         a = self.additional
         return f"T({a.when})" if a is not None and a.when else ""
+
+    def to_str_or_def(self) -> str | Def:  # noqa: D102
+        if self.term is None:
+            return self.sentence
+        return Def(term=self.term, sentence=self.sentence)
 
 
 class ResourceInfo(BaseModel):
@@ -124,8 +130,8 @@ class LocationWithoutParents(BaseModel):
     headers: list[UidStr]
 
     # for debug
-    def __str__(self) -> str:  # noqa: D105
-        return f"{self.user.username} {'>'.join([h.val for h in self.headers])}"
+    # def __str__(self) -> str:
+    #     return f"{self.user.username} {'>'.join([h.val for h in self.headers])}"
 
 
 class KnowdeLocation(LocationWithoutParents):
@@ -143,6 +149,8 @@ class KAdjacency(BaseModel):
     conclusions: list[Knowde]
     refers: list[Knowde]
     referreds: list[Knowde]
+    abstracts: list[Knowde]
+    examples: list[Knowde]
 
     def __str__(self) -> str:
         """For display in CLI."""
@@ -162,7 +170,7 @@ class KAdjacency(BaseModel):
         return s
 
 
-class KnowdeDetail(BaseModel):
+class KnowdeChain(BaseModel):
     """詳細."""
 
     uid: UUID
@@ -213,3 +221,17 @@ class KnowdeDetail(BaseModel):
     def relabeled(self) -> DiGraph:
         """UUIDstr node をknowdeに置き換えたgraphを返す."""
         return nx.relabel_nodes(self.g, self.knowdes)
+
+
+class KnowdeChains(RootModel[list[KnowdeChain]]):
+    """knowdeチェーンたち."""
+
+    def get(self, sentence: str) -> KnowdeChain:
+        """単文で返す."""
+        for chain in self.root:
+            uid = chain.uid
+            kn = chain.knowdes[uid.hex]
+            if kn.sentence == sentence:
+                return chain
+        msg = f"'{sentence}' not found in knowde chains"
+        raise KeyError(msg)
