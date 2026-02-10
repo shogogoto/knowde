@@ -14,7 +14,6 @@ from knowde.integration.quiz.domain.domain import (
 from knowde.integration.quiz.errors import AnswerFailedError
 from knowde.integration.quiz.repo.restore import restore_quiz_sources
 from knowde.shared.types import UUIDy, to_uuid
-from knowde.shared.user.schema import UserReadPublic
 from knowde.shared.util import TZ
 
 
@@ -122,13 +121,12 @@ async def create_answer(
     )
 
     for row in rows:
-        _ans, u = row
-        who = UserReadPublic.model_validate(u)
+        _, u = row
         return Answer(
             answer_uid=answer_uid,
             quiz_uid=quiz_uid,
             selected=selected_uids,
-            who=who,
+            who=u.get("uid"),
             is_correct=is_correct,
             created=now,
         )

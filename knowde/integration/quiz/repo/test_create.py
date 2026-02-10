@@ -7,7 +7,7 @@ from knowde.integration.quiz.candidate.candidate import (
 from knowde.integration.quiz.domain.build import build_readable
 from knowde.integration.quiz.domain.parts import QuizType
 from knowde.integration.quiz.fixture import fx_u
-from knowde.integration.quiz.repo.list_query import list_answers_by_quiz_uids
+from knowde.integration.quiz.repo.list_query import list_answers
 from knowde.integration.quiz.repo.restore import restore_quiz_sources
 from knowde.integration.quiz.sampling.sample_safe import (
     sample_safe,
@@ -123,7 +123,7 @@ async def test_answer(u: LUser):
         sample_uids,
         user_uid=u.uid,
     )
-    anss = await list_answers_by_quiz_uids([quiz_uid], user_uid=u.uid)
+    anss = await list_answers([quiz_uid], user_uid=u.uid)
     assert len(anss.root) == 0
     srcs = await restore_quiz_sources([quiz_uid])
     rq = build_readable(srcs[0])
@@ -133,7 +133,7 @@ async def test_answer(u: LUser):
         user_uid=u.uid,
     )
     assert ans1.is_correct
-    anss = await list_answers_by_quiz_uids([quiz_uid], user_uid=u.uid)
+    anss = await list_answers([quiz_uid], user_uid=u.uid)
     assert len(anss.root) == 1
 
     incorrect = LSentence.nodes.first(val="todetail")
@@ -143,5 +143,5 @@ async def test_answer(u: LUser):
         user_uid=u.uid,
     )
     assert not ans2.is_correct
-    anss = await list_answers_by_quiz_uids([quiz_uid], user_uid=u.uid)
+    anss = await list_answers([quiz_uid], user_uid=u.uid)
     assert len(anss.root) == 2  # noqa: PLR2004

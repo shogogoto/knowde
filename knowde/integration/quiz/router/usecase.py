@@ -5,6 +5,7 @@ from knowde.integration.quiz.candidate.candidate import (
 )
 from knowde.integration.quiz.domain.build import build_readable
 from knowde.integration.quiz.domain.domain import ReadableQuizList
+from knowde.integration.quiz.domain.parts import QuizType
 from knowde.integration.quiz.repo.create import create_quiz
 from knowde.integration.quiz.repo.restore import restore_quiz_sources
 from knowde.integration.quiz.router.params import CreateQuizParam
@@ -19,10 +20,11 @@ async def create_quiz_uc(
     user_uid: UUIDy | None = None,
 ) -> ReadableQuizList:
     """単文当てクイズ作成usecase."""
+    must_has_term = param.quiz_type in {QuizType.SENT2TERM, QuizType.TERM2SENT}
     cand_uids = await list_candidates(
         param.target_sent_uid,
         param.cand_type,
-        must_has_term=True,
+        must_has_term=must_has_term,
     )
     sample_uids = sample_safe(cand_uids, n_option=param.n_option)
 

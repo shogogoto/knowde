@@ -11,6 +11,7 @@ from knowde.integration.quiz.fixture import fx_u
 from knowde.integration.quiz.router.params import CreateQuizParam
 from knowde.integration.quiz.sampling.types import SamplingType
 from knowde.shared.knowde.label import LSentence
+from knowde.shared.types import to_uuid
 from knowde.shared.user.label import LUser
 from knowde.shared.user.testing import aauth_header
 
@@ -51,4 +52,4 @@ async def test_sent2term(ac: AsyncClient, u: LUser):
     )
     ans = Answer.model_validate(res.json())
     assert not ans.is_correct
-    assert ans.who.username == "quiz"
+    assert ans.who == to_uuid(u.uid)

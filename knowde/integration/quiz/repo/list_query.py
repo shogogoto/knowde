@@ -18,7 +18,6 @@ from knowde.integration.quiz.domain.collections import (
 from knowde.integration.quiz.repo.restore import restore_quiz_sources
 from knowde.shared.cypher import Paging
 from knowde.shared.types import UUIDy, to_uuid
-from knowde.shared.user.schema import UserReadPublic
 
 
 async def _to_result(total: int, ids: list[str]) -> ReadableQuizResult:
@@ -77,6 +76,8 @@ async def list_quiz_by_sentence_ids(
     return await _to_result(*rows[0])
 
 
+# クイズに関連するクイズを返す
+#   回答した選択肢の単文に関するクイズを作る
 async def list_quiz_by_optioned(
     quiz_uids: list[UUIDy],
     paging: Paging = Paging(),
@@ -103,7 +104,8 @@ async def list_quiz_by_selected(
     """回答で選択された対象のクイズを列挙する."""
 
 
-async def list_answers_by_quiz_uids(
+# クイズの詳細で表示するくらいだと思う
+async def list_answers(
     quiz_uids: list[UUIDy],
     user_uid: UUIDy | None = None,
 ) -> Answers:
@@ -141,7 +143,7 @@ async def list_answers_by_quiz_uids(
             answer_uid=ans_.get("uid"),
             quiz_uid=qid,
             selected=selected,
-            who=UserReadPublic.model_validate(user),
+            who=user.get("uid"),
             is_correct=ans_.get("is_correct"),
             created=ans_.get("created"),
         )

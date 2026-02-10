@@ -5,7 +5,6 @@ from uuid import UUID
 from pydantic import BaseModel, RootModel
 
 from knowde.integration.quiz.domain.domain import ReadableQuiz
-from knowde.shared.user.schema import UserReadPublic
 from knowde.shared.util import Neo4jDateTime
 
 
@@ -15,7 +14,7 @@ class Answer(BaseModel, frozen=True):
     answer_uid: UUID
     quiz_uid: UUID
     selected: list[str]  # 複数選択可
-    who: UserReadPublic
+    who: UUID
     is_correct: bool
     created: Neo4jDateTime
 
