@@ -1,6 +1,7 @@
 """正答の指定ロジック."""
 
 import uuid
+from datetime import datetime
 
 import pytest
 
@@ -8,6 +9,7 @@ from knowde.feature.parsing.sysnet import SysNet
 from knowde.integration.quiz.domain.domain import QuizSource
 from knowde.integration.quiz.domain.parts import QuizOption, QuizRel, QuizType
 from knowde.integration.quiz.fixture import fx_sn
+from knowde.shared.util import TZ
 
 sn = pytest.fixture(fx_sn)
 
@@ -26,6 +28,7 @@ def test_correct_rel_by_id(sn: SysNet):
             "5": QuizOption(val=sn.get("cccb1"), rels=[QuizRel.PREMISE]),
             "6": QuizOption(val=sn.get("parent"), rels=[QuizRel.PARENT]),
         },
+        created=datetime.now(tz=TZ),
     )
     # print(src.get_by_id("3").rels)
     # f = correct_rels_by_id(src, "3")

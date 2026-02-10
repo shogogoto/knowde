@@ -5,6 +5,7 @@
 """
 
 import uuid
+from datetime import datetime
 
 import pytest
 
@@ -18,6 +19,7 @@ from knowde.integration.quiz.domain.parts import QuizRel, path2edgetypes, to_det
 from knowde.integration.quiz.errors import InvalidAnswerOptionError, QuizDuplicateError
 from knowde.integration.quiz.fixture import fx_sn
 from knowde.shared.nxutil.edge_type import EdgeType
+from knowde.shared.util import TZ
 
 from .domain import (
     QuizOption,
@@ -37,6 +39,7 @@ def test_duplicate_source():
             sources={
                 "2": QuizOption.create("aaa", ["A"]),
             },
+            created=datetime.now(tz=TZ),
         )
     with pytest.raises(QuizDuplicateError):
         QuizSource(
@@ -48,6 +51,7 @@ def test_duplicate_source():
                 "2": QuizOption.create("bbb", ["B"]),
                 "3": QuizOption.create("bbb", ["B"]),
             },
+            created=datetime.now(tz=TZ),
         )
 
 
@@ -63,6 +67,7 @@ def test_quiz_sent2term():
             "3": QuizOption.create("ccc", ["C"]),
             "4": QuizOption.create("ddd", ["D"]),
         },
+        created=datetime.now(tz=TZ),
     )
     q = build_readable_sent2term(src)
     assert set(q.options.values()) == {"A", "B", "C", "D"}
@@ -88,6 +93,7 @@ def test_quiz_term2sent():
             "3": QuizOption.create("ccc", ["C"]),
             "4": QuizOption.create("ddd", ["D"]),
         },
+        created=datetime.now(tz=TZ),
     )
 
     q = build_readable_term2sent(src)
@@ -120,6 +126,7 @@ def test_quiz_rel2sent_lv1(sn: SysNet):
             "5": QuizOption(val=sn.get("cccb1"), rels=[QuizRel.PREMISE]),
             "6": QuizOption(val=sn.get("parent"), rels=[QuizRel.PARENT]),
         },
+        created=datetime.now(tz=TZ),
     )
 
     # 詳細はどれか

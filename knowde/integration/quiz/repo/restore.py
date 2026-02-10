@@ -65,6 +65,7 @@ async def restore_quiz_sources(
             correct_ids=crct_uids,
             source_ids=set(opt_uids).union(crct_uids),
             g=graph_neo4j2nx(paths),
+            created=quiz.get("created"),
         )
         containers.append(case)
     uids = QuizSourceContainer.concat_uids_for_batch_fetch(containers)

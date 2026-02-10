@@ -34,6 +34,7 @@ def build_readable_sent2term(src: QuizSource) -> ReadableQuiz:
             **{k: str(v.term) for k, v in src.source_defs.items()},
         },
         correct=src.filter_by(correct_is_target(src)),
+        created=src.created,
     )
 
 
@@ -47,6 +48,7 @@ def build_readable_term2sent(src: QuizSource) -> ReadableQuiz:
             **{k: str(v.sentence) for k, v in src.source_defs.items()},
         },
         correct=src.filter_by(correct_is_target(src)),
+        created=src.created,
     )
 
 
@@ -64,6 +66,7 @@ def build_readable_rel2pair(src: QuizSource) -> ReadableQuiz:
             **{k: str(v.val) for k, v in src.sources.items()},
         },
         correct=list(src.correct_ids),
+        created=src.created,
     )
 
 
@@ -84,4 +87,5 @@ def build_readable_pair2rel(src: QuizSource) -> ReadableQuiz:
             **{k: str(v.rels) for k, v in src.sources.items()},
         },
         correct=list(src.correct_ids),
+        created=src.created,
     )

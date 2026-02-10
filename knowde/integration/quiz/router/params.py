@@ -8,7 +8,7 @@ from knowde.integration.quiz.sampling.types import SamplingType
 
 
 class BatchCreateQuizParam(BaseModel, frozen=True):
-    """一括クイズ作成."""
+    """リソース単位で一括クイズ作成."""
 
     resource_uid: str
     n_quiz: int

@@ -17,3 +17,7 @@ class InvalidAnswerOptionError(DomainError):
 
 class QuizDuplicateError(DomainError):
     """同一クイズ重複エラー."""
+
+
+class AnswerFailedError(DomainError):
+    """回答失敗(到達しないはずのコード)."""

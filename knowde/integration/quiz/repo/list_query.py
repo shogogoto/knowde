@@ -9,6 +9,7 @@ from collections.abc import Iterable
 
 from neomodel import adb
 
+from knowde.integration.quiz.domain.answer import Answer, Answers
 from knowde.integration.quiz.domain.build import build_readable
 from knowde.integration.quiz.domain.collections import (
     ReadableQuizCollection,
@@ -17,6 +18,7 @@ from knowde.integration.quiz.domain.collections import (
 from knowde.integration.quiz.repo.restore import restore_quiz_sources
 from knowde.shared.cypher import Paging
 from knowde.shared.types import UUIDy, to_uuid
+from knowde.shared.user.schema import UserReadPublic
 
 
 async def _to_result(total: int, ids: list[str]) -> ReadableQuizResult:
@@ -99,3 +101,49 @@ async def list_quiz_by_selected(
     paging: Paging = Paging(),
 ):
     """回答で選択された対象のクイズを列挙する."""
+
+
+async def list_answers_by_quiz_uids(
+    quiz_uids: list[UUIDy],
+    user_uid: UUIDy | None = None,
+) -> Answers:
+    """クイズに対する回答一覧."""
+    q = """
+        UNWIND $quiz_uids AS qid
+        // OPTIONAL MATCH (u: User {uid: $user_uid})
+        MATCH (quiz: Quiz {uid: qid})
+            <-[:ANSWER_OF]-(ans: Answer)
+        // ユーザー情報を取得しつつ、user_uid が指定されていればフィルタリング
+        MATCH (u: User)-[:ANSWER]->(ans)
+        WHERE $user_uid IS NULL OR u.uid = $user_uid
+
+        OPTIONAL MATCH (ans)-[:SELECT]->(s: Sentence)
+        RETURN qid
+            , ans
+            , u
+            , COLLECT(DISTINCT s.uid) AS selected
+    """
+    rows, _ = await adb.cypher_query(
+        q,
+        params={
+            "quiz_uids": [to_uuid(qid).hex for qid in quiz_uids],
+            "user_uid": to_uuid(user_uid).hex if user_uid else None,
+        },
+    )
+
+    # srcs = await restore_quiz_sources(quiz_uids)
+    # rqs = {s.quiz_id.hex: build_readable(s) for s in srcs}
+    # anss = {k: [] for k in rqs}
+    ls = []
+    for row in rows:
+        qid, ans_, user, selected = row
+        ans = Answer(
+            answer_uid=ans_.get("uid"),
+            quiz_uid=qid,
+            selected=selected,
+            who=UserReadPublic.model_validate(user),
+            is_correct=ans_.get("is_correct"),
+            created=ans_.get("created"),
+        )
+        ls.append(ans)
+    return Answers(root=ls)

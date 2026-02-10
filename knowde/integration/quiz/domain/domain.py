@@ -15,6 +15,7 @@ from knowde.integration.quiz.errors import (
     QuizOptionsMustBeDefError,
 )
 from knowde.shared.types import NXGraph
+from knowde.shared.util import Neo4jDateTime
 
 from .parts import QuizOption, QuizRel, QuizType, path2edgetypes
 
@@ -28,6 +29,7 @@ class QuizSourceContainer(BaseModel, frozen=True):
     correct_ids: set[str]
     source_ids: set[str]
     g: NXGraph  # EdgeType-QuizRel用
+    created: Neo4jDateTime
 
     @staticmethod
     def concat_uids_for_batch_fetch(
@@ -52,6 +54,7 @@ class QuizSourceContainer(BaseModel, frozen=True):
                 for uid in self.source_ids
             },
             correct_ids=self.correct_ids,
+            created=self.created,
         )
 
 
@@ -68,6 +71,7 @@ class QuizSource(BaseModel, frozen=True):
     # targetが答えになるとは限らない
     correct_ids: set[str] = Field(default_factory=set)
     sources: dict[str, QuizOption] = Field(title="クイズの元となるメンバ")
+    created: Neo4jDateTime
 
     @model_validator(mode="after")
     def option_duplicate_check(self):
@@ -150,6 +154,7 @@ class ReadableQuiz(BaseModel, frozen=True):
     options: dict[str, str] = Field(title="選択肢")
     # 順番が大事になる問題もあるかもしれない
     correct: list[str] = Field(title="正解")
+    created: Neo4jDateTime
 
     @property
     def distractors(self) -> list[str]:

@@ -34,3 +34,17 @@ async def create_quiz_uc(
     )
     srcs = await restore_quiz_sources([quiz_uid])
     return ReadableQuizList(root=[build_readable(s) for s in srcs])
+
+
+# async def batch_create_quiz_uc(
+#     param: BatchCreateQuizParam,
+#     user_uid: UUIDy | None = None,
+# ) -> ReadableQuizList:
+#     """バッチ処理などで利用する単文当てクイズ作成usecase."""
+#     tgt_uids = await list_candidates(
+#         param.target_sent_uid,
+#         param.cand_type,
+#         must_has_term=True,
+#     )
+#
+#     return await create_quiz_uc(param, user_uid)
