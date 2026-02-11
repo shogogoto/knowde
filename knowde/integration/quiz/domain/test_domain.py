@@ -33,7 +33,7 @@ def test_duplicate_source():
     with pytest.raises(QuizDuplicateError):
         QuizSource(
             quiz_id=uuid.uuid4(),
-            statement_type=QuizType.SENT2TERM,
+            quiz_type=QuizType.SENT2TERM,
             target_id="1",
             target=QuizOption.create("aaa", ["A"]),
             sources={
@@ -44,7 +44,7 @@ def test_duplicate_source():
     with pytest.raises(QuizDuplicateError):
         QuizSource(
             quiz_id=uuid.uuid4(),
-            statement_type=QuizType.SENT2TERM,
+            quiz_type=QuizType.SENT2TERM,
             target_id="1",
             target=QuizOption.create("aaa", ["A"]),
             sources={
@@ -59,7 +59,7 @@ def test_quiz_sent2term():
     """用語当て問題."""
     src = QuizSource(
         quiz_id=uuid.uuid4(),
-        statement_type=QuizType.SENT2TERM,
+        quiz_type=QuizType.SENT2TERM,
         target_id="1",
         target=QuizOption.create("aaa", ["A"]),
         sources={
@@ -85,7 +85,7 @@ def test_quiz_term2sent():
     """単文当て問題."""
     src = QuizSource(
         quiz_id=uuid.uuid4(),
-        statement_type=QuizType.TERM2SENT,
+        quiz_type=QuizType.TERM2SENT,
         target_id="1",
         target=QuizOption.create("aaa", ["A"]),
         sources={
@@ -115,7 +115,7 @@ def test_quiz_rel2sent_lv1(sn: SysNet):
     """クイズ対象と関係にマッチするもの当て問題(1階層)."""
     src = QuizSource(
         quiz_id=uuid.uuid4(),
-        statement_type=QuizType.REL2PAIR,
+        quiz_type=QuizType.REL2PAIR,
         target_id="1",  # 問いの対象
         target=QuizOption(val=sn.get("ccc"), rels=[QuizRel.DETAIL]),
         correct_ids={"2"},

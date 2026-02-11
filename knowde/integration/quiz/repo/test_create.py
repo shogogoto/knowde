@@ -20,15 +20,23 @@ from .create import create_answer, create_quiz
 u = async_fixture()(fx_u)
 
 
+async def _sample(n_option: int):
+    sent = LSentence.nodes.first(val="ccc")
+    cand_uids = await list_candidates_by_radius(
+        [sent.uid],
+        radius=99,
+        must_has_term=True,
+    )
+    return sent.uid, sample_safe(cand_uids, n_option=n_option)
+
+
 # クイズ作って質問を見て答える
 @mark_async_test()
 async def test_create_restore_term2sent(u: LUser):
     """単文当てクイズを永続化&復元."""
-    sent = LSentence.nodes.first(val="ccc")
     n_option = 5
-    cand_uids = await list_candidates_by_radius(sent.uid, radius=99, must_has_term=True)
-    sample_uids = sample_safe(cand_uids, n_option=n_option)
-    quiz_uid = await create_quiz(sent.uid, QuizType.TERM2SENT, sample_uids)
+    sent_uid, sample_uids = await _sample(n_option)
+    quiz_uid = await create_quiz(sent_uid, QuizType.TERM2SENT, sample_uids)
     srcs = await restore_quiz_sources([quiz_uid])
     assert len(srcs) == 1
     src = srcs[0]
@@ -42,11 +50,9 @@ async def test_create_restore_term2sent(u: LUser):
 @mark_async_test()
 async def test_create_restore_sent2term(u: LUser):
     """用語当てクイズを永続化&復元."""
-    sent = LSentence.nodes.first(val="ccc")
     n_option = 5
-    cand_uids = await list_candidates_by_radius(sent.uid, radius=99, must_has_term=True)
-    sample_uids = sample_safe(cand_uids, n_option=n_option)
-    quiz_uid = await create_quiz(sent.uid, QuizType.SENT2TERM, sample_uids)
+    sent_uid, sample_uids = await _sample(n_option)
+    quiz_uid = await create_quiz(sent_uid, QuizType.SENT2TERM, sample_uids)
     srcs = await restore_quiz_sources([quiz_uid])
     src = srcs[0]
     # print(src.model_dump_json(indent=2))
@@ -63,8 +69,7 @@ async def test_create_restore_rel2pair(u: LUser):
     tgt = LSentence.nodes.first(val="ccc")
     pair = LSentence.nodes.first(val="parent")
     n_option = 4
-
-    cand_uids = await list_candidates_by_radius(tgt.uid, radius=3)
+    cand_uids = await list_candidates_by_radius([tgt.uid], radius=3)
     sample_uids = sample_safe(cand_uids, n_option=n_option)
     quiz_uid = await create_quiz(
         tgt.uid,
@@ -90,7 +95,7 @@ async def test_create_restore_pair2rel(u: LUser):
     pair = LSentence.nodes.first(val="parent")
     n_option = 4
 
-    cand_uids = await list_candidates_by_radius(tgt.uid, radius=3)
+    cand_uids = await list_candidates_by_radius([tgt.uid], radius=3)
     sample_uids = sample_safe(cand_uids, n_option=n_option)
     quiz_uid = await create_quiz(
         tgt.uid,
@@ -115,7 +120,11 @@ async def test_answer(u: LUser):
     """回答してリストや正答率を返す."""
     sent = LSentence.nodes.first(val="ccc")
     n_option = 5
-    cand_uids = await list_candidates_by_radius(sent.uid, radius=99, must_has_term=True)
+    cand_uids = await list_candidates_by_radius(
+        [sent.uid],
+        radius=99,
+        must_has_term=True,
+    )
     sample_uids = sample_safe(cand_uids, n_option=n_option)
     quiz_uid = await create_quiz(
         sent.uid,
@@ -145,3 +154,13 @@ async def test_answer(u: LUser):
     assert not ans2.is_correct
     anss = await list_answers([quiz_uid], user_uid=u.uid)
     assert len(anss.root) == 2  # noqa: PLR2004
+
+
+@mark_async_test()
+async def test_batch_create_quiz_by_user():
+    """クイズ一括作成 resource横断."""
+
+
+@mark_async_test()
+async def test_batch_create_quiz_one_resource():
+    """クイズ一括作成 特定resource."""

@@ -20,25 +20,31 @@ from pydantic import Field, TypeAdapter
 from knowde.feature.knowde.repo.clause import OrderBy
 from knowde.feature.knowde.repo.cypher import q_stats
 from knowde.integration.quiz.candidate.types import CandidateType
+from knowde.shared.knowde.label import LSentence
 from knowde.shared.types import UUIDy, to_uuid
 
 
 # list_candidates_by_radiusで呼べるからこれを直接呼ぶことはなさそう
 async def _list_candidates_in_resource(
-    target_sent_id: UUIDy,
+    target_sent_ids: list[UUIDy],
     must_has_term: bool = False,  # noqa: FBT001, FBT002
 ):
     """リソース内全ての単文を選択肢候補として列挙."""
     q_term = "<-[:DEF]-(:Term)" if must_has_term else ""
     q = f"""
-        MATCH (sent:Sentence {{uid: $sent_uid}})
+        UNWIND $sent_uids AS sent_uid
+        MATCH (sent:Sentence {{uid: sent_uid}})
         OPTIONAL MATCH (s:Sentence {{resource_uid: sent.resource_uid}})
             {q_term}
         WHERE s.uid <> sent.uid
         RETURN DISTINCT s.uid
     """
-    uid = to_uuid(target_sent_id).hex
-    rows, _ = await adb.cypher_query(q, params={"sent_uid": uid})
+    rows, _ = await adb.cypher_query(
+        q,
+        params={
+            "sent_uids": [to_uuid(uid).hex for uid in target_sent_ids],
+        },
+    )
     return [row[0] for row in rows]
 
 
@@ -47,21 +53,22 @@ r_adapter = TypeAdapter(Radius)
 
 
 async def list_candidates_by_radius(
-    target_sent_id: UUIDy,
+    target_sent_ids: list[UUIDy],
     radius: Radius | None = None,  # Noneの時にリソース内全てを返す
     must_has_term: bool = False,  # noqa: FBT001, FBT002
 ) -> list[UUID]:
     """距離指定で選択肢候補を列挙."""
     if radius is None:
         return await _list_candidates_in_resource(
-            target_sent_id,
+            target_sent_ids,
             must_has_term=must_has_term,
         )
 
     radius = r_adapter.validate_python(radius)
     q_term = "<-[:DEF]-(:Term)" if must_has_term else ""
     q = f"""
-        MATCH (sent:Sentence {{uid: $sent_uid}})
+        UNWIND $sent_uids AS sent_uid
+        MATCH (sent:Sentence {{uid: sent_uid}})
         // dist=1.. にすることで sent_uidを含めない
         OPTIONAL MATCH p = (sent)-[]-{{1, {radius}}}(e:Sentence)
             {q_term}
@@ -69,25 +76,29 @@ async def list_candidates_by_radius(
     """
     rows, _ = await adb.cypher_query(
         q,
-        params={"sent_uid": to_uuid(target_sent_id).hex},
+        params={
+            "sent_uids": [to_uuid(uid).hex for uid in target_sent_ids],
+        },
     )
     return [row[0] for row in rows]
 
 
 # 重要な単文を選択肢に混ぜて単純接触効果による学習効果を狙う
 async def list_top_scoring_candidates(
-    target_sent_id: UUIDy,
+    resource_uid: UUIDy,
     n_candidate: int,
     must_has_term: bool = False,  # noqa: FBT001, FBT002
+    except_sent_uids: list[UUIDy] | None = None,
 ) -> list[UUID]:
     """スコアの上位から候補を出す."""
+    if except_sent_uids is None:
+        except_sent_uids = []
     q_term = "<-[:DEF]-(:Term)" if must_has_term else ""
     order_by = OrderBy()
     q = f"""
-        MATCH (tgt:Sentence {{uid: $sent_uid}})
-        MATCH (sent: Sentence {{resource_uid: tgt.resource_uid}})
+        MATCH (sent: Sentence {{resource_uid: $resource_uid}})
             {q_term}
-        WHERE sent.uid <> tgt.uid // 対象を除く
+        WHERE NOT sent.uid IN $except_sent_uids
         {q_stats("sent", order_by)}
         {(order_by.phrase())}
         LIMIT $n_candidate
@@ -96,8 +107,10 @@ async def list_top_scoring_candidates(
     rows, _ = await adb.cypher_query(
         q,
         params={
-            "sent_uid": to_uuid(target_sent_id).hex,
-            "n_candidate": n_candidate,
+            "resource_uid": to_uuid(resource_uid).hex,
+            # 対象単文を除いて指定数を返してほしい
+            "n_candidate": n_candidate + 1,
+            "except_sent_uids": [to_uuid(uid).hex for uid in except_sent_uids],
         },
     )
     return [row[0] for row in rows]
@@ -111,13 +124,15 @@ async def list_candidates(
     """タイプに従って候補を返す."""
     if t.is_radius_type():
         return await list_candidates_by_radius(
-            target_sent_id,
+            [target_sent_id],
             must_has_term=must_has_term,
             **t.config,
         )
 
+    s = LSentence.nodes.get(uid=to_uuid(target_sent_id).hex)
     return await list_top_scoring_candidates(
-        target_sent_id,
+        s.resource_uid,
         must_has_term=must_has_term,
+        except_sent_uids=[target_sent_id],
         **t.config,
     )
