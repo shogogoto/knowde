@@ -15,7 +15,7 @@ from knowde.integration.quiz.sampling.sample_safe import (
 from knowde.shared.knowde.label import LSentence
 from knowde.shared.user.label import LUser
 
-from .create import create_answer, create_quiz
+from .create import create_answer, create_quiz_and_correct
 
 u = async_fixture()(fx_u)
 
@@ -36,7 +36,7 @@ async def test_create_restore_term2sent(u: LUser):
     """単文当てクイズを永続化&復元."""
     n_option = 5
     sent_uid, sample_uids = await _sample(n_option)
-    quiz_uid = await create_quiz(sent_uid, QuizType.TERM2SENT, sample_uids)
+    quiz_uid = await create_quiz_and_correct(sent_uid, QuizType.TERM2SENT, sample_uids)
     srcs = await restore_quiz_sources([quiz_uid])
     assert len(srcs) == 1
     src = srcs[0]
@@ -52,7 +52,7 @@ async def test_create_restore_sent2term(u: LUser):
     """用語当てクイズを永続化&復元."""
     n_option = 5
     sent_uid, sample_uids = await _sample(n_option)
-    quiz_uid = await create_quiz(sent_uid, QuizType.SENT2TERM, sample_uids)
+    quiz_uid = await create_quiz_and_correct(sent_uid, QuizType.SENT2TERM, sample_uids)
     srcs = await restore_quiz_sources([quiz_uid])
     src = srcs[0]
     # print(src.model_dump_json(indent=2))
@@ -71,7 +71,7 @@ async def test_create_restore_rel2pair(u: LUser):
     n_option = 4
     cand_uids = await list_candidates_by_radius([tgt.uid], radius=3)
     sample_uids = sample_safe(cand_uids, n_option=n_option)
-    quiz_uid = await create_quiz(
+    quiz_uid = await create_quiz_and_correct(
         tgt.uid,
         QuizType.REL2PAIR,
         sample_uids,
@@ -97,7 +97,7 @@ async def test_create_restore_pair2rel(u: LUser):
 
     cand_uids = await list_candidates_by_radius([tgt.uid], radius=3)
     sample_uids = sample_safe(cand_uids, n_option=n_option)
-    quiz_uid = await create_quiz(
+    quiz_uid = await create_quiz_and_correct(
         tgt.uid,
         QuizType.PAIR2REL,
         sample_uids,
@@ -126,7 +126,7 @@ async def test_answer(u: LUser):
         must_has_term=True,
     )
     sample_uids = sample_safe(cand_uids, n_option=n_option)
-    quiz_uid = await create_quiz(
+    quiz_uid = await create_quiz_and_correct(
         sent.uid,
         QuizType.TERM2SENT,
         sample_uids,

@@ -6,7 +6,7 @@ from knowde.integration.quiz.candidate.candidate import (
 from knowde.integration.quiz.domain.build import build_readable
 from knowde.integration.quiz.domain.domain import ReadableQuizList
 from knowde.integration.quiz.domain.parts import QuizType
-from knowde.integration.quiz.repo.create import create_quiz
+from knowde.integration.quiz.repo.create import create_quiz_and_correct
 from knowde.integration.quiz.repo.restore import restore_quiz_sources
 from knowde.integration.quiz.router.params import CreateQuizParam
 from knowde.integration.quiz.sampling.sample_safe import (
@@ -28,7 +28,7 @@ async def create_quiz_uc(
     )
     sample_uids = sample_safe(cand_uids, n_option=param.n_option)
 
-    quiz_uid = await create_quiz(
+    quiz_uid = await create_quiz_and_correct(
         param.target_sent_uid,
         param.quiz_type,
         sample_uids,

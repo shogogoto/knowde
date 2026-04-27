@@ -17,8 +17,7 @@ from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.util import TZ
 
 
-# idを渡すだけでロジックは分離
-async def create_quiz(  # noqa: PLR0917
+async def create_quiz_and_correct(  # noqa: PLR0917
     target_sent_uid: UUIDy,
     quiz_type: QuizType,
     option_uids: Sequence[UUIDy],
@@ -27,7 +26,7 @@ async def create_quiz(  # noqa: PLR0917
     quiz_uid: UUID | None = None,
     user_uid: UUIDy | None = None,
 ) -> UUID:
-    """クイズの永続化."""
+    """クイズとその正解の永続化."""
     if now is None:
         now = datetime.now(tz=TZ)
     if quiz_uid is None:
@@ -72,7 +71,9 @@ async def create_quiz(  # noqa: PLR0917
     return quiz_uid
 
 
-async def batch_create_quiz(
+# populate 定住させる
+#  IT で空のDBにデータを流し込むというニュアンス
+async def populate_quiz(
     resource_id: UUIDy,
     user_id: UUIDy,
     quiz_type: QuizType,
@@ -94,8 +95,14 @@ async def batch_create_quiz(
     """
     if now is None:
         now = datetime.now(tz=TZ)
+    # must_has_term = quiz_type in {QuizType.SENT2TERM, QuizType.TERM2SENT}
     # resoure のハイスコア順に sent_ids を取得
-    # sent のクイズが未作成のものに絞る
+    # tgt_uids = await list_top_scoring_candidates(
+    #     resource_id,
+    #     n_candidate=n_quiz,
+    #     must_has_term=must_has_term,
+    #     has_quiz=True,
+    # )
 
     q = """
         MATCH (tgt: Sentence {uid: $target_uid})

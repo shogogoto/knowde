@@ -89,15 +89,18 @@ async def list_top_scoring_candidates(
     n_candidate: int,
     must_has_term: bool = False,  # noqa: FBT001, FBT002
     except_sent_uids: list[UUIDy] | None = None,
+    has_quiz: bool = False,  # noqa: FBT001, FBT002
 ) -> list[UUID]:
     """スコアの上位から候補を出す."""
     if except_sent_uids is None:
         except_sent_uids = []
     q_term = "<-[:DEF]-(:Term)" if must_has_term else ""
+    q_has = "<-[:QUIZ_TARGET]-(:Quiz)" if has_quiz else ""
     order_by = OrderBy()
     q = f"""
         MATCH (sent: Sentence {{resource_uid: $resource_uid}})
             {q_term}
+            {q_has}
         WHERE NOT sent.uid IN $except_sent_uids
         {q_stats("sent", order_by)}
         {(order_by.phrase())}
@@ -136,3 +139,7 @@ async def list_candidates(
         except_sent_uids=[target_sent_id],
         **t.config,
     )
+
+
+async def list_distractors():
+    """誤答肢の取得."""
