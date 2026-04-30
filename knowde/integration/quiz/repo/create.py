@@ -17,17 +17,16 @@ from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.util import TZ
 
 
-# idを渡すだけでロジックは分離
-async def create_quiz(  # noqa: PLR0917
+async def create_quiz_and_correct(  # noqa: PLR0917
     target_sent_uid: UUIDy,
-    statement_type: QuizType,
+    quiz_type: QuizType,
     option_uids: Sequence[UUIDy],
     correct_uids: Sequence[UUIDy] | None = None,
     now: datetime | None = None,
     quiz_uid: UUID | None = None,
     user_uid: UUIDy | None = None,
 ) -> UUID:
-    """クイズの永続化."""
+    """クイズとその正解の永続化."""
     if now is None:
         now = datetime.now(tz=TZ)
     if quiz_uid is None:
@@ -38,7 +37,7 @@ async def create_quiz(  # noqa: PLR0917
         MATCH (tgt: Sentence {uid: $target_uid})
         CREATE (quiz: Quiz {
             uid: $quiz_uid
-            , statement_type: $statement_type
+            , quiz_type: $quiz_type
             , is_link_broken: false
             , created: datetime($now)
         })-[:QUIZ_TARGET]->(tgt)
@@ -64,12 +63,84 @@ async def create_quiz(  # noqa: PLR0917
             "target_uid": to_uuid(target_sent_uid).hex,
             "option_uids": [to_uuid(u).hex for u in option_uids],
             "correct_uids": [to_uuid(u).hex for u in correct_uids],
-            "statement_type": statement_type.name,
+            "quiz_type": quiz_type.name,
             "user_uid": to_uuid(user_uid).hex if user_uid is not None else None,
             "now": now.isoformat(),
         },
     )
     return quiz_uid
+
+
+# populate 定住させる
+#  IT で空のDBにデータを流し込むというニュアンス
+async def populate_quiz(
+    resource_id: UUIDy,
+    user_id: UUIDy,
+    quiz_type: QuizType,
+    n_quiz: int,
+    now: datetime | None = None,
+):
+    """coverageを上げるためのクイズ一括作成.
+
+    リソースごとの学習度を見て一括でクイズを作ったりしたいかも
+    テキトーにクイズを新規作成する
+    score順
+    リソース全体から無作為に選ぶ
+    クイズ未作成の単文の内から選ぶ
+    正答率が低いものから選ぶ
+      回答管理が優先
+    chainを辿ったクイズ一括作成.
+
+    全く同じクイズを重複して作成できないようにする
+    """
+    if now is None:
+        now = datetime.now(tz=TZ)
+    # must_has_term = quiz_type in {QuizType.SENT2TERM, QuizType.TERM2SENT}
+    # resoure のハイスコア順に sent_ids を取得
+    # tgt_uids = await list_top_scoring_candidates(
+    #     resource_id,
+    #     n_candidate=n_quiz,
+    #     must_has_term=must_has_term,
+    #     has_quiz=True,
+    # )
+
+    q = """
+        MATCH (tgt: Sentence {uid: $target_uid})
+        CREATE (quiz: Quiz {
+            uid: $quiz_uid
+            , quiz_type: $quiz_type
+            , is_link_broken: false
+            , created: datetime($now)
+        })-[:QUIZ_TARGET]->(tgt)
+        WITH quiz
+        CALL (quiz) {
+            OPTIONAL MATCH (u: User {uid: $user_uid})
+            WITH quiz, u WHERE u IS NOT NULL
+            CREATE (u)-[:CREATE]->(quiz)
+        }
+        WITH quiz
+        UNWIND $option_uids AS ouid
+        MATCH (opt: Sentence {uid: ouid})
+        CREATE (quiz)-[:QUIZ_OPTION]->(opt)
+        WITH DISTINCT quiz
+        UNWIND  $correct_uids AS cuid
+        MATCH (c: Sentence {uid: cuid})
+        CREATE (quiz)-[:CORRECT]->(c)
+    """
+
+    _rows, _ = await adb.cypher_query(
+        q,
+        params={
+            "quiz_type": quiz_type.name,
+            # "quiz_uid": quiz_uid.hex,
+            # "target_uid": to_uuid(target_sent_uid).hex,
+            # "option_uids": [to_uuid(u).hex for u in option_uids],
+            # "correct_uids": [to_uuid(u).hex for u in correct_uids],
+            # "quiz_type": quiz_type.name,
+            # "user_uid": to_uuid(user_uid).hex if user_uid is not None else None,
+            "now": now.isoformat(),
+        },
+    )
 
 
 async def create_answer(

@@ -24,7 +24,7 @@ class QuizSourceContainer(BaseModel, frozen=True):
     """quiz source用id容れ."""
 
     quiz_id: UUID
-    statement_type: QuizType  # build方法を指定してくれる
+    quiz_type: QuizType  # build方法を指定してくれる
     target_id: str
     correct_ids: set[str]
     source_ids: set[str]
@@ -43,7 +43,7 @@ class QuizSourceContainer(BaseModel, frozen=True):
         """変換."""
         return QuizSource(
             quiz_id=self.quiz_id,
-            statement_type=self.statement_type,
+            quiz_type=self.quiz_type,
             target_id=self.target_id,
             target=QuizOption(val=uid2kn[self.target_id].to_str_or_def()),
             sources={
@@ -65,7 +65,7 @@ class QuizSource(BaseModel, frozen=True):
     """
 
     quiz_id: UUID
-    statement_type: QuizType  # build方法を指定してくれる
+    quiz_type: QuizType  # build方法を指定してくれる
     target_id: str  # テストしやすいので UUIDではなくstrへ
     target: QuizOption
     # targetが答えになるとは限らない

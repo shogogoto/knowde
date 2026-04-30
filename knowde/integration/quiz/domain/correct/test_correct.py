@@ -18,7 +18,7 @@ def test_correct_rel_by_id(sn: SysNet):
     """クイズ対象と指定選択肢間の関係を正答にする."""
     _src = QuizSource(
         quiz_id=uuid.uuid4(),
-        statement_type=QuizType.REL2PAIR,
+        quiz_type=QuizType.REL2PAIR,
         target_id="1",  # 問いの対象
         target=QuizOption(val=sn.get("ccc"), rels=[QuizRel.DETAIL]),
         sources={

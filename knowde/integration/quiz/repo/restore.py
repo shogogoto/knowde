@@ -60,7 +60,7 @@ async def restore_quiz_sources(
         crct_uids = set(crct_uids)
         case = QuizSourceContainer(
             quiz_id=quiz.get("uid"),
-            statement_type=QuizType[quiz.get("statement_type")],
+            quiz_type=QuizType[quiz.get("quiz_type")],
             target_id=tgt_uid,
             correct_ids=crct_uids,
             source_ids=set(opt_uids).union(crct_uids),
