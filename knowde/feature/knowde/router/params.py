@@ -26,8 +26,6 @@ def get_search_param(  # noqa: PLR0917
     n_conclusion: int = Query(default=3),
     n_refer: int = Query(default=3),
     n_referred: int = Query(default=3),
-    dist_axiom: int = Query(default=1),
-    dist_leaf: int = Query(default=1),
     desc: bool = Query(default=True),  # noqa: FBT001
 ) -> SearchParam:
     """orderByがうまく変換されなかったので噛ませた."""
@@ -38,8 +36,6 @@ def get_search_param(  # noqa: PLR0917
         n_conclusion=n_conclusion,
         n_refer=n_refer,
         n_referred=n_referred,
-        dist_axiom=dist_axiom,
-        dist_leaf=dist_leaf,
         desc=desc,
     )
     return SearchParam(q=q, type=type, paging=paging, order=order)

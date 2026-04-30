@@ -75,13 +75,13 @@ async def test_search_knowde_with_resource_uid(u: LUser):
     _, r2 = await save_text(u.uid, s2)
     res = await search_knowde("")
     assert res.total == 7  # noqa: PLR2004
-    res = await search_knowde("", resource_uids=[r1.uid])
+    res = await search_knowde("", filter_resource_uids=[r1.uid])
     assert len(res.data) == 3  # noqa: PLR2004
     assert res.total == 3  # noqa: PLR2004
-    res = await search_knowde("", resource_uids=[r2.uid])
+    res = await search_knowde("", filter_resource_uids=[r2.uid])
     assert len(res.data) == 4  # noqa: PLR2004
     assert res.total == 4  # noqa: PLR2004
-    res = await search_knowde("", resource_uids=[r1.uid, r2.uid])
+    res = await search_knowde("", filter_resource_uids=[r1.uid, r2.uid])
     assert len(res.data) == 7  # noqa: PLR2004
     assert res.total == 7  # noqa: PLR2004
 
@@ -188,7 +188,7 @@ async def to_chain(u: LUser) -> SysNet:
 
 
 @mark_async_test()
-async def test_ordering(u: LUser):
+async def test_search_knowde_ordering(u: LUser):
     """検索結果の順番を確認."""
     _sn = await to_chain(u)
     order_by = OrderBy(
@@ -197,8 +197,6 @@ async def test_ordering(u: LUser):
         n_conclusion=0,
         n_refer=0,
         n_referred=-0,
-        dist_axiom=0,
-        dist_leaf=0,
     )
     res = await search_knowde(
         ".*",

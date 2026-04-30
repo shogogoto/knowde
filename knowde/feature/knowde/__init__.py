@@ -99,7 +99,7 @@ class Knowde(BaseModel, frozen=True):
 
 
 class ResourceInfo(BaseModel):
-    """リソースの所有者."""
+    """リソースの所有者や詳細."""
 
     user: UserReadPublic
     resource: MResource

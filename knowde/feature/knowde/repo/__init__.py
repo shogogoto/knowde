@@ -10,8 +10,10 @@ from neomodel import adb, db
 from knowde.feature.entry.namespace import resource_infos_by_resource_uids
 from knowde.feature.knowde import (
     KAdjacency,
-    Knowde,
     KnowdeSearchResult,
+)
+from knowde.feature.knowde import (
+    Knowde as Knowde,
 )
 from knowde.feature.knowde.repo.clause import OrderBy, WherePhrase
 from knowde.feature.knowde.repo.detail import fetch_knowdes_with_detail
@@ -62,18 +64,18 @@ def search_total(
         raise err from e
 
 
-async def search_knowde(  # noqa: PLR0917
+async def search_knowde_ids(  # noqa: PLR0917
     s: str,
     where: WherePhrase = WherePhrase.CONTAINS,
     paging: Paging = Paging(),
     order_by: OrderBy | None = OrderBy(),
-    resource_uids: list[UUIDy] | None = None,
+    filter_resource_uids: list[UUIDy] | None = None,
     do_print: bool = False,  # noqa: FBT001, FBT002
-) -> KnowdeSearchResult:
-    """用語、文のいずれかでマッチするものを返す."""
+) -> list[UUID]:
+    """用語、文のいずれかでマッチする単文のUUIDを返す."""
     q_rsrc = (
         ""
-        if resource_uids is None or len(resource_uids) == 0
+        if filter_resource_uids is None or len(filter_resource_uids) == 0
         else """
         WHERE sent.resource_uid IN $resource_uids
     """
@@ -93,32 +95,47 @@ async def search_knowde(  # noqa: PLR0917
         """
     if do_print:
         print(q)  # noqa: T201
-    rows, _ = db.cypher_query(
+    rows, _ = await adb.cypher_query(
         q,
         params={
             "s": s,
-            "resource_uids": [to_uuid(uid).hex for uid in resource_uids]
-            if resource_uids
+            "resource_uids": [to_uuid(uid).hex for uid in filter_resource_uids]
+            if filter_resource_uids
             else [],
         },
     )
-    uids = res2uidstrs(rows)
-    d = await fetch_knowdes_with_detail(uids, order_by=order_by)
-    ls: list[Knowde] = []
-    for row in rows:
-        sent_uid = row[0]
-        kst = d[sent_uid]
-        ls.append(kst)
+    return res2uidstrs(rows)
+
+
+async def search_knowde(  # noqa: PLR0917
+    s: str,
+    where: WherePhrase = WherePhrase.CONTAINS,
+    paging: Paging = Paging(),
+    order_by: OrderBy | None = OrderBy(),
+    filter_resource_uids: list[UUIDy] | None = None,
+    do_print: bool = False,  # noqa: FBT001, FBT002
+):
+    """用語、文のいずれかでマッチする単文の検索結果を返す."""
+    kn_uids = await search_knowde_ids(
+        s,
+        where,
+        paging,
+        order_by,
+        filter_resource_uids,
+        do_print,
+    )
+    d = await fetch_knowdes_with_detail(kn_uids, order_by=order_by)
+    ls = list(d.values())
     return KnowdeSearchResult(
-        total=search_total(s, where, resource_uids),
-        data=ls,
+        total=search_total(s, where, filter_resource_uids),
+        data=list(d.values()),
         resource_infos=await resource_infos_by_resource_uids({
             k.resource_uid for k in ls
         }),
     )
 
 
-def res2uidstrs(res: tuple) -> set[str]:
+def res2uidstrs(res: tuple) -> list[UUID]:
     """neo4j レスポンスからuuidのセットを返す."""
 
     def is_valid_uuid(uuid_string) -> bool:
@@ -130,7 +147,7 @@ def res2uidstrs(res: tuple) -> set[str]:
         except TypeError:
             return False
 
-    return set(filter(is_valid_uuid, collapse(res, base_type=UUID)))
+    return list(filter(is_valid_uuid, collapse(res, base_type=UUID)))
 
 
 async def adjacency_knowde(
