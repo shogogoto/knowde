@@ -158,7 +158,7 @@ async def adjacency_knowde(
     q = rf"""
         UNWIND $uids AS uid
         MATCH (sent: Sentence {{uid: uid}})
-        {q_adjacency_uids("sent", "sent")}
+        {q_adjacency_uids("sent", "sent", 1)}
         RETURN
             sent.uid AS sent_uid
             , premises

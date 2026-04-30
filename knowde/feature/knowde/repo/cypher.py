@@ -1,6 +1,7 @@
 """cypherの組立て."""
 
 from collections.abc import Callable
+from enum import Enum
 from textwrap import indent
 from typing import Any, Final
 
@@ -52,7 +53,7 @@ def q_stats(tgt: str, order_by: OrderBy | None = None) -> str:
             WITH DISTINCT tgts
                 , {tgt}
 
-            {q_adjacency_uids("tgts", tgt, all_chain=True)}
+            {q_adjacency_uids("tgts", tgt)}
             WITH
               SIZE(premises) AS n_premise
             , SIZE(conclusions) AS n_conclusion
@@ -123,34 +124,39 @@ def q_where_knowde(p: WherePhrase = WherePhrase.CONTAINS) -> str:
     """
 
 
+class AdjacencyType(Enum):
+    """隣接タイプ."""
+
+
 def q_adjacency_uids(
     sent_var: str,
     aggregate_var: str,
-    all_chain: bool = False,  # noqa: FBT001, FBT002
+    dist: int | None = None,
 ) -> str:
     """隣接する文のIDを返す."""
-    dist = "" if all_chain else "1"
+    dist_ = "" if dist is None else str(dist)
     q_detail = (
         f"""
-            OPTIONAL MATCH ({sent_var})-[:BELOW]->(:Sentence)
-                -[:SIBLING|BELOW]->*(detail:Sentence)
+        // dist = 1 の場合は1個下の兄弟まで
+        OPTIONAL MATCH ({sent_var})-[:BELOW]->(detail1:Sentence)
+        OPTIONAL MATCH (detail1)-[:SIBLING]->*(detail2:Sentence)
+        UNWIND [detail1, detail2] AS detail
         """
-        if all_chain
+        if dist == 1
         else f"""
-            OPTIONAL MATCH ({sent_var})-[:BELOW]->{{1,{dist}}}(detail1:Sentence)
-            OPTIONAL MATCH (detail1)-[:SIBLING]->*(detail2:Sentence)
-            UNWIND [detail1, detail2] AS detail
+        OPTIONAL MATCH ({sent_var})-[:BELOW]->(:Sentence)
+            -[:SIBLING|BELOW]->{{0, {dist_}}}(detail:Sentence)
         """
     )
 
     return f"""
         // q_adjacency_uid
-        OPTIONAL MATCH ({sent_var})<-[:TO]-{{1,{dist}}}(premise:Sentence)
-        OPTIONAL MATCH ({sent_var})-[:TO]->{{1,{dist}}}(conclusion:Sentence)
-        OPTIONAL MATCH ({sent_var})<-[:RESOLVED]-{{1,{dist}}}(referred:Sentence)
-        OPTIONAL MATCH ({sent_var})-[:RESOLVED]->{{1,{dist}}}(refer:Sentence)
-        OPTIONAL MATCH ({sent_var})<-[:EXAMPLE]-{{1,{dist}}}(abstract:Sentence)
-        OPTIONAL MATCH ({sent_var})-[:EXAMPLE]->{{1,{dist}}}(example:Sentence)
+        OPTIONAL MATCH ({sent_var})<-[:TO]-{{1,{dist_}}}(premise:Sentence)
+        OPTIONAL MATCH ({sent_var})-[:TO]->{{1,{dist_}}}(conclusion:Sentence)
+        OPTIONAL MATCH ({sent_var})<-[:RESOLVED]-{{1,{dist_}}}(referred:Sentence)
+        OPTIONAL MATCH ({sent_var})-[:RESOLVED]->{{1,{dist_}}}(refer:Sentence)
+        OPTIONAL MATCH ({sent_var})<-[:EXAMPLE]-{{1,{dist_}}}(abstract:Sentence)
+        OPTIONAL MATCH ({sent_var})-[:EXAMPLE]->{{1,{dist_}}}(example:Sentence)
         {q_detail}
         WITH
             {aggregate_var} // ここで集計する単位が決まる

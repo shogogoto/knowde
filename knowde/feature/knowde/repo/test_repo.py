@@ -242,11 +242,8 @@ async def test_details(u: LUser):
         WherePhrase.CONTAINS,
         # do_print=True,
     )
-    d1 = LSentence.nodes.get(val="detail1")
-    adjs1 = await adjacency_knowde([d1.uid], do_print=True)
-    d2 = LSentence.nodes.get(val="detail2")
-    adjs2 = await adjacency_knowde([d2.uid])
-
+    adjs1 = await adjacency_knowde([LSentence.nodes.get(val="detail1").uid])
+    adjs2 = await adjacency_knowde([LSentence.nodes.get(val="detail2").uid])
     assert [str(k) for k in adjs1[0].details] == ["d1T(114)", "d2", "d3"]
     assert [str(k) for k in adjs2[0].details] == [
         "x1",
