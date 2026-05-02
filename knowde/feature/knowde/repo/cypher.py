@@ -1,7 +1,6 @@
 """cypherの組立て."""
 
 from collections.abc import Callable
-from enum import Enum
 from textwrap import indent
 from typing import Any, Final
 
@@ -10,6 +9,7 @@ from neo4j.graph import Path
 
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.knowde import LocationWithoutParents, UidStr
+from knowde.feature.knowde.repo.adj import AdjType, detail_match
 from knowde.feature.knowde.repo.clause import OrderBy, WherePhrase
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.user.schema import UserReadPublic
@@ -124,49 +124,38 @@ def q_where_knowde(p: WherePhrase = WherePhrase.CONTAINS) -> str:
     """
 
 
-class AdjacencyType(Enum):
-    """隣接タイプ."""
-
-
 def q_adjacency_uids(
     sent_var: str,
     aggregate_var: str,
     dist: int | None = None,
 ) -> str:
     """隣接する文のIDを返す."""
-    dist_ = "" if dist is None else str(dist)
-    q_detail = (
-        f"""
-        // dist = 1 の場合は1個下の兄弟まで
-        OPTIONAL MATCH ({sent_var})-[:BELOW]->(detail1:Sentence)
-        OPTIONAL MATCH (detail1)-[:SIBLING]->*(detail2:Sentence)
-        UNWIND [detail1, detail2] AS detail
-        """
-        if dist == 1
-        else f"""
-        OPTIONAL MATCH ({sent_var})-[:BELOW]->(:Sentence)
-            -[:SIBLING|BELOW]->{{0, {dist_}}}(detail:Sentence)
-        """
-    )
+    q_detail = detail_match(sent_var, dist)
+    pre = AdjType.PREMISE.to_query(sent_var, dist)
+    con = AdjType.CONCLUSION.to_query(sent_var, dist)
+    referred = AdjType.REFRERD.to_query(sent_var, dist)
+    refer = AdjType.REFER.to_query(sent_var, dist)
+    abstract = AdjType.ABSTRACT.to_query(sent_var, dist)
+    example = AdjType.EXAMPLE.to_query(sent_var, dist)
 
     return f"""
         // q_adjacency_uid
-        OPTIONAL MATCH ({sent_var})<-[:TO]-{{1,{dist_}}}(premise:Sentence)
-        OPTIONAL MATCH ({sent_var})-[:TO]->{{1,{dist_}}}(conclusion:Sentence)
-        OPTIONAL MATCH ({sent_var})<-[:RESOLVED]-{{1,{dist_}}}(referred:Sentence)
-        OPTIONAL MATCH ({sent_var})-[:RESOLVED]->{{1,{dist_}}}(refer:Sentence)
-        OPTIONAL MATCH ({sent_var})<-[:EXAMPLE]-{{1,{dist_}}}(abstract:Sentence)
-        OPTIONAL MATCH ({sent_var})-[:EXAMPLE]->{{1,{dist_}}}(example:Sentence)
+        {pre.match}
+        {con.match}
+        {referred.match}
+        {refer.match}
+        {abstract.match}
+        {example.match}
         {q_detail}
         WITH
             {aggregate_var} // ここで集計する単位が決まる
-            , COLLECT(DISTINCT premise.uid) AS premises
-            , COLLECT(DISTINCT conclusion.uid) AS conclusions
-            , COLLECT(DISTINCT referred.uid) AS referreds
-            , COLLECT(DISTINCT refer.uid) AS refers
+            {pre.collect}
+            {con.collect}
+            {referred.collect}
+            {refer.collect}
+            {abstract.collect}
+            {example.collect}
             , COLLECT(DISTINCT detail.uid) AS details
-            , COLLECT(DISTINCT abstract.uid) AS abstracts
-            , COLLECT(DISTINCT example.uid) AS examples
     """
 
 
