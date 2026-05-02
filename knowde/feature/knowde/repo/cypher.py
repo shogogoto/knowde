@@ -9,7 +9,7 @@ from neo4j.graph import Path
 
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.knowde import LocationWithoutParents, UidStr
-from knowde.feature.knowde.repo.adj import AdjType, detail_match
+from knowde.feature.knowde.repo.adj import AdjType
 from knowde.feature.knowde.repo.clause import OrderBy, WherePhrase
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.user.schema import UserReadPublic
@@ -128,34 +128,19 @@ def q_adjacency_uids(
     sent_var: str,
     aggregate_var: str,
     dist: int | None = None,
+    types: list[AdjType] | None = None,
 ) -> str:
     """隣接する文のIDを返す."""
-    q_detail = detail_match(sent_var, dist)
-    pre = AdjType.PREMISE.to_query(sent_var, dist)
-    con = AdjType.CONCLUSION.to_query(sent_var, dist)
-    referred = AdjType.REFRERD.to_query(sent_var, dist)
-    refer = AdjType.REFER.to_query(sent_var, dist)
-    abstract = AdjType.ABSTRACT.to_query(sent_var, dist)
-    example = AdjType.EXAMPLE.to_query(sent_var, dist)
+    if types is None:
+        types = list(AdjType)
 
+    match_clauses = [t.match(sent_var, dist) for t in types]
+    collect_clauses = [t.collect for t in types]
     return f"""
-        // q_adjacency_uid
-        {pre.match}
-        {con.match}
-        {referred.match}
-        {refer.match}
-        {abstract.match}
-        {example.match}
-        {q_detail}
+        {"".join(match_clauses)}
         WITH
             {aggregate_var} // ここで集計する単位が決まる
-            {pre.collect}
-            {con.collect}
-            {referred.collect}
-            {refer.collect}
-            {abstract.collect}
-            {example.collect}
-            , COLLECT(DISTINCT detail.uid) AS details
+            {"".join(collect_clauses)}
     """
 
 

@@ -1,8 +1,6 @@
 """隣接クエリ関連."""
 
-from enum import Enum
-
-from pydantic import BaseModel
+from enum import StrEnum
 
 from knowde.shared.nxutil.edge_type import EdgeType
 
@@ -28,70 +26,48 @@ def q_arrow(name: str, reverse: bool) -> str:  # noqa: FBT001
     return f"<-[:{name}]-" if reverse else f"-[:{name}]->"
 
 
-class AdjQuery(BaseModel, frozen=True):
-    """隣接タイプ."""
+class AdjType(StrEnum):
+    """隣接タイプ (HTTP/FastAPI互換)."""
 
-    reverse: bool = False
-    sent_var: str  # 単文変数名
-    dist: int | None = None
-    name: str
-    et: str
-
-    @property
-    def match(self) -> str:
-        """Match query."""
-        sv = self.sent_var
-        d = "" if self.dist is None else str(self.dist)
-        arrow = q_arrow(self.et, self.reverse)
-        name = self.name
-        return f"""
-        OPTIONAL MATCH ({sv}){arrow}{{1,{d}}}({name}:Sentence)
-    """
+    PREMISE = "premise"
+    CONCLUSION = "conclusion"
+    REFERRED = "referred"
+    REFER = "refer"
+    ABSTRACT = "abstract"
+    EXAMPLE = "example"
+    DETAIL = "detail"
 
     @property
-    def collect(self) -> str:
-        """uuid集計."""
-        name = self.name
-        return f"""
-            , COLLECT(DISTINCT {name}.uid) AS {name}s
-    """
+    def reverse(self) -> bool:
+        """arrowの向きを逆にするか."""
+        return self in {AdjType.PREMISE, AdjType.REFERRED, AdjType.ABSTRACT}
 
-
-class AdjType(Enum):
-    """隣接タイプ."""
-
-    PREMISE = ("premise", True, EdgeType.TO)
-    CONCLUSION = ("conclusion", False, EdgeType.TO)
-    REFRERD = ("referred", True, EdgeType.RESOLVED)
-    REFER = ("refer", False, EdgeType.RESOLVED)
-    ABSTRACT = ("abstract", True, EdgeType.EXAMPLE)
-    EXAMPLE = ("example", False, EdgeType.EXAMPLE)
-
-    def to_query(self, sent_var: str, dist: int | None) -> AdjQuery:
-        """クエリ作成Classに変換."""
-        return AdjQuery(
-            sent_var=sent_var,
-            reverse=self.value[1],
-            name=self.value[0],
-            dist=dist,
-            et=self.value[2].name,
-        )
+    @property
+    def edge_type(self) -> EdgeType:
+        """EdgeType."""
+        return {
+            AdjType.PREMISE: EdgeType.TO,
+            AdjType.CONCLUSION: EdgeType.TO,
+            AdjType.REFERRED: EdgeType.RESOLVED,
+            AdjType.REFER: EdgeType.RESOLVED,
+            AdjType.ABSTRACT: EdgeType.EXAMPLE,
+            AdjType.EXAMPLE: EdgeType.EXAMPLE,
+            AdjType.DETAIL: EdgeType.BELOW,
+        }[self]
 
     def match(self, sent_var: str, dist: int | None) -> str:
         """Match query."""
-        if self == AdjType.EXAMPLE:
+        if self == AdjType.DETAIL:
             return detail_match(sent_var, dist)
-        name, rev, et = self.value
+        name, rev, et = self.value, self.reverse, self.edge_type
         ar = q_arrow(et.name, rev)
         d = "" if dist is None else str(dist)
         return f"""
-        OPTIONAL MATCH ({sent_var}){ar}{{1,{d}}}({name}:Sentence)
-    """
+        OPTIONAL MATCH ({sent_var}){ar}{{1,{d}}}({name}:Sentence)"""
 
     @property
     def collect(self) -> str:
         """uuid集計."""
-        name = self.value[0]
+        name = self.value
         return f"""
-            , COLLECT(DISTINCT {name}.uid) AS {name}s
-        """
+            , COLLECT(DISTINCT {name}.uid) AS {name}s"""
