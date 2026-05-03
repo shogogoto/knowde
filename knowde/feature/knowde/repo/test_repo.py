@@ -41,13 +41,20 @@ async def test_search_knowde_by_txt(u: LUser):
         B: bA123
         A11, TNTN: ちん
         D: bbbaaaaa
+        stcA1
     ## h12
         x: xxx
         y: {x}yy
     """
     _sn, _ = await save_text(u.uid, s)
     res = await search_knowde("A1")
+    assert [a.sentence for a in res.data] == unordered(["a", "ちん", "bA123", "stcA1"])
+    assert res.total == 4  # noqa: PLR2004
+
+    # 用語ありだけにフィルター
+    res = await search_knowde("A1", only_with_term=True)
     assert [a.sentence for a in res.data] == unordered(["a", "ちん", "bA123"])
+    assert res.total == 3  # noqa: PLR2004
 
     a = LSentence.nodes.get(val="xxx")
     adjs = await adjacency_knowde([a.uid])
@@ -237,11 +244,6 @@ async def test_details(u: LUser):
     """
     _, r = await save_text(u.uid, s)
     _sn, _uids = await restore_sysnet(r.uid)
-    _res = await search_knowde(
-        "detail",
-        WherePhrase.CONTAINS,
-        # do_print=True,
-    )
     adjs1 = await adjacency_knowde([LSentence.nodes.get(val="detail1").uid])
     adjs2 = await adjacency_knowde([LSentence.nodes.get(val="detail2").uid])
     assert [str(k) for k in adjs1[0].details] == ["d1T(114)", "d2", "d3"]

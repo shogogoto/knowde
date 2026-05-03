@@ -12,6 +12,7 @@ from knowde.feature.knowde import LocationWithoutParents, UidStr
 from knowde.feature.knowde.repo.adj import AdjType
 from knowde.feature.knowde.repo.clause import OrderBy, WherePhrase
 from knowde.shared.nxutil.edge_type import EdgeType
+from knowde.shared.types import UUIDy
 from knowde.shared.user.schema import UserReadPublic
 
 
@@ -113,15 +114,40 @@ def q_where_knowde(p: WherePhrase = WherePhrase.CONTAINS) -> str:
         // 検索文字列が含まれる文 q_where_knowde
         MATCH (sent1: Sentence WHERE sent1.val {where_phrase})
         {q_call_sent_names("sent1")}
-        RETURN sent1 AS sent, names
+        RETURN sent1 AS sent
         UNION
         // 検索文字列が含まれる用語
         MATCH (term2: Term WHERE term2.val {where_phrase}),
         (n1)-[:ALIAS]-*(term2: Term)-[:ALIAS]-*(n2: Term)
             -[:DEF]->(sent3: Sentence)
         UNWIND [n2, n1] AS name3
-        RETURN sent3 AS sent, COLLECT(DISTINCT name3) AS names
+        RETURN sent3 AS sent
     """
+
+
+def q_search(
+    where: WherePhrase,
+    filter_resource_uids: list[UUIDy] | None,
+    only_with_term: bool,  # noqa: FBT001
+) -> str:
+    """search_knowdeとtotalのクエリ."""
+    q_term = "MATCH (sent)<-[:DEF]-(:Term)" if only_with_term else ""
+    q_rsrc = (
+        ""
+        if filter_resource_uids is None or len(filter_resource_uids) == 0
+        else """
+        WHERE sent.resource_uid IN $resource_uids
+    """
+    )
+
+    return rf"""
+        CALL () {{
+        {indent(q_where_knowde(where), " " * 4)}
+        }}
+        {q_term}
+        WITH sent // 中間結果のサイズダウン
+            {q_rsrc}
+        """
 
 
 def q_adjacency_uids(
