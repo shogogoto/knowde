@@ -8,7 +8,7 @@ from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.entry.resource.repo.restore import restore_sysnet
 from knowde.feature.entry.resource.repo.save import sn2db
 from knowde.feature.entry.resource.usecase import save_text
-from knowde.feature.knowde.repo import adjacency_knowde, search_knowde
+from knowde.feature.knowde.repo import adj_knowde, search_knowde
 from knowde.feature.knowde.repo.cypher import q_stats
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.shared.cypher import Paging
@@ -57,7 +57,7 @@ async def test_search_knowde_by_txt(u: LUser):
     assert res.total == 3  # noqa: PLR2004
 
     a = LSentence.nodes.get(val="xxx")
-    adjs = await adjacency_knowde([a.uid])
+    adjs = await adj_knowde([a.uid])
     assert adjs[0].referreds[0].sentence == "{x}yy"
 
 
@@ -244,8 +244,8 @@ async def test_details(u: LUser):
     """
     _, r = await save_text(u.uid, s)
     _sn, _uids = await restore_sysnet(r.uid)
-    adjs1 = await adjacency_knowde([LSentence.nodes.get(val="detail1").uid])
-    adjs2 = await adjacency_knowde([LSentence.nodes.get(val="detail2").uid])
+    adjs1 = await adj_knowde([LSentence.nodes.get(val="detail1").uid])
+    adjs2 = await adj_knowde([LSentence.nodes.get(val="detail2").uid])
     assert [str(k) for k in adjs1[0].details] == ["d1T(114)", "d2", "d3"]
     assert [str(k) for k in adjs2[0].details] == [
         "x1",

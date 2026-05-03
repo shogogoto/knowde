@@ -17,35 +17,49 @@ from uuid import UUID
 from neomodel import adb
 from pydantic import Field, TypeAdapter
 
+from knowde.feature.knowde.repo import search_knowde_ids
 from knowde.feature.knowde.repo.clause import OrderBy
 from knowde.feature.knowde.repo.cypher import q_stats
 from knowde.integration.quiz.candidate.types import CandidateType
+from knowde.shared.cypher import Paging
 from knowde.shared.knowde.label import LSentence
 from knowde.shared.types import UUIDy, to_uuid
+
+
+# sent2resource_uid { sent_uid: resource_uid }
+async def fetch_sent2resource_id(sent_ids: list[UUIDy]):
+    """単文IDをそのリソースのIDへ変換."""
+    q = """
+        UNWIND $sent_uids AS sent_uid
+        MATCH (sent:Sentence {uid: sent_uid})
+        RETURN DISTINCT sent.resource_uid
+    """
+    rows, _ = await adb.cypher_query(
+        q,
+        params={"sent_uids": [to_uuid(uid).hex for uid in sent_ids]},
+    )
+    return [row[0] for row in rows]
+
+
+ENOUGH_PAGING = Paging(size=999999)  # 十分な大きさ
 
 
 # list_candidates_by_radiusで呼べるからこれを直接呼ぶことはなさそう
 async def _list_candidates_in_resource(
     target_sent_ids: list[UUIDy],
     must_has_term: bool = False,  # noqa: FBT001, FBT002
-):
-    """リソース内全ての単文を選択肢候補として列挙."""
-    q_term = "<-[:DEF]-(:Term)" if must_has_term else ""
-    q = f"""
-        UNWIND $sent_uids AS sent_uid
-        MATCH (sent:Sentence {{uid: sent_uid}})
-        OPTIONAL MATCH (s:Sentence {{resource_uid: sent.resource_uid}})
-            {q_term}
-        WHERE s.uid <> sent.uid
-        RETURN DISTINCT s.uid
-    """
-    rows, _ = await adb.cypher_query(
-        q,
-        params={
-            "sent_uids": [to_uuid(uid).hex for uid in target_sent_ids],
-        },
+) -> list[str]:
+    """リソース内全ての単文uidを選択肢候補として列挙."""
+    rs_uids = await fetch_sent2resource_id(target_sent_ids)
+    uids = await search_knowde_ids(
+        "",
+        paging=ENOUGH_PAGING,
+        order_by=None,  # 無駄な並び替え省く
+        filter_resource_uids=rs_uids,
+        only_with_term=must_has_term,
     )
-    return [row[0] for row in rows]
+    exclude = set(target_sent_ids)
+    return [u for u in uids if u not in exclude]
 
 
 type Radius = Annotated[int, Field(gt=0, title="探索半径")]

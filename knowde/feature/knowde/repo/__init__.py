@@ -55,7 +55,7 @@ async def search_knowde_ids(  # noqa: PLR0917
     filter_resource_uids: list[UUIDy] | None = None,
     only_with_term: bool = False,  # noqa: FBT001, FBT002
     do_print: bool = False,  # noqa: FBT001, FBT002
-) -> list[UUID]:
+) -> list[str]:
     """用語、文のいずれかでマッチする単文のUUIDを返す."""
     q = q_search(where, filter_resource_uids, only_with_term)
     q += f"""
@@ -109,7 +109,7 @@ async def search_knowde(  # noqa: PLR0917
     )
 
 
-def res2uidstrs(res: tuple) -> list[UUID]:
+def res2uidstrs(res: tuple) -> list[str]:
     """neo4j レスポンスからuuidのセットを返す."""
 
     def is_valid_uuid(uuid_string) -> bool:
@@ -124,15 +124,16 @@ def res2uidstrs(res: tuple) -> list[UUID]:
     return list(filter(is_valid_uuid, collapse(res, base_type=UUID)))
 
 
-async def adjacency_knowde(
+async def adj_knowde(
     sent_uids: list[UUIDy],
+    radius: int = 1,
     do_print: bool = False,  # noqa: FBT001, FBT002
 ) -> list[KAdjacency]:
     """隣接knowdeを返す."""
     q = rf"""
         UNWIND $uids AS uid
         MATCH (sent: Sentence {{uid: uid}})
-        {q_adjacency_uids("sent", "sent", 1)}
+        {q_adjacency_uids("sent", "sent", radius)}
         RETURN
             sent.uid AS sent_uid
             , premises
