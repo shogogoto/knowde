@@ -66,7 +66,6 @@ async def test_list_top_scoring_candidates():
     # 用語ありなのは5個
     res = await list_top_scoring_candidates(
         sent.resource_uid,
-        999,
         only_with_term=True,
         except_sent_uids=[sent.uid],
     )
@@ -75,7 +74,6 @@ async def test_list_top_scoring_candidates():
     # 単文全てで16個 (対象を除く)
     res = await list_top_scoring_candidates(
         sent.resource_uid,
-        999,
         only_with_term=False,
         except_sent_uids=[sent.uid],
     )

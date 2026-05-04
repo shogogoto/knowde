@@ -19,7 +19,6 @@ from pydantic import Field, TypeAdapter
 
 from knowde.feature.knowde.repo import search_knowde_ids
 from knowde.feature.knowde.repo.clause import OrderBy
-from knowde.feature.knowde.repo.cypher import q_stats
 from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.shared.cypher import Paging
 from knowde.shared.knowde.label import LSentence
@@ -48,7 +47,7 @@ ENOUGH_PAGING = Paging(size=999999)  # 十分な大きさ
 async def _list_candidates_in_resource(
     target_sent_ids: list[UUIDy],
     only_with_term: bool = False,  # noqa: FBT001, FBT002
-) -> list[str]:
+) -> list[UUID]:
     """リソース内全ての単文uidを選択肢候補として列挙."""
     rs_uids = await fetch_sent2resource_id(target_sent_ids)
     uids = await search_knowde_ids(
@@ -70,7 +69,7 @@ async def list_candidates_by_radius(
     target_sent_ids: list[UUIDy],
     radius: Radius | None = None,  # Noneの時にリソース内全てを返す
     only_with_term: bool = False,  # noqa: FBT001, FBT002
-) -> list[str]:
+) -> list[UUID]:
     """距離指定で選択肢候補を列挙."""
     if radius is None:
         return await _list_candidates_in_resource(
@@ -79,6 +78,8 @@ async def list_candidates_by_radius(
         )
     r = r_adapter.validate_python(radius)
     q_term = "<-[:DEF]-(:Term)" if only_with_term else ""
+    # search_knowde あたりをcallするだけにしたかったが
+    # locationを持たせる設計になっているため合わない
     q = f"""
         UNWIND $sent_uids AS sent_uid
         MATCH (sent:Sentence {{uid: sent_uid}})
@@ -96,40 +97,48 @@ async def list_candidates_by_radius(
     return [row[0] for row in rows]
 
 
+async def filter_has_quiz(
+    sent_ids: list[UUIDy],
+    limit: int,
+) -> list[UUID]:
+    """クイズが既にある単文を除外."""
+    q = """
+        UNWIND $sent_uids AS sent_uid
+        MATCH (sent:Sentence {{uid: sent_uid}})
+        OPTIONAL MATCH (sent)<-[:QUIZ_TARGET]-(q:Quiz)
+        WITH sent, COUNT(q) AS quiz_count
+        WHERE quiz_count < $limit
+        RETURN sent.uid
+    """
+    rows, _ = await adb.cypher_query(
+        q,
+        params={
+            "sent_uids": [to_uuid(uid).hex for uid in sent_ids],
+            "limit": limit,
+        },
+    )
+    return [row[0] for row in rows]
+
+
 # 重要な単文を選択肢に混ぜて単純接触効果による学習効果を狙う
-async def list_top_scoring_candidates(  # noqa: PLR0917
+async def list_top_scoring_candidates(
     resource_uid: UUIDy,
-    n_candidate: int,
     only_with_term: bool = False,  # noqa: FBT001, FBT002
     except_sent_uids: list[UUIDy] | None = None,
-    has_quiz: bool = False,  # noqa: FBT001, FBT002
     order_by=OrderBy(),
 ) -> list[UUID]:
     """スコアの上位から候補を出す."""
     if except_sent_uids is None:
         except_sent_uids = []
-    q_term = "<-[:DEF]-(:Term)" if only_with_term else ""
-    q_has = "<-[:QUIZ_TARGET]-(:Quiz)" if has_quiz else ""
-    q = f"""
-        MATCH (sent: Sentence {{resource_uid: $resource_uid}})
-            {q_term}
-            {q_has}
-        WHERE NOT sent.uid IN $except_sent_uids
-        {q_stats("sent", order_by)}
-        {(order_by.phrase())}
-        LIMIT $n_candidate
-        RETURN DISTINCT sent.uid
-    """
-    rows, _ = await adb.cypher_query(
-        q,
-        params={
-            "resource_uid": to_uuid(resource_uid).hex,
-            # 対象単文を除いて指定数を返してほしい
-            "n_candidate": n_candidate + 1,
-            "except_sent_uids": [to_uuid(uid).hex for uid in except_sent_uids],
-        },
+    rows = await search_knowde_ids(
+        "",
+        paging=ENOUGH_PAGING,
+        order_by=order_by,
+        filter_resource_uids=[to_uuid(resource_uid).hex],
+        only_with_term=only_with_term,
     )
-    return [row[0] for row in rows]
+    ex = set(except_sent_uids)
+    return [row for row in rows if row not in ex]
 
 
 async def list_candidates(

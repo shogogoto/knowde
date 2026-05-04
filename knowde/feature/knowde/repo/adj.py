@@ -2,7 +2,7 @@
 
 from enum import StrEnum
 
-from knowde.shared.nxutil.edge_type import EdgeType
+from knowde.shared.nxutil.edge_type import Direction, EdgeType
 
 
 def detail_match(sent_var: str, dist: int | None) -> str:
@@ -21,9 +21,15 @@ def detail_match(sent_var: str, dist: int | None) -> str:
     """
 
 
-def q_arrow(name: str, reverse: bool) -> str:  # noqa: FBT001
+def q_arrow(name: str, d: Direction) -> str:
     """矢印."""
-    return f"<-[:{name}]-" if reverse else f"-[:{name}]->"
+    match d:
+        case Direction.FORWARD:
+            return f"-[:{name}]->"
+        case Direction.BACKWARD:
+            return f"<-[:{name}]-"
+        case Direction.BOTH:
+            return f"-[:{name}]-"
 
 
 class AdjType(StrEnum):
@@ -36,31 +42,44 @@ class AdjType(StrEnum):
     ABSTRACT = "abstract"
     EXAMPLE = "example"
     DETAIL = "detail"
+    SIBLING = "sibling"
+    PARENT = "parent"
+
+    @classmethod
+    def location_types(cls) -> list["AdjType"]:
+        """location付きでのクエリで使う想定."""
+        return [
+            cls.PREMISE,
+            cls.CONCLUSION,
+            cls.REFERRED,
+            cls.REFER,
+            cls.ABSTRACT,
+            cls.EXAMPLE,
+            cls.DETAIL,
+        ]
 
     @property
-    def reverse(self) -> bool:
-        """arrowの向きを逆にするか."""
-        return self in {AdjType.PREMISE, AdjType.REFERRED, AdjType.ABSTRACT}
-
-    @property
-    def edge_type(self) -> EdgeType:
+    def edge_type(self) -> tuple[EdgeType, Direction]:
         """EdgeType."""
         return {
-            AdjType.PREMISE: EdgeType.TO,
-            AdjType.CONCLUSION: EdgeType.TO,
-            AdjType.REFERRED: EdgeType.RESOLVED,
-            AdjType.REFER: EdgeType.RESOLVED,
-            AdjType.ABSTRACT: EdgeType.EXAMPLE,
-            AdjType.EXAMPLE: EdgeType.EXAMPLE,
-            AdjType.DETAIL: EdgeType.BELOW,
+            AdjType.PREMISE: (EdgeType.TO, Direction.BACKWARD),
+            AdjType.CONCLUSION: (EdgeType.TO, Direction.FORWARD),
+            AdjType.REFERRED: (EdgeType.RESOLVED, Direction.BACKWARD),
+            AdjType.REFER: (EdgeType.RESOLVED, Direction.FORWARD),
+            AdjType.ABSTRACT: (EdgeType.EXAMPLE, Direction.BACKWARD),
+            AdjType.EXAMPLE: (EdgeType.EXAMPLE, Direction.FORWARD),
+            AdjType.DETAIL: (EdgeType.BELOW, Direction.FORWARD),
+            AdjType.SIBLING: (EdgeType.SIBLING, Direction.BOTH),
+            AdjType.PARENT: (EdgeType.BELOW, Direction.BACKWARD),
         }[self]
 
     def match(self, sent_var: str, dist: int | None) -> str:
         """Match query."""
         if self == AdjType.DETAIL:
             return detail_match(sent_var, dist)
-        name, rev, et = self.value, self.reverse, self.edge_type
-        ar = q_arrow(et.name, rev)
+        name = self.value
+        et, direc = self.edge_type
+        ar = q_arrow(et.name, direc)
         d = "" if dist is None else str(dist)
         return f"""
         OPTIONAL MATCH ({sent_var}){ar}{{1,{d}}}({name}:Sentence)"""

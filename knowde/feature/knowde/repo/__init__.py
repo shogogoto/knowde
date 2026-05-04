@@ -14,6 +14,7 @@ from knowde.feature.knowde import (
 from knowde.feature.knowde import (
     Knowde as Knowde,
 )
+from knowde.feature.knowde.repo.adj import AdjType
 from knowde.feature.knowde.repo.clause import OrderBy, WherePhrase
 from knowde.feature.knowde.repo.detail import fetch_knowdes_with_detail
 from knowde.shared.cypher import Paging
@@ -56,7 +57,7 @@ async def search_knowde_ids(  # noqa: PLR0917
     filter_resource_uids: list[UUIDy] | None = None,
     only_with_term: bool = False,  # noqa: FBT001, FBT002
     do_print: bool = False,  # noqa: FBT001, FBT002
-) -> list[str]:
+) -> list[UUID]:
     """用語、文のいずれかでマッチする単文のUUIDを返す."""
     q = q_search(where, filter_resource_uids, only_with_term)
     q += f"""
@@ -110,7 +111,7 @@ async def search_knowde(  # noqa: PLR0917
     )
 
 
-def res2uidstrs(res: tuple) -> list[str]:
+def res2uidstrs(res: tuple) -> list[UUID]:
     """neo4j レスポンスからuuidのセットを返す."""
 
     def is_valid_uuid(uuid_string) -> bool:
@@ -129,8 +130,9 @@ async def adj_knowde_ids(
     sent_uids: list[UUIDy],
     radius: int = 1,
     only_with_term: bool = False,  # noqa: FBT001, FBT002
+    types: list[AdjType] | None = None,
     do_print: bool = False,  # noqa: FBT001, FBT002
-) -> tuple[list[str], Any]:
+) -> tuple[list[UUID], Any]:
     """隣接knowdeのidを返す."""
     q_term = "<-[:DEF]-(:Term)" if only_with_term else ""
     q = rf"""

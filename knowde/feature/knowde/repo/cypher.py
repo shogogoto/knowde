@@ -158,7 +158,7 @@ def q_adjacency_uids(
 ) -> str:
     """隣接する文のIDを返す."""
     if types is None:
-        types = list(AdjType)
+        types = AdjType.location_types()
 
     match_clauses = [t.match(sent_var, dist) for t in types]
     collect_clauses = [t.collect for t in types]
