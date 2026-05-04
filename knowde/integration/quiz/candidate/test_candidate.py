@@ -36,7 +36,7 @@ async def test_list_candidates_in_resource():
     sent = LSentence.nodes.first(val="aaa")
     c = await _list_candidates_in_resource([sent.uid])
     assert len(c) == 3  # noqa: PLR2004
-    c = await _list_candidates_in_resource([sent.uid], must_has_term=True)
+    c = await _list_candidates_in_resource([sent.uid], only_with_term=True)
     assert len(c) == 2  # noqa: PLR2004
 
 
@@ -51,11 +51,10 @@ async def test_list_candidates_by_radius():
     assert len(c) == 2  # noqa: PLR2004
     c = await list_candidates_by_radius([sent.uid], radius=2)
     assert len(c) == 3  # noqa: PLR2004
-
     # 用語あり
-    c = await list_candidates_by_radius([sent.uid], radius=1, must_has_term=True)
+    c = await list_candidates_by_radius([sent.uid], radius=1, only_with_term=True)
     assert len(c) == 1
-    c = await list_candidates_by_radius([sent.uid], radius=2, must_has_term=True)
+    c = await list_candidates_by_radius([sent.uid], radius=2, only_with_term=True)
     assert len(c) == 2  # noqa: PLR2004
 
 
@@ -68,7 +67,7 @@ async def test_list_top_scoring_candidates():
     res = await list_top_scoring_candidates(
         sent.resource_uid,
         999,
-        must_has_term=True,
+        only_with_term=True,
         except_sent_uids=[sent.uid],
     )
     assert len(res) == 5  # noqa: PLR2004
@@ -77,7 +76,7 @@ async def test_list_top_scoring_candidates():
     res = await list_top_scoring_candidates(
         sent.resource_uid,
         999,
-        must_has_term=False,
+        only_with_term=False,
         except_sent_uids=[sent.uid],
     )
     assert len(res) == 15  # noqa: PLR2004

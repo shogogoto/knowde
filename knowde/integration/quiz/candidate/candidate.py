@@ -47,7 +47,7 @@ ENOUGH_PAGING = Paging(size=999999)  # 十分な大きさ
 # list_candidates_by_radiusで呼べるからこれを直接呼ぶことはなさそう
 async def _list_candidates_in_resource(
     target_sent_ids: list[UUIDy],
-    must_has_term: bool = False,  # noqa: FBT001, FBT002
+    only_with_term: bool = False,  # noqa: FBT001, FBT002
 ) -> list[str]:
     """リソース内全ての単文uidを選択肢候補として列挙."""
     rs_uids = await fetch_sent2resource_id(target_sent_ids)
@@ -56,7 +56,7 @@ async def _list_candidates_in_resource(
         paging=ENOUGH_PAGING,
         order_by=None,  # 無駄な並び替え省く
         filter_resource_uids=rs_uids,
-        only_with_term=must_has_term,
+        only_with_term=only_with_term,
     )
     exclude = set(target_sent_ids)
     return [u for u in uids if u not in exclude]
@@ -69,22 +69,21 @@ r_adapter = TypeAdapter(Radius)
 async def list_candidates_by_radius(
     target_sent_ids: list[UUIDy],
     radius: Radius | None = None,  # Noneの時にリソース内全てを返す
-    must_has_term: bool = False,  # noqa: FBT001, FBT002
-) -> list[UUID]:
+    only_with_term: bool = False,  # noqa: FBT001, FBT002
+) -> list[str]:
     """距離指定で選択肢候補を列挙."""
     if radius is None:
         return await _list_candidates_in_resource(
             target_sent_ids,
-            must_has_term=must_has_term,
+            only_with_term=only_with_term,
         )
-
-    radius = r_adapter.validate_python(radius)
-    q_term = "<-[:DEF]-(:Term)" if must_has_term else ""
+    r = r_adapter.validate_python(radius)
+    q_term = "<-[:DEF]-(:Term)" if only_with_term else ""
     q = f"""
         UNWIND $sent_uids AS sent_uid
         MATCH (sent:Sentence {{uid: sent_uid}})
         // dist=1.. にすることで sent_uidを含めない
-        OPTIONAL MATCH p = (sent)-[]-{{1, {radius}}}(e:Sentence)
+        OPTIONAL MATCH p = (sent)-[]-{{1, {r}}}(e:Sentence)
             {q_term}
         RETURN DISTINCT e.uid
     """
@@ -98,19 +97,19 @@ async def list_candidates_by_radius(
 
 
 # 重要な単文を選択肢に混ぜて単純接触効果による学習効果を狙う
-async def list_top_scoring_candidates(
+async def list_top_scoring_candidates(  # noqa: PLR0917
     resource_uid: UUIDy,
     n_candidate: int,
-    must_has_term: bool = False,  # noqa: FBT001, FBT002
+    only_with_term: bool = False,  # noqa: FBT001, FBT002
     except_sent_uids: list[UUIDy] | None = None,
     has_quiz: bool = False,  # noqa: FBT001, FBT002
+    order_by=OrderBy(),
 ) -> list[UUID]:
     """スコアの上位から候補を出す."""
     if except_sent_uids is None:
         except_sent_uids = []
-    q_term = "<-[:DEF]-(:Term)" if must_has_term else ""
+    q_term = "<-[:DEF]-(:Term)" if only_with_term else ""
     q_has = "<-[:QUIZ_TARGET]-(:Quiz)" if has_quiz else ""
-    order_by = OrderBy()
     q = f"""
         MATCH (sent: Sentence {{resource_uid: $resource_uid}})
             {q_term}
@@ -142,18 +141,14 @@ async def list_candidates(
     if t.is_radius_type():
         return await list_candidates_by_radius(
             [target_sent_id],
-            must_has_term=must_has_term,
+            only_with_term=must_has_term,
             **t.config,
         )
 
     s = LSentence.nodes.get(uid=to_uuid(target_sent_id).hex)
     return await list_top_scoring_candidates(
         s.resource_uid,
-        must_has_term=must_has_term,
+        only_with_term=must_has_term,
         except_sent_uids=[target_sent_id],
         **t.config,
     )
-
-
-async def list_distractors():
-    """誤答肢の取得."""

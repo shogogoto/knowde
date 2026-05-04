@@ -1,5 +1,6 @@
 """repo."""
 
+from typing import Any
 from uuid import UUID
 
 from more_itertools import collapse
@@ -124,15 +125,18 @@ def res2uidstrs(res: tuple) -> list[str]:
     return list(filter(is_valid_uuid, collapse(res, base_type=UUID)))
 
 
-async def adj_knowde(
+async def adj_knowde_ids(
     sent_uids: list[UUIDy],
     radius: int = 1,
+    only_with_term: bool = False,  # noqa: FBT001, FBT002
     do_print: bool = False,  # noqa: FBT001, FBT002
-) -> list[KAdjacency]:
-    """隣接knowdeを返す."""
+) -> tuple[list[str], Any]:
+    """隣接knowdeのidを返す."""
+    q_term = "<-[:DEF]-(:Term)" if only_with_term else ""
     q = rf"""
         UNWIND $uids AS uid
         MATCH (sent: Sentence {{uid: uid}})
+            {q_term}
         {q_adjacency_uids("sent", "sent", radius)}
         RETURN
             sent.uid AS sent_uid
@@ -150,8 +154,18 @@ async def adj_knowde(
         q,
         params={"uids": [to_uuid(uid).hex for uid in sent_uids]},
     )
-    uids = res2uidstrs(rows)
-    knowdes = await fetch_knowdes_with_detail(list(uids))
+    return res2uidstrs(rows), rows
+
+
+async def adj_knowde(
+    sent_uids: list[UUIDy],
+    radius: int = 1,
+    only_with_term: bool = False,  # noqa: FBT001, FBT002
+    do_print: bool = False,  # noqa: FBT001, FBT002
+) -> list[KAdjacency]:
+    """隣接knowdeを返す."""
+    uids, rows = await adj_knowde_ids(sent_uids, radius, only_with_term, do_print)
+    knowdes = await fetch_knowdes_with_detail(uids)
     ls = []
     for row in rows:
         sent, premises, conclusions, refers, referreds, details, abstracts, examples = (

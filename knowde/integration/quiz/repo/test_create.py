@@ -25,7 +25,7 @@ async def _sample(n_option: int):
     cand_uids = await list_candidates_by_radius(
         [sent.uid],
         radius=99,
-        must_has_term=True,
+        only_with_term=True,
     )
     return sent.uid, sample_safe(cand_uids, n_option=n_option)
 
@@ -123,7 +123,7 @@ async def test_answer(u: LUser):
     cand_uids = await list_candidates_by_radius(
         [sent.uid],
         radius=99,
-        must_has_term=True,
+        only_with_term=True,
     )
     sample_uids = sample_safe(cand_uids, n_option=n_option)
     quiz_uid = await create_quiz_and_correct(
