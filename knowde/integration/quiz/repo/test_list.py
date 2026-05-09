@@ -1,7 +1,6 @@
 """列挙系."""
 
 from knowde.conftest import async_fixture, mark_async_test
-from knowde.integration.quiz.candidate.candidate import list_candidates
 from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.integration.quiz.distractor.domain import sample_safe
 from knowde.integration.quiz.domain.parts import QuizType
@@ -20,11 +19,7 @@ u = async_fixture()(fx_u)
 
 
 async def _f(sent_id: UUIDy):
-    cand_uids = await list_candidates(
-        sent_id,
-        CandidateType.NEAR,
-        must_has_term=True,
-    )
+    cand_uids = await CandidateType.NEAR.fetch(sent_id, True)  # noqa: FBT003
     return sample_safe(cand_uids, n_option=4)
 
 

@@ -8,9 +8,7 @@ from pydantic import Field, TypeAdapter
 
 from knowde.feature.knowde.repo import search_knowde_ids
 from knowde.feature.knowde.repo.clause import OrderBy
-from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.shared.cypher import Paging
-from knowde.shared.knowde.label import LSentence
 from knowde.shared.types import UUIDy, to_uuid
 
 
@@ -32,8 +30,7 @@ async def fetch_sent2resource_id(sent_ids: list[UUIDy]):
 ENOUGH_PAGING = Paging(size=999999)  # 十分な大きさ
 
 
-# list_candidates_by_radiusで呼べるからこれを直接呼ぶことはなさそう
-async def _list_candidates_in_resource(
+async def list_candidates_in_resource(
     target_sent_ids: list[UUIDy],
     only_with_term: bool = False,  # noqa: FBT001, FBT002
 ) -> list[UUID]:
@@ -56,15 +53,10 @@ r_adapter = TypeAdapter(Radius)
 
 async def list_candidates_by_radius(
     target_sent_ids: list[UUIDy],
-    radius: Radius | None = None,  # Noneの時にリソース内全てを返す
+    radius: int,
     only_with_term: bool = False,  # noqa: FBT001, FBT002
 ) -> list[UUID]:
     """距離指定で選択肢候補を列挙."""
-    if radius is None:
-        return await _list_candidates_in_resource(
-            target_sent_ids,
-            only_with_term=only_with_term,
-        )
     r = r_adapter.validate_python(radius)
     q_term = "<-[:DEF]-(:Term)" if only_with_term else ""
     # search_knowde あたりをcallするだけにしたかったが
@@ -111,37 +103,17 @@ async def filter_has_quiz(
 
 # 重要な単文を選択肢に混ぜて単純接触効果による学習効果を狙う
 async def list_top_scoring_candidates(
-    resource_uid: UUIDy,
+    resource_uids: list[UUIDy],
     only_with_term: bool = False,  # noqa: FBT001, FBT002
     order_by=OrderBy(),
+    limit: int = 100,
 ) -> list[UUID]:
     """スコアの上位から候補を出す."""
     rows = await search_knowde_ids(
         "",
-        paging=ENOUGH_PAGING,
+        paging=Paging(size=limit),
         order_by=order_by,
-        filter_resource_uids=[to_uuid(resource_uid).hex],
+        filter_resource_uids=[to_uuid(u).hex for u in resource_uids],
         only_with_term=only_with_term,
     )
     return list(rows)
-
-
-async def list_candidates(
-    target_sent_id: UUIDy,
-    t: CandidateType,
-    must_has_term: bool = False,  # noqa: FBT001, FBT002
-) -> list[UUID]:
-    """タイプに従って候補を返す."""
-    if t.is_radius_type():
-        return await list_candidates_by_radius(
-            [target_sent_id],
-            only_with_term=must_has_term,
-            **t.config,
-        )
-
-    s = LSentence.nodes.get(uid=to_uuid(target_sent_id).hex)
-    return await list_top_scoring_candidates(
-        s.resource_uid,
-        only_with_term=must_has_term,
-        **t.config,
-    )

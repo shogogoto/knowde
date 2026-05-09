@@ -10,8 +10,8 @@ from knowde.shared.knowde.label import LSentence
 from knowde.shared.user.label import LUser
 
 from .candidate import (
-    _list_candidates_in_resource,
     list_candidates_by_radius,
+    list_candidates_in_resource,
     list_top_scoring_candidates,
 )
 
@@ -34,9 +34,9 @@ async def test_list_candidates_in_resource():
     """リソース内検索."""
     await u()
     sent = LSentence.nodes.first(val="aaa")
-    c = await _list_candidates_in_resource([sent.uid])
+    c = await list_candidates_in_resource([sent.uid])
     assert len(c) == 3  # noqa: PLR2004
-    c = await _list_candidates_in_resource([sent.uid], only_with_term=True)
+    c = await list_candidates_in_resource([sent.uid], only_with_term=True)
     assert len(c) == 2  # noqa: PLR2004
 
 
@@ -65,14 +65,14 @@ async def test_list_top_scoring_candidates():
     sent = LSentence.nodes.first(val="aaa")
     # 用語ありなのは5個
     res = await list_top_scoring_candidates(
-        sent.resource_uid,
+        [sent.resource_uid],
         only_with_term=True,
     )
     assert len(res) == 5  # noqa: PLR2004
 
     # 単文全てで16個 (対象自信を含む)
     res = await list_top_scoring_candidates(
-        sent.resource_uid,
+        [sent.resource_uid],
         only_with_term=False,
     )
     assert len(res) == 15 + 1
