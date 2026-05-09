@@ -3,8 +3,8 @@
 from pydantic import BaseModel
 
 from knowde.integration.quiz.candidate.types import CandidateType
+from knowde.integration.quiz.distractor.domain import SamplingType
 from knowde.integration.quiz.domain.parts import QuizType
-from knowde.integration.quiz.sampling.types import SamplingType
 
 
 class BatchCreateQuizParam(BaseModel, frozen=True):

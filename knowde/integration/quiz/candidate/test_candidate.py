@@ -67,14 +67,12 @@ async def test_list_top_scoring_candidates():
     res = await list_top_scoring_candidates(
         sent.resource_uid,
         only_with_term=True,
-        except_sent_uids=[sent.uid],
     )
     assert len(res) == 5  # noqa: PLR2004
 
-    # 単文全てで16個 (対象を除く)
+    # 単文全てで16個 (対象自信を含む)
     res = await list_top_scoring_candidates(
         sent.resource_uid,
         only_with_term=False,
-        except_sent_uids=[sent.uid],
     )
-    assert len(res) == 15  # noqa: PLR2004
+    assert len(res) == 15 + 1

@@ -4,12 +4,12 @@ from httpx import AsyncClient
 
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.integration.quiz.candidate.types import CandidateType
+from knowde.integration.quiz.distractor.domain import SamplingType
 from knowde.integration.quiz.domain.answer import Answer
 from knowde.integration.quiz.domain.domain import ReadableQuiz
 from knowde.integration.quiz.domain.parts import QuizType
 from knowde.integration.quiz.fixture import fx_u
 from knowde.integration.quiz.router.params import CreateQuizParam
-from knowde.integration.quiz.sampling.types import SamplingType
 from knowde.shared.knowde.label import LSentence
 from knowde.shared.types import to_uuid
 from knowde.shared.user.label import LUser

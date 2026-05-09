@@ -71,6 +71,27 @@ async def create_quiz_and_correct(  # noqa: PLR0917
     return quiz_uid
 
 
+async def create_quiz_term2sent(  # noqa: PLR0917
+    target_term_uid: UUIDy,
+    quiz_type: QuizType,
+    option_uids: Sequence[UUIDy],
+    correct_uids: Sequence[UUIDy] | None = None,
+    now: datetime | None = None,
+    quiz_uid: UUID | None = None,
+    user_uid: UUIDy | None = None,
+) -> UUID:
+    """単文当てクイズ作成."""
+    return await create_quiz_and_correct(
+        target_sent_uid=target_term_uid,
+        quiz_type=quiz_type,
+        option_uids=option_uids,
+        correct_uids=correct_uids,
+        now=now,
+        quiz_uid=quiz_uid,
+        user_uid=user_uid,
+    )
+
+
 # populate 定住させる
 #  IT で空のDBにデータを流し込むというニュアンス
 async def populate_quiz(

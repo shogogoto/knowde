@@ -1,4 +1,40 @@
-"""候補から選択肢を選ぶ."""
+"""誤答肢作成domain."""
+
+import random
+from collections.abc import Sequence
+from enum import StrEnum, auto
+from uuid import UUID
+
+from knowde.integration.quiz.errors import SamplingError
+from knowde.shared.types import UUIDy, to_uuid
+
+
+class SamplingType(StrEnum):
+    """選択肢選定ロジックの種類."""
+
+    RANDOM = auto()
+    CLOSER = auto()  # 近い順に選ぶ
+    TOP_SCORE = auto()
+
+
+def sample_safe(
+    candidate_uids: Sequence[UUIDy],
+    n_option: int,  # 選択肢の数 Noneでは
+) -> list[UUID]:
+    """選択肢数だけ選ぶのを保証する."""
+    if len(candidate_uids) != len(set(candidate_uids)):
+        msg = f"選択肢候補が重複している: {candidate_uids}"
+        raise SamplingError(msg)
+    if n_option < 2:  # noqa: PLR2004
+        msg = f"選択肢の数は2以上必要 (入力: {n_option})"
+        raise SamplingError(msg)
+    n_sample = n_option - 1  # target分を引く
+    if n_sample > len(candidate_uids):
+        msg = (
+            f"選択肢候補が足りない (指定数: {n_sample}, 候補数: {len(candidate_uids)})"
+        )
+        raise SamplingError(msg)
+    return [to_uuid(uid) for uid in random.sample(candidate_uids, n_sample)]
 
 
 # # 詳細や結論などの特定の関係内から探す

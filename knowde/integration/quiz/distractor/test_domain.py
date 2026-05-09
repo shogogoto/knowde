@@ -22,7 +22,7 @@ from knowde.conftest import async_fixture
 from knowde.integration.quiz.errors import SamplingError
 from knowde.integration.quiz.fixture import fx_u
 
-from .sample_safe import sample_safe
+from .domain import sample_safe
 
 
 def test_out_of_range_sample_error():

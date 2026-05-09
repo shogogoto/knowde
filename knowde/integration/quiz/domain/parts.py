@@ -29,6 +29,11 @@ class QuizType(StrEnum):
     REL2PAIR = auto()
 
     @property
+    def has_term(self) -> bool:
+        """用語あり単文が選択肢."""
+        return self in {QuizType.SENT2TERM, QuizType.TERM2SENT}
+
+    @property
     def template(self) -> str:
         """日本語のテンプレート文を返すプロパティ.
 

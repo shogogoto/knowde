@@ -1,15 +1,4 @@
-"""誤答肢.
-
->>誤答肢(distractor)は、受験者たちの一般的な誤解やよくある間違いに基づくもので、
->>正解の選択肢と混同しやすいなど合理的に誤解され得る内容でなければなりません.
-
-正解は簡単に決まる
-誤答を上手く選ぶことがクイズ機能の主
-DBから直接探すのがいい sysnetを復元するのは非効率
-
-誤答肢を見て、これ何だろう、と思ったらクイズチェーンでそこからクイズを
-作っていける
-"""
+"""クイズの選択肢候補."""
 
 from typing import Annotated
 from uuid import UUID
@@ -124,12 +113,9 @@ async def filter_has_quiz(
 async def list_top_scoring_candidates(
     resource_uid: UUIDy,
     only_with_term: bool = False,  # noqa: FBT001, FBT002
-    except_sent_uids: list[UUIDy] | None = None,
     order_by=OrderBy(),
 ) -> list[UUID]:
     """スコアの上位から候補を出す."""
-    if except_sent_uids is None:
-        except_sent_uids = []
     rows = await search_knowde_ids(
         "",
         paging=ENOUGH_PAGING,
@@ -137,8 +123,7 @@ async def list_top_scoring_candidates(
         filter_resource_uids=[to_uuid(resource_uid).hex],
         only_with_term=only_with_term,
     )
-    ex = set(except_sent_uids)
-    return [row for row in rows if row not in ex]
+    return list(rows)
 
 
 async def list_candidates(
@@ -158,6 +143,5 @@ async def list_candidates(
     return await list_top_scoring_candidates(
         s.resource_uid,
         only_with_term=must_has_term,
-        except_sent_uids=[target_sent_id],
         **t.config,
     )

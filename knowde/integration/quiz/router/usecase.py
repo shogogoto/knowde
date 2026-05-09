@@ -1,17 +1,11 @@
 """usecase."""
 
-from knowde.integration.quiz.candidate.candidate import (
-    list_candidates,
-)
+from knowde.integration.quiz.distractor.distractor import fetch_distractor_ids
 from knowde.integration.quiz.domain.build import build_readable
 from knowde.integration.quiz.domain.domain import ReadableQuizList
-from knowde.integration.quiz.domain.parts import QuizType
 from knowde.integration.quiz.repo.create import create_quiz_and_correct
 from knowde.integration.quiz.repo.restore import restore_quiz_sources
 from knowde.integration.quiz.router.params import CreateQuizParam
-from knowde.integration.quiz.sampling.sample_safe import (
-    sample_safe,
-)
 from knowde.shared.types import UUIDy
 
 
@@ -20,18 +14,16 @@ async def create_quiz_uc(
     user_uid: UUIDy | None = None,
 ) -> ReadableQuizList:
     """単文当てクイズ作成usecase."""
-    must_has_term = param.quiz_type in {QuizType.SENT2TERM, QuizType.TERM2SENT}
-    cand_uids = await list_candidates(
+    uids = await fetch_distractor_ids(
         param.target_sent_uid,
         param.cand_type,
-        must_has_term=must_has_term,
+        limit=param.n_option,
+        must_has_term=param.quiz_type.has_term,
     )
-    sample_uids = sample_safe(cand_uids, n_option=param.n_option)
-
     quiz_uid = await create_quiz_and_correct(
         param.target_sent_uid,
         param.quiz_type,
-        sample_uids,
+        uids,
         user_uid=user_uid,
     )
     srcs = await restore_quiz_sources([quiz_uid])

@@ -3,10 +3,10 @@
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.integration.quiz.candidate.candidate import list_candidates
 from knowde.integration.quiz.candidate.types import CandidateType
+from knowde.integration.quiz.distractor.domain import sample_safe
 from knowde.integration.quiz.domain.parts import QuizType
 from knowde.integration.quiz.fixture import fx_u
 from knowde.integration.quiz.repo.create import create_quiz_and_correct
-from knowde.integration.quiz.sampling.sample_safe import sample_safe
 from knowde.shared.knowde.label import LSentence
 from knowde.shared.types import UUIDy
 from knowde.shared.user.label import LUser
