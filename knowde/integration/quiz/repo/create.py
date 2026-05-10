@@ -71,12 +71,13 @@ async def create_quiz_and_correct(
     return quiz_uid
 
 
-async def generate_quiz(
+async def generate_quiz(  # noqa: PLR0917
     qt: QuizType,
     ct: CandidateType,
     target_sent_uid: UUIDy,
     n_option: int,
     user_id: UUIDy,
+    correct_sent_uids: Sequence[UUIDy] | None = None,
 ) -> tuple[ReadableQuiz, QuizSource]:
     """高級なクイズ生成."""
     ds = await fetch_distractor_ids(
@@ -90,6 +91,7 @@ async def generate_quiz(
         qt,
         ds,
         user_uid=user_id,
+        correct_uids=correct_sent_uids,
     )
     srcs = await restore_quiz_sources([quiz_id])
     src = srcs[0]

@@ -15,22 +15,21 @@ from .create import create_answer, create_quiz_and_correct, generate_quiz
 
 u = async_fixture()(fx_u)
 
-# ここのcreate testの重複を括りだした関数を作る
-# それは usecaseでも使われる
-
 
 @mark_async_test()
 async def test_gen_term2sent_quiz(u: LUser):
     """単文当てクイズを永続化&復元."""
+    n_option = 5
     tgt = LSentence.nodes.first(val="ccc")
     rq, src = await generate_quiz(
         QuizType.TERM2SENT,
         CandidateType.ALL,
         tgt.uid,
-        5,
+        n_option,
         u.uid,
     )
     # print(rq.string)
+    assert len(rq.options.values()) == n_option
     assert rq.is_correct([src.get_id_by_sent("ccc")])
     assert not rq.is_correct([src.get_id_by_sent("ccc1")])
 
@@ -38,15 +37,17 @@ async def test_gen_term2sent_quiz(u: LUser):
 @mark_async_test()
 async def test_gen_sent2term_quiz(u: LUser):
     """用語当てクイズを永続化&復元."""
+    n_option = 5
     tgt = LSentence.nodes.first(val="ccc")
     rq, src = await generate_quiz(
         QuizType.SENT2TERM,
         CandidateType.ALL,
         tgt.uid,
-        5,
+        n_option,
         u.uid,
     )
     # print(rq.string)
+    assert len(rq.options.values()) == n_option
     assert rq.is_correct([src.get_id_by_sent("ccc")])
     assert not rq.is_correct([src.get_id_by_sent("ccc1")])
 
@@ -57,25 +58,18 @@ async def test_create_restore_rel2pair(u: LUser):
     # ccc の 親の単文を当てろ
     tgt = LSentence.nodes.first(val="ccc")
     pair = LSentence.nodes.first(val="parent")
-    n_option = 4
-    ds = await fetch_distractor_ids(
-        [tgt.uid],
-        CandidateType.MID,
-        n_option - 1,
-        True,  # noqa: FBT003
-    )
-    quiz_uid = await create_quiz_and_correct(
-        tgt.uid,
-        QuizType.REL2PAIR,
-        ds,
-        u.uid,
-        [pair.uid],
-    )
-    srcs = await restore_quiz_sources([quiz_uid])
-    src = srcs[0]
+    n_option = 5
     # print(src.model_dump_json(indent=2))
-    rq = build_readable(src)
+    rq, src = await generate_quiz(
+        QuizType.REL2PAIR,
+        CandidateType.ALL,
+        tgt.uid,
+        n_option,
+        u.uid,
+        correct_sent_uids=[pair.uid],
+    )
     # print(rq.string)
+    assert len(rq.options.values()) == n_option
     assert rq.is_correct([src.get_id_by_sent("parent")])
     incorrects = [s.sentence for s in src.sources.values() if s.sentence != "parent"]
     for inc in incorrects:
@@ -88,23 +82,25 @@ async def test_create_restore_pair2rel(u: LUser):
     tgt = LSentence.nodes.first(val="ccc")
     pair = LSentence.nodes.first(val="parent")
     n_option = 4
-    ds = await fetch_distractor_ids([tgt.uid], CandidateType.MID, n_option - 1, True)  # noqa: FBT003
-    quiz_uid = await create_quiz_and_correct(
-        tgt.uid,
+    rq, src = await generate_quiz(
         QuizType.PAIR2REL,
-        ds,
-        correct_uids=[pair.uid],
-        user_uid=u.uid,
+        CandidateType.ALL,
+        tgt.uid,
+        n_option,
+        u.uid,
+        correct_sent_uids=[pair.uid],
     )
-    srcs = await restore_quiz_sources([quiz_uid])
-    src = srcs[0]
-    # print(src.model_dump_json(indent=2))
-    rq = build_readable(src)
     # print(rq.string)
+    assert len(rq.options.values()) == n_option
     assert rq.is_correct([src.get_id_by_sent("parent")])
     incorrects = [s.sentence for s in src.sources.values() if s.sentence != "parent"]
     for inc in incorrects:
         assert not rq.is_correct([src.get_id_by_sent(inc)])
+
+
+@mark_async_test()
+async def test_duplicate_option_exception(u: LUser):
+    """選択肢が重複することがあるので直せ."""
 
 
 # クイズ作って質問を見て答える
