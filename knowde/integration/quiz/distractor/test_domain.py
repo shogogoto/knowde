@@ -14,40 +14,22 @@ ok n_cand = n_option
 ok n_cand > n_option
 """
 
-from uuid import uuid4
-
 import pytest
 
-from knowde.conftest import async_fixture
 from knowde.integration.quiz.errors import SamplingError
-from knowde.integration.quiz.fixture import fx_u
 
-from .domain import sample_safe
+from .domain import head_sample_safe, ramdom_sample_safe
 
 
-def test_out_of_range_sample_error():
+def test_sample_safe():
     """候補が足りないときに選択肢数を候補数に合わせる."""
-    with pytest.raises(SamplingError):  # 候補1は無意味
-        sample_safe([], n_option=1)
-    cand_uids = [uuid4() for _ in range(5)]
+    cands = list(range(5))
+    samples = ramdom_sample_safe(cands, n_sample=4)
+    assert len(samples) == 4  # noqa: PLR2004
     with pytest.raises(SamplingError):
-        sample_safe(cand_uids, n_option=1)  # 選択肢数足りない
-    sample_safe(cand_uids, n_option=2)
-
+        ramdom_sample_safe(cands, n_sample=100)  # 候補より選択肢多い
     with pytest.raises(SamplingError):
-        sample_safe(cand_uids, n_option=100)  # 候補より選択肢多い
+        head_sample_safe(cands, n_sample=100)  # 候補より選択肢多い
 
-
-uu = async_fixture()(fx_u)
-
-
-# @mark_async_test()
-# async def test_retry_select_sample(uu: LUser):
-#     """選択肢の数を満たすようにretryを繰り返す."""
-#     sent = LSentence.nodes.first(val="ccc")
-#
-#     with pytest.raises(SamplingError):
-#         await retry_sample_incr(sent.uid, radius=1, n_option=100, n_retry=100)
-#
-#     #  使用しているfixtureでは用語は4つまでしかない
-#     await retry_sample_incr(sent.uid, radius=1, n_option=4, n_retry=5)
+    samples = head_sample_safe(cands, n_sample=4)
+    assert len(samples) == 4  # noqa: PLR2004

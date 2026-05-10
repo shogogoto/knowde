@@ -4,7 +4,7 @@ from knowde.conftest import async_fixture, mark_async_test
 from knowde.integration.quiz.candidate.candidate import (
     list_candidates_by_radius,
 )
-from knowde.integration.quiz.distractor.domain import sample_safe
+from knowde.integration.quiz.distractor.domain import ramdom_sample_safe
 from knowde.integration.quiz.domain.build import build_readable
 from knowde.integration.quiz.domain.parts import QuizType
 from knowde.integration.quiz.fixture import fx_u
@@ -25,7 +25,7 @@ async def _sample(n_option: int):
         radius=99,
         only_with_term=True,
     )
-    return sent.uid, sample_safe(cand_uids, n_option=n_option)
+    return sent.uid, ramdom_sample_safe(cand_uids, n_sample=n_option - 1)
 
 
 # クイズ作って質問を見て答える
@@ -68,7 +68,7 @@ async def test_create_restore_rel2pair(u: LUser):
     pair = LSentence.nodes.first(val="parent")
     n_option = 4
     cand_uids = await list_candidates_by_radius([tgt.uid], radius=3)
-    sample_uids = sample_safe(cand_uids, n_option=n_option)
+    sample_uids = ramdom_sample_safe(cand_uids, n_sample=n_option)
     quiz_uid = await create_quiz_and_correct(
         tgt.uid,
         QuizType.REL2PAIR,
@@ -94,7 +94,7 @@ async def test_create_restore_pair2rel(u: LUser):
     n_option = 4
 
     cand_uids = await list_candidates_by_radius([tgt.uid], radius=3)
-    sample_uids = sample_safe(cand_uids, n_option=n_option)
+    sample_uids = ramdom_sample_safe(cand_uids, n_sample=n_option)
     quiz_uid = await create_quiz_and_correct(
         tgt.uid,
         QuizType.PAIR2REL,
@@ -123,7 +123,7 @@ async def test_answer(u: LUser):
         radius=99,
         only_with_term=True,
     )
-    sample_uids = sample_safe(cand_uids, n_option=n_option)
+    sample_uids = ramdom_sample_safe(cand_uids, n_sample=n_option - 1)
     quiz_uid = await create_quiz_and_correct(
         sent.uid,
         QuizType.TERM2SENT,
@@ -134,6 +134,8 @@ async def test_answer(u: LUser):
     assert len(anss.root) == 0
     srcs = await restore_quiz_sources([quiz_uid])
     rq = build_readable(srcs[0])
+    # print()
+    # print(rq.string)
     ans1 = await create_answer(
         rq.quiz_id,
         selected_uids=rq.correct,

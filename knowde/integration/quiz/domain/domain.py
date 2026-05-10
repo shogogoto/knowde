@@ -67,8 +67,7 @@ class QuizSource(BaseModel, frozen=True):
     quiz_id: UUID
     quiz_type: QuizType  # build方法を指定してくれる
     target_id: str  # テストしやすいので UUIDではなくstrへ
-    target: QuizOption
-    # targetが答えになるとは限らない
+    target: QuizOption  # 答えになるとは限らない
     correct_ids: set[str] = Field(default_factory=set)
     sources: dict[str, QuizOption] = Field(title="クイズの元となるメンバ")
     created: Neo4jDateTime

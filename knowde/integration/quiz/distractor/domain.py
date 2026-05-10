@@ -3,10 +3,8 @@
 import random
 from collections.abc import Sequence
 from enum import StrEnum, auto
-from uuid import UUID
 
 from knowde.integration.quiz.errors import SamplingError
-from knowde.shared.types import UUIDy, to_uuid
 
 
 class SamplingType(StrEnum):
@@ -17,30 +15,36 @@ class SamplingType(StrEnum):
     TOP_SCORE = auto()
 
 
-def sample_safe(
-    candidate_uids: Sequence[UUIDy],
-    n_option: int,  # 選択肢の数 Noneでは
-) -> list[UUID]:
-    """選択肢数だけ選ぶのを保証する."""
-    if len(candidate_uids) != len(set(candidate_uids)):
-        msg = f"選択肢候補が重複している: {candidate_uids}"
+def validate_sample(
+    candidate: Sequence,
+    n_sample: int,
+) -> None:
+    """指定数だけサンプルが取れることを保証."""
+    n_candidate = len(candidate)
+    if n_candidate < n_sample:
+        msg = f"候補が足りない (指定数: {n_sample}, 候補数: {n_candidate})"
         raise SamplingError(msg)
-    if n_option < 2:  # noqa: PLR2004
-        msg = f"選択肢の数は2以上必要 (入力: {n_option})"
+    if n_candidate != len(set(candidate)):
+        msg = f"候補に重複がある: {candidate}"
         raise SamplingError(msg)
-    n_sample = n_option - 1  # target分を引く
-    if n_sample > len(candidate_uids):
-        msg = (
-            f"選択肢候補が足りない (指定数: {n_sample}, 候補数: {len(candidate_uids)})"
-        )
-        raise SamplingError(msg)
-    return [to_uuid(uid) for uid in random.sample(candidate_uids, n_sample)]
 
 
-# # 詳細や結論などの特定の関係内から探す
-# # scoreでソートできたほうが良い
-# async def list_candidates_by_rel_type(target_sent_id: UUIDy):
-#     pass
+def ramdom_sample_safe[T](
+    candidate_uids: Sequence[T],
+    n_sample: int,
+) -> list[T]:
+    """ランダムサンプリング."""
+    validate_sample(candidate_uids, n_sample)
+    return random.sample(candidate_uids, n_sample)
+
+
+def head_sample_safe[T](
+    candidate_uids: Sequence[T],
+    n_sample: int,
+) -> list[T]:
+    """先頭から指定数を取り出す."""
+    validate_sample(candidate_uids, n_sample)
+    return list(candidate_uids)[:n_sample]
 
 
 # 引数をbindした関数

@@ -35,9 +35,9 @@ async def test_list_candidates_in_resource():
     await u()
     sent = LSentence.nodes.first(val="aaa")
     c = await list_candidates_in_resource([sent.uid])
-    assert len(c) == 3  # noqa: PLR2004
+    assert len(c) == 4  # noqa: PLR2004
     c = await list_candidates_in_resource([sent.uid], only_with_term=True)
-    assert len(c) == 2  # noqa: PLR2004
+    assert len(c) == 3  # noqa: PLR2004
 
 
 @mark_async_test()

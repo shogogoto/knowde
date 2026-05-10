@@ -15,9 +15,9 @@ async def create_quiz_uc(
 ) -> ReadableQuizList:
     """単文当てクイズ作成usecase."""
     uids = await fetch_distractor_ids(
-        param.target_sent_uid,
+        [param.target_sent_uid],
         param.cand_type,
-        limit=param.n_option,
+        limit=param.n_option - 1,
         must_has_term=param.quiz_type.has_term,
     )
     quiz_uid = await create_quiz_and_correct(

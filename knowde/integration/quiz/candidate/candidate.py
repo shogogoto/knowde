@@ -36,15 +36,13 @@ async def list_candidates_in_resource(
 ) -> list[UUID]:
     """リソース内全ての単文uidを選択肢候補として列挙."""
     rs_uids = await fetch_sent2resource_id(target_sent_ids)
-    uids = await search_knowde_ids(
+    return await search_knowde_ids(
         "",
         paging=ENOUGH_PAGING,
         order_by=None,  # 無駄な並び替え省く
         filter_resource_uids=rs_uids,
         only_with_term=only_with_term,
     )
-    exclude = set(target_sent_ids)
-    return [u for u in uids if u not in exclude]
 
 
 type Radius = Annotated[int, Field(gt=0, title="探索半径")]

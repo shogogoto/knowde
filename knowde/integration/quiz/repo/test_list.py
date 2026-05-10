@@ -2,7 +2,7 @@
 
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.integration.quiz.candidate.types import CandidateType
-from knowde.integration.quiz.distractor.domain import sample_safe
+from knowde.integration.quiz.distractor.domain import ramdom_sample_safe
 from knowde.integration.quiz.domain.parts import QuizType
 from knowde.integration.quiz.fixture import fx_u
 from knowde.integration.quiz.repo.create import create_quiz_and_correct
@@ -19,8 +19,8 @@ u = async_fixture()(fx_u)
 
 
 async def _f(sent_id: UUIDy):
-    cand_uids = await CandidateType.NEAR.fetch(sent_id, True)  # noqa: FBT003
-    return sample_safe(cand_uids, n_option=4)
+    cand_uids = await CandidateType.NEAR.fetch([sent_id], True)  # noqa: FBT003
+    return ramdom_sample_safe(cand_uids, n_sample=3)
 
 
 async def setup(sent_id: UUIDy, user_id: UUIDy) -> list[str]:

@@ -47,23 +47,23 @@ class CandidateType(StrEnum):
 
     async def fetch(
         self,
-        target_sent_id: UUIDy,
+        target_sent_ids: list[UUIDy],
         must_has_term: bool = False,  # noqa: FBT001, FBT002
     ) -> list[UUID]:
         """候補ID一覧を返す."""
         if self == CandidateType.ALL:
             return await list_candidates_in_resource(
-                [target_sent_id],
+                target_sent_ids,
                 only_with_term=must_has_term,
             )
         if self.is_radius_type():
             return await list_candidates_by_radius(
-                [target_sent_id],
+                target_sent_ids,
                 radius=self._limit,
                 only_with_term=must_has_term,
             )
 
-        ruids = await fetch_sent2resource_id([target_sent_id])
+        ruids = await fetch_sent2resource_id(target_sent_ids)
         return await list_top_scoring_candidates(
             ruids,
             only_with_term=must_has_term,
