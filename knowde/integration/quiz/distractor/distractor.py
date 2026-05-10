@@ -3,7 +3,7 @@
 from uuid import UUID
 
 from knowde.integration.quiz.candidate.types import CandidateType
-from knowde.integration.quiz.distractor.domain import ramdom_sample_safe
+from knowde.integration.quiz.distractor.domain import random_sample_safe
 from knowde.shared.types import UUIDy
 
 
@@ -20,4 +20,4 @@ async def fetch_distractor_ids(
     )
     exclude = set(sent_ids)
     uids = [u for u in cand_uids if u not in exclude]
-    return ramdom_sample_safe(uids, n_sample=limit)
+    return random_sample_safe(uids, n_sample=limit)

@@ -1,10 +1,8 @@
 """誤答肢の生成."""
 
 from knowde.conftest import async_fixture, mark_async_test
-from knowde.integration.quiz.candidate.candidate import (
-    list_candidates_by_radius,
-)
-from knowde.integration.quiz.distractor.domain import ramdom_sample_safe
+from knowde.integration.quiz.candidate.types import CandidateType
+from knowde.integration.quiz.distractor.distractor import fetch_distractor_ids
 from knowde.integration.quiz.domain.build import build_readable
 from knowde.integration.quiz.domain.parts import QuizType
 from knowde.integration.quiz.fixture import fx_u
@@ -20,12 +18,13 @@ u = async_fixture()(fx_u)
 
 async def _sample(n_option: int):
     sent = LSentence.nodes.first(val="ccc")
-    cand_uids = await list_candidates_by_radius(
+    ds = await fetch_distractor_ids(
         [sent.uid],
-        radius=99,
-        only_with_term=True,
+        CandidateType.ALL,
+        n_option - 1,
+        True,  # noqa: FBT003
     )
-    return sent.uid, ramdom_sample_safe(cand_uids, n_sample=n_option - 1)
+    return sent.uid, ds
 
 
 # クイズ作って質問を見て答える
@@ -67,12 +66,11 @@ async def test_create_restore_rel2pair(u: LUser):
     tgt = LSentence.nodes.first(val="ccc")
     pair = LSentence.nodes.first(val="parent")
     n_option = 4
-    cand_uids = await list_candidates_by_radius([tgt.uid], radius=3)
-    sample_uids = ramdom_sample_safe(cand_uids, n_sample=n_option)
+    ds = await fetch_distractor_ids([tgt.uid], CandidateType.MID, n_option - 1, True)  # noqa: FBT003
     quiz_uid = await create_quiz_and_correct(
         tgt.uid,
         QuizType.REL2PAIR,
-        sample_uids,
+        ds,
         [pair.uid],
     )
     srcs = await restore_quiz_sources([quiz_uid])
@@ -92,13 +90,11 @@ async def test_create_restore_pair2rel(u: LUser):
     tgt = LSentence.nodes.first(val="ccc")
     pair = LSentence.nodes.first(val="parent")
     n_option = 4
-
-    cand_uids = await list_candidates_by_radius([tgt.uid], radius=3)
-    sample_uids = ramdom_sample_safe(cand_uids, n_sample=n_option)
+    ds = await fetch_distractor_ids([tgt.uid], CandidateType.MID, n_option - 1, True)  # noqa: FBT003
     quiz_uid = await create_quiz_and_correct(
         tgt.uid,
         QuizType.PAIR2REL,
-        sample_uids,
+        ds,
         [pair.uid],
     )
     srcs = await restore_quiz_sources([quiz_uid])
@@ -118,16 +114,11 @@ async def test_answer(u: LUser):
     """回答してリストや正答率を返す."""
     sent = LSentence.nodes.first(val="ccc")
     n_option = 5
-    cand_uids = await list_candidates_by_radius(
-        [sent.uid],
-        radius=99,
-        only_with_term=True,
-    )
-    sample_uids = ramdom_sample_safe(cand_uids, n_sample=n_option - 1)
+    ds = await fetch_distractor_ids([sent.uid], CandidateType.ALL, n_option - 1, True)  # noqa: FBT003
     quiz_uid = await create_quiz_and_correct(
         sent.uid,
         QuizType.TERM2SENT,
-        sample_uids,
+        ds,
         user_uid=u.uid,
     )
     anss = await list_answers([quiz_uid], user_uid=u.uid)

@@ -29,7 +29,7 @@ def validate_sample(
         raise SamplingError(msg)
 
 
-def ramdom_sample_safe[T](
+def random_sample_safe[T](
     candidate_uids: Sequence[T],
     n_sample: int,
 ) -> list[T]:

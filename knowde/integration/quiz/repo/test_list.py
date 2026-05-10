@@ -2,7 +2,7 @@
 
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.integration.quiz.candidate.types import CandidateType
-from knowde.integration.quiz.distractor.domain import ramdom_sample_safe
+from knowde.integration.quiz.distractor.distractor import fetch_distractor_ids
 from knowde.integration.quiz.domain.parts import QuizType
 from knowde.integration.quiz.fixture import fx_u
 from knowde.integration.quiz.repo.create import create_quiz_and_correct
@@ -18,11 +18,6 @@ from .list_query import (
 u = async_fixture()(fx_u)
 
 
-async def _f(sent_id: UUIDy):
-    cand_uids = await CandidateType.NEAR.fetch([sent_id], True)  # noqa: FBT003
-    return ramdom_sample_safe(cand_uids, n_sample=3)
-
-
 async def setup(sent_id: UUIDy, user_id: UUIDy) -> list[str]:
     """テストデータ作成."""
     qids = []
@@ -30,7 +25,7 @@ async def setup(sent_id: UUIDy, user_id: UUIDy) -> list[str]:
         qid = await create_quiz_and_correct(
             sent_id,
             t,
-            await _f(sent_id),
+            await fetch_distractor_ids([sent_id], CandidateType.NEAR, 3, True),  # noqa: FBT003
             user_uid=user_id,
         )
         qids.append(qid)
@@ -47,7 +42,7 @@ async def test_list_quiz_by_user_ids(u: LUser):
     await create_quiz_and_correct(
         sent.uid,
         QuizType.TERM2SENT,
-        await _f(sent.uid),
+        await fetch_distractor_ids([sent.uid], CandidateType.NEAR, 3, True),  # noqa: FBT003
         user_uid=u2.uid,
     )
 

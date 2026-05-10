@@ -18,16 +18,16 @@ import pytest
 
 from knowde.integration.quiz.errors import SamplingError
 
-from .domain import head_sample_safe, ramdom_sample_safe
+from .domain import head_sample_safe, random_sample_safe
 
 
 def test_sample_safe():
     """候補が足りないときに選択肢数を候補数に合わせる."""
     cands = list(range(5))
-    samples = ramdom_sample_safe(cands, n_sample=4)
+    samples = random_sample_safe(cands, n_sample=4)
     assert len(samples) == 4  # noqa: PLR2004
     with pytest.raises(SamplingError):
-        ramdom_sample_safe(cands, n_sample=100)  # 候補より選択肢多い
+        random_sample_safe(cands, n_sample=100)  # 候補より選択肢多い
     with pytest.raises(SamplingError):
         head_sample_safe(cands, n_sample=100)  # 候補より選択肢多い
 
