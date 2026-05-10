@@ -6,10 +6,14 @@ from uuid import UUID, uuid4
 
 from neomodel import adb
 
+from knowde.integration.quiz.candidate.types import CandidateType
+from knowde.integration.quiz.distractor.distractor import fetch_distractor_ids
 from knowde.integration.quiz.domain.answer import Answer
 from knowde.integration.quiz.domain.build import build_readable
 from knowde.integration.quiz.domain.domain import (
+    QuizSource,
     QuizType,
+    ReadableQuiz,
 )
 from knowde.integration.quiz.errors import AnswerFailedError
 from knowde.integration.quiz.repo.restore import restore_quiz_sources
@@ -17,20 +21,16 @@ from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.util import TZ
 
 
-async def create_quiz_and_correct(  # noqa: PLR0917
+async def create_quiz_and_correct(
     target_sent_uid: UUIDy,
     quiz_type: QuizType,
     option_uids: Sequence[UUIDy],
+    user_uid: UUIDy,  # 誰が作ったか
     correct_uids: Sequence[UUIDy] | None = None,
-    now: datetime | None = None,
-    quiz_uid: UUID | None = None,
-    user_uid: UUIDy | None = None,
 ) -> UUID:
     """クイズとその正解の永続化."""
-    if now is None:
-        now = datetime.now(tz=TZ)
-    if quiz_uid is None:
-        quiz_uid = uuid4()
+    now = datetime.now(tz=TZ)
+    quiz_uid = uuid4()
     if correct_uids is None:
         correct_uids = []
     q = """
@@ -71,25 +71,50 @@ async def create_quiz_and_correct(  # noqa: PLR0917
     return quiz_uid
 
 
-async def create_quiz_term2sent(  # noqa: PLR0917
-    target_term_uid: UUIDy,
-    quiz_type: QuizType,
-    option_uids: Sequence[UUIDy],
-    correct_uids: Sequence[UUIDy] | None = None,
-    now: datetime | None = None,
-    quiz_uid: UUID | None = None,
-    user_uid: UUIDy | None = None,
-) -> UUID:
-    """単文当てクイズ作成."""
-    return await create_quiz_and_correct(
-        target_sent_uid=target_term_uid,
-        quiz_type=quiz_type,
-        option_uids=option_uids,
-        correct_uids=correct_uids,
-        now=now,
-        quiz_uid=quiz_uid,
-        user_uid=user_uid,
+async def generate_quiz(
+    qt: QuizType,
+    ct: CandidateType,
+    target_sent_uid: UUIDy,
+    n_option: int,
+    user_id: UUIDy,
+) -> tuple[ReadableQuiz, QuizSource]:
+    """高級なクイズ生成."""
+    ds = await fetch_distractor_ids(
+        [target_sent_uid],
+        ct,
+        n_option - 1,
+        qt.has_term,
     )
+    quiz_id = await create_quiz_and_correct(
+        target_sent_uid,
+        qt,
+        ds,
+        user_uid=user_id,
+    )
+    srcs = await restore_quiz_sources([quiz_id])
+    src = srcs[0]
+    return build_readable(src), src
+
+
+# async def create_quiz_term2sent(
+#     target_term_uid: UUIDy,
+#     quiz_type: QuizType,
+#     option_uids: Sequence[UUIDy],
+#     correct_uids: Sequence[UUIDy] | None = None,
+#     now: datetime | None = None,
+#     quiz_uid: UUID | None = None,
+#     user_uid: UUIDy | None = None,
+# ) -> UUID:
+#     """単文当てクイズ作成."""
+#     return await create_quiz_and_correct(
+#         target_sent_uid=target_term_uid,
+#         quiz_type=quiz_type,
+#         option_uids=option_uids,
+#         correct_uids=correct_uids,
+#         now=now,
+#         quiz_uid=quiz_uid,
+#         user_uid=user_uid,
+#     )
 
 
 # populate 定住させる

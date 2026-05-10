@@ -38,15 +38,6 @@ def random_sample_safe[T](
     return random.sample(candidate_uids, n_sample)
 
 
-def head_sample_safe[T](
-    candidate_uids: Sequence[T],
-    n_sample: int,
-) -> list[T]:
-    """先頭から指定数を取り出す."""
-    validate_sample(candidate_uids, n_sample)
-    return list(candidate_uids)[:n_sample]
-
-
 # 引数をbindした関数
 # その内の１つのパラメータを指定し、それを+1してリトライ
 # async def retry_sample_incr(

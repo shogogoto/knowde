@@ -11,49 +11,41 @@ from knowde.integration.quiz.repo.restore import restore_quiz_sources
 from knowde.shared.knowde.label import LSentence
 from knowde.shared.user.label import LUser
 
-from .create import create_answer, create_quiz_and_correct
+from .create import create_answer, create_quiz_and_correct, generate_quiz
 
 u = async_fixture()(fx_u)
 
-
-async def _sample(n_option: int):
-    sent = LSentence.nodes.first(val="ccc")
-    ds = await fetch_distractor_ids(
-        [sent.uid],
-        CandidateType.ALL,
-        n_option - 1,
-        True,  # noqa: FBT003
-    )
-    return sent.uid, ds
+# ここのcreate testの重複を括りだした関数を作る
+# それは usecaseでも使われる
 
 
-# クイズ作って質問を見て答える
 @mark_async_test()
-async def test_create_restore_term2sent(u: LUser):
+async def test_gen_term2sent_quiz(u: LUser):
     """単文当てクイズを永続化&復元."""
-    n_option = 5
-    sent_uid, sample_uids = await _sample(n_option)
-    quiz_uid = await create_quiz_and_correct(sent_uid, QuizType.TERM2SENT, sample_uids)
-    srcs = await restore_quiz_sources([quiz_uid])
-    assert len(srcs) == 1
-    src = srcs[0]
-    assert len(src.sources) == n_option - 1
-    rq = build_readable(src)
+    tgt = LSentence.nodes.first(val="ccc")
+    rq, src = await generate_quiz(
+        QuizType.TERM2SENT,
+        CandidateType.ALL,
+        tgt.uid,
+        5,
+        u.uid,
+    )
     # print(rq.string)
     assert rq.is_correct([src.get_id_by_sent("ccc")])
     assert not rq.is_correct([src.get_id_by_sent("ccc1")])
 
 
 @mark_async_test()
-async def test_create_restore_sent2term(u: LUser):
+async def test_gen_sent2term_quiz(u: LUser):
     """用語当てクイズを永続化&復元."""
-    n_option = 5
-    sent_uid, sample_uids = await _sample(n_option)
-    quiz_uid = await create_quiz_and_correct(sent_uid, QuizType.SENT2TERM, sample_uids)
-    srcs = await restore_quiz_sources([quiz_uid])
-    src = srcs[0]
-    # print(src.model_dump_json(indent=2))
-    rq = build_readable(src)
+    tgt = LSentence.nodes.first(val="ccc")
+    rq, src = await generate_quiz(
+        QuizType.SENT2TERM,
+        CandidateType.ALL,
+        tgt.uid,
+        5,
+        u.uid,
+    )
     # print(rq.string)
     assert rq.is_correct([src.get_id_by_sent("ccc")])
     assert not rq.is_correct([src.get_id_by_sent("ccc1")])
@@ -66,11 +58,17 @@ async def test_create_restore_rel2pair(u: LUser):
     tgt = LSentence.nodes.first(val="ccc")
     pair = LSentence.nodes.first(val="parent")
     n_option = 4
-    ds = await fetch_distractor_ids([tgt.uid], CandidateType.MID, n_option - 1, True)  # noqa: FBT003
+    ds = await fetch_distractor_ids(
+        [tgt.uid],
+        CandidateType.MID,
+        n_option - 1,
+        True,  # noqa: FBT003
+    )
     quiz_uid = await create_quiz_and_correct(
         tgt.uid,
         QuizType.REL2PAIR,
         ds,
+        u.uid,
         [pair.uid],
     )
     srcs = await restore_quiz_sources([quiz_uid])
@@ -95,7 +93,8 @@ async def test_create_restore_pair2rel(u: LUser):
         tgt.uid,
         QuizType.PAIR2REL,
         ds,
-        [pair.uid],
+        correct_uids=[pair.uid],
+        user_uid=u.uid,
     )
     srcs = await restore_quiz_sources([quiz_uid])
     src = srcs[0]

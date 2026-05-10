@@ -41,9 +41,19 @@ class CandidateType(StrEnum):
             CandidateType.TOP_WIDE: 80,
         }[self]
 
+    @property
     def is_radius_type(self) -> bool:
         """半径探索か否か."""
         return self in {CandidateType.NEAR, CandidateType.MID, CandidateType.FAR}
+
+    @property
+    def is_top_type(self) -> bool:
+        """スコア上位指定か否か."""
+        return self in {
+            CandidateType.TOP_ELITE,
+            CandidateType.TOP_NORMAL,
+            CandidateType.TOP_WIDE,
+        }
 
     async def fetch(
         self,
@@ -56,7 +66,7 @@ class CandidateType(StrEnum):
                 target_sent_ids,
                 only_with_term=must_has_term,
             )
-        if self.is_radius_type():
+        if self.is_radius_type:
             return await list_candidates_by_radius(
                 target_sent_ids,
                 radius=self._limit,

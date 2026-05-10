@@ -18,7 +18,7 @@ import pytest
 
 from knowde.integration.quiz.errors import SamplingError
 
-from .domain import head_sample_safe, random_sample_safe
+from .domain import random_sample_safe
 
 
 def test_sample_safe():
@@ -28,8 +28,8 @@ def test_sample_safe():
     assert len(samples) == 4  # noqa: PLR2004
     with pytest.raises(SamplingError):
         random_sample_safe(cands, n_sample=100)  # 候補より選択肢多い
-    with pytest.raises(SamplingError):
-        head_sample_safe(cands, n_sample=100)  # 候補より選択肢多い
 
-    samples = head_sample_safe(cands, n_sample=4)
-    assert len(samples) == 4  # noqa: PLR2004
+    # with pytest.raises(SamplingError):
+    #     head_sample_safe(cands, n_sample=100)  # 候補より選択肢多い
+    # samples = head_sample_safe(cands, n_sample=4)
+    # assert len(samples) == 4
