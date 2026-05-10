@@ -27,7 +27,7 @@ class CandidateType(StrEnum):
     TOP_WIDE = auto()
 
     @property
-    def limit(self) -> int:
+    def _limit(self) -> int:
         """候補出し用パラメータを返す."""
         if self == CandidateType.ALL:
             raise ValueError
@@ -36,9 +36,9 @@ class CandidateType(StrEnum):
             CandidateType.NEAR: 2,
             CandidateType.MID: 4,
             CandidateType.FAR: 6,
-            CandidateType.TOP_ELITE: 5,
-            CandidateType.TOP_NORMAL: 10,
-            CandidateType.TOP_WIDE: 30,
+            CandidateType.TOP_ELITE: 20,
+            CandidateType.TOP_NORMAL: 50,
+            CandidateType.TOP_WIDE: 80,
         }[self]
 
     def is_radius_type(self) -> bool:
@@ -59,8 +59,8 @@ class CandidateType(StrEnum):
         if self.is_radius_type():
             return await list_candidates_by_radius(
                 [target_sent_id],
+                radius=self._limit,
                 only_with_term=must_has_term,
-                radius=self.limit,
             )
 
         ruids = await fetch_sent2resource_id([target_sent_id])

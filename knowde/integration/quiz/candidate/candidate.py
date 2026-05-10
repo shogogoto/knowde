@@ -69,12 +69,8 @@ async def list_candidates_by_radius(
             {q_term}
         RETURN DISTINCT e.uid
     """
-    rows, _ = await adb.cypher_query(
-        q,
-        params={
-            "sent_uids": [to_uuid(uid).hex for uid in target_sent_ids],
-        },
-    )
+    uids = [to_uuid(uid).hex for uid in target_sent_ids]
+    rows, _ = await adb.cypher_query(q, params={"sent_uids": uids})
     return [row[0] for row in rows]
 
 
@@ -91,12 +87,10 @@ async def filter_has_quiz(
         WHERE quiz_count < $limit
         RETURN sent.uid
     """
+    uids = [to_uuid(uid).hex for uid in sent_ids]
     rows, _ = await adb.cypher_query(
         q,
-        params={
-            "sent_uids": [to_uuid(uid).hex for uid in sent_ids],
-            "limit": limit,
-        },
+        params={"sent_uids": uids, "limit": limit},
     )
     return [row[0] for row in rows]
 
