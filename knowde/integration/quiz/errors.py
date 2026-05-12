@@ -11,6 +11,10 @@ class SamplingError(DomainError):
     """選択肢サンプル数が不正."""
 
 
+class InsufficientOptionsError(DomainError):
+    """クイズの選択肢不足."""
+
+
 class InvalidAnswerOptionError(DomainError):
     """回答選択肢が範囲外."""
 

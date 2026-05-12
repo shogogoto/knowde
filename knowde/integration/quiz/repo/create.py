@@ -15,7 +15,7 @@ from knowde.integration.quiz.domain.domain import (
     QuizType,
     ReadableQuiz,
 )
-from knowde.integration.quiz.errors import AnswerFailedError
+from knowde.integration.quiz.errors import AnswerFailedError, InsufficientOptionsError
 from knowde.integration.quiz.repo.restore import restore_quiz_sources
 from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.util import TZ
@@ -56,7 +56,7 @@ async def create_quiz_and_correct(
         MATCH (c: Sentence {uid: cuid})
         CREATE (quiz)-[:CORRECT]->(c)
     """
-    _rows, _ = await adb.cypher_query(
+    _, _ = await adb.cypher_query(
         q,
         params={
             "quiz_uid": quiz_uid.hex,
@@ -71,6 +71,8 @@ async def create_quiz_and_correct(
     return quiz_uid
 
 
+# 誤答肢が足りなくて失敗することがあるので
+# retryをできるようにしたい
 async def generate_quiz(  # noqa: PLR0917
     qt: QuizType,
     ct: CandidateType,
@@ -78,12 +80,13 @@ async def generate_quiz(  # noqa: PLR0917
     n_option: int,
     user_id: UUIDy,
     correct_sent_uids: Sequence[UUIDy] | None = None,
+    do_print: bool = False,  # noqa: FBT001, FBT002 for debug
 ) -> tuple[ReadableQuiz, QuizSource]:
     """高級なクイズ生成."""
     ds = await fetch_distractor_ids(
         [target_sent_uid],
         ct,
-        n_option - 1,
+        n_option - 1,  # 正解の数を除く
         qt.has_term,
     )
     quiz_id = await create_quiz_and_correct(
@@ -95,118 +98,31 @@ async def generate_quiz(  # noqa: PLR0917
     )
     srcs = await restore_quiz_sources([quiz_id])
     src = srcs[0]
-    return build_readable(src), src
+    rq = build_readable(src)
+    if do_print:
+        print(rq.string)  # noqa: T201
+    actual = len(rq.options.values())
+    if actual != n_option:
+        msg = f"選択肢が指定数{n_option}と一致しない: {actual}"
+        raise InsufficientOptionsError(msg)
+    return rq, src
 
 
-# async def create_quiz_term2sent(
-#     target_term_uid: UUIDy,
-#     quiz_type: QuizType,
-#     option_uids: Sequence[UUIDy],
-#     correct_uids: Sequence[UUIDy] | None = None,
-#     now: datetime | None = None,
-#     quiz_uid: UUID | None = None,
-#     user_uid: UUIDy | None = None,
-# ) -> UUID:
-#     """単文当てクイズ作成."""
-#     return await create_quiz_and_correct(
-#         target_sent_uid=target_term_uid,
-#         quiz_type=quiz_type,
-#         option_uids=option_uids,
-#         correct_uids=correct_uids,
-#         now=now,
-#         quiz_uid=quiz_uid,
-#         user_uid=user_uid,
-#     )
-
-
-# populate 定住させる
-#  IT で空のDBにデータを流し込むというニュアンス
-async def populate_quiz(
-    resource_id: UUIDy,
-    user_id: UUIDy,
-    quiz_type: QuizType,
-    n_quiz: int,
-    now: datetime | None = None,
-):
-    """coverageを上げるためのクイズ一括作成.
-
-    リソースごとの学習度を見て一括でクイズを作ったりしたいかも
-    テキトーにクイズを新規作成する
-    score順
-    リソース全体から無作為に選ぶ
-    クイズ未作成の単文の内から選ぶ
-    正答率が低いものから選ぶ
-      回答管理が優先
-    chainを辿ったクイズ一括作成.
-
-    全く同じクイズを重複して作成できないようにする
-    """
-    if now is None:
-        now = datetime.now(tz=TZ)
-    # must_has_term = quiz_type in {QuizType.SENT2TERM, QuizType.TERM2SENT}
-    # resoure のハイスコア順に sent_ids を取得
-    # tgt_uids = await list_top_scoring_candidates(
-    #     resource_id,
-    #     n_candidate=n_quiz,
-    #     must_has_term=must_has_term,
-    #     has_quiz=True,
-    # )
-
-    q = """
-        MATCH (tgt: Sentence {uid: $target_uid})
-        CREATE (quiz: Quiz {
-            uid: $quiz_uid
-            , quiz_type: $quiz_type
-            , is_link_broken: false
-            , created: datetime($now)
-        })-[:QUIZ_TARGET]->(tgt)
-        WITH quiz
-        CALL (quiz) {
-            OPTIONAL MATCH (u: User {uid: $user_uid})
-            WITH quiz, u WHERE u IS NOT NULL
-            CREATE (u)-[:CREATE]->(quiz)
-        }
-        WITH quiz
-        UNWIND $option_uids AS ouid
-        MATCH (opt: Sentence {uid: ouid})
-        CREATE (quiz)-[:QUIZ_OPTION]->(opt)
-        WITH DISTINCT quiz
-        UNWIND  $correct_uids AS cuid
-        MATCH (c: Sentence {uid: cuid})
-        CREATE (quiz)-[:CORRECT]->(c)
-    """
-
-    _rows, _ = await adb.cypher_query(
-        q,
-        params={
-            "quiz_type": quiz_type.name,
-            # "quiz_uid": quiz_uid.hex,
-            # "target_uid": to_uuid(target_sent_uid).hex,
-            # "option_uids": [to_uuid(u).hex for u in option_uids],
-            # "correct_uids": [to_uuid(u).hex for u in correct_uids],
-            # "quiz_type": quiz_type.name,
-            # "user_uid": to_uuid(user_uid).hex if user_uid is not None else None,
-            "now": now.isoformat(),
-        },
-    )
+async def fetch_is_correct(quiz_uid: UUID, selected_uids: list[str]) -> bool:
+    """クイズの回答の正解・不正解の問い合わせ."""
+    srcs = await restore_quiz_sources([quiz_uid])
+    rq = build_readable(srcs[0])
+    return rq.is_correct(selected_uids)
 
 
 async def create_answer(
     quiz_uid: UUID,
     selected_uids: list[str],
-    # 回答者idは必須にする。回答したければユーザー登録しろ、という導線
-    user_uid: UUIDy,
-    answer_uid: UUID | None = None,
-    now: datetime | None = None,
+    user_uid: UUIDy,  # 回答者idは必須にする。回答したければユーザー登録しろ、という導線
 ) -> Answer:
-    """回答の永続化.
-
-    クイズを指す
-    """
-    if answer_uid is None:
-        answer_uid = uuid4()
-    if now is None:
-        now = datetime.now(tz=TZ)
+    """回答の永続化."""
+    answer_uid = uuid4()
+    now = datetime.now(tz=TZ)
 
     q = """
         MATCH (quiz: Quiz {uid: $quiz_uid})
@@ -224,9 +140,7 @@ async def create_answer(
         RETURN ans, u
     """
 
-    srcs = await restore_quiz_sources([quiz_uid])
-    rq = build_readable(srcs[0])
-    is_correct = rq.is_correct(selected_uids)
+    is_correct = await fetch_is_correct(quiz_uid, selected_uids)
     rows, _ = await adb.cypher_query(
         q,
         params={
