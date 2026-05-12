@@ -56,10 +56,16 @@ async def search_knowde_ids(  # noqa: PLR0917
     order_by: OrderBy | None = OrderBy(),
     filter_resource_uids: list[UUIDy] | None = None,
     only_with_term: bool = False,  # noqa: FBT001, FBT002
+    exclude_sent_ids: list[UUIDy] | None = None,
     do_print: bool = False,  # noqa: FBT001, FBT002
 ) -> list[UUID]:
     """用語、文のいずれかでマッチする単文のUUIDを返す."""
-    q = q_search(where, filter_resource_uids, only_with_term)
+    q = q_search(
+        where,
+        filter_resource_uids,
+        only_with_term,
+        exclude_sent_ids=exclude_sent_ids,
+    )
     q += f"""
         {q_stats("sent", order_by)}
         {(order_by.phrase() if order_by else "")}
@@ -76,6 +82,9 @@ async def search_knowde_ids(  # noqa: PLR0917
             "resource_uids": [to_uuid(uid).hex for uid in filter_resource_uids]
             if filter_resource_uids
             else [],
+            "exclude_uids": [to_uuid(uid).hex for uid in exclude_sent_ids]
+            if exclude_sent_ids
+            else [],
         },
     )
     return res2uidstrs(rows)
@@ -88,6 +97,7 @@ async def search_knowde(  # noqa: PLR0917
     order_by: OrderBy | None = OrderBy(),
     filter_resource_uids: list[UUIDy] | None = None,
     only_with_term: bool = False,  # noqa: FBT001, FBT002
+    exclude_sent_ids: list[UUIDy] | None = None,
     do_print: bool = False,  # noqa: FBT001, FBT002
 ):
     """用語、文のいずれかでマッチする単文の検索結果を返す."""
@@ -98,6 +108,7 @@ async def search_knowde(  # noqa: PLR0917
         order_by,
         filter_resource_uids,
         only_with_term,
+        exclude_sent_ids,
         do_print,
     )
     d = await fetch_knowdes_with_detail(kn_uids, order_by=order_by)

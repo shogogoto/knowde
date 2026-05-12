@@ -129,24 +129,28 @@ def q_search(
     where: WherePhrase,
     filter_resource_uids: list[UUIDy] | None,
     only_with_term: bool,  # noqa: FBT001
+    exclude_sent_ids: list[UUIDy] | None = None,
 ) -> str:
     """search_knowdeとtotalのクエリ."""
     q_term = "MATCH (sent)<-[:DEF]-(:Term)" if only_with_term else ""
-    q_rsrc = (
-        ""
-        if filter_resource_uids is None or len(filter_resource_uids) == 0
-        else """
-        WHERE sent.resource_uid IN $resource_uids
-    """
-    )
+    # フィルタ条件の構築
+    conditions = []
+    if filter_resource_uids:
+        conditions.append("sent.resource_uid IN $resource_uids")
+    if exclude_sent_ids:
+        conditions.append("NOT sent.uid IN $exclude_uids")  # 除外条件
+
+    q_where = ""
+    if conditions:
+        q_where = "WHERE " + " AND ".join(conditions)
 
     return rf"""
         CALL () {{
         {indent(q_where_knowde(where), " " * 4)}
         }}
         {q_term}
-        WITH sent // 中間結果のサイズダウン
-            {q_rsrc}
+        WITH sent
+        {q_where}
         """
 
 

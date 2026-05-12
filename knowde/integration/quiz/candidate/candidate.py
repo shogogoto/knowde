@@ -12,7 +12,6 @@ from knowde.shared.cypher import Paging
 from knowde.shared.types import UUIDy, to_uuid
 
 
-# sent2resource_uid { sent_uid: resource_uid }
 async def fetch_sent2resource_id(sent_ids: list[UUIDy]):
     """単文IDをそのリソースのIDへ変換."""
     q = """
@@ -42,6 +41,7 @@ async def list_candidates_in_resource(
         order_by=None,  # 無駄な並び替え省く
         filter_resource_uids=rs_uids,
         only_with_term=only_with_term,
+        exclude_sent_ids=target_sent_ids,
     )
 
 
