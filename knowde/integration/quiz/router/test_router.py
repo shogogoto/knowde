@@ -4,7 +4,6 @@ from httpx import AsyncClient
 
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.integration.quiz.candidate.types import CandidateType
-from knowde.integration.quiz.distractor.domain import SamplingType
 from knowde.integration.quiz.domain.answer import Answer
 from knowde.integration.quiz.domain.domain import ReadableQuiz
 from knowde.integration.quiz.domain.parts import QuizType
@@ -26,7 +25,6 @@ async def test_sent2term(ac: AsyncClient, u: LUser):
         target_sent_uid=sent.uid,
         quiz_type=QuizType.SENT2TERM,
         cand_type=CandidateType.NEAR,
-        sampling_type=SamplingType.RANDOM,
         n_option=4,
     )
 

@@ -36,6 +36,19 @@ class QuizType(StrEnum):
         """用語あり単文が選択肢."""
         return self in {QuizType.SENT2TERM, QuizType.TERM2SENT}
 
+    # def n_correct(self) -> int:
+    #     """正解数."""
+    #     return {
+    #         QuizType.SENT2TERM: 1,
+    #         QuizType.TERM2SENT: 1,
+    #         QuizType.PAIR2REL: 1,
+    #         QuizType.REL2PAIR: 2,
+    #     }[self]
+    #
+    # def n_distractor(self, n_option: int) -> int:
+    #     """誤答肢数."""
+    #     return 3
+
     @property
     def template(self) -> str:
         """日本語のテンプレート文を返すプロパティ.

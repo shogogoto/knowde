@@ -168,7 +168,7 @@ class ReadableQuiz(BaseModel, frozen=True):
         s += "\n".join(ops)
         return s
 
-    # TODO:  何も答えないのが正解、というパターンも欲しい  # noqa: FIX002, TD002, TD003
+    # TODO: 何も答えないのが正解、というパターンも欲しい  # noqa: FIX002, TD002, TD003
     def is_correct(self, selected: list[str]) -> bool:
         """正解かどうか."""
         for s in selected:

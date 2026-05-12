@@ -1,33 +1,24 @@
 """usecase."""
 
-from knowde.integration.quiz.distractor.distractor import fetch_distractor_ids
-from knowde.integration.quiz.domain.build import build_readable
 from knowde.integration.quiz.domain.domain import ReadableQuizList
-from knowde.integration.quiz.repo.create import create_quiz_and_correct
-from knowde.integration.quiz.repo.restore import restore_quiz_sources
+from knowde.integration.quiz.repo.create import generate_quiz
 from knowde.integration.quiz.router.params import CreateQuizParam
 from knowde.shared.types import UUIDy
 
 
 async def create_quiz_uc(
     param: CreateQuizParam,
-    user_uid: UUIDy | None = None,
+    user_uid: UUIDy,
 ) -> ReadableQuizList:
     """単文当てクイズ作成usecase."""
-    uids = await fetch_distractor_ids(
-        [param.target_sent_uid],
-        param.cand_type,
-        limit=param.n_option - 1,
-        must_has_term=param.quiz_type.has_term,
-    )
-    quiz_uid = await create_quiz_and_correct(
-        param.target_sent_uid,
+    rq, _ = await generate_quiz(
         param.quiz_type,
-        uids,
-        user_uid=user_uid,
+        param.cand_type,
+        param.target_sent_uid,
+        param.n_option,
+        user_id=user_uid,
     )
-    srcs = await restore_quiz_sources([quiz_uid])
-    return ReadableQuizList(root=[build_readable(s) for s in srcs])
+    return ReadableQuizList(root=[rq])
 
 
 # async def batch_create_quiz_uc(

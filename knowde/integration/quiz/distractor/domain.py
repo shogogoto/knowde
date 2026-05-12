@@ -2,17 +2,8 @@
 
 import random
 from collections.abc import Sequence
-from enum import StrEnum, auto
 
 from knowde.integration.quiz.errors import SamplingError
-
-
-class SamplingType(StrEnum):
-    """選択肢選定ロジックの種類."""
-
-    RANDOM = auto()
-    CLOSER = auto()  # 近い順に選ぶ
-    TOP_SCORE = auto()
 
 
 def validate_sample(

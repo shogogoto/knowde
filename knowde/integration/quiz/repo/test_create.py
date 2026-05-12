@@ -8,7 +8,8 @@ from knowde.integration.quiz.repo.list_query import list_answers
 from knowde.shared.knowde.label import LSentence
 from knowde.shared.user.label import LUser
 
-from .create import create_answer, generate_quiz
+from .answer import create_answer
+from .create import generate_quiz
 
 u = async_fixture()(fx_u)
 
@@ -92,7 +93,7 @@ async def test_answer(u: LUser):
     """回答してリストや正答率を返す."""
     sent = LSentence.nodes.first(val="ccc")
     n_option = 5
-    rq, _src = await generate_quiz(
+    rq, _ = await generate_quiz(
         QuizType.TERM2SENT,
         CandidateType.ALL,
         sent.uid,

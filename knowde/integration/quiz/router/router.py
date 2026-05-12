@@ -7,7 +7,7 @@ from fastapi import APIRouter
 from knowde.integration.quiz.domain.answer import Answer
 from knowde.integration.quiz.domain.collections import ReadableQuizResult
 from knowde.integration.quiz.domain.domain import ReadableQuiz
-from knowde.integration.quiz.repo.create import create_answer
+from knowde.integration.quiz.repo.answer import create_answer
 from knowde.integration.quiz.repo.list_query import list_quiz_by_sentence_ids
 from knowde.integration.quiz.router.params import (
     AnswerParam,

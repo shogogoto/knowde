@@ -8,7 +8,7 @@ from knowde.integration.quiz.domain.domain import QuizSource, ReadableQuiz
 from knowde.integration.quiz.domain.parts import QuizType
 
 
-def build_readable(src: QuizSource) -> ReadableQuiz:
+def build_readable_quiz(src: QuizSource) -> ReadableQuiz:
     """読めるクイズを作成."""
     match src.quiz_type:
         case QuizType.SENT2TERM:
