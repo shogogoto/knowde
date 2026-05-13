@@ -1,6 +1,6 @@
 """usecase."""
 
-from knowde.integration.quiz.domain.domain import ReadableQuizList
+from knowde.integration.quiz.domain.collections import ReadableQuizCollection
 from knowde.integration.quiz.repo.create import generate_quiz
 from knowde.integration.quiz.router.params import CreateQuizParam
 from knowde.shared.types import UUIDy
@@ -9,7 +9,7 @@ from knowde.shared.types import UUIDy
 async def create_quiz_uc(
     param: CreateQuizParam,
     user_uid: UUIDy,
-) -> ReadableQuizList:
+) -> ReadableQuizCollection:
     """単文当てクイズ作成usecase."""
     rq, _ = await generate_quiz(
         param.quiz_type,
@@ -18,7 +18,7 @@ async def create_quiz_uc(
         param.n_option,
         user_id=user_uid,
     )
-    return ReadableQuizList(root=[rq])
+    return ReadableQuizCollection(root=[rq])
 
 
 # async def batch_create_quiz_uc(

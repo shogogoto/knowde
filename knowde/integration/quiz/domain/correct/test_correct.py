@@ -20,8 +20,8 @@ def test_correct_rel_by_id(sn: SysNet):
         quiz_id=uuid.uuid4(),
         quiz_type=QuizType.REL2PAIR,
         target_id="1",  # 問いの対象
-        target=QuizOption(val=sn.get("ccc"), rels=[QuizRel.DETAIL]),
         sources={
+            "1": QuizOption(val=sn.get("ccc"), rels=[QuizRel.DETAIL]),
             "2": QuizOption(val=sn.get("ccc1"), rels=[QuizRel.DETAIL]),
             "3": QuizOption(val=sn.get("to"), rels=[QuizRel.CONCLUSION]),
             "4": QuizOption(val=sn.get("cccb"), rels=[QuizRel.PREMISE]),

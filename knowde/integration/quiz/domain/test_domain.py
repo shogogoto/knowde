@@ -10,11 +10,6 @@ from datetime import datetime
 import pytest
 
 from knowde.feature.parsing.sysnet import SysNet
-from knowde.integration.quiz.domain.build import (
-    build_readable_rel2pair,
-    build_readable_sent2term,
-    build_readable_term2sent,
-)
 from knowde.integration.quiz.domain.parts import QuizRel, path2edgetypes, to_detail_rel
 from knowde.integration.quiz.errors import InvalidAnswerOptionError, QuizDuplicateError
 from knowde.integration.quiz.fixture import fx_sn
@@ -69,7 +64,7 @@ def test_quiz_sent2term():
         },
         created=datetime.now(tz=TZ),
     )
-    q = build_readable_sent2term(src)
+    q = src.to_readable()
     assert set(q.options.values()) == {"A", "B", "C", "D"}
     assert q.statement == QuizType.SENT2TERM.inject(["aaa"])
     assert q.is_correct(["1"])
@@ -96,7 +91,7 @@ def test_quiz_term2sent():
         created=datetime.now(tz=TZ),
     )
 
-    q = build_readable_term2sent(src)
+    q = src.to_readable()
     assert set(q.options.values()) == {"aaa", "bbb", "ccc", "ddd"}
     assert q.statement == QuizType.TERM2SENT.inject(["A"])
     assert q.is_correct(["1"])
@@ -117,7 +112,7 @@ def test_quiz_rel2sent_lv1(sn: SysNet):
         quiz_id=uuid.uuid4(),
         quiz_type=QuizType.REL2PAIR,
         target_id="1",  # 問いの対象
-        correct_ids={"2"},
+        correct_ids=["2"],
         sources={
             "1": QuizOption(val=sn.get("ccc"), rels=[QuizRel.DETAIL]),
             "2": QuizOption(val=sn.get("ccc1"), rels=[QuizRel.DETAIL]),
@@ -130,14 +125,14 @@ def test_quiz_rel2sent_lv1(sn: SysNet):
     )
 
     # 詳細はどれか
-    q = build_readable_rel2pair(src)
+    q = src.to_readable()
     assert q.statement == "'C: ccc'と'詳細'関係で繋がる単文を当ててください"
     assert q.is_correct(["2"])
     assert not q.is_correct(["3"])
 
     src2 = src.model_copy(update={"correct_ids": {"3"}})
     # 結論はどれか
-    q = build_readable_rel2pair(src2)
+    q = src2.to_readable()
     assert q.is_correct(["3"])
     assert not q.is_correct(["2", "4"])
     assert not q.is_correct(["3", "4"])

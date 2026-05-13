@@ -8,7 +8,6 @@ from neomodel import adb
 
 from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.integration.quiz.distractor.distractor import fetch_distractor_ids
-from knowde.integration.quiz.domain.build import build_readable_quiz
 from knowde.integration.quiz.domain.domain import (
     QuizSource,
     QuizType,
@@ -97,7 +96,7 @@ async def generate_quiz(  # noqa: PLR0917
     )
     srcs = await restore_quiz_sources([quiz_id])
     src = srcs[0]
-    rq = build_readable_quiz(src)
+    rq = src.to_readable()
     if do_print:
         print(rq.string)  # noqa: T201
     return rq, src

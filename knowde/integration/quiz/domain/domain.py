@@ -1,11 +1,10 @@
 """quiz domain."""
 
-from collections.abc import Callable
 from textwrap import indent
 from uuid import UUID
 
 from more_itertools import duplicates_everseen
-from pydantic import BaseModel, Field, RootModel, model_validator
+from pydantic import BaseModel, Field, model_validator
 
 from knowde.feature.parsing.sysnet.sysnode import Def
 from knowde.integration.quiz.errors import (
@@ -56,12 +55,6 @@ class QuizSource(BaseModel, frozen=True):
             raise QuizOptionsMustBeDefError(msg)
         return defs
 
-    @property
-    def ids(self) -> set[str]:
-        """選択肢ids."""
-        # target_idとsource_idsで重複する場合があるのでsetにする
-        return {*self.sources.keys(), self.target_id}
-
     def get_by_id(self, option_id: str) -> QuizOption:
         """Target or sourceを返す."""
         if option_id == self.target_id:
@@ -80,15 +73,61 @@ class QuizSource(BaseModel, frozen=True):
 
     def get_id_by_sent(self, sent: str) -> str:
         """単文指定でidを返す."""
-        key = next((k for k in self.ids if self.get_by_id(k).sentence == sent), None)
+        key = next(
+            (k for k in self.sources if self.get_by_id(k).sentence == sent),
+            None,
+        )
         if key is None:
             msg = f"{sent} not found"
             raise KeyError(msg)
         return key
 
-    def filter_by(self, fn: Callable[[str], bool]) -> list[str]:
-        """ソースを絞り込む."""
-        return [k for k in self.ids if fn(k)]
+    @property
+    def statement(self) -> str:
+        """クイズの問題文."""
+        vals = {
+            QuizType.SENT2TERM: [self.target.sentence],
+            QuizType.TERM2SENT: [str(self.target.def_.term)],
+            QuizType.REL2PAIR: [
+                str(self.target.val),
+                *[self.sources[c].rels_stmt for c in self.correct_ids],
+            ],
+            QuizType.PAIR2REL: [
+                str(self.target.val),
+                *[self.sources[c].sentence for c in self.correct_ids],
+            ],
+        }[self.quiz_type]
+        return self.quiz_type.inject(vals)
+
+    @property
+    def readable_options(self) -> dict[str, str]:
+        """読める状態の選択肢."""
+        match self.quiz_type:
+            case QuizType.SENT2TERM:
+                return {k: str(v.term) for k, v in self.source_defs.items()}
+            case QuizType.TERM2SENT:
+                return {k: str(v.sentence) for k, v in self.source_defs.items()}
+            case QuizType.REL2PAIR:
+                return {k: str(v.val) for k, v in self.sources.items()}
+            case QuizType.PAIR2REL:
+                return {k: str(v.rels) for k, v in self.sources.items()}
+
+    @property
+    def correct(self) -> list[str]:
+        """正解のid."""
+        if self.quiz_type in {QuizType.SENT2TERM, QuizType.TERM2SENT}:
+            return [self.target_id]
+        return self.correct_ids
+
+    def to_readable(self) -> "ReadableQuiz":
+        """読める状態にする."""
+        return ReadableQuiz(
+            quiz_id=self.quiz_id,
+            statement=self.statement,
+            options=self.readable_options,
+            correct=self.correct,
+            created=self.created,
+        )
 
 
 class ReadableQuiz(BaseModel, frozen=True):
@@ -125,7 +164,3 @@ class ReadableQuiz(BaseModel, frozen=True):
         s = set(selected)
         correct = set(self.correct)
         return s == correct
-
-
-class ReadableQuizList(RootModel[list[ReadableQuiz]]):
-    """可読クイズリスト."""

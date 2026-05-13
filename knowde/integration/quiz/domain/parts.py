@@ -50,24 +50,17 @@ class QuizType(StrEnum):
     #     """誤答肢数."""
     #     return 3
 
-    @property
-    def template(self) -> str:
-        """日本語のテンプレート文を返すプロパティ.
-
-        Enumのvalueに設定するとFastAPIのparamにその文字列が反映されて望ましくない
-        なので、templateを返すプロパティを定義する
-        """
-        return {
+    def inject(self, vals: list[str]) -> str:
+        """プレースホルダーを置き換えて返す."""
+        template = {
             QuizType.SENT2TERM: "$@に合う用語を当ててください",
             QuizType.TERM2SENT: "$@に合う文を当ててください",
             QuizType.REL2PAIR: "$@と$@関係で繋がる単文を当ててください",
             QuizType.PAIR2REL: "$@から$@への関係を当ててください",
         }[self]
 
-    def inject(self, vals: list[str]) -> str:
-        """プレースホルダーを置き換えて返す."""
         return inject2placeholder(
-            self.template,
+            template,
             vals,
             QUIZ_PLACEHOLDER,
             surround_pre="'",
@@ -194,10 +187,10 @@ class QuizOption(BaseModel, frozen=True):
         cls,
         sentence: str,
         names: list[str] | None = None,
-        rel: QuizRel | None = None,
+        rels: Sequence[QuizRel] | None = None,
     ):
         val = Def.create(sentence, names=names)
-        return cls(val=val, rels=rel)
+        return cls(val=val, rels=rels)
 
     @property
     def rels_stmt(self) -> str:

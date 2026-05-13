@@ -6,7 +6,6 @@ from uuid import UUID, uuid4
 from neomodel import adb
 
 from knowde.integration.quiz.domain.answer import Answer
-from knowde.integration.quiz.domain.build import build_readable_quiz
 from knowde.integration.quiz.errors import AnswerFailedError
 from knowde.integration.quiz.repo.restore import restore_quiz_sources
 from knowde.shared.types import UUIDy, to_uuid
@@ -16,7 +15,7 @@ from knowde.shared.util import TZ
 async def fetch_is_correct(quiz_uid: UUID, selected_uids: list[str]) -> bool:
     """クイズの回答の正解・不正解の問い合わせ."""
     srcs = await restore_quiz_sources([quiz_uid])
-    rq = build_readable_quiz(srcs[0])
+    rq = srcs[0].to_readable()
     return rq.is_correct(selected_uids)
 
 
