@@ -92,7 +92,8 @@ class Knowde(BaseModel, frozen=True):
         a = self.additional
         return f"T({a.when})" if a is not None and a.when else ""
 
-    def to_str_or_def(self) -> str | Def:  # noqa: D102
+    @property
+    def sentence_or_def(self) -> str | Def:  # noqa: D102
         if self.term is None:
             return self.sentence
         return Def(term=self.term, sentence=self.sentence)

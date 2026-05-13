@@ -14,7 +14,6 @@ from knowde.integration.quiz.domain.domain import (
     QuizType,
     ReadableQuiz,
 )
-from knowde.integration.quiz.errors import InsufficientOptionsError
 from knowde.integration.quiz.repo.restore import restore_quiz_sources
 from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.util import TZ
@@ -101,8 +100,4 @@ async def generate_quiz(  # noqa: PLR0917
     rq = build_readable_quiz(src)
     if do_print:
         print(rq.string)  # noqa: T201
-    actual = len(rq.options.values())
-    if actual != n_option:
-        msg = f"選択肢が指定数{n_option}と一致しない: {actual}"
-        raise InsufficientOptionsError(msg)
     return rq, src

@@ -12,6 +12,7 @@ from pydantic import BaseModel
 
 from knowde.feature.parsing.primitive.mark import inject2placeholder
 from knowde.feature.parsing.sysnet.sysnode import Def
+from knowde.integration.quiz.errors import QuizOptionsMustBeDefError
 from knowde.shared.nxutil.edge_type import EdgeType
 
 QUIZ_PLACEHOLDER = "$@"
@@ -79,7 +80,7 @@ def path2edgetypes(
     s: Hashable,
     e: Hashable,
 ) -> tuple[list[EdgeType], bool]:
-    """クイズ関係タイプへ変換."""
+    """nxgraphからクイズ関係タイプへ変換."""
     try:
         # 正順
         p = nx.shortest_path(g, source=s, target=e)
@@ -212,3 +213,12 @@ class QuizOption(BaseModel, frozen=True):
         if isinstance(self.val, Def):
             return str(self.val.sentence)
         return str(self.val)
+
+    @property
+    def def_(self) -> Def:
+        """クイズ対象."""
+        tgt = self.val
+        if isinstance(tgt, Def):
+            return tgt
+        msg = "クイズ対象が用語を持たない"
+        raise QuizOptionsMustBeDefError(msg)

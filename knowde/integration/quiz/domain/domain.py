@@ -1,61 +1,21 @@
 """quiz domain."""
 
-from collections.abc import Callable, Iterable
+from collections.abc import Callable
 from textwrap import indent
 from uuid import UUID
 
-from more_itertools import duplicates_everseen, flatten
+from more_itertools import duplicates_everseen
 from pydantic import BaseModel, Field, RootModel, model_validator
 
-from knowde.feature.knowde import Knowde
 from knowde.feature.parsing.sysnet.sysnode import Def
 from knowde.integration.quiz.errors import (
     InvalidAnswerOptionError,
     QuizDuplicateError,
     QuizOptionsMustBeDefError,
 )
-from knowde.shared.types import NXGraph
 from knowde.shared.util import Neo4jDateTime
 
-from .parts import QuizOption, QuizRel, QuizType, path2edgetypes
-
-
-class QuizSourceContainer(BaseModel, frozen=True):
-    """quiz source用id容れ."""
-
-    quiz_id: UUID
-    quiz_type: QuizType  # build方法を指定してくれる
-    target_id: str
-    correct_ids: set[str]
-    source_ids: set[str]
-    g: NXGraph  # EdgeType-QuizRel用
-    created: Neo4jDateTime
-
-    @staticmethod
-    def concat_uids_for_batch_fetch(
-        cases: Iterable["QuizSourceContainer"],
-    ) -> Iterable[str]:
-        """一括詳細取得用にuidをまとめる."""
-        # 都度 fetchしてたら通信が無駄に増えて遅い
-        return set(flatten([[c.target_id, *c.source_ids] for c in cases]))
-
-    def to_source(self, uid2kn: dict[str, Knowde]) -> "QuizSource":
-        """変換."""
-        return QuizSource(
-            quiz_id=self.quiz_id,
-            quiz_type=self.quiz_type,
-            target_id=self.target_id,
-            target=QuizOption(val=uid2kn[self.target_id].to_str_or_def()),
-            sources={
-                uid: QuizOption(
-                    val=uid2kn[uid].to_str_or_def(),
-                    rels=QuizRel.of(*path2edgetypes(self.g, self.target_id, uid)),
-                )
-                for uid in self.source_ids
-            },
-            correct_ids=self.correct_ids,
-            created=self.created,
-        )
+from .parts import QuizOption, QuizType
 
 
 class QuizSource(BaseModel, frozen=True):
@@ -66,16 +26,15 @@ class QuizSource(BaseModel, frozen=True):
 
     quiz_id: UUID
     quiz_type: QuizType  # build方法を指定してくれる
-    target_id: str  # テストしやすいので UUIDではなくstrへ
-    target: QuizOption  # 答えになるとは限らない
-    correct_ids: set[str] = Field(default_factory=set)
+    target_id: str  # 答えになるとは限らない
+    correct_ids: list[str] = Field(default_factory=list)
     sources: dict[str, QuizOption] = Field(title="クイズの元となるメンバ")
     created: Neo4jDateTime
 
     @model_validator(mode="after")
     def option_duplicate_check(self):
         """重複チェック."""
-        options = [self.target, *list(self.sources.values())]
+        options = list(self.sources.values())
         dups = list(duplicates_everseen(options))
         if len(dups) > 0:
             msg = f"同一のクイズ選択肢が指定されています: {dups}"
@@ -83,21 +42,9 @@ class QuizSource(BaseModel, frozen=True):
         return self
 
     @property
-    def tgt_def(self) -> Def:
+    def target(self) -> QuizOption:
         """クイズ対象."""
-        tgt = self.target.val
-        if isinstance(tgt, Def):
-            return tgt
-        msg = "クイズ対象が用語を持たない"
-        raise QuizOptionsMustBeDefError(msg)
-
-    @property
-    def tgt_sent(self) -> str:
-        """クイズ対象の単文."""
-        tgt = self.target.val
-        if isinstance(tgt, Def):
-            return str(tgt.sentence)
-        return str(tgt)
+        return self.sources[self.target_id]
 
     @property
     def source_defs(self) -> dict[str, Def]:
@@ -123,7 +70,7 @@ class QuizSource(BaseModel, frozen=True):
 
     def get_by_sent(self, sent: str) -> QuizOption:
         """単文指定でTarget or sourceを返す."""
-        if sent == self.tgt_sent:
+        if sent == self.target.sentence:
             return self.target
         for option in self.sources.values():
             if sent == option.sentence:

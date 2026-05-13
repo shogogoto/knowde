@@ -35,8 +35,8 @@ def test_duplicate_source():
             quiz_id=uuid.uuid4(),
             quiz_type=QuizType.SENT2TERM,
             target_id="1",
-            target=QuizOption.create("aaa", ["A"]),
             sources={
+                "1": QuizOption.create("aaa", ["A"]),
                 "2": QuizOption.create("aaa", ["A"]),
             },
             created=datetime.now(tz=TZ),
@@ -46,8 +46,8 @@ def test_duplicate_source():
             quiz_id=uuid.uuid4(),
             quiz_type=QuizType.SENT2TERM,
             target_id="1",
-            target=QuizOption.create("aaa", ["A"]),
             sources={
+                "1": QuizOption.create("aaa", ["A"]),
                 "2": QuizOption.create("bbb", ["B"]),
                 "3": QuizOption.create("bbb", ["B"]),
             },
@@ -61,8 +61,8 @@ def test_quiz_sent2term():
         quiz_id=uuid.uuid4(),
         quiz_type=QuizType.SENT2TERM,
         target_id="1",
-        target=QuizOption.create("aaa", ["A"]),
         sources={
+            "1": QuizOption.create("aaa", ["A"]),
             "2": QuizOption.create("bbb", ["B"]),
             "3": QuizOption.create("ccc", ["C"]),
             "4": QuizOption.create("ddd", ["D"]),
@@ -87,8 +87,8 @@ def test_quiz_term2sent():
         quiz_id=uuid.uuid4(),
         quiz_type=QuizType.TERM2SENT,
         target_id="1",
-        target=QuizOption.create("aaa", ["A"]),
         sources={
+            "1": QuizOption.create("aaa", ["A"]),
             "2": QuizOption.create("bbb", ["B"]),
             "3": QuizOption.create("ccc", ["C"]),
             "4": QuizOption.create("ddd", ["D"]),
@@ -117,9 +117,9 @@ def test_quiz_rel2sent_lv1(sn: SysNet):
         quiz_id=uuid.uuid4(),
         quiz_type=QuizType.REL2PAIR,
         target_id="1",  # 問いの対象
-        target=QuizOption(val=sn.get("ccc"), rels=[QuizRel.DETAIL]),
         correct_ids={"2"},
         sources={
+            "1": QuizOption(val=sn.get("ccc"), rels=[QuizRel.DETAIL]),
             "2": QuizOption(val=sn.get("ccc1"), rels=[QuizRel.DETAIL]),
             "3": QuizOption(val=sn.get("to"), rels=[QuizRel.CONCLUSION]),
             "4": QuizOption(val=sn.get("cccb"), rels=[QuizRel.PREMISE]),
