@@ -7,16 +7,14 @@ from neomodel import adb
 
 from knowde.feature.knowde import Knowde
 from knowde.feature.knowde.repo.detail import fetch_knowdes_with_detail
-from knowde.integration.quiz.domain.domain import (
-    QuizSource,
-)
+from knowde.integration.quiz.domain.domain import QuizSource
 from knowde.integration.quiz.domain.parts import (
     QuizOption,
     QuizRel,
     QuizType,
-    path2edgetypes,
 )
 from knowde.shared.nxutil.db import neo4jpath2nx
+from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import UUIDy, to_uuid
 
 
@@ -30,7 +28,7 @@ def nx2options(
     return {
         uid: QuizOption(
             val=uid2kn[uid].sentence_or_def,
-            rels=QuizRel.of(*path2edgetypes(g, target_id, uid)),
+            rels=QuizRel.of(*EdgeType.path2edgetypes(g, target_id, uid)),
         )
         for uid in uids
     }

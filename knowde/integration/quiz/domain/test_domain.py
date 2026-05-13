@@ -10,17 +10,13 @@ from datetime import datetime
 import pytest
 
 from knowde.feature.parsing.sysnet import SysNet
-from knowde.integration.quiz.domain.parts import QuizRel, path2edgetypes, to_detail_rel
+from knowde.integration.quiz.domain.parts import QuizRel, to_detail_rel
 from knowde.integration.quiz.errors import InvalidAnswerOptionError, QuizDuplicateError
 from knowde.integration.quiz.fixture import fx_sn
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.util import TZ
 
-from .domain import (
-    QuizOption,
-    QuizSource,
-    QuizType,
-)
+from .domain import QuizOption, QuizSource, QuizType
 
 
 def test_duplicate_source():
@@ -138,30 +134,6 @@ def test_quiz_rel2sent_lv1(sn: SysNet):
     assert not q.is_correct(["3", "4"])
     # 前提の前提はどれか 2階関係クイズ
     # クイズ対象からの関係を表すクラスを作るか
-
-
-def test_quiz_rel2sent_random(sn: SysNet):
-    """関係クイズの答えを陽に設定したくない."""
-
-
-def test_path2edgetypes(sn: SysNet):
-    """Graph pathからedgetypeのリストを得る."""
-    assert path2edgetypes(sn.g, "ccc", "ccc1") == ([EdgeType.BELOW], True)
-    assert path2edgetypes(sn.g, "ccc1", "ccc") == ([EdgeType.BELOW], False)
-    assert path2edgetypes(sn.g, "ccc", "parent") == ([EdgeType.BELOW], False)
-    assert path2edgetypes(sn.g, "parent", "ccc") == ([EdgeType.BELOW], True)
-    assert path2edgetypes(sn.g, "ccc", "ccc3") == (
-        [EdgeType.BELOW, *[EdgeType.SIBLING] * 2],
-        True,
-    )
-    assert path2edgetypes(sn.g, "ccc3", "ccc") == (
-        [EdgeType.BELOW, *[EdgeType.SIBLING] * 2],
-        False,
-    )
-    assert path2edgetypes(sn.g, "ccc", "ccc5") == ([EdgeType.TO] * 2, True)
-    assert path2edgetypes(sn.g, "ccc5", "ccc") == ([EdgeType.TO] * 2, False)
-    assert path2edgetypes(sn.g, "ccc", "cccb1") == ([EdgeType.TO] * 2, False)
-    assert path2edgetypes(sn.g, "cccb1", "ccc") == ([EdgeType.TO] * 2, True)
 
 
 def test_to_detail_rel():

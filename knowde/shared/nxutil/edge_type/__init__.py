@@ -8,6 +8,7 @@ from functools import cache, cached_property, reduce
 from typing import TYPE_CHECKING
 
 import networkx as nx
+from more_itertools import pairwise
 
 from knowde.shared.nxutil.errors import MultiEdgesError
 from knowde.shared.nxutil.util import pred_attr, succ_attr
@@ -119,6 +120,26 @@ class EdgeType(StrEnum):
             return val["type"]
         msg = f"{u}と{v}の間に関係はない"
         raise MultiEdgesError(msg)
+
+    @classmethod
+    def path2edgetypes(
+        cls,
+        g: nx.DiGraph,
+        s: Hashable,
+        e: Hashable,
+    ) -> tuple[list[EdgeType], bool]:
+        """nxgraphからクイズ関係タイプへ変換."""
+        try:
+            # 正順
+            p = nx.shortest_path(g, source=s, target=e)
+            is_forward = True
+        except (nx.NetworkXNoPath, nx.NodeNotFound):
+            # 逆順
+            p = nx.shortest_path(g, source=e, target=s)
+            is_forward = False
+        ets = [EdgeType.get_edgetype(g, u, v) for u, v in pairwise(p)]
+        # to, to が premise * 2 か conclusion * 2 か判別できるように is_forward を返す
+        return ets, is_forward
 
 
 @cache

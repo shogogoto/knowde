@@ -1,4 +1,4 @@
-"""dbとnetworkx間の変換."""
+"""neo4jとnetworkx間の変換."""
 
 from __future__ import annotations
 

@@ -4,87 +4,15 @@ from collections.abc import Hashable, Sequence
 from enum import StrEnum, auto
 from functools import cache
 from itertools import islice
+from operator import attrgetter
 from typing import Any, Self
 
-import networkx as nx
-from more_itertools import pairwise
 from pydantic import BaseModel
 
 from knowde.feature.parsing.primitive.mark import inject2placeholder
 from knowde.feature.parsing.sysnet.sysnode import Def
 from knowde.integration.quiz.errors import QuizOptionsMustBeDefError
 from knowde.shared.nxutil.edge_type import EdgeType
-
-QUIZ_PLACEHOLDER = "$@"
-
-
-class QuizType(StrEnum):
-    """問題文の種類.
-
-    用語当てクイズ: 単文の用語を当てる
-    単文当てクイズ: 用語の単文を当てる
-    関係当てクイズ: 単文のペアの関係を当てる. 関係の選択肢
-    ペア当てクイズ: 対象単文と特定の関係にある単文を当てる. 単文を列挙
-    """
-
-    SENT2TERM = auto()
-    TERM2SENT = auto()
-    PAIR2REL = auto()
-    REL2PAIR = auto()
-
-    @property
-    def has_term(self) -> bool:
-        """用語あり単文が選択肢."""
-        return self in {QuizType.SENT2TERM, QuizType.TERM2SENT}
-
-    # def n_correct(self) -> int:
-    #     """正解数."""
-    #     return {
-    #         QuizType.SENT2TERM: 1,
-    #         QuizType.TERM2SENT: 1,
-    #         QuizType.PAIR2REL: 1,
-    #         QuizType.REL2PAIR: 2,
-    #     }[self]
-    #
-    # def n_distractor(self, n_option: int) -> int:
-    #     """誤答肢数."""
-    #     return 3
-
-    def inject(self, vals: list[str]) -> str:
-        """プレースホルダーを置き換えて返す."""
-        template = {
-            QuizType.SENT2TERM: "$@に合う用語を当ててください",
-            QuizType.TERM2SENT: "$@に合う文を当ててください",
-            QuizType.REL2PAIR: "$@と$@関係で繋がる単文を当ててください",
-            QuizType.PAIR2REL: "$@から$@への関係を当ててください",
-        }[self]
-
-        return inject2placeholder(
-            template,
-            vals,
-            QUIZ_PLACEHOLDER,
-            surround_pre="'",
-            surround_post="'",
-        )
-
-
-def path2edgetypes(
-    g: nx.DiGraph,
-    s: Hashable,
-    e: Hashable,
-) -> tuple[list[EdgeType], bool]:
-    """nxgraphからクイズ関係タイプへ変換."""
-    try:
-        # 正順
-        p = nx.shortest_path(g, source=s, target=e)
-        is_forward = True
-    except (nx.NetworkXNoPath, nx.NodeNotFound):
-        # 逆順
-        p = nx.shortest_path(g, source=e, target=s)
-        is_forward = False
-    ets = [EdgeType.get_edgetype(g, u, v) for u, v in pairwise(p)]
-    # to, to が premise * 2 か conclusion * 2 か判別できるように is_forward を返す
-    return ets, is_forward
 
 
 class QuizRel(StrEnum):
@@ -215,3 +143,85 @@ class QuizOption(BaseModel, frozen=True):
             return tgt
         msg = "クイズ対象が用語を持たない"
         raise QuizOptionsMustBeDefError(msg)
+
+
+QUIZ_PLACEHOLDER = "$@"
+
+
+class QuizType(StrEnum):
+    """問題文の種類.
+
+    用語当てクイズ: 単文の用語を当てる
+    単文当てクイズ: 用語の単文を当てる
+    関係当てクイズ: 単文のペアの関係を当てる. 関係の選択肢
+    ペア当てクイズ: 対象単文と特定の関係にある単文を当てる. 単文を列挙
+    """
+
+    SENT2TERM = auto()
+    TERM2SENT = auto()
+    PAIR2REL = auto()
+    REL2PAIR = auto()
+
+    @property
+    def _TEMPLATE(self) -> str:  # noqa: N802
+        return {
+            QuizType.SENT2TERM: "$@に合う用語を当ててください",
+            QuizType.TERM2SENT: "$@に合う文を当ててください",
+            QuizType.REL2PAIR: "$@と$@関係で繋がる単文を当ててください",
+            QuizType.PAIR2REL: "$@から$@への関係を当ててください",
+        }[self]
+
+    @property
+    def _OPT_ANSWER(self) -> str:  # noqa: N802
+        return {
+            QuizType.SENT2TERM: "def_.term",
+            QuizType.TERM2SENT: "def_.sentence",
+            QuizType.REL2PAIR: "rels_stmt",
+            QuizType.PAIR2REL: "sentence",
+        }[self]
+
+    @property
+    def _OPT_QUESTION(self) -> str:  # noqa: N802
+        return {
+            QuizType.SENT2TERM: "def_.sentence",
+            QuizType.TERM2SENT: "def_.term",
+            QuizType.REL2PAIR: "rels_stmt",
+            QuizType.PAIR2REL: "sentence",
+        }[self]
+
+    @property
+    def has_term(self) -> bool:
+        """用語あり単文が選択肢."""
+        return self in {QuizType.SENT2TERM, QuizType.TERM2SENT}
+
+    def opt_answer(self, opt: QuizOption) -> str:
+        """回答表現の選択肢."""
+        return str(attrgetter(self._OPT_ANSWER)(opt))
+
+    def correct_ids(self, target_id: str, correct_ids: list[str]) -> list[str]:
+        """正解のid."""
+        if self.has_term:
+            return [target_id]
+        return correct_ids
+
+    def opt_question(self, opt: QuizOption) -> str:
+        """問題文表現の選択肢."""
+        return str(attrgetter(self._OPT_QUESTION)(opt))
+
+    def statement(self, target: QuizOption, corrects: list[QuizOption]) -> str:
+        """クイズの問題文."""
+        if self.has_term:
+            vals = [self.opt_question(target)]
+        else:
+            vals = [str(target.val), *[self.opt_question(c) for c in corrects]]
+        return self.inject(vals)
+
+    def inject(self, vals: list[str]) -> str:
+        """プレースホルダーを置き換えて返す."""
+        return inject2placeholder(
+            self._TEMPLATE,
+            vals,
+            QUIZ_PLACEHOLDER,
+            surround_pre="'",
+            surround_post="'",
+        )

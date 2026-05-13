@@ -6,15 +6,48 @@ from uuid import UUID
 from more_itertools import duplicates_everseen
 from pydantic import BaseModel, Field, model_validator
 
-from knowde.feature.parsing.sysnet.sysnode import Def
 from knowde.integration.quiz.errors import (
     InvalidAnswerOptionError,
     QuizDuplicateError,
-    QuizOptionsMustBeDefError,
 )
 from knowde.shared.util import Neo4jDateTime
 
 from .parts import QuizOption, QuizType
+
+
+class ReadableQuiz(BaseModel, frozen=True):
+    """「読める状態」の問題文と選択肢を備えたクイズ."""
+
+    # 既に読める状態の問題文や選択肢
+    quiz_id: UUID
+    statement: str = Field(title="問題文")
+    options: dict[str, str] = Field(title="選択肢")
+    correct: list[str] = Field(title="正解")
+    created: Neo4jDateTime
+
+    @property
+    def distractors(self) -> list[str]:
+        """誤答肢."""
+        return [op for op in self.options if op not in self.correct]
+
+    @property
+    def string(self) -> str:
+        """問題文."""
+        s = f"{self.statement}\n"
+        ops = [indent(op, "  * ") for op in self.options.values()]
+        s += "\n".join(ops)
+        return s
+
+    # TODO: 何も答えないのが正解、というパターンも欲しい  # noqa: FIX002, TD002, TD003
+    def is_correct(self, selected: list[str]) -> bool:
+        """正解かどうか."""
+        for s in selected:
+            if s not in self.options:
+                msg = f"選択肢に存在しない回答; {s} not in {list(self.options.keys())}"
+                raise InvalidAnswerOptionError(msg)
+        s = set(selected)
+        correct = set(self.correct)
+        return s == correct
 
 
 class QuizSource(BaseModel, frozen=True):
@@ -45,36 +78,10 @@ class QuizSource(BaseModel, frozen=True):
         """クイズ対象."""
         return self.sources[self.target_id]
 
-    @property
-    def source_defs(self) -> dict[str, Def]:
-        """誤答肢の定義."""
-        dists = {k: v.val for k, v in self.sources.items()}
-        defs = {k: v for k, v in dists.items() if isinstance(v, Def)}
-        if len(defs) != len(dists):
-            msg = "誤答肢に用語なし単文が含まれている"
-            raise QuizOptionsMustBeDefError(msg)
-        return defs
-
-    def get_by_id(self, option_id: str) -> QuizOption:
-        """Target or sourceを返す."""
-        if option_id == self.target_id:
-            return self.target
-        return self.sources[option_id]
-
-    def get_by_sent(self, sent: str) -> QuizOption:
-        """単文指定でTarget or sourceを返す."""
-        if sent == self.target.sentence:
-            return self.target
-        for option in self.sources.values():
-            if sent == option.sentence:
-                return option
-        msg = f"{sent} not found"
-        raise KeyError(msg)
-
     def get_id_by_sent(self, sent: str) -> str:
         """単文指定でidを返す."""
         key = next(
-            (k for k in self.sources if self.get_by_id(k).sentence == sent),
+            (k for k in self.sources if self.sources[k].sentence == sent),
             None,
         )
         if key is None:
@@ -82,85 +89,15 @@ class QuizSource(BaseModel, frozen=True):
             raise KeyError(msg)
         return key
 
-    @property
-    def statement(self) -> str:
-        """クイズの問題文."""
-        vals = {
-            QuizType.SENT2TERM: [self.target.sentence],
-            QuizType.TERM2SENT: [str(self.target.def_.term)],
-            QuizType.REL2PAIR: [
-                str(self.target.val),
-                *[self.sources[c].rels_stmt for c in self.correct_ids],
-            ],
-            QuizType.PAIR2REL: [
-                str(self.target.val),
-                *[self.sources[c].sentence for c in self.correct_ids],
-            ],
-        }[self.quiz_type]
-        return self.quiz_type.inject(vals)
-
-    @property
-    def readable_options(self) -> dict[str, str]:
-        """読める状態の選択肢."""
-        match self.quiz_type:
-            case QuizType.SENT2TERM:
-                return {k: str(v.term) for k, v in self.source_defs.items()}
-            case QuizType.TERM2SENT:
-                return {k: str(v.sentence) for k, v in self.source_defs.items()}
-            case QuizType.REL2PAIR:
-                return {k: str(v.val) for k, v in self.sources.items()}
-            case QuizType.PAIR2REL:
-                return {k: str(v.rels) for k, v in self.sources.items()}
-
-    @property
-    def correct(self) -> list[str]:
-        """正解のid."""
-        if self.quiz_type in {QuizType.SENT2TERM, QuizType.TERM2SENT}:
-            return [self.target_id]
-        return self.correct_ids
-
-    def to_readable(self) -> "ReadableQuiz":
+    def to_readable(self) -> ReadableQuiz:
         """読める状態にする."""
+        options = {k: self.quiz_type.opt_answer(v) for k, v in self.sources.items()}
+        correct_opts = [self.sources[c] for c in self.correct_ids]
+        stmt = self.quiz_type.statement(self.target, correct_opts)
         return ReadableQuiz(
             quiz_id=self.quiz_id,
-            statement=self.statement,
-            options=self.readable_options,
-            correct=self.correct,
+            statement=stmt,
+            options=options,
+            correct=self.quiz_type.correct_ids(self.target_id, self.correct_ids),
             created=self.created,
         )
-
-
-class ReadableQuiz(BaseModel, frozen=True):
-    """「読める状態」の問題文と選択肢を備えたクイズ."""
-
-    # 既に読める状態の問題文や選択肢
-    quiz_id: UUID
-    statement: str = Field(title="問題文")
-    options: dict[str, str] = Field(title="選択肢")
-    # 順番が大事になる問題もあるかもしれない
-    correct: list[str] = Field(title="正解")
-    created: Neo4jDateTime
-
-    @property
-    def distractors(self) -> list[str]:
-        """誤答肢."""
-        return [op for op in self.options if op not in self.correct]
-
-    @property
-    def string(self) -> str:
-        """問題文."""
-        s = f"{self.statement}\n"
-        ops = [indent(op, "  * ") for op in self.options.values()]
-        s += "\n".join(ops)
-        return s
-
-    # TODO: 何も答えないのが正解、というパターンも欲しい  # noqa: FIX002, TD002, TD003
-    def is_correct(self, selected: list[str]) -> bool:
-        """正解かどうか."""
-        for s in selected:
-            if s not in self.options:
-                msg = f"選択肢に存在しない回答; {s} not in {list(self.options.keys())}"
-                raise InvalidAnswerOptionError(msg)
-        s = set(selected)
-        correct = set(self.correct)
-        return s == correct
