@@ -1,16 +1,22 @@
 """quiz domain."""
 
+import uuid
+from datetime import datetime
 from textwrap import indent
+from typing import Self
 from uuid import UUID
 
 from more_itertools import duplicates_everseen
 from pydantic import BaseModel, Field, model_validator
 
+from knowde.feature.parsing.sysnet import SysNet
+from knowde.integration.quiz.domain.rel import QuizRel
 from knowde.integration.quiz.errors import (
     InvalidAnswerOptionError,
     QuizDuplicateError,
 )
-from knowde.shared.util import Neo4jDateTime
+from knowde.shared.nxutil.edge_type import EdgeType
+from knowde.shared.util import TZ, Neo4jDateTime
 
 from .parts import QuizOption, QuizType
 
@@ -100,4 +106,42 @@ class QuizSource(BaseModel, frozen=True):
             options=options,
             correct=self.quiz_type.correct_ids(self.target_id, self.correct_ids),
             created=self.created,
+        )
+
+    @classmethod
+    def from_sysnet(
+        cls,
+        sn: SysNet,
+        qt: QuizType,
+        target_stc: str,
+        source_stcs: list[str],  # 順に番号が割り振られる
+        correct_stcs: list[str] | None = None,
+    ) -> Self:
+        """SysNetから作成してテストを完結に書けるようにする."""
+        if correct_stcs is None:
+            correct_stcs = []
+        tgt = sn.get(target_stc)
+
+        ops: dict[str, QuizOption] = {}
+        target_id = "dummy"
+        correct_ids: list[str] = []
+        for i, s in enumerate(source_stcs, start=1):
+            src = sn.get(s)
+            if tgt == src:
+                rels = []
+                target_id = str(i)
+            else:
+                ets, is_forward = EdgeType.path2edgetypes(sn.g, target_stc, s)
+                rels = QuizRel.of(ets, is_forward)
+            op = QuizOption(val=src, rels=rels)
+            ops[str(i)] = op
+            if s in correct_stcs:
+                correct_ids.append(str(i))
+        return cls(
+            quiz_id=uuid.uuid4(),
+            quiz_type=qt,
+            target_id=target_id,
+            sources=ops,
+            correct_ids=correct_ids,
+            created=datetime.now(tz=TZ),
         )

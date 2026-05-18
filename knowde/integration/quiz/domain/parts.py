@@ -2,106 +2,16 @@
 
 from collections.abc import Hashable, Sequence
 from enum import StrEnum, auto
-from functools import cache
-from itertools import islice
 from operator import attrgetter
-from typing import Any, Self
+from typing import Self
 
 from pydantic import BaseModel
 
 from knowde.feature.parsing.primitive.mark import inject2placeholder
 from knowde.feature.parsing.sysnet.sysnode import Def
 from knowde.integration.quiz.errors import QuizOptionsMustBeDefError
-from knowde.shared.nxutil.edge_type import EdgeType
 
-
-class QuizRel(StrEnum):
-    """クイズ対象との関係."""
-
-    PARENT = "親"
-    DETAIL = "詳細"  # belowとその兄弟
-    PEER = "同階層"
-
-    PREMISE = "前提"
-    CONCLUSION = "結論"
-    # 分かりにくい表現
-    REFER = "用語参照"  # targetが参照する、根, source側
-    REFERRED = "用語被参照"  # targetが参照される、葉, destination側
-    GENERAL = "一般"
-    EXAMPLE = "具体例"
-
-    @classmethod
-    @cache
-    def forwards(cls) -> dict:
-        """正順辞書."""
-        return {
-            EdgeType.TO: cls.CONCLUSION,
-            EdgeType.RESOLVED: cls.REFERRED,
-            EdgeType.EXAMPLE: cls.EXAMPLE,
-            cls.DETAIL: cls.DETAIL,
-            cls.PEER: cls.PEER,
-        }
-
-    @classmethod
-    @cache
-    def backwards(cls) -> dict:
-        """正順辞書."""
-        return {
-            EdgeType.TO: cls.PREMISE,
-            EdgeType.RESOLVED: cls.REFER,
-            EdgeType.EXAMPLE: cls.GENERAL,
-            cls.DETAIL: cls.PARENT,
-            cls.PEER: cls.PEER,
-        }
-
-    @classmethod
-    def of(
-        cls,
-        edge_types: Sequence[EdgeType],
-        is_forward: bool,  # noqa: FBT001
-    ) -> list[Self]:
-        """クイズ関係タイプへ変換."""
-        ets = to_detail_rel(edge_types)
-        if is_forward:
-            retval = [cls.forwards()[et] for et in ets]
-        else:
-            retval = reversed([cls.backwards()[et] for et in ets])
-        return list(retval)
-
-
-def count_consecutive_val(seq: Sequence, i_start: int, val: Any):
-    """特定要素の連続回数を数える."""
-    if i_start >= len(seq):
-        return 0
-    count = 0
-    # start_index以降の要素を1つずつ取り出す
-    for item in islice(seq, i_start, None):
-        if item == val:
-            count += 1
-        else:
-            break
-    return count
-
-
-def to_detail_rel(ets: Sequence[EdgeType | QuizRel]) -> Sequence[EdgeType | QuizRel]:
-    """詳細関係への変換."""
-    retval = list(ets)
-    if EdgeType.BELOW not in ets:
-        if EdgeType.SIBLING in ets:
-            i = ets.index(EdgeType.SIBLING)
-            n = count_consecutive_val(ets, i, EdgeType.SIBLING)
-            retval[i : i + n + 1] = [QuizRel.PEER]
-            return to_detail_rel(retval)
-
-        return ets
-    i = ets.index(EdgeType.BELOW)
-
-    try:
-        n = count_consecutive_val(retval, i + 1, EdgeType.SIBLING)
-        retval[i : i + n + 1] = [QuizRel.DETAIL]
-    except IndexError:  # [BELOW]
-        return [QuizRel.DETAIL]
-    return to_detail_rel(retval)
+from .rel import QuizRel
 
 
 class QuizOption(BaseModel, frozen=True):
@@ -116,9 +26,19 @@ class QuizOption(BaseModel, frozen=True):
         sentence: str,
         names: list[str] | None = None,
         rels: Sequence[QuizRel] | None = None,
-    ):
+    ) -> Self:
         val = Def.create(sentence, names=names)
         return cls(val=val, rels=rels)
+
+    # @classmethod
+    # def from_syselm(cls, elm: KNArg) -> Self:
+    #     """SysNet要素から作成."""
+    #     match elm:
+    #         case Def():
+    #             rels = EdgeType.path2edgetypes()
+    #             return cls(val=elm, rels=elm.rels)
+    #         # case
+    #     return cls(val=elm, rels=elm.rels)
 
     @property
     def rels_stmt(self) -> str:

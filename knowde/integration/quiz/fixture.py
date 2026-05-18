@@ -15,8 +15,9 @@ def fx_sn() -> SysNet:
     """用語は5個しかない."""
     s = """
         # title
-            aaa
-            bbb
+            A: aaa
+            B: bbb
+            D: ddd
             parent
                 C: ccc
                     T1: ccc1
