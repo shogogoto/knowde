@@ -99,12 +99,12 @@ class QuizSource(BaseModel, frozen=True):
         """読める状態にする."""
         options = {k: self.quiz_type.opt_answer(v) for k, v in self.sources.items()}
         correct_opts = [self.sources[c] for c in self.correct_ids]
-        stmt = self.quiz_type.statement(self.target, correct_opts)
         return ReadableQuiz(
             quiz_id=self.quiz_id,
-            statement=stmt,
+            statement=self.quiz_type.statement(self.target, correct_opts),
             options=options,
-            correct=self.quiz_type.correct_ids(self.target_id, self.correct_ids),
+            correct=self.correct_ids,
+            # correct=self.quiz_type.correct_ids(self.target_id, self.correct_ids),
             created=self.created,
         )
 

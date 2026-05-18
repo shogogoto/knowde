@@ -19,13 +19,14 @@ async def test_gen_quiz_term2sent(u: LUser):
     """単文当てクイズを永続化&復元."""
     n_option = 5
     tgt = LSentence.nodes.first(val="ccc")
-    rq, src = await generate_quiz(
+    src = await generate_quiz(
         QuizType.TERM2SENT,
         CandidateType.ALL,
         tgt.uid,
         n_option,
         u.uid,
     )
+    rq = src.to_readable()
     assert rq.is_correct([src.get_id_by_sent("ccc")])
     assert not rq.is_correct([src.get_id_by_sent("ccc1")])
 
@@ -35,13 +36,14 @@ async def test_gen_quiz_sent2term(u: LUser):
     """用語当てクイズを永続化&復元."""
     n_option = 5
     tgt = LSentence.nodes.first(val="ccc")
-    rq, src = await generate_quiz(
+    src = await generate_quiz(
         QuizType.SENT2TERM,
         CandidateType.ALL,
         tgt.uid,
         n_option,
         u.uid,
     )
+    rq = src.to_readable()
     assert rq.is_correct([src.get_id_by_sent("ccc")])
     assert not rq.is_correct([src.get_id_by_sent("ccc1")])
 
@@ -52,7 +54,7 @@ async def test_gen_quiz_rel2pair(u: LUser):
     tgt = LSentence.nodes.first(val="ccc")
     pair = LSentence.nodes.first(val="parent")
     n_option = 3
-    rq, src = await generate_quiz(
+    src = await generate_quiz(
         QuizType.REL2PAIR,
         CandidateType.ALL,
         tgt.uid,
@@ -60,6 +62,7 @@ async def test_gen_quiz_rel2pair(u: LUser):
         u.uid,
         correct_sent_uids=[pair.uid],
     )
+    rq = src.to_readable()
     assert rq.is_correct([src.get_id_by_sent("parent")])
     incorrects = [s.sentence for s in src.sources.values() if s.sentence != "parent"]
     for inc in incorrects:
@@ -73,7 +76,7 @@ async def test_gen_quiz_pair2rel(u: LUser):
     tgt = LSentence.nodes.first(val="ccc")
     pair = LSentence.nodes.first(val="parent")
     n_option = 3
-    rq, src = await generate_quiz(
+    src = await generate_quiz(
         QuizType.PAIR2REL,
         CandidateType.ALL,
         tgt.uid,
@@ -81,6 +84,7 @@ async def test_gen_quiz_pair2rel(u: LUser):
         u.uid,
         correct_sent_uids=[pair.uid],
     )
+    rq = src.to_readable()
     assert rq.is_correct([src.get_id_by_sent("parent")])
     incorrects = [s.sentence for s in src.sources.values() if s.sentence != "parent"]
     for inc in incorrects:
@@ -93,13 +97,14 @@ async def test_answer(u: LUser):
     """回答してリストや正答率を返す."""
     sent = LSentence.nodes.first(val="ccc")
     n_option = 5
-    rq, _ = await generate_quiz(
+    src = await generate_quiz(
         QuizType.TERM2SENT,
         CandidateType.ALL,
         sent.uid,
         n_option,
         u.uid,
     )
+    rq = src.to_readable()
     anss = await list_answers([rq.quiz_id], user_uid=u.uid)
     assert len(anss.root) == 0
     ans1 = await create_answer(

@@ -1,35 +1,8 @@
 """test fixture."""
 
 from knowde.feature.entry.resource.usecase import save_text
-from knowde.feature.parsing.sysnet import SysNet
-from knowde.feature.parsing.tree2net import parse2net
 from knowde.shared.user.label import LUser
 from knowde.shared.user.testing import aregister
-
-
-# pytest.fixtureでデコレートしない
-#   <- importの補完がでなくなる
-#   使用先でpytest.fixureにこれを渡して得た変数を使う
-#  ex. sn = pytest.fixture(fx_sn)
-def fx_sn() -> SysNet:
-    """用語は5個しかない."""
-    s = """
-        # title
-            A: aaa
-            B: bbb
-            D: ddd
-            parent
-                C: ccc
-                    T1: ccc1
-                    T2: ccc2
-                    T3: ccc3
-                    -> to
-                        T4: todetail
-                        -> ccc5
-                    <- cccb
-                        <- cccb1
-    """
-    return parse2net(s)
 
 
 async def fx_u() -> LUser:  # noqa: D103

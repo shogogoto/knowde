@@ -10,9 +10,9 @@ from datetime import datetime
 import pytest
 
 from knowde.feature.parsing.sysnet import SysNet
+from knowde.feature.parsing.tree2net import parse2net
 from knowde.integration.quiz.domain.parts import QuizRel
 from knowde.integration.quiz.errors import InvalidAnswerOptionError, QuizDuplicateError
-from knowde.integration.quiz.fixture import fx_sn
 from knowde.shared.util import TZ
 
 from .domain import QuizOption, QuizSource, QuizType
@@ -31,7 +31,26 @@ def test_duplicate_source():
         )
 
 
-sn = pytest.fixture(fx_sn)
+@pytest.fixture
+def sn() -> SysNet:
+    """用語は5個しかない."""
+    s = """
+        # title
+            A: aaa
+            B: bbb
+            D: ddd
+            parent
+                C: ccc
+                    T1: ccc1
+                    T2: ccc2
+                    T3: ccc3
+                    -> to
+                        T4: todetail
+                        -> ccc5
+                    <- cccb
+                        <- cccb1
+    """
+    return parse2net(s)
 
 
 def test_sysnet2source(sn: SysNet):
@@ -71,6 +90,7 @@ def test_quiz_sent2term(sn: SysNet):
         qt=QuizType.SENT2TERM,
         target_stc="aaa",
         source_stcs=["aaa", "bbb", "ccc", "ddd"],
+        correct_stcs=["aaa"],
     )
     q = src.to_readable()
     assert q.statement == "'aaa'に合う用語を当ててください"
@@ -91,10 +111,11 @@ def test_quiz_term2sent(sn: SysNet):
         qt=QuizType.TERM2SENT,
         target_stc="aaa",
         source_stcs=["aaa", "bbb", "ccc", "ddd"],
+        correct_stcs=["aaa"],
     )
     q = src.to_readable()
     assert set(q.options.values()) == {"aaa", "bbb", "ccc", "ddd"}
-    assert q.statement == QuizType.TERM2SENT.inject(["A"])
+    assert q.statement == "'A'に合う文を当ててください"
     assert q.is_correct(["1"])
     assert not q.is_correct(["1", "4"])
     assert not q.is_correct(["2"])
@@ -117,7 +138,7 @@ def test_quiz_rel2sent_lv1(sn: SysNet):
     assert q.is_correct(["2"])
     assert not q.is_correct(["3"])
 
-    src2 = src.model_copy(update={"correct_ids": {"3"}})
+    src2 = src.model_copy(update={"correct_ids": ["3"]})
     # 結論はどれか
     q = src2.to_readable()
     assert q.statement == "'C: ccc'と'結論'関係で繋がる単文を当ててください"
@@ -126,24 +147,20 @@ def test_quiz_rel2sent_lv1(sn: SysNet):
     assert not q.is_correct(["3", "4"])
 
 
-def test_no_term_not_target_correct():
+def test_without_correct(sn: SysNet):
     """用語当てクイズでtargetを正解にしないパターン.
 
     correct_idsが空の場合はtarget_idを正解にする
     correct_idsがある場合はcorrent_idを正解にする
       ただし、用語当てなどの性質上、複数の正解
     """
-
-
-def test_no_term_without_correct_option():
-    """用語当てクイズで何も選択しないのが正解なパターン.
-
-    correct_idsが空の場合はtarget_idを正解にする
-    correct_idsがある場合はcorrent_idを正解にする
-      ただし、用語当てなどの性質上、複数の正解
-    """
-
-
-#   quiz propertyにflagを持たせて、option関係を+1にするか
-# allow_multiple_anwser: bool = False
-# allow_no_correct_option: bool = False
+    src = QuizSource.from_sysnet(
+        sn=sn,
+        qt=QuizType.SENT2TERM,
+        target_stc="aaa",
+        source_stcs=["aaa", "bbb", "ccc", "ddd"],
+        correct_stcs=[],
+    )
+    q = src.to_readable()
+    assert not q.is_correct(["2"])
+    assert q.is_correct([])

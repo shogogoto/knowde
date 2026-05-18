@@ -11,13 +11,14 @@ async def create_quiz_uc(
     user_uid: UUIDy,
 ) -> ReadableQuizCollection:
     """単文当てクイズ作成usecase."""
-    rq, _ = await generate_quiz(
+    src = await generate_quiz(
         param.quiz_type,
         param.cand_type,
         param.target_sent_uid,
         param.n_option,
         user_id=user_uid,
     )
+    rq = src.to_readable()
     return ReadableQuizCollection(root=[rq])
 
 

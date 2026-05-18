@@ -10,6 +10,7 @@ from pydantic import BaseModel
 from knowde.feature.parsing.primitive.mark import inject2placeholder
 from knowde.feature.parsing.sysnet.sysnode import Def
 from knowde.integration.quiz.errors import QuizOptionsMustBeDefError
+from knowde.shared.types import UUIDy
 
 from .rel import QuizRel
 
@@ -118,11 +119,17 @@ class QuizType(StrEnum):
         """回答表現の選択肢."""
         return str(attrgetter(self._OPT_ANSWER)(opt))
 
-    def correct_ids(self, target_id: str, correct_ids: list[str]) -> list[str]:
+    def correct_ids(
+        self,
+        target_id: UUIDy,
+        correct_ids: list[UUIDy] | None = None,
+    ) -> list[str]:
         """正解のid."""
+        if correct_ids is None:
+            correct_ids = []
         if self.has_term:
-            return [target_id]
-        return correct_ids
+            return [str(target_id)]
+        return [str(i) for i in correct_ids]
 
     def opt_question(self, opt: QuizOption) -> str:
         """問題文表現の選択肢."""

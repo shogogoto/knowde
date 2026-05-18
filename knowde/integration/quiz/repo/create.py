@@ -11,7 +11,6 @@ from knowde.integration.quiz.distractor.distractor import fetch_distractor_ids
 from knowde.integration.quiz.domain.domain import (
     QuizSource,
     QuizType,
-    ReadableQuiz,
 )
 from knowde.integration.quiz.repo.restore import restore_quiz_sources
 from knowde.shared.types import UUIDy, to_uuid
@@ -71,20 +70,25 @@ async def create_quiz_and_correct(
 # 誤答肢が足りなくて失敗することがあるので
 # retryをできるようにしたい
 # 正解の数が決め打ちになっているのを直したい
+#   quiz propertyにflagを持たせて、option関係を+1にするか
+# allow_multiple_anwser: bool = False
+# allow_no_correct_option: bool = False
+
+
 async def generate_quiz(  # noqa: PLR0917
     qt: QuizType,
     ct: CandidateType,
     target_sent_uid: UUIDy,
     n_option: int,
     user_id: UUIDy,
-    correct_sent_uids: Sequence[UUIDy] | None = None,
-    do_print: bool = False,  # noqa: FBT001, FBT002 for debug
-) -> tuple[ReadableQuiz, QuizSource]:
+    correct_sent_uids: list[UUIDy] | None = None,
+) -> QuizSource:
     """高級なクイズ生成."""
+    correct_ids = qt.correct_ids(target_sent_uid, correct_sent_uids)
     ds = await fetch_distractor_ids(
         [target_sent_uid],
         ct,
-        n_option - 1,  # 正解の数を除く
+        n_option - len(correct_ids),
         qt.has_term,
     )
     quiz_id = await create_quiz_and_correct(
@@ -92,11 +96,7 @@ async def generate_quiz(  # noqa: PLR0917
         qt,
         ds,
         user_uid=user_id,
-        correct_uids=correct_sent_uids,
+        correct_uids=correct_ids,
     )
     srcs = await restore_quiz_sources([quiz_id])
-    src = srcs[0]
-    rq = src.to_readable()
-    if do_print:
-        print(rq.string)  # noqa: T201
-    return rq, src
+    return srcs[0]
