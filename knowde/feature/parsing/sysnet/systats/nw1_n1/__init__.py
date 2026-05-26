@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Final
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.sysnet.sysnode import KNArg, KNode
 from knowde.shared.nxutil import (
-    filter_edge_attr,
+    select_edge_attr,
     to_nodes,
     to_roots,
 )
@@ -28,7 +28,7 @@ class ParentLookupError(Exception):
 @cache
 def parent_lookup(g: nx.DiGraph) -> dict:
     """親の辞書."""
-    g = filter_edge_attr(g, "type", EdgeType.BELOW, EdgeType.SIBLING)
+    g = select_edge_attr(g, "type", EdgeType.BELOW, EdgeType.SIBLING)
     parents = to_roots(g, EdgeType.BELOW)
     lookup = {}
     for p in parents:

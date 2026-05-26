@@ -52,7 +52,7 @@ def _validate_graph(v: Any, info: ValidationInfo) -> nx.DiGraph:
     raise TypeError
 
 
-class EdgeData(BaseModel):
+class _EdgeData(BaseModel):
     """for fastapi schema."""
 
     type: EdgeType
@@ -61,11 +61,11 @@ class EdgeData(BaseModel):
     key: int
 
 
-class GraphData(BaseModel):
+class _GraphData(BaseModel):
     """for fastapi schema."""
 
     directed: bool
-    edges: list[EdgeData]
+    edges: list[_EdgeData]
     graph: dict
     multigraph: bool
     nodes: list[dict[str, str]]
@@ -77,7 +77,7 @@ NXGraph = Annotated[
     PlainSerializer(
         lambda x: nx.node_link_data(x, edges="edges"),
         # lambda x: GraphData.model_validate(nx.node_link_data(x, edges="edges")),
-        return_type=GraphData,
+        return_type=_GraphData,
     ),
 ]
 

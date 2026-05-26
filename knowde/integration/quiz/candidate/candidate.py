@@ -39,7 +39,7 @@ async def list_candidates_in_resource(
         "",
         paging=ENOUGH_PAGING,
         order_by=None,  # 無駄な並び替え省く
-        filter_resource_uids=rs_uids,
+        belong_resource_uids=rs_uids,
         only_with_term=only_with_term,
         exclude_sent_ids=target_sent_ids,
     )
@@ -105,7 +105,7 @@ async def list_top_scoring_candidates(
         "",
         paging=Paging(size=limit),
         order_by=order_by,
-        filter_resource_uids=[to_uuid(u).hex for u in resource_uids],
+        belong_resource_uids=[to_uuid(u).hex for u in resource_uids],
         only_with_term=only_with_term,
     )
     return list(rows)

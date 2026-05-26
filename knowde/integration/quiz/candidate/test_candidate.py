@@ -5,7 +5,7 @@ from pydantic import ValidationError
 
 from knowde.conftest import mark_async_test
 from knowde.feature.entry.resource.usecase import save_text
-from knowde.integration.quiz.fixture import fx_u
+from knowde.integration.quiz.repo.fixture import fx_u
 from knowde.shared.knowde.label import LSentence
 from knowde.shared.user.label import LUser
 

@@ -3,7 +3,7 @@
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.integration.quiz.domain.parts import QuizType
-from knowde.integration.quiz.fixture import fx_u
+from knowde.integration.quiz.repo.fixture import fx_u
 from knowde.integration.quiz.repo.list_query import list_answers
 from knowde.shared.knowde.label import LSentence
 from knowde.shared.user.label import LUser
@@ -14,6 +14,7 @@ from .create import generate_quiz
 u = async_fixture()(fx_u)
 
 
+# 正解と選択肢を作成するロジックを分離できそう
 @mark_async_test()
 async def test_gen_quiz_term2sent(u: LUser):
     """単文当てクイズを永続化&復元."""
@@ -60,7 +61,7 @@ async def test_gen_quiz_rel2pair(u: LUser):
         tgt.uid,
         n_option,
         u.uid,
-        correct_sent_uids=[pair.uid],
+        correct_sent_uids=[pair.uid],  # ここの正解を自動で決定できるようにしたい
     )
     rq = src.to_readable()
     assert rq.is_correct([src.get_id_by_sent("parent")])

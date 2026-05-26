@@ -54,7 +54,7 @@ async def search_knowde_ids(  # noqa: PLR0917
     where: WherePhrase = WherePhrase.CONTAINS,
     paging: Paging = Paging(),
     order_by: OrderBy | None = OrderBy(),
-    filter_resource_uids: list[UUIDy] | None = None,
+    belong_resource_uids: list[UUIDy] | None = None,
     only_with_term: bool = False,  # noqa: FBT001, FBT002
     exclude_sent_ids: list[UUIDy] | None = None,
     do_print: bool = False,  # noqa: FBT001, FBT002
@@ -62,7 +62,7 @@ async def search_knowde_ids(  # noqa: PLR0917
     """用語、文のいずれかでマッチする単文のUUIDを返す."""
     q = q_search(
         where,
-        filter_resource_uids,
+        belong_resource_uids,
         only_with_term,
         exclude_sent_ids=exclude_sent_ids,
     )
@@ -79,8 +79,8 @@ async def search_knowde_ids(  # noqa: PLR0917
         q,
         params={
             "s": s,
-            "resource_uids": [to_uuid(uid).hex for uid in filter_resource_uids]
-            if filter_resource_uids
+            "resource_uids": [to_uuid(uid).hex for uid in belong_resource_uids]
+            if belong_resource_uids
             else [],
             "exclude_uids": [to_uuid(uid).hex for uid in exclude_sent_ids]
             if exclude_sent_ids

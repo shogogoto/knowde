@@ -1,4 +1,4 @@
-"""test fixture."""
+"""テスト用データ."""
 
 from knowde.feature.entry.resource.usecase import save_text
 from knowde.shared.user.label import LUser
@@ -29,8 +29,5 @@ async def fx_u() -> LUser:  # noqa: D103
                         ex. ex2
                     xe. ab1
     """
-    # T4: todetail -[親]-> parent -[前提]-> ccc が見つかってしまう
-    # そんなクイズは非直感的で要らない気がする
-    # でもそれは選択肢決定ロジックの責任ということで
     _sn, _m = await save_text(user.uid, s)
     return user

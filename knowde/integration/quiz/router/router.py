@@ -8,28 +8,31 @@ from knowde.integration.quiz.domain.answer import Answer
 from knowde.integration.quiz.domain.collections import ReadableQuizResult
 from knowde.integration.quiz.domain.domain import ReadableQuiz
 from knowde.integration.quiz.repo.answer import create_answer
+from knowde.integration.quiz.repo.create import generate_quiz
 from knowde.integration.quiz.repo.list_query import list_quiz_by_sentence_ids
 from knowde.integration.quiz.router.params import (
     AnswerParam,
     CreateQuizParam,
 )
-from knowde.integration.quiz.router.usecase import create_quiz_uc
-from knowde.shared.user.router_util import ActiveUser, TrackUser
+from knowde.shared.user.router_util import ActiveUser
 
 _r = APIRouter(prefix="/quiz", tags=["quiz"])
 
 
 @_r.post("")
-async def create_quiz_api(
-    param: CreateQuizParam,
-    user: TrackUser,  # optionalだからTrackUserを使用
-) -> ReadableQuiz:
+async def create_quiz_api(param: CreateQuizParam) -> ReadableQuiz:
     """単文指定してクイズを作成.
 
     単文を追っている途中で思いつきでクイズを作る
     """
-    qs = await create_quiz_uc(param, user.uid if user else None)
-    return qs.root[0]
+    src = await generate_quiz(
+        param.quiz_type,
+        param.cand_type,
+        param.target_sent_uid,
+        param.n_option,
+        user_id=param.user_uid,
+    )
+    return src.to_readable()
 
 
 # @_r.post("")

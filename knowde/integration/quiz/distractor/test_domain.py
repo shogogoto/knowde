@@ -23,11 +23,10 @@ from .domain import random_sample_safe
 
 def test_sample_safe():
     """候補が足りないときに選択肢数を候補数に合わせる."""
-    cands = list(range(5))
-    samples = random_sample_safe(cands, n_sample=4)
+    samples = random_sample_safe(range(5), n_sample=4)
     assert len(samples) == 4  # noqa: PLR2004
     with pytest.raises(SamplingError):
-        random_sample_safe(cands, n_sample=100)  # 候補より選択肢多い
+        random_sample_safe(range(5), n_sample=100)  # 候補より選択肢多い
 
     # with pytest.raises(SamplingError):
     #     head_sample_safe(cands, n_sample=100)  # 候補より選択肢多い
