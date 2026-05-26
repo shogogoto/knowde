@@ -97,6 +97,7 @@ class QuizSource(BaseModel, frozen=True):
 
     def to_readable(self) -> ReadableQuiz:
         """読める状態にする."""
+        # ここにもno_correct_optionは影響する
         options = {k: self.quiz_type.opt_answer(v) for k, v in self.sources.items()}
         correct_opts = [self.sources[c] for c in self.correct_ids]
         return ReadableQuiz(

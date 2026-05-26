@@ -8,6 +8,7 @@ from knowde.integration.quiz.errors import InsufficientOptionsError
 from knowde.shared.types import UUIDy
 
 
+# correct == target の場合
 async def fetch_distractor_ids(
     sent_ids: list[UUIDy],
     ct: CandidateType,

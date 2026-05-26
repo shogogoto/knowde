@@ -119,12 +119,13 @@ class QuizType(StrEnum):
         """回答表現の選択肢."""
         return str(attrgetter(self._OPT_ANSWER)(opt))
 
-    def correct_ids(
+    def determin_correct_ids(
         self,
         target_id: UUIDy,
         correct_ids: list[UUIDy] | None = None,
+        wituout_correct_options: bool = False,  # noqa: ARG002, FBT001, FBT002
     ) -> list[str]:
-        """正解のid."""
+        """正解を決定する."""
         if correct_ids is None:
             correct_ids = []
         if self.has_term:

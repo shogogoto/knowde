@@ -67,11 +67,6 @@ async def create_quiz_and_correct(
     return quiz_uid
 
 
-# 誤答肢が足りなくて失敗することがあるので
-# retryをできるようにしたい
-# 正解の数が決め打ちになっているのを直したい
-#   quiz propertyにflagを持たせて、option関係を+1にするか
-# allow_multiple_anwser: bool = False
 # allow_no_correct_option: bool = False
 
 
@@ -84,7 +79,7 @@ async def generate_quiz(  # noqa: PLR0917
     correct_sent_uids: list[UUIDy] | None = None,
 ) -> QuizSource:
     """高級なクイズ生成."""
-    correct_ids = qt.correct_ids(target_sent_uid, correct_sent_uids)
+    correct_ids = qt.determin_correct_ids(target_sent_uid, correct_sent_uids)
     ds = await fetch_distractor_ids(
         [target_sent_uid],
         ct,
