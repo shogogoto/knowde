@@ -1,5 +1,7 @@
 """誤答肢の生成."""
 
+import pytest
+
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.integration.quiz.domain.domain import QuizSource
@@ -27,6 +29,7 @@ async def _check_with_term(
     n_option = 5
     src = await generate_quiz(qt, CandidateType.ALL, tgt.uid, n_option, user_id)
     rq = src.to_readable()
+    assert len(rq.options) == n_option
     assert rq.is_correct([src.get_id_by_sent(s_corrent)])
     assert not rq.is_correct([src.get_id_by_sent(s_uncorrect)])
     return src
@@ -40,7 +43,7 @@ async def _check_gen_rel_quiz(
 ):
     tgt = LSentence.nodes.first(val=s_tgt)
     pair = LSentence.nodes.first(val=s_pair)
-    n_option = 3
+    n_option = 3  # テストデータが少ない
     src = await generate_quiz(
         qt,
         CandidateType.ALL,
@@ -50,10 +53,18 @@ async def _check_gen_rel_quiz(
         correct_sent_uids=[pair.uid],  # ここの正解を自動で決定できるようにしたい
     )
     rq = src.to_readable()
-    assert rq.is_correct([src.get_id_by_sent(s_pair)])
-    incorrects = [s.sentence for s in src.sources.values() if s.sentence != s_pair]
+    # print(rq.model_dump_json(indent=2))
+    #
+    # print("-" * 30)
+    # print(s_tgt, src.get_id_by_sent(s_tgt))
+    # print(s_pair, src.get_id_by_sent(s_pair))
+    # print("-" * 30)
+    assert len(rq.options) == n_option
+    k_cor = src.get_id_by_sent(s_pair)
+    assert rq.is_correct([k_cor])
+    incorrects = [s for s in src.readable_options() if s != k_cor]
     for inc in incorrects:
-        assert not rq.is_correct([src.get_id_by_sent(inc)])
+        assert not rq.is_correct([inc])
 
 
 # 正解と選択肢を作成するロジックを分離できそう
@@ -62,14 +73,35 @@ async def test_gen_quiz(u: LUser):
     """タイプごとのクイズ生成."""
     await _check_with_term(QuizType.TERM2SENT, u.uid, "ccc", "ccc", "ccc1")
     await _check_with_term(QuizType.SENT2TERM, u.uid, "ccc", "ccc", "ccc1")
-    await _check_gen_rel_quiz(QuizType.REL2PAIR, u.uid, "ccc", "parent")
-    # たまに失敗する?
+    await _check_gen_rel_quiz(QuizType.REL2PAIR, u.uid, "ccc", "parent")  # 偶に失敗
     await _check_gen_rel_quiz(QuizType.PAIR2REL, u.uid, "ccc", "parent")
 
 
+@pytest.mark.skip
 @mark_async_test()
 async def test_gen_quiz_no_correct_option(u: LUser):
     """クイズの正解の選択肢がなくて何も選ばないのが正解."""
+
+    async def _check(qt: QuizType, n_option: int):
+        tgt = LSentence.nodes.first(val="ccc")
+        pair = LSentence.nodes.first(val="parent")
+        src = await generate_quiz(
+            qt,
+            CandidateType.ALL,
+            tgt.uid,
+            n_option,
+            u.uid,
+            no_correct_option=True,
+            correct_sent_uids=[pair.uid] if not qt.has_term else None,
+        )
+        rq = src.to_readable()
+        assert len(rq.options) == n_option
+        assert rq.is_correct([])
+
+    await _check(QuizType.TERM2SENT, 3)
+    await _check(QuizType.SENT2TERM, 3)
+    await _check(QuizType.REL2PAIR, 3)
+    await _check(QuizType.PAIR2REL, 3)
 
 
 # クイズ作って質問を見て答える

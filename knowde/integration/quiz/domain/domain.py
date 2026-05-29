@@ -30,6 +30,7 @@ class ReadableQuiz(BaseModel, frozen=True):
     options: dict[str, str] = Field(title="選択肢")
     correct: list[str] = Field(title="正解")
     created: Neo4jDateTime
+    no_correct_option: bool
 
     @property
     def distractors(self) -> list[str]:
@@ -44,7 +45,6 @@ class ReadableQuiz(BaseModel, frozen=True):
         s += "\n".join(ops)
         return s
 
-    # TODO: 何も答えないのが正解、というパターンも欲しい  # noqa: FIX002, TD002, TD003
     def is_correct(self, selected: list[str]) -> bool:
         """正解かどうか."""
         for s in selected:
@@ -53,6 +53,8 @@ class ReadableQuiz(BaseModel, frozen=True):
                 raise InvalidAnswerOptionError(msg)
         s = set(selected)
         correct = set(self.correct)
+        if self.no_correct_option:
+            correct = set()
         return s == correct
 
 
@@ -68,12 +70,13 @@ class QuizSource(BaseModel, frozen=True):
     correct_ids: list[str] = Field(default_factory=list)
     sources: dict[str, QuizOption] = Field(title="クイズの元となるメンバ")
     created: Neo4jDateTime
+    no_correct_option: bool = Field(default=False)
 
     @model_validator(mode="after")
-    def option_duplicate_check(self):
+    def duplicate_check(self):
         """重複チェック."""
-        options = list(self.sources.values())
-        dups = list(duplicates_everseen(options))
+        srcs = list(self.sources.values())
+        dups = list(duplicates_everseen(srcs))
         if len(dups) > 0:
             msg = f"同一のクイズ選択肢が指定されています: {dups}"
             raise QuizDuplicateError(msg)
@@ -95,18 +98,29 @@ class QuizSource(BaseModel, frozen=True):
             raise KeyError(msg)
         return key
 
+    def readable_options(self) -> dict[str, str]:
+        """適切に選択肢を作成."""
+        options = {k: self.quiz_type.opt_answer(v) for k, v in self.sources.items()}
+        if not self.quiz_type.has_term:
+            options = {k: v for k, v in options.items() if k != self.target_id}
+        # print(options)
+        # print(self.correct_ids)
+        # print(self.no_correct_option)
+        # if self.no_correct_option:
+        #     options = {k: v for k, v in options.items() if k not in self.correct_ids}
+        # print(options)
+        return options
+
     def to_readable(self) -> ReadableQuiz:
         """読める状態にする."""
-        # ここにもno_correct_optionは影響する
-        options = {k: self.quiz_type.opt_answer(v) for k, v in self.sources.items()}
         correct_opts = [self.sources[c] for c in self.correct_ids]
         return ReadableQuiz(
             quiz_id=self.quiz_id,
             statement=self.quiz_type.statement(self.target, correct_opts),
-            options=options,
+            options=self.readable_options(),
             correct=self.correct_ids,
-            # correct=self.quiz_type.correct_ids(self.target_id, self.correct_ids),
             created=self.created,
+            no_correct_option=self.no_correct_option,
         )
 
     @classmethod

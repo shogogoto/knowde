@@ -86,6 +86,7 @@ async def restore_quiz_sources(
                 kns,
             ),
             created=r["created"],
+            no_correct_option=r["quiz"].get("no_correct_option"),
         )
         for r in flat
     ]

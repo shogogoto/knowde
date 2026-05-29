@@ -17,12 +17,13 @@ from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.util import TZ
 
 
-async def create_quiz_and_correct(
+async def create_quiz_and_correct(  # noqa: PLR0917
     target_sent_uid: UUIDy,
     quiz_type: QuizType,
     option_uids: Sequence[UUIDy],
     user_uid: UUIDy,  # 誰が作ったか
     correct_uids: Sequence[UUIDy] | None = None,
+    no_correct_option: bool = False,  # noqa: FBT001, FBT002
 ) -> UUID:
     """クイズとその正解の永続化."""
     now = datetime.now(tz=TZ)
@@ -35,6 +36,7 @@ async def create_quiz_and_correct(
             uid: $quiz_uid
             , quiz_type: $quiz_type
             , is_link_broken: false
+            , no_correct_option: $no_correct_option
             , created: datetime($now)
         })-[:QUIZ_TARGET]->(tgt)
         WITH quiz
@@ -62,6 +64,7 @@ async def create_quiz_and_correct(
             "quiz_type": quiz_type.name,
             "user_uid": to_uuid(user_uid).hex if user_uid is not None else None,
             "now": now.isoformat(),
+            "no_correct_option": no_correct_option,
         },
     )
     return quiz_uid
@@ -77,21 +80,21 @@ async def generate_quiz(  # noqa: PLR0917
     n_option: int,
     user_id: UUIDy,
     correct_sent_uids: list[UUIDy] | None = None,
+    no_correct_option: bool = False,  # noqa: FBT001, FBT002
 ) -> QuizSource:
     """高級なクイズ生成."""
-    correct_ids = qt.determin_correct_ids(target_sent_uid, correct_sent_uids)
-    ds = await fetch_distractor_ids(
-        [target_sent_uid],
-        ct,
-        n_option - len(correct_ids),
-        qt.has_term,
-    )
+    correct_ids = qt.correct_ids(target_sent_uid, correct_sent_uids)
+    n_ds = n_option - len(correct_ids)
+    if no_correct_option:
+        n_ds = n_option
+    ds = await fetch_distractor_ids([target_sent_uid], ct, n_ds, qt.has_term)
     quiz_id = await create_quiz_and_correct(
         target_sent_uid,
         qt,
         ds,
         user_uid=user_id,
         correct_uids=correct_ids,
+        no_correct_option=no_correct_option,
     )
     srcs = await restore_quiz_sources([quiz_id])
     return srcs[0]

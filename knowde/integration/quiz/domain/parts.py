@@ -97,8 +97,8 @@ class QuizType(StrEnum):
         return {
             QuizType.SENT2TERM: "def_.term",
             QuizType.TERM2SENT: "def_.sentence",
-            QuizType.REL2PAIR: "rels_stmt",
-            QuizType.PAIR2REL: "sentence",
+            QuizType.REL2PAIR: "sentence",
+            QuizType.PAIR2REL: "rels_stmt",
         }[self]
 
     @property
@@ -119,11 +119,10 @@ class QuizType(StrEnum):
         """回答表現の選択肢."""
         return str(attrgetter(self._OPT_ANSWER)(opt))
 
-    def determin_correct_ids(
+    def correct_ids(
         self,
         target_id: UUIDy,
         correct_ids: list[UUIDy] | None = None,
-        wituout_correct_options: bool = False,  # noqa: ARG002, FBT001, FBT002
     ) -> list[str]:
         """正解を決定する."""
         if correct_ids is None:
