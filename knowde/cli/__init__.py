@@ -19,7 +19,7 @@ __version__ = "0.0.0"
 @help_all_option()
 @complete_option()
 def cli() -> None:
-    """Knowde CLI."""
+    """Tanbunism CLI."""
 
 
 @cli.command("config")
