@@ -8,7 +8,7 @@ from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.entry.resource.repo.restore import restore_sysnet
 from knowde.feature.entry.resource.repo.save import sn2db
 from knowde.feature.entry.resource.usecase import save_text
-from knowde.feature.knowde.repo import adjacency_knowde, search_knowde
+from knowde.feature.knowde.repo import adj_knowde, search_knowde
 from knowde.feature.knowde.repo.cypher import q_stats
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.shared.cypher import Paging
@@ -41,16 +41,23 @@ async def test_search_knowde_by_txt(u: LUser):
         B: bA123
         A11, TNTN: ちん
         D: bbbaaaaa
+        stcA1
     ## h12
         x: xxx
         y: {x}yy
     """
     _sn, _ = await save_text(u.uid, s)
     res = await search_knowde("A1")
+    assert [a.sentence for a in res.data] == unordered(["a", "ちん", "bA123", "stcA1"])
+    assert res.total == 4  # noqa: PLR2004
+
+    # 用語ありだけにフィルター
+    res = await search_knowde("A1", only_with_term=True)
     assert [a.sentence for a in res.data] == unordered(["a", "ちん", "bA123"])
+    assert res.total == 3  # noqa: PLR2004
 
     a = LSentence.nodes.get(val="xxx")
-    adjs = await adjacency_knowde([a.uid])
+    adjs = await adj_knowde([a.uid])
     assert adjs[0].referreds[0].sentence == "{x}yy"
 
 
@@ -75,13 +82,13 @@ async def test_search_knowde_with_resource_uid(u: LUser):
     _, r2 = await save_text(u.uid, s2)
     res = await search_knowde("")
     assert res.total == 7  # noqa: PLR2004
-    res = await search_knowde("", resource_uids=[r1.uid])
+    res = await search_knowde("", filter_resource_uids=[r1.uid])
     assert len(res.data) == 3  # noqa: PLR2004
     assert res.total == 3  # noqa: PLR2004
-    res = await search_knowde("", resource_uids=[r2.uid])
+    res = await search_knowde("", filter_resource_uids=[r2.uid])
     assert len(res.data) == 4  # noqa: PLR2004
     assert res.total == 4  # noqa: PLR2004
-    res = await search_knowde("", resource_uids=[r1.uid, r2.uid])
+    res = await search_knowde("", filter_resource_uids=[r1.uid, r2.uid])
     assert len(res.data) == 7  # noqa: PLR2004
     assert res.total == 7  # noqa: PLR2004
 
@@ -188,7 +195,7 @@ async def to_chain(u: LUser) -> SysNet:
 
 
 @mark_async_test()
-async def test_ordering(u: LUser):
+async def test_search_knowde_ordering(u: LUser):
     """検索結果の順番を確認."""
     _sn = await to_chain(u)
     order_by = OrderBy(
@@ -197,8 +204,6 @@ async def test_ordering(u: LUser):
         n_conclusion=0,
         n_refer=0,
         n_referred=-0,
-        dist_axiom=0,
-        dist_leaf=0,
     )
     res = await search_knowde(
         ".*",
@@ -239,16 +244,8 @@ async def test_details(u: LUser):
     """
     _, r = await save_text(u.uid, s)
     _sn, _uids = await restore_sysnet(r.uid)
-    _res = await search_knowde(
-        "detail",
-        WherePhrase.CONTAINS,
-        # do_print=True,
-    )
-    d1 = LSentence.nodes.get(val="detail1")
-    adjs1 = await adjacency_knowde([d1.uid], do_print=True)
-    d2 = LSentence.nodes.get(val="detail2")
-    adjs2 = await adjacency_knowde([d2.uid])
-
+    adjs1 = await adj_knowde([LSentence.nodes.get(val="detail1").uid])
+    adjs2 = await adj_knowde([LSentence.nodes.get(val="detail2").uid])
     assert [str(k) for k in adjs1[0].details] == ["d1T(114)", "d2", "d3"]
     assert [str(k) for k in adjs2[0].details] == [
         "x1",

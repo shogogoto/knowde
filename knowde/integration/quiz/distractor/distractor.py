@@ -1,0 +1,34 @@
+"""repo."""
+
+from uuid import UUID
+
+from knowde.integration.quiz.candidate.types import CandidateType
+from knowde.integration.quiz.distractor.domain import random_sample_safe
+from knowde.integration.quiz.errors import InsufficientOptionsError
+from knowde.shared.types import UUIDy
+
+
+# correct == target の場合
+async def fetch_distractor_ids(
+    sent_ids: list[UUIDy],
+    ct: CandidateType,
+    n_distractor: int,
+    must_has_term: bool,  # noqa: FBT001
+    exclude_sent_ids: list[UUIDy] | None = None,
+) -> list[UUID]:
+    """誤答肢を取得する."""
+    cand_uids = await ct.fetch(
+        sent_ids,
+        must_has_term=must_has_term,
+        exclude_sent_ids=exclude_sent_ids,
+    )
+    if set(exclude_sent_ids or []) in set(cand_uids):
+        msg = "誤答肢に含まれる単文は除外する"
+        raise ValueError(msg)
+
+    retval = random_sample_safe(cand_uids, n_sample=n_distractor)
+    actual = len(retval)
+    if actual != n_distractor:
+        msg = f"誤答肢が指定数{n_distractor}と一致しない: {actual}"
+        raise InsufficientOptionsError(msg)
+    return retval

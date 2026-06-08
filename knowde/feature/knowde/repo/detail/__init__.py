@@ -1,6 +1,7 @@
 """detail repo."""
 
 import operator
+from collections import OrderedDict
 from collections.abc import Iterable
 from functools import reduce
 from uuid import UUID
@@ -33,11 +34,11 @@ from knowde.shared.types import UUIDy, to_uuid
 
 
 def q_knowde_detail(
-    is_location: bool = False,  # noqa: FBT001, FBT002
+    with_location: bool = False,  # noqa: FBT001, FBT002
     order_by: OrderBy | None = OrderBy(),
 ) -> str:
     """Detail with location or not Query."""
-    q_loc = q_location("sent") if is_location else ""
+    q_loc = q_location("sent") if with_location else ""
     return f"""
         // q_detail_location
         UNWIND $uids as uid
@@ -51,7 +52,7 @@ def q_knowde_detail(
             , alias
             , intv
             , stats
-            {", location" if is_location else ""}
+            {", location" if with_location else ""}
     """
 
 
@@ -83,7 +84,7 @@ async def fetch_knowdes_with_detail(
         q,
         params={"uids": [to_uuid(uid).hex for uid in uids]},
     )
-    d = {}
+    d = OrderedDict()
     for row in rows:
         sent, names, alias, when, stats = row
         uid = sent.get("uid")
@@ -100,7 +101,7 @@ async def fetch_knowdes_with_detail_and_location(
     order_by: OrderBy | None = OrderBy(),
 ) -> dict[str, tuple[Knowde, KnowdeLocation]]:
     """詳細とlocation付きで返す."""
-    q = q_knowde_detail(is_location=True, order_by=order_by)
+    q = q_knowde_detail(with_location=True, order_by=order_by)
     rows, _ = db.cypher_query(
         q,
         params={"uids": [to_uuid(uid).hex for uid in uids]},

@@ -67,13 +67,13 @@ def sync_proc(
         print(f"'{res.text}'")  # noqa: T201
         sys.exit(1)
     op = []
-    for _p in res.json():
-        p = a / _p
+    for p_ in res.json():
+        p = a / p_
         print(f"'{p}'をアップロード中")  # noqa: T201
         reqfiles = []
         with p.open("rb") as f:
             op.append(f)
-            reqfiles.append(("files", (_p, f, "application/octet-stream")))
+            reqfiles.append(("files", (p_, f, "application/octet-stream")))
             res = s.post(
                 "/resource",
                 headers=h,

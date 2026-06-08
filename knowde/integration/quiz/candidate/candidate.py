@@ -1,15 +1,4 @@
-"""誤答肢.
-
->>誤答肢(distractor)は、受験者たちの一般的な誤解やよくある間違いに基づくもので、
->>正解の選択肢と混同しやすいなど合理的に誤解され得る内容でなければなりません.
-
-正解は簡単に決まる
-誤答を上手く選ぶことがクイズ機能の主
-DBから直接探すのがいい sysnetを復元するのは非効率
-
-誤答肢を見て、これ何だろう、と思ったらクイズチェーンでそこからクイズを
-作っていける
-"""
+"""クイズの選択肢候補."""
 
 from typing import Annotated
 from uuid import UUID
@@ -17,35 +6,47 @@ from uuid import UUID
 from neomodel import adb
 from pydantic import Field, TypeAdapter
 
+from knowde.feature.knowde.repo import search_knowde_ids
 from knowde.feature.knowde.repo.clause import OrderBy
-from knowde.feature.knowde.repo.cypher import q_stats
-from knowde.integration.quiz.candidate.types import CandidateType
-from knowde.shared.knowde.label import LSentence
+from knowde.shared.cypher import Paging
 from knowde.shared.types import UUIDy, to_uuid
 
 
-# list_candidates_by_radiusで呼べるからこれを直接呼ぶことはなさそう
-async def _list_candidates_in_resource(
-    target_sent_ids: list[UUIDy],
-    must_has_term: bool = False,  # noqa: FBT001, FBT002
-):
-    """リソース内全ての単文を選択肢候補として列挙."""
-    q_term = "<-[:DEF]-(:Term)" if must_has_term else ""
-    q = f"""
+async def fetch_sent2resource_id(sent_ids: list[UUIDy]):
+    """単文IDをそのリソースのIDへ変換."""
+    q = """
         UNWIND $sent_uids AS sent_uid
-        MATCH (sent:Sentence {{uid: sent_uid}})
-        OPTIONAL MATCH (s:Sentence {{resource_uid: sent.resource_uid}})
-            {q_term}
-        WHERE s.uid <> sent.uid
-        RETURN DISTINCT s.uid
+        MATCH (sent:Sentence {uid: sent_uid})
+        RETURN DISTINCT sent.resource_uid
     """
     rows, _ = await adb.cypher_query(
         q,
-        params={
-            "sent_uids": [to_uuid(uid).hex for uid in target_sent_ids],
-        },
+        params={"sent_uids": [to_uuid(uid).hex for uid in sent_ids]},
     )
     return [row[0] for row in rows]
+
+
+ENOUGH_PAGING = Paging(size=999999)  # 十分な大きさ
+
+
+async def list_candidates_in_resource(
+    target_sent_ids: list[UUIDy],
+    only_with_term: bool = False,  # noqa: FBT001, FBT002
+    exclude_sent_ids: list[UUIDy] | None = None,
+) -> list[UUID]:
+    """リソース内全ての単文uidを選択肢候補として列挙."""
+    if exclude_sent_ids is None:
+        exclude_sent_ids = []
+
+    rs_uids = await fetch_sent2resource_id(target_sent_ids)
+    return await search_knowde_ids(
+        "",
+        paging=ENOUGH_PAGING,
+        order_by=None,  # 無駄な並び替え省く
+        belong_resource_uids=rs_uids,
+        only_with_term=only_with_term,
+        exclude_sent_ids=target_sent_ids + exclude_sent_ids,
+    )
 
 
 type Radius = Annotated[int, Field(gt=0, title="探索半径")]
@@ -54,92 +55,73 @@ r_adapter = TypeAdapter(Radius)
 
 async def list_candidates_by_radius(
     target_sent_ids: list[UUIDy],
-    radius: Radius | None = None,  # Noneの時にリソース内全てを返す
-    must_has_term: bool = False,  # noqa: FBT001, FBT002
+    radius: int,
+    only_with_term: bool = False,  # noqa: FBT001, FBT002
+    exclude_sent_ids: list[UUIDy] | None = None,
 ) -> list[UUID]:
     """距離指定で選択肢候補を列挙."""
-    if radius is None:
-        return await _list_candidates_in_resource(
-            target_sent_ids,
-            must_has_term=must_has_term,
-        )
-
-    radius = r_adapter.validate_python(radius)
-    q_term = "<-[:DEF]-(:Term)" if must_has_term else ""
+    if exclude_sent_ids is None:
+        exclude_sent_ids = []
+    r = r_adapter.validate_python(radius)
+    q_term = "<-[:DEF]-(:Term)" if only_with_term else ""
+    # search_knowde あたりをcallするだけにしたかったが
+    # locationを持たせる設計になっているため合わない
     q = f"""
         UNWIND $sent_uids AS sent_uid
         MATCH (sent:Sentence {{uid: sent_uid}})
         // dist=1.. にすることで sent_uidを含めない
-        OPTIONAL MATCH p = (sent)-[]-{{1, {radius}}}(e:Sentence)
+        OPTIONAL MATCH p = (sent)-[]-{{1, {r}}}(e:Sentence)
             {q_term}
+        WHERE e.uid IS NOT NULL AND NOT e.uid IN $exclude_uids
         RETURN DISTINCT e.uid
     """
+    uids = [to_uuid(uid).hex for uid in target_sent_ids]
     rows, _ = await adb.cypher_query(
         q,
         params={
-            "sent_uids": [to_uuid(uid).hex for uid in target_sent_ids],
+            "sent_uids": uids,
+            "exclude_uids": [to_uuid(uid).hex for uid in exclude_sent_ids],
         },
+    )
+    return [row[0] for row in rows]
+
+
+async def filter_has_quiz(
+    sent_ids: list[UUIDy],
+    limit: int,
+) -> list[UUID]:
+    """クイズが既にある単文を除外."""
+    q = """
+        UNWIND $sent_uids AS sent_uid
+        MATCH (sent:Sentence {{uid: sent_uid}})
+        OPTIONAL MATCH (sent)<-[:QUIZ_TARGET]-(q:Quiz)
+        WITH sent, COUNT(q) AS quiz_count
+        WHERE quiz_count < $limit
+        RETURN sent.uid
+    """
+    uids = [to_uuid(uid).hex for uid in sent_ids]
+    rows, _ = await adb.cypher_query(
+        q,
+        params={"sent_uids": uids, "limit": limit},
     )
     return [row[0] for row in rows]
 
 
 # 重要な単文を選択肢に混ぜて単純接触効果による学習効果を狙う
 async def list_top_scoring_candidates(
-    resource_uid: UUIDy,
-    n_candidate: int,
-    must_has_term: bool = False,  # noqa: FBT001, FBT002
-    except_sent_uids: list[UUIDy] | None = None,
-    has_quiz: bool = False,  # noqa: FBT001, FBT002
+    resource_uids: list[UUIDy],
+    only_with_term: bool = False,  # noqa: FBT001, FBT002
+    order_by=OrderBy(),
+    limit: int = 100,
+    exclude_sent_ids: list[UUIDy] | None = None,
 ) -> list[UUID]:
     """スコアの上位から候補を出す."""
-    if except_sent_uids is None:
-        except_sent_uids = []
-    q_term = "<-[:DEF]-(:Term)" if must_has_term else ""
-    q_has = "<-[:QUIZ_TARGET]-(:Quiz)" if has_quiz else ""
-    order_by = OrderBy()
-    q = f"""
-        MATCH (sent: Sentence {{resource_uid: $resource_uid}})
-            {q_term}
-            {q_has}
-        WHERE NOT sent.uid IN $except_sent_uids
-        {q_stats("sent", order_by)}
-        {(order_by.phrase())}
-        LIMIT $n_candidate
-        RETURN DISTINCT sent.uid
-    """
-    rows, _ = await adb.cypher_query(
-        q,
-        params={
-            "resource_uid": to_uuid(resource_uid).hex,
-            # 対象単文を除いて指定数を返してほしい
-            "n_candidate": n_candidate + 1,
-            "except_sent_uids": [to_uuid(uid).hex for uid in except_sent_uids],
-        },
+    rows = await search_knowde_ids(
+        "",
+        paging=Paging(size=limit),
+        order_by=order_by,
+        belong_resource_uids=[to_uuid(u).hex for u in resource_uids],
+        only_with_term=only_with_term,
+        exclude_sent_ids=exclude_sent_ids,
     )
-    return [row[0] for row in rows]
-
-
-async def list_candidates(
-    target_sent_id: UUIDy,
-    t: CandidateType,
-    must_has_term: bool = False,  # noqa: FBT001, FBT002
-) -> list[UUID]:
-    """タイプに従って候補を返す."""
-    if t.is_radius_type():
-        return await list_candidates_by_radius(
-            [target_sent_id],
-            must_has_term=must_has_term,
-            **t.config,
-        )
-
-    s = LSentence.nodes.get(uid=to_uuid(target_sent_id).hex)
-    return await list_top_scoring_candidates(
-        s.resource_uid,
-        must_has_term=must_has_term,
-        except_sent_uids=[target_sent_id],
-        **t.config,
-    )
-
-
-async def list_distractors():
-    """誤答肢の取得."""
+    return list(rows)

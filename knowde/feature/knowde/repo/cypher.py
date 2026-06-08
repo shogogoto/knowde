@@ -9,8 +9,10 @@ from neo4j.graph import Path
 
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.knowde import LocationWithoutParents, UidStr
+from knowde.feature.knowde.repo.adj import AdjType
 from knowde.feature.knowde.repo.clause import OrderBy, WherePhrase
 from knowde.shared.nxutil.edge_type import EdgeType
+from knowde.shared.types import UUIDy
 from knowde.shared.user.schema import UserReadPublic
 
 
@@ -52,7 +54,7 @@ def q_stats(tgt: str, order_by: OrderBy | None = None) -> str:
             WITH DISTINCT tgts
                 , {tgt}
 
-            {q_adjacency_uids("tgts", tgt, all_chain=True)}
+            {q_adjacency_uids("tgts", tgt)}
             WITH
               SIZE(premises) AS n_premise
             , SIZE(conclusions) AS n_conclusion
@@ -112,55 +114,63 @@ def q_where_knowde(p: WherePhrase = WherePhrase.CONTAINS) -> str:
         // 検索文字列が含まれる文 q_where_knowde
         MATCH (sent1: Sentence WHERE sent1.val {where_phrase})
         {q_call_sent_names("sent1")}
-        RETURN sent1 AS sent, names
+        RETURN sent1 AS sent
         UNION
         // 検索文字列が含まれる用語
         MATCH (term2: Term WHERE term2.val {where_phrase}),
         (n1)-[:ALIAS]-*(term2: Term)-[:ALIAS]-*(n2: Term)
             -[:DEF]->(sent3: Sentence)
         UNWIND [n2, n1] AS name3
-        RETURN sent3 AS sent, COLLECT(DISTINCT name3) AS names
+        RETURN sent3 AS sent
     """
+
+
+def q_search(
+    where: WherePhrase,
+    filter_resource_uids: list[UUIDy] | None,
+    only_with_term: bool,  # noqa: FBT001
+    exclude_sent_ids: list[UUIDy] | None = None,
+) -> str:
+    """search_knowdeとtotalのクエリ."""
+    q_term = "MATCH (sent)<-[:DEF]-(:Term)" if only_with_term else ""
+    # フィルタ条件の構築
+    conditions = []
+    if filter_resource_uids:
+        conditions.append("sent.resource_uid IN $resource_uids")
+    if exclude_sent_ids:
+        conditions.append("NOT sent.uid IN $exclude_uids")  # 除外条件
+
+    q_where = ""
+    if conditions:
+        q_where = "WHERE " + " AND ".join(conditions)
+
+    return rf"""
+        CALL () {{
+        {indent(q_where_knowde(where), " " * 4)}
+        }}
+        {q_term}
+        WITH sent
+        {q_where}
+        """
 
 
 def q_adjacency_uids(
     sent_var: str,
     aggregate_var: str,
-    all_chain: bool = False,  # noqa: FBT001, FBT002
+    dist: int | None = None,
+    types: list[AdjType] | None = None,
 ) -> str:
     """隣接する文のIDを返す."""
-    dist = "" if all_chain else "1"
-    q_detail = (
-        f"""
-            OPTIONAL MATCH ({sent_var})-[:BELOW]->(:Sentence)
-                -[:SIBLING|BELOW]->*(detail:Sentence)
-        """
-        if all_chain
-        else f"""
-            OPTIONAL MATCH ({sent_var})-[:BELOW]->{{1,{dist}}}(detail1:Sentence)
-            OPTIONAL MATCH (detail1)-[:SIBLING]->*(detail2:Sentence)
-            UNWIND [detail1, detail2] AS detail
-        """
-    )
+    if types is None:
+        types = AdjType.location_types()
 
+    match_clauses = [t.match(sent_var, dist) for t in types]
+    collect_clauses = [t.collect for t in types]
     return f"""
-        // q_adjacency_uid
-        OPTIONAL MATCH ({sent_var})<-[:TO]-{{1,{dist}}}(premise:Sentence)
-        OPTIONAL MATCH ({sent_var})-[:TO]->{{1,{dist}}}(conclusion:Sentence)
-        OPTIONAL MATCH ({sent_var})<-[:RESOLVED]-{{1,{dist}}}(referred:Sentence)
-        OPTIONAL MATCH ({sent_var})-[:RESOLVED]->{{1,{dist}}}(refer:Sentence)
-        OPTIONAL MATCH ({sent_var})<-[:EXAMPLE]-{{1,{dist}}}(abstract:Sentence)
-        OPTIONAL MATCH ({sent_var})-[:EXAMPLE]->{{1,{dist}}}(example:Sentence)
-        {q_detail}
+        {"".join(match_clauses)}
         WITH
             {aggregate_var} // ここで集計する単位が決まる
-            , COLLECT(DISTINCT premise.uid) AS premises
-            , COLLECT(DISTINCT conclusion.uid) AS conclusions
-            , COLLECT(DISTINCT referred.uid) AS referreds
-            , COLLECT(DISTINCT refer.uid) AS refers
-            , COLLECT(DISTINCT detail.uid) AS details
-            , COLLECT(DISTINCT abstract.uid) AS abstracts
-            , COLLECT(DISTINCT example.uid) AS examples
+            {"".join(collect_clauses)}
     """
 
 

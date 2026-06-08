@@ -10,7 +10,6 @@ from collections.abc import Iterable
 from neomodel import adb
 
 from knowde.integration.quiz.domain.answer import Answer, Answers
-from knowde.integration.quiz.domain.build import build_readable
 from knowde.integration.quiz.domain.collections import (
     ReadableQuizCollection,
     ReadableQuizResult,
@@ -23,7 +22,7 @@ from knowde.shared.types import UUIDy, to_uuid
 async def _to_result(total: int, ids: list[str]) -> ReadableQuizResult:
     srcs = await restore_quiz_sources(ids)
     return ReadableQuizResult(
-        data=ReadableQuizCollection(root=[build_readable(src) for src in srcs]),
+        data=ReadableQuizCollection(root=[src.to_readable() for src in srcs]),
         total=total,
     )
 

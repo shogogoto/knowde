@@ -5,7 +5,7 @@ import pytest
 
 from knowde.shared.nxutil.util import succ_attr
 
-from . import filter_edge_attr, leaf_paths, root_paths, to_nested, to_roots
+from . import leaf_paths, root_paths, select_edge_attr, to_nested, to_roots
 
 
 def test_to_nested() -> None:  # noqa: D103
@@ -29,7 +29,7 @@ def test_filter_edge_attr() -> None:
     g = nx.MultiDiGraph()
     nx.add_path(g, ["sys", *[f"a{i}" for i in range(2)]], type="A")
     nx.add_path(g, ["sys", *[f"b{i}" for i in range(2)]], type="B")
-    sub = filter_edge_attr(g, "type", "A")
+    sub = select_edge_attr(g, "type", "A")
     assert list(nx.shortest_path(g, "sys", "b1")) == ["sys", "b0", "b1"]
     with pytest.raises(nx.NodeNotFound):
         nx.shortest_path(sub, "sys", "b1")

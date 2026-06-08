@@ -3,29 +3,35 @@
 from collections.abc import Iterable
 
 import networkx as nx
-from neo4j.graph import Path as NeoPath
 from neomodel import adb
 
+from knowde.feature.knowde import Knowde
 from knowde.feature.knowde.repo.detail import fetch_knowdes_with_detail
-from knowde.integration.quiz.domain.domain import (
-    QuizSource,
-    QuizSourceContainer,
+from knowde.integration.quiz.domain.domain import QuizSource
+from knowde.integration.quiz.domain.parts import (
+    QuizOption,
+    QuizRel,
     QuizType,
 )
+from knowde.shared.nxutil.db import neo4jpath2nx
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import UUIDy, to_uuid
 
 
-def graph_neo4j2nx(paths: Iterable[NeoPath]) -> nx.MultiDiGraph:
-    """neo4jをnxに変換."""
-    g = nx.MultiDiGraph()
-    for p in paths:
-        for rel in p.relationships:
-            s = rel.start_node.get("uid") if rel.start_node else None
-            e = rel.end_node.get("uid") if rel.end_node else None
-            t = EdgeType[rel.type]
-            g.add_edge(s, e, type=t)
-    return g
+def nx2options(
+    uids: Iterable[str],
+    target_id: str,
+    g: nx.DiGraph,
+    uid2kn: dict[str, Knowde],
+) -> dict[str, QuizOption]:
+    """nxをoptionsに変換."""
+    return {
+        uid: QuizOption(
+            val=uid2kn[uid].sentence_or_def,
+            rels=QuizRel.of(*EdgeType.path2edgetypes(g, target_id, uid)),
+        )
+        for uid in uids
+    }
 
 
 async def restore_quiz_sources(
@@ -43,31 +49,44 @@ async def restore_quiz_sources(
         UNWIND srcs AS src
         OPTIONAL MATCH p = SHORTEST 1 (tgt)
             -[:!QUIZ_OPTION|QUIZ_TARGET]-*(src)
-        RETURN
+        WITH
             quiz
-            , tgt.uid
-            , COLLECT(src.uid) AS options
+            , tgt.uid AS target_id
+            , COLLECT(src.uid) AS option_ids
             , COLLECT(p) AS paths
-            , COLLECT(crct.uid) AS corrects
+            , COLLECT(DISTINCT crct.uid) AS correct_ids
+        RETURN {
+            quiz: quiz
+            , quiz_id: quiz.uid
+            , quiz_type: quiz.quiz_type
+            , created: quiz.created
+            , target_id: target_id
+            , correct_ids: correct_ids
+            , option_ids: option_ids
+            , paths: paths
+            , source_ids: option_ids + correct_ids + [target_id]
+            }
 
     """
-    uids = [to_uuid(uid).hex for uid in quiz_ids]
-    rows, _ = await adb.cypher_query(q, params={"quiz_ids": uids})
-
-    containers: list[QuizSourceContainer] = []
-    for row in rows:
-        quiz, tgt_uid, opt_uids, paths, crct_uids = row
-        crct_uids = set(crct_uids)
-        case = QuizSourceContainer(
-            quiz_id=quiz.get("uid"),
-            quiz_type=QuizType[quiz.get("quiz_type")],
-            target_id=tgt_uid,
-            correct_ids=crct_uids,
-            source_ids=set(opt_uids).union(crct_uids),
-            g=graph_neo4j2nx(paths),
-            created=quiz.get("created"),
+    qids = [to_uuid(uid).hex for uid in quiz_ids]
+    rows, _ = await adb.cypher_query(q, params={"quiz_ids": qids})
+    flat = [row[0] for row in rows]
+    all_uids = set().union(*(r["source_ids"] for r in flat))
+    kns = await fetch_knowdes_with_detail(all_uids)
+    return [
+        QuizSource(
+            quiz_id=r["quiz_id"],
+            quiz_type=QuizType[r["quiz_type"]],
+            target_id=r["target_id"],
+            correct_ids=r["correct_ids"],
+            sources=nx2options(
+                r["source_ids"],
+                r["target_id"],
+                neo4jpath2nx(r["paths"]),
+                kns,
+            ),
+            created=r["created"],
+            no_correct_option=r["quiz"].get("no_correct_option"),
         )
-        containers.append(case)
-    uids = QuizSourceContainer.concat_uids_for_batch_fetch(containers)
-    kns = await fetch_knowdes_with_detail(uids)
-    return [c.to_source(kns) for c in containers]
+        for r in flat
+    ]

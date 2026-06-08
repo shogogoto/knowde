@@ -50,7 +50,7 @@ def to_nodes(g: nx.DiGraph, start: Hashable, f: Accessor) -> list[Hashable]:
 
 
 @cache
-def filter_edge_attr(g: nx.DiGraph, name: str, *values: Any) -> nx.DiGraph:
+def select_edge_attr(g: nx.DiGraph, name: str, *values: Any) -> nx.DiGraph:
     """ある属性のエッジのみを抽出する関数を返す."""
     sub = g.__class__()
     for e in g.edges(data=True):
@@ -75,27 +75,27 @@ def _to_paths(g: nx.DiGraph, pairs: Edges) -> list[list[Hashable]]:
 @cache
 def to_leaves(g: nx.DiGraph, *ts: Any) -> list[Hashable]:
     """最先端を取得."""
-    sub = filter_edge_attr(g, "type", *ts)
+    sub = select_edge_attr(g, "type", *ts)
     return [n for n in sub.nodes if sub.out_degree(n) == 0 and sub.in_degree(n) != 0]
 
 
 @cache
 def to_roots(g: nx.DiGraph, *ts: Any) -> list[Hashable]:
     """根を取得."""
-    sub = filter_edge_attr(g, "type", *ts)
+    sub = select_edge_attr(g, "type", *ts)
     return [n for n in sub.nodes if sub.in_degree(n) == 0 and sub.out_degree(n) != 0]
 
 
 def leaf_paths(g: nx.DiGraph, tgt: Hashable, t: Any) -> list[list[Hashable]]:
     """入力ノードから特定の関係を遡って依存先がないノードまでのパスを返す."""
-    sub = filter_edge_attr(g, "type", t)
+    sub = select_edge_attr(g, "type", t)
     pairs = [(tgt, lv) for lv in to_leaves(g, t)]
     return _to_paths(sub, pairs)
 
 
 def root_paths(g: nx.DiGraph, tgt: Hashable, t: Any) -> list[list[Hashable]]:
     """入力ノードから特定の関係を遡って依存元がないノードまでのパスを返す."""
-    sub = filter_edge_attr(g, "type", t)
+    sub = select_edge_attr(g, "type", t)
     pairs = [(n, tgt) for n in to_roots(g, t)]
     return _to_paths(sub, pairs)
 

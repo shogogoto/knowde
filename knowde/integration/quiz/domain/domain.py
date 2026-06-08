@@ -1,148 +1,24 @@
 """quiz domain."""
 
-from collections.abc import Callable, Iterable
+import uuid
+from datetime import datetime
 from textwrap import indent
+from typing import Self
 from uuid import UUID
 
-from more_itertools import duplicates_everseen, flatten
-from pydantic import BaseModel, Field, RootModel, model_validator
+from more_itertools import duplicates_everseen
+from pydantic import BaseModel, Field, model_validator
 
-from knowde.feature.knowde import Knowde
-from knowde.feature.parsing.sysnet.sysnode import Def
+from knowde.feature.parsing.sysnet import SysNet
+from knowde.integration.quiz.domain.rel import QuizRel
 from knowde.integration.quiz.errors import (
     InvalidAnswerOptionError,
     QuizDuplicateError,
-    QuizOptionsMustBeDefError,
 )
-from knowde.shared.types import NXGraph
-from knowde.shared.util import Neo4jDateTime
+from knowde.shared.nxutil.edge_type import EdgeType
+from knowde.shared.util import TZ, Neo4jDateTime
 
-from .parts import QuizOption, QuizRel, QuizType, path2edgetypes
-
-
-class QuizSourceContainer(BaseModel, frozen=True):
-    """quiz source用id容れ."""
-
-    quiz_id: UUID
-    quiz_type: QuizType  # build方法を指定してくれる
-    target_id: str
-    correct_ids: set[str]
-    source_ids: set[str]
-    g: NXGraph  # EdgeType-QuizRel用
-    created: Neo4jDateTime
-
-    @staticmethod
-    def concat_uids_for_batch_fetch(
-        cases: Iterable["QuizSourceContainer"],
-    ) -> Iterable[str]:
-        """一括詳細取得用にuidをまとめる."""
-        # 都度 fetchしてたら通信が無駄に増えて遅い
-        return set(flatten([[c.target_id, *c.source_ids] for c in cases]))
-
-    def to_source(self, uid2kn: dict[str, Knowde]) -> "QuizSource":
-        """変換."""
-        return QuizSource(
-            quiz_id=self.quiz_id,
-            quiz_type=self.quiz_type,
-            target_id=self.target_id,
-            target=QuizOption(val=uid2kn[self.target_id].to_str_or_def()),
-            sources={
-                uid: QuizOption(
-                    val=uid2kn[uid].to_str_or_def(),
-                    rels=QuizRel.of(*path2edgetypes(self.g, self.target_id, uid)),
-                )
-                for uid in self.source_ids
-            },
-            correct_ids=self.correct_ids,
-            created=self.created,
-        )
-
-
-class QuizSource(BaseModel, frozen=True):
-    """クイズ生成のための情報源.
-
-    便利なgetterを備えるのみ
-    """
-
-    quiz_id: UUID
-    quiz_type: QuizType  # build方法を指定してくれる
-    target_id: str  # テストしやすいので UUIDではなくstrへ
-    target: QuizOption
-    # targetが答えになるとは限らない
-    correct_ids: set[str] = Field(default_factory=set)
-    sources: dict[str, QuizOption] = Field(title="クイズの元となるメンバ")
-    created: Neo4jDateTime
-
-    @model_validator(mode="after")
-    def option_duplicate_check(self):
-        """重複チェック."""
-        options = [self.target, *list(self.sources.values())]
-        dups = list(duplicates_everseen(options))
-        if len(dups) > 0:
-            msg = f"同一のクイズ選択肢が指定されています: {dups}"
-            raise QuizDuplicateError(msg)
-        return self
-
-    @property
-    def tgt_def(self) -> Def:
-        """クイズ対象."""
-        tgt = self.target.val
-        if isinstance(tgt, Def):
-            return tgt
-        msg = "クイズ対象が用語を持たない"
-        raise QuizOptionsMustBeDefError(msg)
-
-    @property
-    def tgt_sent(self) -> str:
-        """クイズ対象の単文."""
-        tgt = self.target.val
-        if isinstance(tgt, Def):
-            return str(tgt.sentence)
-        return str(tgt)
-
-    @property
-    def source_defs(self) -> dict[str, Def]:
-        """誤答肢の定義."""
-        dists = {k: v.val for k, v in self.sources.items()}
-        defs = {k: v for k, v in dists.items() if isinstance(v, Def)}
-        if len(defs) != len(dists):
-            msg = "誤答肢に用語なし単文が含まれている"
-            raise QuizOptionsMustBeDefError(msg)
-        return defs
-
-    @property
-    def ids(self) -> set[str]:
-        """選択肢ids."""
-        # target_idとsource_idsで重複する場合があるのでsetにする
-        return {*self.sources.keys(), self.target_id}
-
-    def get_by_id(self, option_id: str) -> QuizOption:
-        """Target or sourceを返す."""
-        if option_id == self.target_id:
-            return self.target
-        return self.sources[option_id]
-
-    def get_by_sent(self, sent: str) -> QuizOption:
-        """単文指定でTarget or sourceを返す."""
-        if sent == self.tgt_sent:
-            return self.target
-        for option in self.sources.values():
-            if sent == option.sentence:
-                return option
-        msg = f"{sent} not found"
-        raise KeyError(msg)
-
-    def get_id_by_sent(self, sent: str) -> str:
-        """単文指定でidを返す."""
-        key = next((k for k in self.ids if self.get_by_id(k).sentence == sent), None)
-        if key is None:
-            msg = f"{sent} not found"
-            raise KeyError(msg)
-        return key
-
-    def filter_by(self, fn: Callable[[str], bool]) -> list[str]:
-        """ソースを絞り込む."""
-        return [k for k in self.ids if fn(k)]
+from .parts import QuizOption, QuizType
 
 
 class ReadableQuiz(BaseModel, frozen=True):
@@ -152,9 +28,9 @@ class ReadableQuiz(BaseModel, frozen=True):
     quiz_id: UUID
     statement: str = Field(title="問題文")
     options: dict[str, str] = Field(title="選択肢")
-    # 順番が大事になる問題もあるかもしれない
     correct: list[str] = Field(title="正解")
     created: Neo4jDateTime
+    no_correct_option: bool
 
     @property
     def distractors(self) -> list[str]:
@@ -169,7 +45,6 @@ class ReadableQuiz(BaseModel, frozen=True):
         s += "\n".join(ops)
         return s
 
-    # TODO:  何も答えないのが正解、というパターンも欲しい  # noqa: FIX002, TD002, TD003
     def is_correct(self, selected: list[str]) -> bool:
         """正解かどうか."""
         for s in selected:
@@ -178,8 +53,106 @@ class ReadableQuiz(BaseModel, frozen=True):
                 raise InvalidAnswerOptionError(msg)
         s = set(selected)
         correct = set(self.correct)
+        if self.no_correct_option:
+            correct = set()
         return s == correct
 
 
-class ReadableQuizList(RootModel[list[ReadableQuiz]]):
-    """可読クイズリスト."""
+class QuizSource(BaseModel, frozen=True):
+    """クイズ生成のための情報源.
+
+    便利なgetterを備えるのみ
+    """
+
+    quiz_id: UUID
+    quiz_type: QuizType  # build方法を指定してくれる
+    target_id: str  # 答えになるとは限らない
+    correct_ids: list[str] = Field(default_factory=list)
+    sources: dict[str, QuizOption] = Field(title="クイズの元となるメンバ")
+    created: Neo4jDateTime
+    no_correct_option: bool = Field(default=False)
+
+    @model_validator(mode="after")
+    def duplicate_check(self):
+        """重複チェック."""
+        srcs = list(self.sources.values())
+        dups = list(duplicates_everseen(srcs))
+        if len(dups) > 0:
+            msg = f"同一のクイズ選択肢が指定されています: {dups}"
+            raise QuizDuplicateError(msg)
+        return self
+
+    @property
+    def target(self) -> QuizOption:
+        """クイズ対象."""
+        return self.sources[self.target_id]
+
+    def get_id_by_sent(self, sent: str) -> str:
+        """単文指定でidを返す."""
+        key = next(
+            (k for k in self.sources if self.sources[k].sentence == sent),
+            None,
+        )
+        if key is None:
+            msg = f"{sent} not found"
+            raise KeyError(msg)
+        return key
+
+    def readable_options(self) -> dict[str, str]:
+        """適切に選択肢を作成."""
+        options = {k: self.quiz_type.opt_answer(v) for k, v in self.sources.items()}
+        if not self.quiz_type.has_term:
+            options = {k: v for k, v in options.items() if k != self.target_id}
+        if self.no_correct_option:
+            options = {k: v for k, v in options.items() if k not in self.correct_ids}
+        return options
+
+    def to_readable(self) -> ReadableQuiz:
+        """読める状態にする."""
+        correct_opts = [self.sources[c] for c in self.correct_ids]
+        return ReadableQuiz(
+            quiz_id=self.quiz_id,
+            statement=self.quiz_type.statement(self.target, correct_opts),
+            options=self.readable_options(),
+            correct=self.correct_ids,
+            created=self.created,
+            no_correct_option=self.no_correct_option,
+        )
+
+    @classmethod
+    def from_sysnet(
+        cls,
+        sn: SysNet,
+        qt: QuizType,
+        target_stc: str,
+        source_stcs: list[str],  # 順に番号が割り振られる
+        correct_stcs: list[str] | None = None,
+    ) -> Self:
+        """SysNetから作成してテストを完結に書けるようにする."""
+        if correct_stcs is None:
+            correct_stcs = []
+        tgt = sn.get(target_stc)
+
+        ops: dict[str, QuizOption] = {}
+        target_id = "dummy"
+        correct_ids: list[str] = []
+        for i, s in enumerate(source_stcs, start=1):
+            src = sn.get(s)
+            if tgt == src:
+                rels = []
+                target_id = str(i)
+            else:
+                ets, is_forward = EdgeType.path2edgetypes(sn.g, target_stc, s)
+                rels = QuizRel.of(ets, is_forward)
+            op = QuizOption(val=src, rels=rels)
+            ops[str(i)] = op
+            if s in correct_stcs:
+                correct_ids.append(str(i))
+        return cls(
+            quiz_id=uuid.uuid4(),
+            quiz_type=qt,
+            target_id=target_id,
+            sources=ops,
+            correct_ids=correct_ids,
+            created=datetime.now(tz=TZ),
+        )

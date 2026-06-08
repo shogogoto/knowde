@@ -7,9 +7,8 @@ from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.integration.quiz.domain.answer import Answer
 from knowde.integration.quiz.domain.domain import ReadableQuiz
 from knowde.integration.quiz.domain.parts import QuizType
-from knowde.integration.quiz.fixture import fx_u
+from knowde.integration.quiz.repo.fixture import fx_u
 from knowde.integration.quiz.router.params import CreateQuizParam
-from knowde.integration.quiz.sampling.types import SamplingType
 from knowde.shared.knowde.label import LSentence
 from knowde.shared.types import to_uuid
 from knowde.shared.user.label import LUser
@@ -26,8 +25,8 @@ async def test_sent2term(ac: AsyncClient, u: LUser):
         target_sent_uid=sent.uid,
         quiz_type=QuizType.SENT2TERM,
         cand_type=CandidateType.NEAR,
-        sampling_type=SamplingType.RANDOM,
         n_option=4,
+        user_uid=u.uid,
     )
 
     h = await aauth_header(email=u.email)

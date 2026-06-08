@@ -1,10 +1,32 @@
-"""候補から選択肢を選ぶ."""
+"""誤答肢作成domain."""
+
+import random
+from collections.abc import Sequence
+
+from knowde.integration.quiz.errors import SamplingError
 
 
-# # 詳細や結論などの特定の関係内から探す
-# # scoreでソートできたほうが良い
-# async def list_candidates_by_rel_type(target_sent_id: UUIDy):
-#     pass
+def validate_sample(
+    candidate: Sequence,
+    n_sample: int,
+) -> None:
+    """指定数だけサンプルが取れることを保証."""
+    n_candidate = len(candidate)
+    if n_candidate < n_sample:
+        msg = f"候補が足りない (指定数: {n_sample}, 候補数: {n_candidate})"
+        raise SamplingError(msg)
+    if n_candidate != len(set(candidate)):
+        msg = f"候補に重複がある: {candidate}"
+        raise SamplingError(msg)
+
+
+def random_sample_safe[T](
+    candidate_uids: Sequence[T],
+    n_sample: int,
+) -> list[T]:
+    """ランダムサンプリング."""
+    validate_sample(candidate_uids, n_sample)
+    return random.sample(candidate_uids, n_sample)
 
 
 # 引数をbindした関数
