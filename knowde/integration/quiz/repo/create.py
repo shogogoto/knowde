@@ -87,7 +87,13 @@ async def generate_quiz(  # noqa: PLR0917
     n_ds = n_option - len(correct_ids)
     if no_correct_option:
         n_ds = n_option
-    ds = await fetch_distractor_ids([target_sent_uid], ct, n_ds, qt.has_term)
+    ds = await fetch_distractor_ids(
+        [target_sent_uid],
+        ct,
+        n_ds,
+        qt.has_term,
+        correct_ids if no_correct_option else None,
+    )
     quiz_id = await create_quiz_and_correct(
         target_sent_uid,
         qt,

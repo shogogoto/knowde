@@ -1,7 +1,5 @@
 """誤答肢の生成."""
 
-import pytest
-
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.integration.quiz.domain.domain import QuizSource
@@ -53,12 +51,6 @@ async def _check_gen_rel_quiz(
         correct_sent_uids=[pair.uid],  # ここの正解を自動で決定できるようにしたい
     )
     rq = src.to_readable()
-    # print(rq.model_dump_json(indent=2))
-    #
-    # print("-" * 30)
-    # print(s_tgt, src.get_id_by_sent(s_tgt))
-    # print(s_pair, src.get_id_by_sent(s_pair))
-    # print("-" * 30)
     assert len(rq.options) == n_option
     k_cor = src.get_id_by_sent(s_pair)
     assert rq.is_correct([k_cor])
@@ -77,7 +69,7 @@ async def test_gen_quiz(u: LUser):
     await _check_gen_rel_quiz(QuizType.PAIR2REL, u.uid, "ccc", "parent")
 
 
-@pytest.mark.skip
+# 時々失敗する
 @mark_async_test()
 async def test_gen_quiz_no_correct_option(u: LUser):
     """クイズの正解の選択肢がなくて何も選ばないのが正解."""

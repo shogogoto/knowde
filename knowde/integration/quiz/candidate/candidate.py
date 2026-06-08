@@ -32,8 +32,12 @@ ENOUGH_PAGING = Paging(size=999999)  # 十分な大きさ
 async def list_candidates_in_resource(
     target_sent_ids: list[UUIDy],
     only_with_term: bool = False,  # noqa: FBT001, FBT002
+    exclude_sent_ids: list[UUIDy] | None = None,
 ) -> list[UUID]:
     """リソース内全ての単文uidを選択肢候補として列挙."""
+    if exclude_sent_ids is None:
+        exclude_sent_ids = []
+
     rs_uids = await fetch_sent2resource_id(target_sent_ids)
     return await search_knowde_ids(
         "",
@@ -41,7 +45,7 @@ async def list_candidates_in_resource(
         order_by=None,  # 無駄な並び替え省く
         belong_resource_uids=rs_uids,
         only_with_term=only_with_term,
-        exclude_sent_ids=target_sent_ids,
+        exclude_sent_ids=target_sent_ids + exclude_sent_ids,
     )
 
 
@@ -53,8 +57,11 @@ async def list_candidates_by_radius(
     target_sent_ids: list[UUIDy],
     radius: int,
     only_with_term: bool = False,  # noqa: FBT001, FBT002
+    exclude_sent_ids: list[UUIDy] | None = None,
 ) -> list[UUID]:
     """距離指定で選択肢候補を列挙."""
+    if exclude_sent_ids is None:
+        exclude_sent_ids = []
     r = r_adapter.validate_python(radius)
     q_term = "<-[:DEF]-(:Term)" if only_with_term else ""
     # search_knowde あたりをcallするだけにしたかったが
@@ -65,10 +72,17 @@ async def list_candidates_by_radius(
         // dist=1.. にすることで sent_uidを含めない
         OPTIONAL MATCH p = (sent)-[]-{{1, {r}}}(e:Sentence)
             {q_term}
+        WHERE e.uid IS NOT NULL AND NOT e.uid IN $exclude_uids
         RETURN DISTINCT e.uid
     """
     uids = [to_uuid(uid).hex for uid in target_sent_ids]
-    rows, _ = await adb.cypher_query(q, params={"sent_uids": uids})
+    rows, _ = await adb.cypher_query(
+        q,
+        params={
+            "sent_uids": uids,
+            "exclude_uids": [to_uuid(uid).hex for uid in exclude_sent_ids],
+        },
+    )
     return [row[0] for row in rows]
 
 
@@ -99,6 +113,7 @@ async def list_top_scoring_candidates(
     only_with_term: bool = False,  # noqa: FBT001, FBT002
     order_by=OrderBy(),
     limit: int = 100,
+    exclude_sent_ids: list[UUIDy] | None = None,
 ) -> list[UUID]:
     """スコアの上位から候補を出す."""
     rows = await search_knowde_ids(
@@ -107,5 +122,6 @@ async def list_top_scoring_candidates(
         order_by=order_by,
         belong_resource_uids=[to_uuid(u).hex for u in resource_uids],
         only_with_term=only_with_term,
+        exclude_sent_ids=exclude_sent_ids,
     )
     return list(rows)

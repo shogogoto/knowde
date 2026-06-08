@@ -123,7 +123,7 @@ class QuizType(StrEnum):
         self,
         target_id: UUIDy,
         correct_ids: list[UUIDy] | None = None,
-    ) -> list[str]:
+    ) -> list[UUIDy]:
         """正解を決定する."""
         if correct_ids is None:
             correct_ids = []

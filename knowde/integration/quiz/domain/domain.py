@@ -103,12 +103,8 @@ class QuizSource(BaseModel, frozen=True):
         options = {k: self.quiz_type.opt_answer(v) for k, v in self.sources.items()}
         if not self.quiz_type.has_term:
             options = {k: v for k, v in options.items() if k != self.target_id}
-        # print(options)
-        # print(self.correct_ids)
-        # print(self.no_correct_option)
-        # if self.no_correct_option:
-        #     options = {k: v for k, v in options.items() if k not in self.correct_ids}
-        # print(options)
+        if self.no_correct_option:
+            options = {k: v for k, v in options.items() if k not in self.correct_ids}
         return options
 
     def to_readable(self) -> ReadableQuiz:

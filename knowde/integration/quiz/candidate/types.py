@@ -59,22 +59,28 @@ class CandidateType(StrEnum):
         self,
         target_sent_ids: list[UUIDy],
         must_has_term: bool = False,  # noqa: FBT001, FBT002
+        exclude_sent_ids: list[UUIDy] | None = None,
     ) -> list[UUID]:
         """候補ID一覧を返す."""
+        if exclude_sent_ids is None:
+            exclude_sent_ids = []
         if self == CandidateType.ALL:
             return await list_candidates_in_resource(
                 target_sent_ids,
                 only_with_term=must_has_term,
+                exclude_sent_ids=exclude_sent_ids,
             )
         if self.is_radius_type:
             return await list_candidates_by_radius(
                 target_sent_ids,
                 radius=self._limit,
                 only_with_term=must_has_term,
+                exclude_sent_ids=exclude_sent_ids,
             )
 
         ruids = await fetch_sent2resource_id(target_sent_ids)
         return await list_top_scoring_candidates(
             ruids,
             only_with_term=must_has_term,
+            exclude_sent_ids=target_sent_ids + exclude_sent_ids,
         )

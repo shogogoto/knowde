@@ -14,15 +14,19 @@ async def fetch_distractor_ids(
     ct: CandidateType,
     n_distractor: int,
     must_has_term: bool,  # noqa: FBT001
+    exclude_sent_ids: list[UUIDy] | None = None,
 ) -> list[UUID]:
     """誤答肢を取得する."""
     cand_uids = await ct.fetch(
         sent_ids,
         must_has_term=must_has_term,
+        exclude_sent_ids=exclude_sent_ids,
     )
-    exclude = set(sent_ids)
-    uids = [u for u in cand_uids if u not in exclude]
-    retval = random_sample_safe(uids, n_sample=n_distractor)
+    if set(exclude_sent_ids or []) in set(cand_uids):
+        msg = "誤答肢に含まれる単文は除外する"
+        raise ValueError(msg)
+
+    retval = random_sample_safe(cand_uids, n_sample=n_distractor)
     actual = len(retval)
     if actual != n_distractor:
         msg = f"誤答肢が指定数{n_distractor}と一致しない: {actual}"
