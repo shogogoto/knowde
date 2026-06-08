@@ -8,12 +8,14 @@ from typing import Final
 import click
 from click.decorators import FC
 
-VAR: Final = "_KN_COMPLETE"
+VAR: Final = "_TB_COMPLETE"
+CMD: Final = "tb"
+PJ: Final = "tanbunism"
 
 C_CONF: Final = {
-    "bash": (f'eval "$({VAR}=bash_source kn)"', ".bashrc"),
-    "zsh": (f'eval "$({VAR}=zsh_source kn)"', ".zshrc"),
-    "fish": (f"{VAR}=fish_source kn | source", ".config/fish/config.fish"),
+    "bash": (f'eval "$({VAR}=bash_source {CMD})"', ".bashrc"),
+    "zsh": (f'eval "$({VAR}=zsh_source {CMD})"', ".zshrc"),
+    "fish": (f"{VAR}=fish_source {CMD} | source", ".config/fish/config.fish"),
 }
 
 
@@ -28,17 +30,18 @@ def completion_callback(
     shell = value or os.environ.get("SHELL", "")
     shells = [sh for sh in C_CONF if sh in shell]
     if len(shells) == 0:
-        click.Abort("補完機能に対応しないシェルです", shell)
+        msg = "補完機能に対応しないシェルです"
+        raise click.Abort(msg, shell)
     script, rc_name = C_CONF[shells[0]]
 
     rc = Path.home() / rc_name
     rc.parent.mkdir(parents=True, exist_ok=True)
     if rc.exists() and script in rc.read_text():
-        click.echo("Already setup knowde completion.")
+        click.echo(f"Already setup {PJ} completion.")
         ctx.exit()
 
     with Path.open(rc, "a") as f:
-        f.write(f"{script} # knowde completion setting\n")
+        f.write(f"{script} # {PJ} completion setting\n")
     click.echo(f"Completion setup for {shell} completed!")
     click.echo(f"Please restart your shell or run: source {rc}")
     ctx.exit()
