@@ -4,13 +4,13 @@ from knowde.conftest import async_fixture, mark_async_test
 from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.integration.quiz.domain.domain import QuizSource
 from knowde.integration.quiz.domain.parts import QuizType
+from knowde.integration.quiz.query.list import list_answers
+from knowde.integration.quiz.repo.answer import create_answer
 from knowde.integration.quiz.repo.fixture import fx_u
-from knowde.integration.quiz.repo.list_query import list_answers
 from knowde.shared.knowde.label import LSentence
 from knowde.shared.types import UUIDy
 from knowde.shared.user.label import LUser
 
-from .answer import create_answer
 from .create import generate_quiz
 
 u = async_fixture()(fx_u)
@@ -97,6 +97,8 @@ async def test_gen_quiz_no_correct_option(u: LUser):
 
 
 # クイズ作って質問を見て答える
+
+
 @mark_async_test()
 async def test_answer(u: LUser):
     """回答してリストや正答率を返す."""
