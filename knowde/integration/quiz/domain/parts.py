@@ -1,5 +1,7 @@
 """構成要素となる部品."""
 
+from __future__ import annotations
+
 from collections.abc import Hashable, Sequence
 from enum import StrEnum, auto
 from operator import attrgetter
@@ -82,6 +84,19 @@ class QuizType(StrEnum):
     TERM2SENT = auto()
     PAIR2REL = auto()
     REL2PAIR = auto()
+
+    @classmethod
+    def from_statemet(cls, stmt: str) -> QuizType:  # noqa: D102
+        if stmt.endswith("に合う用語を当ててください"):
+            return cls.SENT2TERM
+        if stmt.endswith("に合う文を当ててください"):
+            return cls.TERM2SENT
+        if stmt.endswith("関係で繋がる単文を当ててください"):
+            return cls.REL2PAIR
+        if stmt.endswith("への関係を当ててください"):
+            return cls.PAIR2REL
+        msg = f"Unknown statement: {stmt}"
+        raise ValueError(msg)
 
     @property
     def _TEMPLATE(self) -> str:  # noqa: N802

@@ -70,7 +70,24 @@ async def create_quiz_and_correct(  # noqa: PLR0917
     return quiz_uid
 
 
-# allow_no_correct_option: bool = False
+async def check_duplicate_for_precreate(
+    sent_id: UUIDy,
+    qt: QuizType,
+    option_ids: Sequence[UUIDy],
+    correct_sent_uids: list[UUIDy] | None = None,
+) -> bool:
+    """同じ構成のクイズが既存か."""
+    q = """
+        MATCH (s: Sentence {uid: sent_uid})
+        MATCH(quiz: Quiz)-[:QUIZ_TARGET]->(s)
+        RETURN quiz.uid
+    """
+    _rows, _ = await adb.cypher_query(
+        q,
+        params={
+            "sent_ids": to_uuid(sent_id).hex,
+        },
+    )
 
 
 async def generate_quiz(  # noqa: PLR0917
@@ -94,6 +111,7 @@ async def generate_quiz(  # noqa: PLR0917
         qt.has_term,
         correct_ids if no_correct_option else None,
     )
+
     quiz_id = await create_quiz_and_correct(
         target_sent_uid,
         qt,

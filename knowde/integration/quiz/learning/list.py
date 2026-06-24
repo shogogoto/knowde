@@ -11,8 +11,8 @@ from neomodel import adb
 
 from knowde.integration.quiz.domain.answer import Answer, Answers
 from knowde.integration.quiz.domain.collections import (
-    ReadableQuizCollection,
     ReadableQuizResult,
+    ReadableQuizzes,
 )
 from knowde.integration.quiz.repo.restore import restore_quiz_sources
 from knowde.shared.cypher import Paging
@@ -22,7 +22,7 @@ from knowde.shared.types import UUIDy, to_uuid
 async def _to_result(total: int, ids: list[str]) -> ReadableQuizResult:
     srcs = await restore_quiz_sources(ids)
     return ReadableQuizResult(
-        data=ReadableQuizCollection(root=[src.to_readable() for src in srcs]),
+        data=ReadableQuizzes(root=[src.to_readable() for src in srcs]),
         total=total,
     )
 
@@ -45,6 +45,30 @@ async def list_quiz_by_user_ids(
         q,
         params={
             "user_uids": [to_uuid(uid).hex for uid in user_uids],
+            **paging.params,
+        },
+    )
+    return await _to_result(*rows[0])
+
+
+async def list_quiz_by_sent_ids(
+    sent_uids: Iterable[UUIDy],
+    paging: Paging = Paging(),
+) -> ReadableQuizResult:
+    """特定単文に紐づくクイズを列挙する."""
+    q = f"""
+        UNWIND $sent_uids AS sent_uid
+        MATCH (s: Sentence {{uid: sent_uid}})
+        MATCH(quiz: Quiz)-[:QUIZ_TARGET]->(s)
+        // 新しい順
+        ORDER BY quiz.created DESC
+        WITH COLLECT(quiz.uid) as quiz_ids
+        {paging.return_stmt("quiz_ids")}
+    """
+    rows, _ = await adb.cypher_query(
+        q,
+        params={
+            "sent_uids": [to_uuid(uid).hex for uid in sent_uids],
             **paging.params,
         },
     )

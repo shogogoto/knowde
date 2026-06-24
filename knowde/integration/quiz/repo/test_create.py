@@ -4,7 +4,7 @@ from knowde.conftest import async_fixture, mark_async_test
 from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.integration.quiz.domain.domain import QuizSource
 from knowde.integration.quiz.domain.parts import QuizType
-from knowde.integration.quiz.query.list import list_answers
+from knowde.integration.quiz.learning.list import list_answers
 from knowde.integration.quiz.repo.answer import create_answer
 from knowde.integration.quiz.repo.fixture import fx_u
 from knowde.shared.knowde.label import LSentence
@@ -97,6 +97,9 @@ async def test_gen_quiz_no_correct_option(u: LUser):
 
 
 # クイズ作って質問を見て答える
+@mark_async_test()
+async def test_check_duplication(u: LUser):
+    """クイズ作成の重複チェック."""
 
 
 @mark_async_test()

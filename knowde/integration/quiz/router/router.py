@@ -5,9 +5,7 @@ from uuid import UUID
 from fastapi import APIRouter
 
 from knowde.integration.quiz.domain.answer import Answer
-from knowde.integration.quiz.domain.collections import ReadableQuizResult
 from knowde.integration.quiz.domain.domain import ReadableQuiz
-from knowde.integration.quiz.query.list import list_quiz_by_sentence_ids
 from knowde.integration.quiz.repo.answer import create_answer
 from knowde.integration.quiz.repo.create import generate_quiz
 from knowde.integration.quiz.router.params import (
@@ -50,12 +48,12 @@ async def create_quiz_api(param: CreateQuizParam) -> ReadableQuiz:
 #     """
 
 
-@_r.get("/{sentence_id}")
-async def list_quiz_by_sentence_id(
-    sentence_id: UUID,
-) -> ReadableQuizResult:
-    """単文と紐づくクイズ一覧を取得."""
-    return await list_quiz_by_sentence_ids([sentence_id])
+# @_r.get("/{sentence_id}")
+# async def list_quiz_by_sentence_id(
+#     sentence_id: UUID,
+# ) -> ReadableQuizResult:
+#     """単文と紐づくクイズ一覧を取得."""
+#     return await list_quiz_by_sentence_ids([sentence_id])
 
 
 # いろんな条件指定でクイズリストは一本化できるんじゃね?
