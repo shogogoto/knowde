@@ -1,6 +1,6 @@
 """ロジックを含まないコアなrepo."""
 
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from datetime import datetime
 from uuid import UUID, uuid4
 
@@ -71,23 +71,44 @@ async def create_quiz_and_correct(  # noqa: PLR0917
 
 
 async def check_duplicate_for_precreate(
-    sent_id: UUIDy,
+    sent_id: str,
     qt: QuizType,
-    option_ids: Sequence[UUIDy],
-    correct_sent_uids: list[UUIDy] | None = None,
+    option_ids: Sequence[str],
+    correct_sent_uids: list[str] | None = None,
 ) -> bool:
     """同じ構成のクイズが既存か."""
+    if correct_sent_uids is None:
+        correct_sent_uids = []
     q = """
-        MATCH (s: Sentence {uid: sent_uid})
+        MATCH (s: Sentence {uid: $sent_uid})
         MATCH(quiz: Quiz)-[:QUIZ_TARGET]->(s)
         RETURN quiz.uid
     """
-    _rows, _ = await adb.cypher_query(
+    rows, _ = await adb.cypher_query(
         q,
         params={
-            "sent_ids": to_uuid(sent_id).hex,
+            "sent_uid": to_uuid(sent_id).hex,
         },
     )
+
+    def eq_uuidy(id1: UUIDy, id2: UUIDy) -> bool:
+        return to_uuid(id1) == to_uuid(id2)
+
+    def eq_uuidys(ids1: Iterable[UUIDy], ids2: Iterable[UUIDy]) -> bool:
+        return {to_uuid(id1) for id1 in ids1} == {to_uuid(id2) for id2 in ids2}
+
+    if not rows:
+        return False
+
+    srcs = await restore_quiz_sources(rows[0])
+    for s in srcs:
+        eq_t = s.quiz_type == qt
+        eq_tgt = eq_uuidy(s.target_id, sent_id)
+        eq_opt = eq_uuidys(s.sources.keys(), option_ids)
+        eq_crct = eq_uuidys(s.correct_ids, correct_sent_uids)
+        if eq_t and eq_tgt and eq_opt and eq_crct:
+            return True
+    return False
 
 
 async def generate_quiz(  # noqa: PLR0917

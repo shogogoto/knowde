@@ -11,7 +11,7 @@ from knowde.shared.knowde.label import LSentence
 from knowde.shared.types import UUIDy
 from knowde.shared.user.label import LUser
 
-from .create import generate_quiz
+from .create import check_duplicate_for_precreate, generate_quiz
 
 u = async_fixture()(fx_u)
 
@@ -100,6 +100,29 @@ async def test_gen_quiz_no_correct_option(u: LUser):
 @mark_async_test()
 async def test_check_duplication(u: LUser):
     """クイズ作成の重複チェック."""
+
+    async def _gen(
+        qt: QuizType,
+        user_id: UUIDy,
+        s_tgt: str,
+    ) -> QuizSource:
+        tgt = LSentence.nodes.first(val=s_tgt)
+        n_option = 5
+        return await generate_quiz(qt, CandidateType.ALL, tgt.uid, n_option, user_id)
+
+    src = await _gen(QuizType.TERM2SENT, u.uid, "ccc")
+    assert await check_duplicate_for_precreate(
+        src.target_id,
+        src.quiz_type,
+        list(src.sources.keys()),
+        src.correct_ids,
+    )
+    assert not await check_duplicate_for_precreate(
+        src.target_id,
+        QuizType.REL2PAIR,  # 一部差し替えて不一致
+        list(src.sources.keys()),
+        src.correct_ids,
+    )
 
 
 @mark_async_test()
