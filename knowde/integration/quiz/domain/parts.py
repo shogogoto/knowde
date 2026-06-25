@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Hashable, Sequence
 from enum import StrEnum, auto
 from operator import attrgetter
-from typing import Self
+from typing import Final, Self
 
 from pydantic import BaseModel
 
@@ -71,40 +71,41 @@ class QuizOption(BaseModel, frozen=True):
 QUIZ_PLACEHOLDER = "$@"
 
 
+S_SENT2TERM: Final = "に合う用語を当ててください"
+S_TERM2SENT: Final = "に合う文を当ててください"
+S_PAIR2REL: Final = "への関係を当ててください"
+S_REL2PAIR: Final = "関係で繋がる単文を当ててください"
+
+
 class QuizType(StrEnum):
-    """問題文の種類.
+    """問題文の種類."""
 
-    用語当てクイズ: 単文の用語を当てる
-    単文当てクイズ: 用語の単文を当てる
-    関係当てクイズ: 単文のペアの関係を当てる. 関係の選択肢
-    ペア当てクイズ: 対象単文と特定の関係にある単文を当てる. 単文を列挙
-    """
-
-    SENT2TERM = auto()
-    TERM2SENT = auto()
-    PAIR2REL = auto()
-    REL2PAIR = auto()
+    SENT2TERM = auto()  # 用語当てクイズ: 単文の用語を当てる
+    TERM2SENT = auto()  # 単文当てクイズ: 用語の単文を当てる
+    PAIR2REL = auto()  # 関係クイズ: 単文のペアの関係を当てる. 関係の選択肢
+    REL2PAIR = auto()  # ペアクイズ: 対象単文と特定の関係にある単文を当てる. 単文を列挙
 
     @classmethod
     def from_statemet(cls, stmt: str) -> QuizType:  # noqa: D102
-        if stmt.endswith("に合う用語を当ててください"):
-            return cls.SENT2TERM
-        if stmt.endswith("に合う文を当ててください"):
-            return cls.TERM2SENT
-        if stmt.endswith("関係で繋がる単文を当ててください"):
-            return cls.REL2PAIR
-        if stmt.endswith("への関係を当ててください"):
-            return cls.PAIR2REL
+        mapping = {
+            S_SENT2TERM: cls.SENT2TERM,
+            S_TERM2SENT: cls.TERM2SENT,
+            S_REL2PAIR: cls.REL2PAIR,
+            S_PAIR2REL: cls.PAIR2REL,
+        }
+        for suffix, quiz_type in mapping.items():
+            if stmt.endswith(suffix):
+                return quiz_type
         msg = f"Unknown statement: {stmt}"
         raise ValueError(msg)
 
     @property
     def _TEMPLATE(self) -> str:  # noqa: N802
         return {
-            QuizType.SENT2TERM: "$@に合う用語を当ててください",
-            QuizType.TERM2SENT: "$@に合う文を当ててください",
-            QuizType.REL2PAIR: "$@と$@関係で繋がる単文を当ててください",
-            QuizType.PAIR2REL: "$@から$@への関係を当ててください",
+            QuizType.SENT2TERM: f"$@{S_SENT2TERM}",
+            QuizType.TERM2SENT: f"$@{S_TERM2SENT}",
+            QuizType.REL2PAIR: f"$@と$@{S_REL2PAIR}",
+            QuizType.PAIR2REL: f"$@から$@{S_PAIR2REL}",
         }[self]
 
     @property

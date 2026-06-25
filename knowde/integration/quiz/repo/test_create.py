@@ -90,7 +90,6 @@ async def _check_gen_rel_quiz(
         assert not rq.is_correct([inc])
 
 
-# 正解と選択肢を作成するロジックを分離できそう
 @mark_async_test()
 async def test_gen_quiz(u: LUser):
     """タイプごとのクイズ生成."""

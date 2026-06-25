@@ -129,7 +129,7 @@ async def prepare_quiz_gen(  # noqa: PLR0917
         ct,
         n_ds,
         qt.has_term,
-        correct_ids if without_correct_option else None,
+        correct_ids,
     )
     return ds, correct_ids
 
