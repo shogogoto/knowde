@@ -11,9 +11,40 @@ from knowde.shared.knowde.label import LSentence
 from knowde.shared.types import UUIDy
 from knowde.shared.user.label import LUser
 
-from .create import check_duplicate_for_precreate, generate_quiz
+from .create import check_duplicate_for_precreate, generate_quiz, prepare_quiz_gen
 
 u = async_fixture()(fx_u)
+
+
+# relクイズのたまにコケるのを発見しやすくするテスト
+@mark_async_test()
+async def test_prepare_quiz_gen(u: LUser):
+    """タイプごとのクイズ生成."""
+
+    async def _f(
+        qt: QuizType,
+        s_tgt: str,
+        s_pair: str,
+    ):
+        tgt = LSentence.nodes.first(val=s_tgt)
+        n_option = 3
+        pair = LSentence.nodes.first(val=s_pair)
+        _ds, _cor = await prepare_quiz_gen(
+            qt,
+            CandidateType.ALL,
+            tgt.uid,
+            n_option,
+            [pair.uid],
+        )
+
+        # print(f"{sorted(ds)} {cor}")
+
+    await _f(QuizType.REL2PAIR, "ccc", "parent")
+    await _f(QuizType.PAIR2REL, "ccc", "parent")
+    await _f(QuizType.REL2PAIR, "ccc", "parent")
+    await _f(QuizType.PAIR2REL, "ccc", "parent")
+    await _f(QuizType.REL2PAIR, "ccc", "parent")
+    await _f(QuizType.PAIR2REL, "ccc", "parent")
 
 
 async def _check_with_term(

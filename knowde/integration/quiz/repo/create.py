@@ -111,6 +111,29 @@ async def check_duplicate_for_precreate(
     return False
 
 
+async def prepare_quiz_gen(  # noqa: PLR0917
+    qt: QuizType,
+    ct: CandidateType,
+    target_sent_uid: UUIDy,
+    n_option: int,
+    correct_sent_uids: list[UUIDy] | None = None,
+    without_correct_option: bool = False,  # noqa: FBT001, FBT002
+) -> tuple[list[UUID], list[UUIDy]]:
+    """クイズ生成用に単文idのセットを返す."""
+    correct_ids = qt.correct_ids(target_sent_uid, correct_sent_uids)
+    n_ds = n_option - len(correct_ids)
+    if without_correct_option:
+        n_ds = n_option
+    ds = await fetch_distractor_ids(
+        [target_sent_uid],
+        ct,
+        n_ds,
+        qt.has_term,
+        correct_ids if without_correct_option else None,
+    )
+    return ds, correct_ids
+
+
 async def generate_quiz(  # noqa: PLR0917
     qt: QuizType,
     ct: CandidateType,
@@ -121,18 +144,14 @@ async def generate_quiz(  # noqa: PLR0917
     no_correct_option: bool = False,  # noqa: FBT001, FBT002
 ) -> QuizSource:
     """高級なクイズ生成."""
-    correct_ids = qt.correct_ids(target_sent_uid, correct_sent_uids)
-    n_ds = n_option - len(correct_ids)
-    if no_correct_option:
-        n_ds = n_option
-    ds = await fetch_distractor_ids(
-        [target_sent_uid],
+    ds, correct_ids = await prepare_quiz_gen(
+        qt,
         ct,
-        n_ds,
-        qt.has_term,
-        correct_ids if no_correct_option else None,
+        target_sent_uid,
+        n_option,
+        correct_sent_uids,
+        no_correct_option,
     )
-
     quiz_id = await create_quiz_and_correct(
         target_sent_uid,
         qt,
