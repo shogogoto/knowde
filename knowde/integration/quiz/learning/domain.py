@@ -21,18 +21,18 @@ class QuizFillStrategy(StrEnum):
     RANDOM = auto()  # ランダム
 
 
-class QuizTargetSelector(StrEnum):
-    """クイズ生成用のフィルタ."""
+class QuizTargetPool(StrEnum):
+    """クイズ対象を選ぶ母集団."""
 
     UNCOVERED = auto()  # まだクイズなし
-    LOW_ACCURACY = auto()  # 低正答率
+    COVERED = auto()  # クイズあり
 
 
 class QuizTargetOrder(StrEnum):
     """クイズ生成用の単文の順番."""
 
-    # ↓はクイズなしに算出できて別な気がする
     HIGH_SCORE = auto()
+    LOW_SCORE = auto()
     RANDOM = auto()
 
 

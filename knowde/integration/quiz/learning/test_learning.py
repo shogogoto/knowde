@@ -7,6 +7,8 @@
   □ クイズ提案.
 """
 
+from random import Random
+
 import pytest
 
 from knowde.conftest import async_fixture, mark_async_test
@@ -14,11 +16,16 @@ from knowde.feature.entry.namespace import fetch_namespace
 from knowde.feature.knowde.repo.detail import fetch_knowdes_with_detail
 from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.integration.quiz.domain.parts import QuizType
-from knowde.integration.quiz.learning.domain import QuizCoverage
+from knowde.integration.quiz.learning.domain import (
+    QuizCoverage,
+    QuizTargetOrder,
+    QuizTargetPool,
+)
 from knowde.integration.quiz.learning.repo import (
     fetch_coverage,
     fetch_covered_sent_ids,
     fetch_sort_by_score,
+    fetch_target_ids,
     fetch_uncovered_sent_ids,
 )
 from knowde.integration.quiz.repo.create import generate_quiz
@@ -100,6 +107,78 @@ async def test_sort_by_score(u: LUser):
     ls = list(kns.values())
     assert ls[0].sentence == "s"
     assert ls[1].sentence == "pre_s"
+
+
+@mark_async_test()
+async def test_fetch_target_ids(u: LUser):
+    """poolからスコア順で指定件数の対象を取得."""
+    ns = await fetch_namespace(u.uid)
+    rid = ns.resources[0].uid
+    s = LSentence.nodes.first(val="s")
+
+    targets = await fetch_target_ids(
+        rid,
+        u.uid,
+        QuizType.TERM2SENT,
+        QuizTargetPool.UNCOVERED,
+        QuizTargetOrder.HIGH_SCORE,
+        limit=1,
+    )
+    assert targets == [s.uid]
+
+    low_score_targets = await fetch_target_ids(
+        rid,
+        u.uid,
+        QuizType.TERM2SENT,
+        QuizTargetPool.UNCOVERED,
+        QuizTargetOrder.LOW_SCORE,
+        limit=1,
+    )
+    assert low_score_targets != targets
+
+    await generate_quiz(QuizType.TERM2SENT, CandidateType.ALL, s.uid, 3, u.uid)
+
+    targets = await fetch_target_ids(
+        rid,
+        u.uid,
+        QuizType.TERM2SENT,
+        QuizTargetPool.COVERED,
+        QuizTargetOrder.HIGH_SCORE,
+        limit=1,
+    )
+    assert targets == [s.uid]
+
+
+@mark_async_test()
+async def test_fetch_random_target_ids(u: LUser):
+    """poolからランダムに指定件数の対象を取得."""
+    ns = await fetch_namespace(u.uid)
+    rid = ns.resources[0].uid
+    pool = await fetch_uncovered_sent_ids(rid, u.uid, QuizType.TERM2SENT)
+    limit = 2
+
+    targets = await fetch_target_ids(
+        rid,
+        u.uid,
+        QuizType.TERM2SENT,
+        QuizTargetPool.UNCOVERED,
+        QuizTargetOrder.RANDOM,
+        limit=limit,
+        rng=Random(0),  # noqa: S311
+    )
+    same_seed_targets = await fetch_target_ids(
+        rid,
+        u.uid,
+        QuizType.TERM2SENT,
+        QuizTargetPool.UNCOVERED,
+        QuizTargetOrder.RANDOM,
+        limit=limit,
+        rng=Random(0),  # noqa: S311
+    )
+
+    assert len(targets) == limit
+    assert set(targets) <= set(pool)
+    assert targets == same_seed_targets
 
 
 async def test_suggest_quizzes():

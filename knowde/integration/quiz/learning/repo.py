@@ -1,6 +1,7 @@
 """learning repo."""
 
 from collections.abc import Iterable
+from random import Random, SystemRandom
 from uuid import UUID
 
 from more_itertools import flatten
@@ -9,7 +10,11 @@ from neomodel import adb
 from knowde.feature.knowde.repo.clause import OrderBy
 from knowde.feature.knowde.repo.cypher import q_stats
 from knowde.integration.quiz.domain.parts import QuizType
-from knowde.integration.quiz.learning.domain import QuizCoverage
+from knowde.integration.quiz.learning.domain import (
+    QuizCoverage,
+    QuizTargetOrder,
+    QuizTargetPool,
+)
 from knowde.shared.types import UUIDy, to_uuid
 
 
@@ -75,22 +80,70 @@ async def fetch_covered_sent_ids(
 
 
 # covered uncoveredと組み合わせる
-async def fetch_sort_by_score(sent_ids: Iterable[UUID]) -> list[UUID]:
+async def fetch_sort_by_score(
+    sent_ids: Iterable[UUID],
+    *,
+    desc: bool = True,
+    limit: int | None = None,
+) -> list[UUID]:
     """score順に並び替える."""
-    order_by = OrderBy()
+    if limit is not None and limit < 0:
+        msg = "limitは0以上を指定してください"
+        raise ValueError(msg)
+
+    order_by = OrderBy(desc=desc)
+    limit_clause = "" if limit is None else "LIMIT $limit"
     q = f"""
         UNWIND $uids AS uid
         MATCH (sent: Sentence {{uid: uid}})
         {q_stats("sent", order_by)}
-        {(order_by.phrase())}
         RETURN
             sent.uid AS sent_uid
+        {(order_by.phrase())}
+            , sent.uid ASC
+        {limit_clause}
     """
     rows, _ = await adb.cypher_query(
         q,
-        params={"uids": [to_uuid(uid).hex for uid in sent_ids]},
+        params={
+            "uids": [to_uuid(uid).hex for uid in sent_ids],
+            "limit": limit,
+        },
     )
     return list(flatten(rows))
+
+
+async def fetch_target_ids(  # noqa: PLR0917
+    resource_id: UUIDy,
+    user_id: UUIDy,
+    quiz_type: QuizType,
+    pool: QuizTargetPool,
+    order: QuizTargetOrder,
+    limit: int,
+    *,
+    rng: Random | None = None,
+) -> list[UUID]:
+    """指定した母集団から順序と件数を指定してクイズ対象を取得."""
+    if limit < 0:
+        msg = "limitは0以上を指定してください"
+        raise ValueError(msg)
+
+    match pool:
+        case QuizTargetPool.UNCOVERED:
+            ids = await fetch_uncovered_sent_ids(resource_id, user_id, quiz_type)
+        case QuizTargetPool.COVERED:
+            ids = await fetch_covered_sent_ids(resource_id, user_id, quiz_type)
+
+    match order:
+        case QuizTargetOrder.HIGH_SCORE:
+            ids = await fetch_sort_by_score(ids, limit=limit)
+        case QuizTargetOrder.LOW_SCORE:
+            ids = await fetch_sort_by_score(ids, desc=False, limit=limit)
+        case QuizTargetOrder.RANDOM:
+            random = rng if rng is not None else SystemRandom()
+            ids = random.sample(ids, k=min(limit, len(ids)))
+
+    return ids
 
 
 async def fetch_coverage(
