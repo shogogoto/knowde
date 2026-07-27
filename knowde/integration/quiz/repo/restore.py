@@ -48,7 +48,7 @@ async def restore_quiz_sources(
             , [opt, crct] AS srcs
         UNWIND srcs AS src
         OPTIONAL MATCH p = SHORTEST 1 (tgt)
-            -[:!QUIZ_OPTION|QUIZ_TARGET]-*(src)
+            -[:!QUIZ_OPTION&!QUIZ_TARGET]-*(src)
         WITH
             quiz
             , tgt.uid AS target_id
