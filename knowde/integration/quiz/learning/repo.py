@@ -13,44 +13,69 @@ from knowde.integration.quiz.learning.domain import QuizCoverage
 from knowde.shared.types import UUIDy, to_uuid
 
 
-async def _resource2ids(q: str, resource_id: UUIDy) -> Iterable[UUID]:
+async def _fetch_coverage_sent_ids(
+    resource_id: UUIDy,
+    user_id: UUIDy,
+    quiz_type: QuizType,
+    *,
+    covered: bool,
+) -> list[UUID]:
+    """coverage条件に合う単文IDを取得."""
+    eligible = "<-[:DEF]-(:Term)" if quiz_type.has_term else ""
+    not_ = "" if covered else "NOT "
+    q = f"""
+        MATCH (sent: Sentence {{resource_uid: $resource_id}})
+            {eligible}
+        WHERE {not_}EXISTS {{
+            MATCH (user: User {{uid: $user_id}})
+                -[:CREATE]->(quiz: Quiz {{
+                    quiz_type: $quiz_type,
+                    is_link_broken: false
+                }})-[:QUIZ_TARGET]->(sent)
+        }}
+        RETURN DISTINCT sent.uid
+    """
     rows, _ = await adb.cypher_query(
         q,
-        params={"resource_id": to_uuid(resource_id).hex},
+        params={
+            "resource_id": to_uuid(resource_id).hex,
+            "user_id": to_uuid(user_id).hex,
+            "quiz_type": quiz_type.name,
+        },
     )
-    return flatten(rows)
+    return list(flatten(rows))
 
 
-async def fetch_uncoverd_sent_ids(
+async def fetch_uncovered_sent_ids(
     resource_id: UUIDy,
-) -> Iterable[UUID]:
-    """未クイズの単文を取得."""
-    q = """
-        MATCH (s: Sentence {resource_uid: $resource_id})
-        WHERE NOT EXISTS {
-            MATCH (:Quiz)-[:QUIZ_TARGET]->(s)
-        }
-        RETURN s.uid
-    """
-    return await _resource2ids(q, resource_id)
+    user_id: UUIDy,
+    quiz_type: QuizType,
+) -> list[UUID]:
+    """ユーザー向けの有効なクイズがない適格単文を取得."""
+    return await _fetch_coverage_sent_ids(
+        resource_id,
+        user_id,
+        quiz_type,
+        covered=False,
+    )
 
 
 async def fetch_covered_sent_ids(
     resource_id: UUIDy,
-) -> Iterable[UUID]:
-    """クイズを持つ単文を取得."""
-    q = """
-        MATCH (s: Sentence {resource_uid: $resource_id})
-            <-[:QUIZ_TARGET]->(:Quiz)
-        RETURN s.uid
-    """
-    return await _resource2ids(q, resource_id)
+    user_id: UUIDy,
+    quiz_type: QuizType,
+) -> list[UUID]:
+    """ユーザー向けの有効なクイズを持つ適格単文を取得."""
+    return await _fetch_coverage_sent_ids(
+        resource_id,
+        user_id,
+        quiz_type,
+        covered=True,
+    )
 
 
 # covered uncoveredと組み合わせる
-async def fetch_sort_by_score(
-    sent_ids: Iterable[UUID],
-) -> list[UUID]:
+async def fetch_sort_by_score(sent_ids: Iterable[UUID]) -> list[UUID]:
     """score順に並び替える."""
     order_by = OrderBy()
     q = f"""

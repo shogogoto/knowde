@@ -19,7 +19,7 @@ from knowde.integration.quiz.learning.repo import (
     fetch_coverage,
     fetch_covered_sent_ids,
     fetch_sort_by_score,
-    fetch_uncoverd_sent_ids,
+    fetch_uncovered_sent_ids,
 )
 from knowde.integration.quiz.repo.create import generate_quiz
 from knowde.shared.knowde.label import LSentence
@@ -69,10 +69,10 @@ async def test_fetch_uncovered(u: LUser):
     ns = await fetch_namespace(u.uid)
     rid = ns.resources[0].uid
     aaa = LSentence.nodes.first(val="a")
-    res = await fetch_uncoverd_sent_ids(rid)
+    res = await fetch_uncovered_sent_ids(rid, u.uid, QuizType.TERM2SENT)
     assert aaa.uid in res  # クイズ作る前
     await generate_quiz(QuizType.TERM2SENT, CandidateType.ALL, aaa.uid, 3, u.uid)
-    res = await fetch_uncoverd_sent_ids(rid)
+    res = await fetch_uncovered_sent_ids(rid, u.uid, QuizType.TERM2SENT)
     assert aaa.uid not in res  # クイズ作成後は除外される
 
 
@@ -82,11 +82,11 @@ async def test_fetch_covered(u: LUser):
     ns = await fetch_namespace(u.uid)
     rid = ns.resources[0].uid
     aaa = LSentence.nodes.first(val="a")
-    res = await fetch_covered_sent_ids(rid)
-    assert list(res) == []  # クイズ作る前
+    res = await fetch_covered_sent_ids(rid, u.uid, QuizType.TERM2SENT)
+    assert res == []  # クイズ作る前
     await generate_quiz(QuizType.TERM2SENT, CandidateType.ALL, aaa.uid, 3, u.uid)
-    res = await fetch_covered_sent_ids(rid)
-    assert list(res) == [aaa.uid]  # クイズ作成後は除外される
+    res = await fetch_covered_sent_ids(rid, u.uid, QuizType.TERM2SENT)
+    assert res == [aaa.uid]  # クイズ作成後は含まれる
 
 
 @mark_async_test()
@@ -94,7 +94,7 @@ async def test_sort_by_score(u: LUser):
     """スコア順で並べる."""
     ns = await fetch_namespace(u.uid)
     rid = ns.resources[0].uid
-    res = await fetch_uncoverd_sent_ids(rid)
+    res = await fetch_uncovered_sent_ids(rid, u.uid, QuizType.REL2PAIR)
     sort = await fetch_sort_by_score(res)
     kns = await fetch_knowdes_with_detail(sort, None)
     ls = list(kns.values())

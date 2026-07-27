@@ -61,3 +61,16 @@ class QuizCoverage(BaseModel, frozen=True):
 #     attempt_rate: Ratio
 #     accuracy: Ratio
 #     last_attempted_at: datetime | None
+
+#
+# coverage
+#   クイズを用意できているか
+#
+# attempt rate
+#   用意されたクイズに回答したか
+#
+# accuracy
+#   回答結果が正しかったか
+#
+# recency
+#   最近復習したか
