@@ -7,19 +7,6 @@ from pydantic import BaseModel, computed_field
 
 from knowde.integration.quiz.domain.parts import QuizType
 
-# covorage
-# accuracy 正答率
-
-
-class QuizFillStrategy(StrEnum):
-    """クイズ生成方式."""
-
-    COVERAGE = auto()  # クイズなし単文
-    REVIEW = auto()  # 低accuracy単文
-    IMPORTANCE = auto()  # 高スコアでクイズなし単文
-    # スコアとaccuracy の組み合わせのような指標が要るかも
-    RANDOM = auto()  # ランダム
-
 
 class QuizTargetPool(StrEnum):
     """クイズ対象を選ぶ母集団."""
@@ -33,7 +20,35 @@ class QuizTargetOrder(StrEnum):
 
     HIGH_SCORE = auto()
     LOW_SCORE = auto()
+    LOW_ACCURACY = auto()
     RANDOM = auto()
+
+
+class QuizFillStrategy(StrEnum):
+    """クイズ生成方式."""
+
+    COVERAGE = auto()  # クイズなし単文
+    REVIEW = auto()  # 低accuracy単文
+    IMPORTANCE = auto()  # 高スコアでクイズなし単文
+
+    @property
+    def target_selection(self) -> tuple[QuizTargetPool, QuizTargetOrder]:
+        """クイズ対象の母集団と並び順."""
+        # 組を直接持たせるとstrのシリアライズが出来ないのでメソッドにしてある
+        return {
+            QuizFillStrategy.COVERAGE: (
+                QuizTargetPool.UNCOVERED,
+                QuizTargetOrder.RANDOM,
+            ),
+            QuizFillStrategy.REVIEW: (
+                QuizTargetPool.COVERED,
+                QuizTargetOrder.LOW_ACCURACY,
+            ),
+            QuizFillStrategy.IMPORTANCE: (
+                QuizTargetPool.UNCOVERED,
+                QuizTargetOrder.HIGH_SCORE,
+            ),
+        }[self]
 
 
 class QuizCoverage(BaseModel, frozen=True):

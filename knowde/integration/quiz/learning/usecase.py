@@ -3,26 +3,10 @@
 from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.integration.quiz.domain.domain import QuizSource
 from knowde.integration.quiz.domain.parts import QuizType
-from knowde.integration.quiz.learning.domain import (
-    QuizFillStrategy,
-    QuizTargetOrder,
-    QuizTargetPool,
-)
+from knowde.integration.quiz.learning.domain import QuizFillStrategy
 from knowde.integration.quiz.learning.repo import fetch_target_ids
 from knowde.integration.quiz.repo.create import generate_quiz
 from knowde.shared.types import UUIDy
-
-
-def _resolve_strategy(
-    strategy: QuizFillStrategy,
-) -> tuple[QuizTargetPool, QuizTargetOrder]:
-    """クイズ生成戦略を対象の取得条件へ変換."""
-    match strategy:
-        case QuizFillStrategy.IMPORTANCE:
-            return QuizTargetPool.UNCOVERED, QuizTargetOrder.HIGH_SCORE
-        case _:
-            msg = f"{strategy}によるクイズ生成は未実装です"
-            raise NotImplementedError(msg)
 
 
 async def generate_quizzes(  # noqa: PLR0917
@@ -39,7 +23,7 @@ async def generate_quizzes(  # noqa: PLR0917
         msg = f"{quiz_type}の正解単文の自動選択は未実装です"
         raise NotImplementedError(msg)
 
-    pool, order = _resolve_strategy(strategy)
+    pool, order = strategy.target_selection
     target_ids = await fetch_target_ids(
         resource_id,
         user_id,
