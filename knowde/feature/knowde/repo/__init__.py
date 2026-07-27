@@ -99,7 +99,7 @@ async def search_knowde(  # noqa: PLR0917
     only_with_term: bool = False,  # noqa: FBT001, FBT002
     exclude_sent_ids: list[UUIDy] | None = None,
     do_print: bool = False,  # noqa: FBT001, FBT002
-):
+) -> KnowdeSearchResult:
     """用語、文のいずれかでマッチする単文の検索結果を返す."""
     kn_uids = await search_knowde_ids(
         s,
@@ -115,7 +115,7 @@ async def search_knowde(  # noqa: PLR0917
     ls = list(d.values())
     return KnowdeSearchResult(
         total=search_total(s, where, filter_resource_uids, only_with_term),
-        data=list(d.values()),
+        data=ls,
         resource_infos=await resource_infos_by_resource_uids({
             k.resource_uid for k in ls
         }),

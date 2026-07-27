@@ -12,10 +12,14 @@ async def fx_learning() -> LUser:  # noqa: D103
     await u.save()
     s = """
         # title
-            a
-            b
-            c
-            d
+            A: a
+            B: b
+            C: c
+            D: d
+            S: s
+                s1
+                s2
+                <- pre_s
     """
     _sn, _m = await save_text(user.uid, s)
     return user

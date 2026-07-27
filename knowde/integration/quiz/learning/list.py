@@ -51,30 +51,6 @@ async def list_quiz_by_user_ids(
     return await _to_result(*rows[0])
 
 
-async def list_quiz_by_sent_ids(
-    sent_uids: Iterable[UUIDy],
-    paging: Paging = Paging(),
-) -> ReadableQuizResult:
-    """特定単文に紐づくクイズを列挙する."""
-    q = f"""
-        UNWIND $sent_uids AS sent_uid
-        MATCH (s: Sentence {{uid: sent_uid}})
-        MATCH(quiz: Quiz)-[:QUIZ_TARGET]->(s)
-        // 新しい順
-        ORDER BY quiz.created DESC
-        WITH COLLECT(quiz.uid) as quiz_ids
-        {paging.return_stmt("quiz_ids")}
-    """
-    rows, _ = await adb.cypher_query(
-        q,
-        params={
-            "sent_uids": [to_uuid(uid).hex for uid in sent_uids],
-            **paging.params,
-        },
-    )
-    return await _to_result(*rows[0])
-
-
 async def list_quiz_by_sentence_ids(
     sent_uids: Iterable[UUIDy],
     paging: Paging = Paging(),
@@ -83,7 +59,7 @@ async def list_quiz_by_sentence_ids(
     q = f"""
         UNWIND $sent_uids AS sent_uid
         MATCH (s: Sentence {{uid: sent_uid}})
-        MATCH(quiz: Quiz)-[:QUIZ_TARGET]->(s)
+        MATCH (quiz: Quiz)-[:QUIZ_TARGET]->(s)
         // 新しい順
         ORDER BY quiz.created DESC
         WITH COLLECT(quiz.uid) as quiz_ids
@@ -118,13 +94,6 @@ async def list_quiz_by_optioned(
     """
     rows, _ = await adb.cypher_query(q, params={"quiz_uid": to_uuid(quiz_uids).hex})
     return await _to_result(*rows[0])
-
-
-async def list_quiz_by_selected(
-    quiz_uids: list[UUIDy],
-    paging: Paging = Paging(),
-):
-    """回答で選択された対象のクイズを列挙する."""
 
 
 # クイズの詳細で表示するくらいだと思う

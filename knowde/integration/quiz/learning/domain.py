@@ -1,8 +1,11 @@
 """学習度管理."""
 
 from enum import StrEnum, auto
+from uuid import UUID
 
 from pydantic import BaseModel
+
+from knowde.integration.quiz.domain.parts import QuizType
 
 # covorage
 # accuracy 正答率
@@ -54,3 +57,11 @@ class ResourceCoverage(BaseModel, frozen=True):
     n_term_quiz / n_term
     n_quiz / n_sent
     """
+
+
+class Coverage(BaseModel, frozen=True):
+    """クイズ化された単文割合."""
+
+    user_id: UUID
+    resource_id: UUID
+    quiz_type: QuizType
