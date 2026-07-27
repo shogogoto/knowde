@@ -3,7 +3,7 @@
 from enum import StrEnum, auto
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, computed_field
 
 from knowde.integration.quiz.domain.parts import QuizType
 
@@ -36,32 +36,28 @@ class QuizTargetOrder(StrEnum):
     RANDOM = auto()
 
 
-class Ratio(BaseModel, frozen=True):
-    """全体とtargetの比率でaccuracyやcovorageを表現する."""
+class QuizCoverage(BaseModel, frozen=True):
+    """リソース毎タイプ毎のクイズ化された単文率."""
 
-    total: int
-    n_target: int  # covered or correct ...
-
-    def __call__(self) -> float:  # noqa: D102
-        if self.total == 0:
-            return 0.0
-        return self.n_target / self.total
-
-
-# ResourceStats と クイズ統計の組み合わせ
-# クイズ統計取得がまだできていない
-class ResourceCoverage(BaseModel, frozen=True):
-    """クイズ化された率.
-
-    n_rel_quiz / n_rel
-    n_term_quiz / n_term
-    n_quiz / n_sent
-    """
-
-
-class Coverage(BaseModel, frozen=True):
-    """クイズ化された単文割合."""
-
-    user_id: UUID
     resource_id: UUID
+    user_id: UUID
     quiz_type: QuizType
+    eligible: int  # 適格
+    covered: int
+
+    @computed_field
+    @property
+    def ratio(self) -> float:  # noqa: D102
+        if self.eligible == 0:
+            return 0.0
+        return self.covered / self.eligible
+
+
+# class ResourceLearningStats(BaseModel):
+#     resource_id: UUID
+#     user_id: UUID
+#     quiz_type: QuizType
+#     coverage: Ratio
+#     attempt_rate: Ratio
+#     accuracy: Ratio
+#     last_attempted_at: datetime | None

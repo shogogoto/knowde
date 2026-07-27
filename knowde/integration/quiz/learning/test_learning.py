@@ -7,12 +7,16 @@
   □ クイズ提案.
 """
 
+import pytest
+
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.entry.namespace import fetch_namespace
 from knowde.feature.knowde.repo.detail import fetch_knowdes_with_detail
 from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.integration.quiz.domain.parts import QuizType
+from knowde.integration.quiz.learning.domain import QuizCoverage
 from knowde.integration.quiz.learning.repo import (
+    fetch_coverage,
     fetch_covered_sent_ids,
     fetch_sort_by_score,
     fetch_uncoverd_sent_ids,
@@ -20,6 +24,7 @@ from knowde.integration.quiz.learning.repo import (
 from knowde.integration.quiz.repo.create import generate_quiz
 from knowde.shared.knowde.label import LSentence
 from knowde.shared.user.label import LUser
+from knowde.shared.user.testing import aregister
 
 from .fixture import fx_learning
 
@@ -29,10 +34,33 @@ u = async_fixture()(fx_learning)
 @mark_async_test()
 async def test_fetch_coverage(u: LUser):
     """リソース内のクイズ化済み単文の割合を取得."""
-    # rs = await fetch_resources_by_user(u.uid)
-    # ns = await fetch_namespace(u.uid)
-    # st = next(iter(ns.stats.values()))
-    # await fetch_resource_stats_
+    ns = await fetch_namespace(u.uid)
+    rid = ns.resources[0].uid
+    aaa = LSentence.nodes.first(val="a")
+
+    expected = QuizCoverage(
+        resource_id=rid,
+        user_id=u.uid,
+        quiz_type=QuizType.TERM2SENT,
+        eligible=5,
+        covered=0,
+    )
+    coverage = await fetch_coverage(rid, u.uid, expected.quiz_type)
+    assert coverage == expected
+    assert coverage.ratio == 0
+
+    await generate_quiz(QuizType.TERM2SENT, CandidateType.ALL, aaa.uid, 3, u.uid)
+    # 別タイプなので対象外
+    await generate_quiz(QuizType.SENT2TERM, CandidateType.ALL, aaa.uid, 3, u.uid)
+
+    # 別ユーザーなので対象外
+    other = await aregister(email="quiz2@ex.com")
+    await generate_quiz(QuizType.TERM2SENT, CandidateType.ALL, aaa.uid, 3, other.uid)
+
+    expected = expected.model_copy(update={"covered": 1})
+    coverage = await fetch_coverage(rid, u.uid, expected.quiz_type)
+    assert coverage == expected
+    assert coverage.ratio == pytest.approx(expected.covered / expected.eligible)
 
 
 @mark_async_test()

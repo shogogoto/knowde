@@ -6,8 +6,7 @@ from knowde.shared.user.testing import aregister
 
 
 async def fx_learning() -> LUser:  # noqa: D103
-    user = await aregister(email="quiz@ex.com")
-    u: LUser = await LUser.nodes.get(email=user.email)
+    u = await aregister(email="quiz@ex.com")
     u.username = "quiz"
     await u.save()
     s = """
@@ -21,5 +20,5 @@ async def fx_learning() -> LUser:  # noqa: D103
                 s2
                 <- pre_s
     """
-    _sn, _m = await save_text(user.uid, s)
-    return user
+    _sn, _m = await save_text(u.uid, s)
+    return u
