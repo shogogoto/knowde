@@ -22,9 +22,13 @@ from knowde.integration.quiz.listing.repo import (
     list_learning_quizzes,
     list_quiz_by_user_ids,
 )
-from knowde.integration.quiz.management.domain import QuizResourceStatus
+from knowde.integration.quiz.management.domain import (
+    QuizResourceStatus,
+    SentenceQuizStatus,
+)
 from knowde.integration.quiz.management.repo import (
     list_created_quiz_resource_statuses,
+    list_created_quiz_sentence_statuses,
 )
 from knowde.integration.quiz.management.usecase import delete_quiz
 from knowde.integration.quiz.router.params import (
@@ -73,6 +77,7 @@ async def list_quiz(
 async def list_created_quizzes(
     user: ActiveUser,
     resource_id: UUID | None = None,
+    sentence_id: UUID | None = None,
     page: Annotated[int, Query(gt=0)] = 1,
     size: Annotated[int, Query(gt=0)] = 100,
 ) -> ReadableQuizResult:
@@ -81,6 +86,7 @@ async def list_created_quizzes(
         [user.uid],
         Paging(page=page, size=size),
         resource_ids=[resource_id] if resource_id is not None else None,
+        sentence_ids=[sentence_id] if sentence_id is not None else None,
     )
 
 
@@ -90,6 +96,15 @@ async def list_created_quiz_resources(
 ) -> list[QuizResourceStatus]:
     """作成済みQuizの状況をResourceごとに取得."""
     return await list_created_quiz_resource_statuses(user.uid)
+
+
+@_r.get("/created/resources/{resource_id}/sentences")
+async def list_created_quiz_sentences(
+    resource_id: UUID,
+    user: ActiveUser,
+) -> list[SentenceQuizStatus]:
+    """Resource内の単文を対象にした作成済みQuiz状況を取得."""
+    return await list_created_quiz_sentence_statuses(user.uid, resource_id)
 
 
 @_r.delete("/{quiz_id}", status_code=status.HTTP_204_NO_CONTENT)

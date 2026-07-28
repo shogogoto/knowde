@@ -31,6 +31,7 @@ async def list_quiz_by_user_ids(
     user_uids: Iterable[UUIDy],
     paging: Paging = Paging(),
     resource_ids: Iterable[UUIDy] | None = None,
+    sentence_ids: Iterable[UUIDy] | None = None,
 ) -> ReadableQuizResult:
     """特定ユーザーのクイズを列挙する."""
     q = f"""
@@ -39,6 +40,8 @@ async def list_quiz_by_user_ids(
         MATCH (quiz: Quiz)<-[:CREATE]-(u)
         MATCH (quiz)-[:QUIZ_TARGET]->(target: Sentence)
         WHERE $resource_ids IS NULL OR target.resource_uid IN $resource_ids
+        WITH quiz, target
+        WHERE $sentence_ids IS NULL OR target.uid IN $sentence_ids
         // 新しい順
         ORDER BY quiz.created DESC
         WITH COLLECT(quiz.uid) as quiz_ids
@@ -51,6 +54,11 @@ async def list_quiz_by_user_ids(
             "resource_ids": (
                 [to_uuid(uid).hex for uid in resource_ids]
                 if resource_ids is not None
+                else None
+            ),
+            "sentence_ids": (
+                [to_uuid(uid).hex for uid in sentence_ids]
+                if sentence_ids is not None
                 else None
             ),
             **paging.params,

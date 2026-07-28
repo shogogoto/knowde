@@ -10,6 +10,7 @@ from knowde.integration.quiz.domain.parts import QuizType
 from knowde.integration.quiz.fixture import fx_u
 from knowde.integration.quiz.generation.repo import generate_quiz
 from knowde.shared.knowde.label import LSentence
+from knowde.shared.types import to_uuid
 from knowde.shared.user.label import LUser
 from knowde.shared.user.testing import aauth_header, aregister
 
@@ -52,6 +53,27 @@ async def test_list_and_delete_created_quizzes_api(ac: AsyncClient, u: LUser):
     response = await ac.get(
         "/quiz/created",
         params={"resource_id": target.resource_uid},
+        headers=headers,
+    )
+    filtered = ReadableQuizResult.model_validate(response.json())
+    assert [quiz.quiz_id for quiz in filtered.data.root] == [own.quiz_id]
+
+    response = await ac.get(
+        f"/quiz/created/resources/{target.resource_uid}/sentences",
+        headers=headers,
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == [
+        {
+            "sentence_id": str(to_uuid(target.uid)),
+            "total_quizzes": 1,
+            "quiz_counts": {"term2sent": 1},
+        },
+    ]
+
+    response = await ac.get(
+        "/quiz/created",
+        params={"sentence_id": target.uid},
         headers=headers,
     )
     filtered = ReadableQuizResult.model_validate(response.json())
