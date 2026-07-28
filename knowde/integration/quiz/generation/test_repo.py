@@ -105,6 +105,8 @@ async def test_generate_relation_quiz(quiz_type: QuizType, u: LUser):
     assert quiz.is_correct([correct_id])
     for distractor_id in set(quiz.options) - {correct_id}:
         assert not quiz.is_correct([distractor_id])
+    if quiz_type is QuizType.PAIR2REL:
+        assert len(set(quiz.options.values())) == len(quiz.options)
 
 
 @mark_async_test()

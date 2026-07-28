@@ -1,8 +1,10 @@
 """誤答肢作成domain."""
 
 import random
-from collections.abc import Sequence
+from collections import Counter
+from collections.abc import Hashable, Mapping, Sequence
 
+from knowde.integration.quiz.domain.rel import QuizRel
 from knowde.integration.quiz.errors import SamplingError
 
 
@@ -27,6 +29,39 @@ def random_sample_safe[T](
     """ランダムサンプリング."""
     validate_sample(candidate_uids, n_sample)
     return random.sample(candidate_uids, n_sample)
+
+
+def rank_distinct_paths[T: Hashable](
+    correct_path: Sequence[QuizRel],
+    candidate_paths: Mapping[T, Sequence[QuizRel]],
+    rng: random.Random | None = None,
+) -> list[T]:
+    """正解と表示が異なる実在pathを、構造が近い順に並べる."""
+    if rng is None:
+        rng = random.SystemRandom()
+
+    correct = tuple(correct_path)
+    candidates = [
+        (candidate_id, tuple(path))
+        for candidate_id, path in candidate_paths.items()
+        if tuple(path) != correct
+    ]
+    rng.shuffle(candidates)
+
+    def similarity(item: tuple[T, tuple[QuizRel, ...]]) -> tuple[int, int, int]:
+        _, path = item
+        same_position = sum(a == b for a, b in zip(correct, path, strict=False))
+        common = sum((Counter(correct) & Counter(path)).values())
+        return abs(len(correct) - len(path)), -same_position, -common
+
+    ranked = sorted(candidates, key=similarity)
+    distinct: list[T] = []
+    seen_paths: set[tuple[QuizRel, ...]] = set()
+    for candidate_id, path in ranked:
+        if path not in seen_paths:
+            distinct.append(candidate_id)
+            seen_paths.add(path)
+    return distinct
 
 
 # 引数をbindした関数

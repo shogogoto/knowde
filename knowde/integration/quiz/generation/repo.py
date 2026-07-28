@@ -7,7 +7,10 @@ from uuid import UUID, uuid4
 from neomodel import adb
 
 from knowde.integration.quiz.candidate.types import CandidateType
-from knowde.integration.quiz.distractor.distractor import fetch_distractor_ids
+from knowde.integration.quiz.distractor.distractor import (
+    fetch_distractor_ids,
+    fetch_pair2rel_distractor_ids,
+)
 from knowde.integration.quiz.domain.domain import (
     QuizSource,
     QuizType,
@@ -126,13 +129,21 @@ async def prepare_quiz_gen(  # noqa: PLR0917
     n_ds = n_option - len(correct_ids)
     if without_correct_option:
         n_ds = n_option
-    ds = await fetch_distractor_ids(
-        [target_sent_uid],
-        ct,
-        n_ds,
-        qt.has_term,
-        correct_ids,
-    )
+    if qt is QuizType.PAIR2REL:
+        ds = await fetch_pair2rel_distractor_ids(
+            target_sent_uid,
+            ct,
+            n_ds,
+            correct_ids,
+        )
+    else:
+        ds = await fetch_distractor_ids(
+            [target_sent_uid],
+            ct,
+            n_ds,
+            qt.has_term,
+            correct_ids,
+        )
     return ds, correct_ids
 
 
