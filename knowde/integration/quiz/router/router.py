@@ -3,7 +3,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Response, status
 
 from knowde.feature.entry.errors import NotOwnerError
 from knowde.feature.entry.resource.repo.owner import check_entry_owner
@@ -20,7 +20,9 @@ from knowde.integration.quiz.learning.study_plan.router import study_plan_router
 from knowde.integration.quiz.listing.repo import (
     list_answers,
     list_learning_quizzes,
+    list_quiz_by_user_ids,
 )
+from knowde.integration.quiz.management.usecase import delete_quiz
 from knowde.integration.quiz.router.params import (
     AnswerParam,
     CreateQuizParam,
@@ -61,6 +63,29 @@ async def list_quiz(
         user.uid,
         Paging(page=page, size=size),
     )
+
+
+@_r.get("/created")
+async def list_created_quizzes(
+    user: ActiveUser,
+    page: Annotated[int, Query(gt=0)] = 1,
+    size: Annotated[int, Query(gt=0)] = 100,
+) -> ReadableQuizResult:
+    """認証ユーザー自身が作成したクイズを一覧取得."""
+    return await list_quiz_by_user_ids(
+        [user.uid],
+        Paging(page=page, size=size),
+    )
+
+
+@_r.delete("/{quiz_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_quiz_api(
+    quiz_id: UUID,
+    user: ActiveUser,
+) -> Response:
+    """認証ユーザー自身が作成したQuizを削除."""
+    await delete_quiz(quiz_id, user.uid)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @_r.post("/answer/{quiz_id}")
