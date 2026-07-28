@@ -15,9 +15,19 @@ from knowde.shared.user.label import LUser
 u = async_fixture()(fx_learning)
 
 
+@pytest.mark.parametrize(
+    "strategy",
+    [
+        QuizFillStrategy.IMPORTANCE,
+        QuizFillStrategy.COVERAGE,
+    ],
+)
 @mark_async_test()
-async def test_generate_quizzes_for_importance(u: LUser):
-    """重要な未クイズ化単文から指定件数のクイズを生成."""
+async def test_generate_quizzes(
+    u: LUser,
+    strategy: QuizFillStrategy,
+):
+    """戦略に従って未クイズ化単文から指定件数のクイズを生成."""
     ns = await fetch_namespace(u.uid)
     rid = ns.resources[0].uid
     n_quiz = 2
@@ -27,7 +37,7 @@ async def test_generate_quizzes_for_importance(u: LUser):
         rid,
         u.uid,
         QuizType.TERM2SENT,
-        QuizFillStrategy.IMPORTANCE,
+        strategy,
         CandidateType.ALL,
         n_quiz=n_quiz,
         n_option=3,

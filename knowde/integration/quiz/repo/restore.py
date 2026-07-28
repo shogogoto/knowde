@@ -1,6 +1,7 @@
 """復元."""
 
 from collections.abc import Iterable
+from typing import Final
 
 import networkx as nx
 from neomodel import adb
@@ -16,6 +17,8 @@ from knowde.integration.quiz.domain.parts import (
 from knowde.shared.nxutil.db import neo4jpath2nx
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import UUIDy, to_uuid
+
+KNOWLEDGE_REL_TYPES: Final = "|".join(edge_type.name for edge_type in EdgeType)
 
 
 def nx2options(
@@ -47,8 +50,7 @@ async def restore_quiz_sources(
         WITH quiz, tgt, crct
             , [opt, crct] AS srcs
         UNWIND srcs AS src
-        OPTIONAL MATCH p = SHORTEST 1 (tgt)
-            -[:!QUIZ_OPTION&!QUIZ_TARGET]-*(src)
+        OPTIONAL MATCH p = SHORTEST 1 (tgt)-[:__KNOWLEDGE_REL_TYPES__]-*(src)
         WITH
             quiz
             , tgt.uid AS target_id
@@ -68,6 +70,7 @@ async def restore_quiz_sources(
             }
 
     """
+    q = q.replace("__KNOWLEDGE_REL_TYPES__", KNOWLEDGE_REL_TYPES)
     qids = [to_uuid(uid).hex for uid in quiz_ids]
     rows, _ = await adb.cypher_query(q, params={"quiz_ids": qids})
     flat = [row[0] for row in rows]

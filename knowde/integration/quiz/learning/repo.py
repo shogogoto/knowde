@@ -151,7 +151,7 @@ async def fetch_coverage(
     user_id: UUIDy,
     quiz_type: QuizType,
 ) -> QuizCoverage:
-    """リソース内でユーザー向けに用意されたクイズの割合を取得."""
+    """クイズ化された単文の割合."""
     eligible = "<-[:DEF]-(:Term)" if quiz_type.has_term else ""
     q = f"""
         MATCH (sent: Sentence {{resource_uid: $resource_id}})
