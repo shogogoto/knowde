@@ -42,7 +42,7 @@ async def test_expand_sentence_chain_one_hop(u: LUser):
 
     chain = await expand_sentence_chain(u.uid, target.uid)
 
-    assert [sentence.sentence_id for sentence in chain.sentences] == [
+    assert [knowde.uid for knowde in chain.sentences] == [
         to_uuid(target.uid),
     ]
     assert [quiz.quiz_id for quiz in chain.quizzes] == [own.quiz_id]
