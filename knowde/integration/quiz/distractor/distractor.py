@@ -11,7 +11,10 @@ from knowde.integration.quiz.distractor.domain import (
     rank_distinct_paths,
 )
 from knowde.integration.quiz.domain.rel import QuizRel
-from knowde.integration.quiz.errors import InsufficientOptionsError
+from knowde.integration.quiz.errors import (
+    InsufficientOptionsError,
+    SamplingError,
+)
 from knowde.integration.quiz.repo.restore import KNOWLEDGE_REL_TYPES
 from knowde.shared.nxutil.db import neo4jpath2nx
 from knowde.shared.nxutil.edge_type import EdgeType
@@ -36,12 +39,11 @@ async def fetch_distractor_ids(
         msg = "誤答肢に含まれる単文は除外する"
         raise ValueError(msg)
 
-    retval = random_sample_safe(cand_uids, n_sample=n_distractor)
-    actual = len(retval)
-    if actual != n_distractor:
-        msg = f"誤答肢が指定数{n_distractor}と一致しない: {actual}"
-        raise InsufficientOptionsError(msg)
-    return retval
+    try:
+        return random_sample_safe(cand_uids, n_sample=n_distractor)
+    except SamplingError as error:
+        msg = f"誤答肢が不足しています: 必要数={n_distractor}, 候補数={len(cand_uids)}"
+        raise InsufficientOptionsError(msg) from error
 
 
 async def _fetch_relation_paths(
