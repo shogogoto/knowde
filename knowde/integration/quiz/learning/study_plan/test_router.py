@@ -4,7 +4,7 @@ from httpx import AsyncClient
 from starlette import status
 
 from knowde.conftest import async_fixture, mark_async_test
-from knowde.integration.quiz.domain.answer import Answer
+from knowde.integration.quiz.chain.domain import QuizChain
 from knowde.integration.quiz.domain.parts import QuizType
 from knowde.integration.quiz.learning.fixture import (
     create_learning_test_resource,
@@ -126,7 +126,8 @@ async def test_study_plan_recommendation_api(ac: AsyncClient, u: LUser):
         json={"selected": quiz.correct},
         headers=headers,
     )
-    assert Answer.model_validate(response.json()).is_correct
+    chain = QuizChain.model_validate(response.json())
+    assert chain.answers[0].is_correct
 
     response = await ac.get(
         f"/quiz/learning-progress/{resource_id}",

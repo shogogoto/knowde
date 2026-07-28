@@ -7,9 +7,10 @@ from fastapi import APIRouter, Query
 
 from knowde.feature.entry.errors import NotOwnerError
 from knowde.feature.entry.resource.repo.owner import check_entry_owner
-from knowde.integration.quiz.answering.repo import create_answer
+from knowde.integration.quiz.answering.usecase import answer_quiz_as_chain
+from knowde.integration.quiz.chain.domain import QuizChain
 from knowde.integration.quiz.chain.router import quiz_chain_router
-from knowde.integration.quiz.domain.answer import Answer, Answers
+from knowde.integration.quiz.domain.answer import Answers
 from knowde.integration.quiz.domain.collections import ReadableQuizResult
 from knowde.integration.quiz.domain.domain import ReadableQuiz
 from knowde.integration.quiz.generation.repo import generate_quiz
@@ -67,12 +68,12 @@ async def answer_quiz_api(
     quiz_id: UUID,
     param: AnswerParam,
     user: ActiveUser,
-) -> Answer:
-    """クイズに回答する."""
-    return await create_answer(
+) -> QuizChain:
+    """クイズに回答し、回答結果を含むQuizChainを返す."""
+    return await answer_quiz_as_chain(
         quiz_id,
         param.selected,
-        user_uid=user.uid,
+        user_id=user.uid,
     )
 
 

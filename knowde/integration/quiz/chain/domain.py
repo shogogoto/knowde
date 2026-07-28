@@ -3,8 +3,9 @@
 from enum import StrEnum, auto
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
+from knowde.integration.quiz.domain.answer import Answer
 from knowde.integration.quiz.domain.domain import ReadableQuiz
 from knowde.integration.quiz.domain.parts import QuizType
 
@@ -47,3 +48,4 @@ class QuizChain(BaseModel, frozen=True):
     sentences: list[QuizChainSentence]
     quizzes: list[QuizChainQuiz]
     links: list[QuizChainLink]
+    answers: list[Answer] = Field(default_factory=list)
