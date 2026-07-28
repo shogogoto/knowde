@@ -22,6 +22,10 @@ from knowde.integration.quiz.listing.repo import (
     list_learning_quizzes,
     list_quiz_by_user_ids,
 )
+from knowde.integration.quiz.management.domain import QuizResourceStatus
+from knowde.integration.quiz.management.repo import (
+    list_created_quiz_resource_statuses,
+)
 from knowde.integration.quiz.management.usecase import delete_quiz
 from knowde.integration.quiz.router.params import (
     AnswerParam,
@@ -68,6 +72,7 @@ async def list_quiz(
 @_r.get("/created")
 async def list_created_quizzes(
     user: ActiveUser,
+    resource_id: UUID | None = None,
     page: Annotated[int, Query(gt=0)] = 1,
     size: Annotated[int, Query(gt=0)] = 100,
 ) -> ReadableQuizResult:
@@ -75,7 +80,16 @@ async def list_created_quizzes(
     return await list_quiz_by_user_ids(
         [user.uid],
         Paging(page=page, size=size),
+        resource_ids=[resource_id] if resource_id is not None else None,
     )
+
+
+@_r.get("/created/resources")
+async def list_created_quiz_resources(
+    user: ActiveUser,
+) -> list[QuizResourceStatus]:
+    """作成済みQuizの状況をResourceごとに取得."""
+    return await list_created_quiz_resource_statuses(user.uid)
 
 
 @_r.delete("/{quiz_id}", status_code=status.HTTP_204_NO_CONTENT)

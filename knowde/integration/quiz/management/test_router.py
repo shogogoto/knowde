@@ -42,6 +42,21 @@ async def test_list_and_delete_created_quizzes_api(ac: AsyncClient, u: LUser):
 
     assert [quiz.quiz_id for quiz in result.data.root] == [own.quiz_id]
 
+    response = await ac.get("/quiz/created/resources", headers=headers)
+    assert response.status_code == status.HTTP_200_OK
+    resource_status = response.json()[0]
+    assert resource_status["resource"]["name"] == "# title"
+    assert resource_status["total_quizzes"] == 1
+    assert resource_status["quiz_counts"] == {"term2sent": 1}
+
+    response = await ac.get(
+        "/quiz/created",
+        params={"resource_id": target.resource_uid},
+        headers=headers,
+    )
+    filtered = ReadableQuizResult.model_validate(response.json())
+    assert [quiz.quiz_id for quiz in filtered.data.root] == [own.quiz_id]
+
     response = await ac.delete(f"/quiz/{other_quiz.quiz_id}", headers=headers)
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
