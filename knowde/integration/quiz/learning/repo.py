@@ -11,7 +11,9 @@ from knowde.feature.knowde.repo.clause import OrderBy
 from knowde.feature.knowde.repo.cypher import q_stats
 from knowde.integration.quiz.domain.parts import QuizType
 from knowde.integration.quiz.learning.domain import (
+    QuizAttemptRate,
     QuizCoverage,
+    QuizPerformance,
     QuizTargetOrder,
     QuizTargetPool,
 )
@@ -113,6 +115,65 @@ async def fetch_sort_by_score(
     return list(flatten(rows))
 
 
+async def fetch_sort_by_accuracy(
+    sent_ids: Iterable[UUID],
+    user_id: UUIDy,
+    quiz_type: QuizType,
+    *,
+    limit: int | None = None,
+) -> list[UUID]:
+    """未回答、低正答率、最終回答が古い順に単文を並び替える."""
+    if limit is not None and limit < 0:
+        msg = "limitは0以上を指定してください"
+        raise ValueError(msg)
+
+    limit_clause = "" if limit is None else "LIMIT $limit"
+    q = f"""
+        UNWIND $uids AS uid
+        MATCH (sent: Sentence {{uid: uid}})
+        OPTIONAL MATCH (user: User {{uid: $user_id}})
+            -[:CREATE]->(quiz: Quiz {{
+                quiz_type: $quiz_type,
+                is_link_broken: false
+            }})-[:QUIZ_TARGET]->(sent)
+        OPTIONAL MATCH (user)-[:ANSWER]->(answer: Answer)
+            -[:ANSWER_OF]->(quiz)
+        WITH
+            sent,
+            COUNT(answer) AS attempts,
+            COUNT(
+                CASE WHEN answer.is_correct THEN answer END
+            ) AS corrects,
+            MAX(answer.created) AS last_attempted_at
+        WITH
+            sent,
+            attempts,
+            last_attempted_at,
+            CASE
+                WHEN attempts = 0 THEN NULL
+                ELSE toFloat(corrects) / attempts
+            END AS accuracy
+        WHERE attempts > 0
+        RETURN sent.uid AS sent_uid
+        ORDER BY
+            CASE WHEN attempts = 0 THEN 0 ELSE 1 END ASC,
+            accuracy ASC,
+            last_attempted_at ASC,
+            sent.uid ASC
+        {limit_clause}
+    """
+    rows, _ = await adb.cypher_query(
+        q,
+        params={
+            "uids": [to_uuid(uid).hex for uid in sent_ids],
+            "user_id": to_uuid(user_id).hex,
+            "quiz_type": quiz_type.name,
+            "limit": limit,
+        },
+    )
+    return list(flatten(rows))
+
+
 async def fetch_target_ids(  # noqa: PLR0917
     resource_id: UUIDy,
     user_id: UUIDy,
@@ -121,6 +182,7 @@ async def fetch_target_ids(  # noqa: PLR0917
     order: QuizTargetOrder,
     limit: int,
     *,
+    exclude_sent_ids: Iterable[UUIDy] | None = None,
     rng: Random | None = None,
 ) -> list[UUID]:
     """指定した母集団から順序と件数を指定してクイズ対象を取得."""
@@ -134,16 +196,68 @@ async def fetch_target_ids(  # noqa: PLR0917
         case QuizTargetPool.COVERED:
             ids = await fetch_covered_sent_ids(resource_id, user_id, quiz_type)
 
+    if exclude_sent_ids is not None:
+        excludes = {to_uuid(uid) for uid in exclude_sent_ids}
+        ids = [uid for uid in ids if to_uuid(uid) not in excludes]
+
     match order:
         case QuizTargetOrder.HIGH_SCORE:
             ids = await fetch_sort_by_score(ids, limit=limit)
         case QuizTargetOrder.LOW_SCORE:
             ids = await fetch_sort_by_score(ids, desc=False, limit=limit)
+        case QuizTargetOrder.LOW_ACCURACY:
+            ids = await fetch_sort_by_accuracy(
+                ids,
+                user_id,
+                quiz_type,
+                limit=limit,
+            )
         case QuizTargetOrder.RANDOM:
             random = rng if rng is not None else SystemRandom()
             ids = random.sample(ids, k=min(limit, len(ids)))
+        case _:
+            msg = f"{order}による並び替えは未実装です"
+            raise NotImplementedError(msg)
 
     return ids
+
+
+async def fetch_unattempted_quiz_ids(
+    resource_id: UUIDy,
+    user_id: UUIDy,
+    quiz_type: QuizType,
+    limit: int,
+) -> list[UUID]:
+    """ユーザーが一度も回答していない既存クイズを古い順に取得."""
+    if limit < 0:
+        msg = "limitは0以上を指定してください"
+        raise ValueError(msg)
+
+    q = """
+        MATCH (user: User {uid: $user_id})
+            -[:CREATE]->(quiz: Quiz {
+                quiz_type: $quiz_type,
+                is_link_broken: false
+            })-[:QUIZ_TARGET]->(
+                :Sentence {resource_uid: $resource_id}
+            )
+        WHERE NOT EXISTS {
+            MATCH (user)-[:ANSWER]->(:Answer)-[:ANSWER_OF]->(quiz)
+        }
+        RETURN quiz.uid
+        ORDER BY quiz.created ASC, quiz.uid ASC
+        LIMIT $limit
+    """
+    rows, _ = await adb.cypher_query(
+        q,
+        params={
+            "resource_id": to_uuid(resource_id).hex,
+            "user_id": to_uuid(user_id).hex,
+            "quiz_type": quiz_type.name,
+            "limit": limit,
+        },
+    )
+    return [to_uuid(row[0]) for row in rows]
 
 
 async def fetch_coverage(
@@ -180,6 +294,88 @@ async def fetch_coverage(
         quiz_type=quiz_type,
         eligible=eligible_count,
         covered=covered_count,
+    )
+
+
+async def fetch_attempt_rate(
+    resource_id: UUIDy,
+    user_id: UUIDy,
+    quiz_type: QuizType,
+) -> QuizAttemptRate:
+    """用意された有効なクイズのうち回答したクイズの割合."""
+    q = """
+        MATCH (user: User {uid: $user_id})
+            -[:CREATE]->(quiz: Quiz {
+                quiz_type: $quiz_type,
+                is_link_broken: false
+            })-[:QUIZ_TARGET]->(
+                :Sentence {resource_uid: $resource_id}
+            )
+        OPTIONAL MATCH (user)-[:ANSWER]->(answer: Answer)
+            -[:ANSWER_OF]->(quiz)
+        RETURN
+            COUNT(DISTINCT quiz) AS available,
+            COUNT(
+                DISTINCT CASE WHEN answer IS NOT NULL THEN quiz END
+            ) AS attempted
+    """
+    rows, _ = await adb.cypher_query(
+        q,
+        params={
+            "resource_id": to_uuid(resource_id).hex,
+            "user_id": to_uuid(user_id).hex,
+            "quiz_type": quiz_type.name,
+        },
+    )
+    available, attempted = rows[0]
+    return QuizAttemptRate(
+        resource_id=to_uuid(resource_id),
+        user_id=to_uuid(user_id),
+        quiz_type=quiz_type,
+        available=available,
+        attempted=attempted,
+    )
+
+
+async def fetch_performance(
+    resource_id: UUIDy,
+    user_id: UUIDy,
+    quiz_type: QuizType,
+) -> QuizPerformance:
+    """クイズへの回答数、正解数、正答率、最終回答日時を取得."""
+    q = """
+        MATCH (user: User {uid: $user_id})
+        OPTIONAL MATCH (user)-[:CREATE]->(quiz: Quiz {
+            quiz_type: $quiz_type,
+            is_link_broken: false
+        })-[:QUIZ_TARGET]->(
+            :Sentence {resource_uid: $resource_id}
+        )
+        OPTIONAL MATCH (user)-[:ANSWER]->(answer: Answer)
+            -[:ANSWER_OF]->(quiz)
+        RETURN
+            COUNT(answer) AS attempts,
+            COUNT(
+                CASE WHEN answer.is_correct THEN answer END
+            ) AS corrects,
+            MAX(answer.created) AS last_attempted_at
+    """
+    rows, _ = await adb.cypher_query(
+        q,
+        params={
+            "resource_id": to_uuid(resource_id).hex,
+            "user_id": to_uuid(user_id).hex,
+            "quiz_type": quiz_type.name,
+        },
+    )
+    attempts, corrects, last_attempted_at = rows[0]
+    return QuizPerformance(
+        resource_id=to_uuid(resource_id),
+        user_id=to_uuid(user_id),
+        quiz_type=quiz_type,
+        attempts=attempts,
+        corrects=corrects,
+        last_attempted_at=last_attempted_at,
     )
 
 
