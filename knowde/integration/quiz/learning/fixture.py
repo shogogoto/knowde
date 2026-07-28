@@ -1,5 +1,7 @@
 """テスト用データ."""
 
+from uuid import UUID
+
 from knowde.feature.entry.namespace import fetch_namespace
 from knowde.feature.entry.resource.usecase import save_text
 from knowde.integration.quiz.answering.repo import create_answer
@@ -9,7 +11,7 @@ from knowde.integration.quiz.domain.domain import QuizSource
 from knowde.integration.quiz.domain.parts import QuizType
 from knowde.integration.quiz.learning.fill.usecase import generate_quizzes
 from knowde.integration.quiz.learning.selection.domain import QuizFillStrategy
-from knowde.shared.types import UUIDy
+from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.user.label import LUser
 from knowde.shared.user.testing import aregister
 
@@ -37,6 +39,20 @@ async def learning_resource_id(user_id: UUIDy) -> UUIDy:
     """学習テスト用ユーザーが持つリソースID."""
     namespace = await fetch_namespace(user_id)
     return namespace.resources[0].uid
+
+
+async def create_learning_test_resource(user_id: UUIDy) -> UUID:
+    """複数resourceを扱う学習テスト用のresourceを作成."""
+    _, resource = await save_text(
+        user_id,
+        """
+        # second
+            X: x
+            Y: y
+            Z: z
+        """,
+    )
+    return to_uuid(resource.uid)
 
 
 async def generate_test_quizzes(

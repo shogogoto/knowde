@@ -51,6 +51,28 @@ async def list_quiz_by_user_ids(
     return await _to_result(*rows[0])
 
 
+async def list_learning_quizzes(
+    user_uid: UUIDy,
+    paging: Paging = Paging(),
+) -> ReadableQuizResult:
+    """ユーザーの学習対象クイズを新しい順に列挙."""
+    q = f"""
+        MATCH (:User {{uid: $user_uid}})-[:LEARN]->(quiz: Quiz)
+        WITH DISTINCT quiz
+        ORDER BY quiz.created DESC, quiz.uid ASC
+        WITH COLLECT(quiz.uid) AS quiz_ids
+        {paging.return_stmt("quiz_ids")}
+    """
+    rows, _ = await adb.cypher_query(
+        q,
+        params={
+            "user_uid": to_uuid(user_uid).hex,
+            **paging.params,
+        },
+    )
+    return await _to_result(*rows[0])
+
+
 async def list_quiz_by_sentence_ids(
     sent_uids: Iterable[UUIDy],
     paging: Paging = Paging(),

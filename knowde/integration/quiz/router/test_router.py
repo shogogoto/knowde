@@ -26,7 +26,6 @@ async def test_sent2term(ac: AsyncClient, u: LUser):
         quiz_type=QuizType.SENT2TERM,
         cand_type=CandidateType.NEAR,
         n_option=4,
-        user_uid=u.uid,
     )
 
     h = await aauth_header(email=u.email)

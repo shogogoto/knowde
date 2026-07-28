@@ -27,7 +27,6 @@ class CreateQuizParam(BaseModel, frozen=True):
     n_option: int = 4
     allow_multiple_anwser: bool = False
     allow_no_correct_option: bool = False
-    user_uid: str
 
 
 # create_quizの引数そのまま

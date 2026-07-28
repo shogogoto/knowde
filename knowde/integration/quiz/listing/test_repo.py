@@ -10,7 +10,11 @@ from knowde.integration.quiz.distractor.distractor import fetch_distractor_ids
 from knowde.integration.quiz.domain.parts import QuizType
 from knowde.integration.quiz.fixture import fx_u
 from knowde.integration.quiz.generation.repo import create_quiz_and_correct
+from knowde.integration.quiz.learning.assignment.repo import (
+    assign_quiz_to_learner,
+)
 from knowde.integration.quiz.listing.repo import (
+    list_learning_quizzes,
     list_quiz_by_sentence_ids,
     list_quiz_by_user_ids,
 )
@@ -58,6 +62,23 @@ async def test_list_quiz_separated(u: LUser):
     result = await list_quiz_by_user_ids([u.uid])
 
     assert [quiz.quiz_id for quiz in result.data.root] == unordered(expected_ids)
+
+
+@mark_async_test()
+async def test_list_learning_quizzes(u: LUser):
+    """CREATEに関係なくLEARNがあるクイズを取得."""
+    other = await LUser(email="quiz2@ex.com").save()
+    own_ids = await _create_quiz_set(u.uid, "ccc")
+    other_ids = await _create_quiz_set(other.uid, "ccc")
+    assigned_id = other_ids[0]
+    await assign_quiz_to_learner(assigned_id, u.uid)
+
+    result = await list_learning_quizzes(u.uid)
+
+    assert result.total == len(own_ids) + 1
+    assert [quiz.quiz_id for quiz in result.data.root] == unordered(
+        [*own_ids, assigned_id],
+    )
 
 
 @mark_async_test()
