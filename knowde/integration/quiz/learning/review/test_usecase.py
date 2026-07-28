@@ -3,23 +3,23 @@
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.integration.quiz.domain.parts import QuizType
-from knowde.integration.quiz.learning.domain import (
-    QuizTargetOrder,
-    QuizTargetPool,
-)
 from knowde.integration.quiz.learning.fixture import (
     answer_test_quiz,
     fx_learning,
     generate_test_quizzes,
     learning_resource_id,
 )
-from knowde.integration.quiz.learning.repo import (
-    fetch_target_ids,
+from knowde.integration.quiz.learning.review.repo import (
     fetch_unattempted_quiz_ids,
 )
-from knowde.integration.quiz.learning.usecase import (
+from knowde.integration.quiz.learning.review.usecase import (
     prepare_review_quizzes,
 )
+from knowde.integration.quiz.learning.selection.domain import (
+    QuizTargetOrder,
+    QuizTargetPool,
+)
+from knowde.integration.quiz.learning.selection.repo import fetch_target_ids
 from knowde.shared.user.label import LUser
 
 u = async_fixture()(fx_learning)

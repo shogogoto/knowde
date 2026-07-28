@@ -5,14 +5,17 @@ import pytest
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.entry.resource.repo.owner import check_entry_owner
 from knowde.integration.quiz.domain.parts import QuizType
-from knowde.integration.quiz.learning.domain import QuizFillStrategy
 from knowde.integration.quiz.learning.fixture import (
     answer_test_quiz,
     fx_learning,
     generate_test_quizzes,
     learning_resource_id,
 )
-from knowde.integration.quiz.learning.repo import fetch_coverage, fetch_performance
+from knowde.integration.quiz.learning.progress.repo import (
+    fetch_coverage,
+    fetch_performance,
+)
+from knowde.integration.quiz.learning.selection.domain import QuizFillStrategy
 from knowde.shared.user.label import LUser
 from knowde.shared.user.testing import aregister
 

@@ -10,7 +10,7 @@ from knowde.integration.quiz.learning.fixture import (
     generate_test_quizzes,
     learning_resource_id,
 )
-from knowde.integration.quiz.learning.usecase import (
+from knowde.integration.quiz.learning.progress.usecase import (
     fetch_learning_status,
 )
 from knowde.shared.user.label import LUser

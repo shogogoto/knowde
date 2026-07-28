@@ -10,7 +10,7 @@ from knowde.integration.quiz.learning.fixture import (
     generate_test_quizzes,
     learning_resource_id,
 )
-from knowde.integration.quiz.learning.repo import fetch_attempt_rate
+from knowde.integration.quiz.learning.progress.repo import fetch_attempt_rate
 from knowde.shared.user.label import LUser
 
 u = async_fixture()(fx_learning)

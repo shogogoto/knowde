@@ -4,14 +4,14 @@ import pytest
 
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.integration.quiz.domain.parts import QuizType
-from knowde.integration.quiz.learning.domain import QuizPerformance
 from knowde.integration.quiz.learning.fixture import (
     answer_test_quiz,
     fx_learning,
     generate_test_quizzes,
     learning_resource_id,
 )
-from knowde.integration.quiz.learning.repo import fetch_performance
+from knowde.integration.quiz.learning.progress.domain import QuizPerformance
+from knowde.integration.quiz.learning.progress.repo import fetch_performance
 from knowde.shared.user.label import LUser
 
 u = async_fixture()(fx_learning)

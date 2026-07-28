@@ -7,7 +7,7 @@ from knowde.conftest import async_fixture, mark_async_test
 from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.integration.quiz.domain.domain import QuizSource
 from knowde.integration.quiz.domain.parts import QuizType
-from knowde.integration.quiz.learning.list import list_answers
+from knowde.integration.quiz.listing.repo import list_answers
 from knowde.integration.quiz.repo.answer import create_answer
 from knowde.integration.quiz.repo.fixture import fx_u
 from knowde.shared.knowde.label import LSentence

@@ -8,7 +8,7 @@ from knowde.conftest import async_fixture, mark_async_test
 from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.integration.quiz.distractor.distractor import fetch_distractor_ids
 from knowde.integration.quiz.domain.parts import QuizType
-from knowde.integration.quiz.learning.list import (
+from knowde.integration.quiz.listing.repo import (
     list_quiz_by_sentence_ids,
     list_quiz_by_user_ids,
 )

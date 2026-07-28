@@ -6,8 +6,8 @@ from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.integration.quiz.domain.answer import Answer
 from knowde.integration.quiz.domain.domain import QuizSource
 from knowde.integration.quiz.domain.parts import QuizType
-from knowde.integration.quiz.learning.domain import QuizFillStrategy
-from knowde.integration.quiz.learning.usecase import generate_quizzes
+from knowde.integration.quiz.learning.fill.usecase import generate_quizzes
+from knowde.integration.quiz.learning.selection.domain import QuizFillStrategy
 from knowde.integration.quiz.repo.answer import create_answer
 from knowde.shared.types import UUIDy
 from knowde.shared.user.label import LUser
