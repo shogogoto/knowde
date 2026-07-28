@@ -1,6 +1,6 @@
-"""列挙系."""
+"""クイズ一覧取得のテスト."""
 
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from pytest_unordered import unordered
 
@@ -20,21 +20,28 @@ from knowde.shared.user.label import LUser
 
 u = async_fixture()(fx_u)
 
+QUIZ_TYPES = [
+    QuizType.TERM2SENT,
+    QuizType.TERM2SENT,
+    QuizType.SENT2TERM,
+]
 
-async def _create_quizzes_for_test(user_id: UUIDy, s_tgt: str) -> list[str]:
-    """テストデータ作成."""
+
+async def _create_quiz_set(user_id: UUIDy, target: str) -> list[UUID]:
+    """一覧テスト用に3件のクイズを作成."""
     qids = []
-    types = [  # テキトーないくつか
-        QuizType.TERM2SENT,
-        QuizType.TERM2SENT,
-        QuizType.SENT2TERM,
-    ]
-    sent = LSentence.nodes.first(val=s_tgt)
-    for t in types:
+    sentence = LSentence.nodes.first(val=target)
+    option_ids = await fetch_distractor_ids(
+        [sentence.uid],
+        CandidateType.NEAR,
+        3,
+        True,  # noqa: FBT003
+    )
+    for quiz_type in QUIZ_TYPES:
         qid = await create_quiz_and_correct(
-            sent.uid,
-            t,
-            await fetch_distractor_ids([sent.uid], CandidateType.NEAR, 3, True),  # noqa: FBT003
+            sentence.uid,
+            quiz_type,
+            option_ids,
             user_uid=user_id,
         )
         qids.append(qid)
@@ -43,39 +50,38 @@ async def _create_quizzes_for_test(user_id: UUIDy, s_tgt: str) -> list[str]:
 
 @mark_async_test()
 async def test_list_quiz_separated(u: LUser):
-    """他のuserのクイズは取得されない."""
-    u2 = await LUser(email="quiz2@ex.com").save()
-    qids = await _create_quizzes_for_test(u.uid, "ccc")
-    _ = await _create_quizzes_for_test(u2.uid, "ccc")
-    qs = await list_quiz_by_user_ids([u.uid])
-    assert [q.quiz_id for q in qs.data.root] == unordered(qids)
+    """指定していないユーザーのクイズは取得しない."""
+    other = await LUser(email="quiz2@ex.com").save()
+    expected_ids = await _create_quiz_set(u.uid, "ccc")
+    await _create_quiz_set(other.uid, "ccc")
+
+    result = await list_quiz_by_user_ids([u.uid])
+
+    assert [quiz.quiz_id for quiz in result.data.root] == unordered(expected_ids)
 
 
-# 同じ選択肢の問題ができてしまうことがあった
 @mark_async_test()
 async def test_list_quiz_by_sentence_id(u: LUser):
     """単文指定でクイズを取得."""
     sent = LSentence.nodes.first(val="ccc")
-    qids = await _create_quizzes_for_test(u.uid, "ccc")
-    _ = await _create_quizzes_for_test(u.uid, "ccc1")  # 別のクイズ
-    qs = await list_quiz_by_sentence_ids([sent.uid])
-    assert [q.quiz_id for q in qs.data.root] == unordered(qids)
+    expected_ids = await _create_quiz_set(u.uid, "ccc")
+    await _create_quiz_set(u.uid, "ccc1")
+
+    result = await list_quiz_by_sentence_ids([sent.uid])
+
+    assert [quiz.quiz_id for quiz in result.data.root] == unordered(expected_ids)
 
 
 @mark_async_test()
 async def test_list_quiz_by_sentence_id_empty(u: LUser):
     """クイズが存在しない単文を指定した場合、空のリストが返る."""
     sent = LSentence.nodes.first(val="ccc")
-    qs = await list_quiz_by_sentence_ids([sent.uid])
-    assert len(qs.data.root) == 0
+    result = await list_quiz_by_sentence_ids([sent.uid])
+    assert result.data.root == []
 
 
 @mark_async_test()
 async def test_list_quiz_unexist_sentence(u: LUser):
     """存在しない単文IDを指定した場合、空のリストが返る."""
-    qs = await list_quiz_by_sentence_ids([uuid4()])
-    assert len(qs.data.root) == 0
-
-
-# resourceを指定してのクエリ
-# 検索方式のenum指定
+    result = await list_quiz_by_sentence_ids([uuid4()])
+    assert result.data.root == []

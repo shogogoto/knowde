@@ -1,5 +1,6 @@
-"""誤答肢の生成."""
+"""クイズ生成repoのテスト."""
 
+import pytest
 from neomodel import adb
 
 from knowde.conftest import async_fixture, mark_async_test
@@ -17,100 +18,101 @@ from .create import check_duplicate_for_precreate, generate_quiz, prepare_quiz_g
 
 u = async_fixture()(fx_u)
 
+TERM_OPTION_COUNT = 5
+RELATION_OPTION_COUNT = 3
 
-# relクイズのたまにコケるのを発見しやすくするテスト
+
+async def _generate_term_quiz(
+    quiz_type: QuizType,
+    user_id: UUIDy,
+) -> QuizSource:
+    """用語を持つ単文からクイズを生成."""
+    target = LSentence.nodes.first(val="ccc")
+    return await generate_quiz(
+        quiz_type,
+        CandidateType.ALL,
+        target.uid,
+        TERM_OPTION_COUNT,
+        user_id,
+    )
+
+
+async def _generate_relation_quiz(
+    quiz_type: QuizType,
+    user_id: UUIDy,
+) -> QuizSource:
+    """対象と関係先を指定して関係クイズを生成."""
+    target = LSentence.nodes.first(val="ccc")
+    pair = LSentence.nodes.first(val="parent")
+    return await generate_quiz(
+        quiz_type,
+        CandidateType.ALL,
+        target.uid,
+        RELATION_OPTION_COUNT,
+        user_id,
+        correct_sent_uids=[pair.uid],
+    )
+
+
+@pytest.mark.parametrize(
+    "quiz_type",
+    [QuizType.REL2PAIR, QuizType.PAIR2REL],
+)
 @mark_async_test()
-async def test_prepare_quiz_gen(u: LUser):
-    """タイプごとのクイズ生成."""
+async def test_prepare_relation_quiz(quiz_type: QuizType, u: LUser):
+    """関係クイズ用の正解と誤答肢を準備する."""
+    target = LSentence.nodes.first(val="ccc")
+    pair = LSentence.nodes.first(val="parent")
 
-    async def _f(
-        qt: QuizType,
-        s_tgt: str,
-        s_pair: str,
-    ):
-        tgt = LSentence.nodes.first(val=s_tgt)
-        n_option = 3
-        pair = LSentence.nodes.first(val=s_pair)
-        _ds, _cor = await prepare_quiz_gen(
-            qt,
+    for _ in range(3):
+        distractor_ids, correct_ids = await prepare_quiz_gen(
+            quiz_type,
             CandidateType.ALL,
-            tgt.uid,
-            n_option,
+            target.uid,
+            RELATION_OPTION_COUNT,
             [pair.uid],
         )
-
-        # print(f"{sorted(ds)} {cor}")
-
-    await _f(QuizType.REL2PAIR, "ccc", "parent")
-    await _f(QuizType.PAIR2REL, "ccc", "parent")
-    await _f(QuizType.REL2PAIR, "ccc", "parent")
-    await _f(QuizType.PAIR2REL, "ccc", "parent")
-    await _f(QuizType.REL2PAIR, "ccc", "parent")
-    await _f(QuizType.PAIR2REL, "ccc", "parent")
+        assert len(distractor_ids) == RELATION_OPTION_COUNT - 1
+        assert correct_ids == [pair.uid]
+        assert pair.uid not in distractor_ids
 
 
-async def _check_with_term(
-    qt: QuizType,
-    user_id: UUIDy,
-    s_tgt: str,
-    s_corrent: str,
-    s_uncorrect: str,
-) -> QuizSource:
-    tgt = LSentence.nodes.first(val=s_tgt)
-    n_option = 5
-    src = await generate_quiz(qt, CandidateType.ALL, tgt.uid, n_option, user_id)
-    rq = src.to_readable()
-    assert len(rq.options) == n_option
-    assert rq.is_correct([src.get_id_by_sent(s_corrent)])
-    assert not rq.is_correct([src.get_id_by_sent(s_uncorrect)])
-    return src
-
-
-async def _check_gen_rel_quiz(
-    qt: QuizType,
-    user_id: UUIDy,
-    s_tgt: str,
-    s_pair: str,
-):
-    tgt = LSentence.nodes.first(val=s_tgt)
-    pair = LSentence.nodes.first(val=s_pair)
-    n_option = 3  # テストデータが少ない
-    src = await generate_quiz(
-        qt,
-        CandidateType.ALL,
-        tgt.uid,
-        n_option,
-        user_id,
-        correct_sent_uids=[pair.uid],  # ここの正解を自動で決定できるようにしたい
-    )
-    rq = src.to_readable()
-    assert len(rq.options) == n_option
-    k_cor = src.get_id_by_sent(s_pair)
-    assert rq.is_correct([k_cor])
-    incorrects = [s for s in src.readable_options() if s != k_cor]
-    for inc in incorrects:
-        assert not rq.is_correct([inc])
-
-
+@pytest.mark.parametrize(
+    "quiz_type",
+    [QuizType.TERM2SENT, QuizType.SENT2TERM],
+)
 @mark_async_test()
-async def test_gen_quiz(u: LUser):
-    """タイプごとのクイズ生成."""
-    await _check_with_term(QuizType.TERM2SENT, u.uid, "ccc", "ccc", "ccc1")
-    await _check_with_term(QuizType.SENT2TERM, u.uid, "ccc", "ccc", "ccc1")
-    await _check_gen_rel_quiz(QuizType.REL2PAIR, u.uid, "ccc", "parent")  # 偶に失敗
-    await _check_gen_rel_quiz(QuizType.PAIR2REL, u.uid, "ccc", "parent")
+async def test_generate_term_quiz(quiz_type: QuizType, u: LUser):
+    """用語系クイズの選択肢と正誤判定を生成する."""
+    source = await _generate_term_quiz(quiz_type, u.uid)
+    quiz = source.to_readable()
+
+    assert len(quiz.options) == TERM_OPTION_COUNT
+    assert quiz.is_correct([source.get_id_by_sent("ccc")])
+    assert not quiz.is_correct([source.get_id_by_sent("ccc1")])
+
+
+@pytest.mark.parametrize(
+    "quiz_type",
+    [QuizType.REL2PAIR, QuizType.PAIR2REL],
+)
+@mark_async_test()
+async def test_generate_relation_quiz(quiz_type: QuizType, u: LUser):
+    """関係系クイズの選択肢と正誤判定を生成する."""
+    source = await _generate_relation_quiz(quiz_type, u.uid)
+    quiz = source.to_readable()
+    correct_id = source.get_id_by_sent("parent")
+
+    assert len(quiz.options) == RELATION_OPTION_COUNT
+    assert quiz.is_correct([correct_id])
+    for distractor_id in set(quiz.options) - {correct_id}:
+        assert not quiz.is_correct([distractor_id])
 
 
 @mark_async_test()
 async def test_generated_quiz_has_creator_and_learner(u: LUser):
     """自分用に生成したクイズは作成者と学習者の両方に紐づく."""
-    src = await _check_with_term(
-        QuizType.TERM2SENT,
-        u.uid,
-        "ccc",
-        "ccc",
-        "ccc1",
-    )
+    source = await _generate_term_quiz(QuizType.TERM2SENT, u.uid)
     rows, _ = await adb.cypher_query(
         """
         MATCH (user: User {uid: $user_id}), (quiz: Quiz {uid: $quiz_id})
@@ -120,84 +122,70 @@ async def test_generated_quiz_has_creator_and_learner(u: LUser):
         """,
         params={
             "user_id": to_uuid(u.uid).hex,
-            "quiz_id": to_uuid(src.quiz_id).hex,
+            "quiz_id": to_uuid(source.quiz_id).hex,
         },
     )
     assert rows == [[True, True]]
 
 
-# 時々失敗する
+@pytest.mark.parametrize("quiz_type", list(QuizType))
 @mark_async_test()
-async def test_gen_quiz_no_correct_option(u: LUser):
+async def test_generate_quiz_without_correct_option(
+    quiz_type: QuizType,
+    u: LUser,
+):
     """クイズの正解の選択肢がなくて何も選ばないのが正解."""
+    target = LSentence.nodes.first(val="ccc")
+    pair = LSentence.nodes.first(val="parent")
+    source = await generate_quiz(
+        quiz_type,
+        CandidateType.ALL,
+        target.uid,
+        RELATION_OPTION_COUNT,
+        u.uid,
+        no_correct_option=True,
+        correct_sent_uids=[pair.uid] if not quiz_type.has_term else None,
+    )
+    quiz = source.to_readable()
 
-    async def _check(qt: QuizType, n_option: int):
-        tgt = LSentence.nodes.first(val="ccc")
-        pair = LSentence.nodes.first(val="parent")
-        src = await generate_quiz(
-            qt,
-            CandidateType.ALL,
-            tgt.uid,
-            n_option,
-            u.uid,
-            no_correct_option=True,
-            correct_sent_uids=[pair.uid] if not qt.has_term else None,
-        )
-        rq = src.to_readable()
-        assert len(rq.options) == n_option
-        assert rq.is_correct([])
-
-    await _check(QuizType.TERM2SENT, 3)
-    await _check(QuizType.SENT2TERM, 3)
-    await _check(QuizType.REL2PAIR, 3)
-    await _check(QuizType.PAIR2REL, 3)
+    assert len(quiz.options) == RELATION_OPTION_COUNT
+    assert quiz.is_correct([])
 
 
-# クイズ作って質問を見て答える
 @mark_async_test()
 async def test_check_duplication(u: LUser):
     """クイズ作成の重複チェック."""
-
-    async def _gen(
-        qt: QuizType,
-        user_id: UUIDy,
-        s_tgt: str,
-    ) -> QuizSource:
-        tgt = LSentence.nodes.first(val=s_tgt)
-        n_option = 5
-        return await generate_quiz(qt, CandidateType.ALL, tgt.uid, n_option, user_id)
-
-    src = await _gen(QuizType.TERM2SENT, u.uid, "ccc")
+    source = await _generate_term_quiz(QuizType.TERM2SENT, u.uid)
     assert await check_duplicate_for_precreate(
-        src.target_id,
-        src.quiz_type,
-        list(src.sources.keys()),
-        src.correct_ids,
+        source.target_id,
+        source.quiz_type,
+        list(source.sources),
+        source.correct_ids,
     )
     assert not await check_duplicate_for_precreate(
-        src.target_id,
-        QuizType.REL2PAIR,  # 一部差し替えて不一致
-        list(src.sources.keys()),
-        src.correct_ids,
+        source.target_id,
+        QuizType.REL2PAIR,
+        list(source.sources),
+        source.correct_ids,
     )
 
 
 @mark_async_test()
 async def test_answer(u: LUser):
-    """回答してリストや正答率を返す."""
-    src = await _check_with_term(QuizType.TERM2SENT, u.uid, "ccc", "ccc", "ccc1")
-    rq = src.to_readable()
+    """正解と不正解を保存して回答一覧を返す."""
+    source = await _generate_term_quiz(QuizType.TERM2SENT, u.uid)
+    quiz = source.to_readable()
 
-    async def _check_answer_count(n: int):
-        anss = await list_answers([rq.quiz_id], user_uid=u.uid)
-        assert len(anss.root) == n
+    assert len((await list_answers([quiz.quiz_id], user_uid=u.uid)).root) == 0
 
-    await _check_answer_count(0)
-    ans1 = await create_answer(rq.quiz_id, rq.correct, u.uid)
-    assert ans1.is_correct
-    await _check_answer_count(1)
-
+    correct = await create_answer(quiz.quiz_id, quiz.correct, u.uid)
     incorrect = LSentence.nodes.first(val="todetail")
-    ans2 = await create_answer(rq.quiz_id, [incorrect.uid], u.uid)
-    assert not ans2.is_correct
-    await _check_answer_count(2)
+    wrong = await create_answer(quiz.quiz_id, [incorrect.uid], u.uid)
+    answers = await list_answers([quiz.quiz_id], user_uid=u.uid)
+
+    assert correct.is_correct
+    assert not wrong.is_correct
+    assert {answer.answer_uid for answer in answers.root} == {
+        correct.answer_uid,
+        wrong.answer_uid,
+    }
