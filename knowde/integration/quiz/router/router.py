@@ -8,6 +8,7 @@ from fastapi import APIRouter, Query
 from knowde.feature.entry.errors import NotOwnerError
 from knowde.feature.entry.resource.repo.owner import check_entry_owner
 from knowde.integration.quiz.answering.repo import create_answer
+from knowde.integration.quiz.chain.router import quiz_chain_router
 from knowde.integration.quiz.domain.answer import Answer, Answers
 from knowde.integration.quiz.domain.collections import ReadableQuizResult
 from knowde.integration.quiz.domain.domain import ReadableQuiz
@@ -97,6 +98,7 @@ async def get_learning_progress_api(
 
 
 _r.include_router(study_plan_router())
+_r.include_router(quiz_chain_router())
 
 
 def quiz_router() -> APIRouter:  # noqa: D103
