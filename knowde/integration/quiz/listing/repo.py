@@ -1,4 +1,4 @@
-"""クイズ関連.
+"""クイズと回答の一覧取得repo.
 
 時系列順
 回答が多い順
@@ -11,8 +11,8 @@ from neomodel import adb
 
 from knowde.integration.quiz.domain.answer import Answer, Answers
 from knowde.integration.quiz.domain.collections import (
-    ReadableQuizCollection,
     ReadableQuizResult,
+    ReadableQuizzes,
 )
 from knowde.integration.quiz.repo.restore import restore_quiz_sources
 from knowde.shared.cypher import Paging
@@ -22,7 +22,7 @@ from knowde.shared.types import UUIDy, to_uuid
 async def _to_result(total: int, ids: list[str]) -> ReadableQuizResult:
     srcs = await restore_quiz_sources(ids)
     return ReadableQuizResult(
-        data=ReadableQuizCollection(root=[src.to_readable() for src in srcs]),
+        data=ReadableQuizzes(root=[src.to_readable() for src in srcs]),
         total=total,
     )
 
@@ -51,6 +51,28 @@ async def list_quiz_by_user_ids(
     return await _to_result(*rows[0])
 
 
+async def list_learning_quizzes(
+    user_uid: UUIDy,
+    paging: Paging = Paging(),
+) -> ReadableQuizResult:
+    """ユーザーの学習対象クイズを新しい順に列挙."""
+    q = f"""
+        MATCH (:User {{uid: $user_uid}})-[:LEARN]->(quiz: Quiz)
+        WITH DISTINCT quiz
+        ORDER BY quiz.created DESC, quiz.uid ASC
+        WITH COLLECT(quiz.uid) AS quiz_ids
+        {paging.return_stmt("quiz_ids")}
+    """
+    rows, _ = await adb.cypher_query(
+        q,
+        params={
+            "user_uid": to_uuid(user_uid).hex,
+            **paging.params,
+        },
+    )
+    return await _to_result(*rows[0])
+
+
 async def list_quiz_by_sentence_ids(
     sent_uids: Iterable[UUIDy],
     paging: Paging = Paging(),
@@ -59,7 +81,7 @@ async def list_quiz_by_sentence_ids(
     q = f"""
         UNWIND $sent_uids AS sent_uid
         MATCH (s: Sentence {{uid: sent_uid}})
-        MATCH(quiz: Quiz)-[:QUIZ_TARGET]->(s)
+        MATCH (quiz: Quiz)-[:QUIZ_TARGET]->(s)
         // 新しい順
         ORDER BY quiz.created DESC
         WITH COLLECT(quiz.uid) as quiz_ids
@@ -94,13 +116,6 @@ async def list_quiz_by_optioned(
     """
     rows, _ = await adb.cypher_query(q, params={"quiz_uid": to_uuid(quiz_uids).hex})
     return await _to_result(*rows[0])
-
-
-async def list_quiz_by_selected(
-    quiz_uids: list[UUIDy],
-    paging: Paging = Paging(),
-):
-    """回答で選択された対象のクイズを列挙する."""
 
 
 # クイズの詳細で表示するくらいだと思う

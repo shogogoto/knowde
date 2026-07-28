@@ -33,6 +33,10 @@ class ReadableQuiz(BaseModel, frozen=True):
     no_correct_option: bool
 
     @property
+    def type(self) -> QuizType:  # noqa: D102
+        return QuizType.from_statemet(self.statement)
+
+    @property
     def distractors(self) -> list[str]:
         """誤答肢."""
         return [op for op in self.options if op not in self.correct]

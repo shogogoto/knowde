@@ -1,13 +1,16 @@
-"""ロジックを含まないコアなrepo."""
+"""クイズ生成repo."""
 
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from datetime import datetime
 from uuid import UUID, uuid4
 
 from neomodel import adb
 
 from knowde.integration.quiz.candidate.types import CandidateType
-from knowde.integration.quiz.distractor.distractor import fetch_distractor_ids
+from knowde.integration.quiz.distractor.distractor import (
+    fetch_distractor_ids,
+    fetch_pair2rel_distractor_ids,
+)
 from knowde.integration.quiz.domain.domain import (
     QuizSource,
     QuizType,
@@ -21,7 +24,7 @@ async def create_quiz_and_correct(  # noqa: PLR0917
     target_sent_uid: UUIDy,
     quiz_type: QuizType,
     option_uids: Sequence[UUIDy],
-    user_uid: UUIDy,  # 誰が作ったか
+    user_uid: UUIDy,  # 作成者兼、現在の学習者
     correct_uids: Sequence[UUIDy] | None = None,
     no_correct_option: bool = False,  # noqa: FBT001, FBT002
 ) -> UUID:
@@ -43,7 +46,9 @@ async def create_quiz_and_correct(  # noqa: PLR0917
         CALL (quiz) {
             OPTIONAL MATCH (u: User {uid: $user_uid})
             WITH quiz, u WHERE u IS NOT NULL
-            CREATE (u)-[:CREATE]->(quiz)
+            CREATE
+                (u)-[:CREATE]->(quiz),
+                (u)-[:LEARN]->(quiz)
         }
         WITH quiz
         UNWIND $option_uids AS ouid
@@ -70,7 +75,76 @@ async def create_quiz_and_correct(  # noqa: PLR0917
     return quiz_uid
 
 
-# allow_no_correct_option: bool = False
+async def check_duplicate_for_precreate(
+    sent_id: str,
+    qt: QuizType,
+    option_ids: Sequence[str],
+    correct_sent_uids: list[str] | None = None,
+) -> bool:
+    """同じ構成のクイズが既存か."""
+    if correct_sent_uids is None:
+        correct_sent_uids = []
+    q = """
+        MATCH (s: Sentence {uid: $sent_uid})
+        MATCH(quiz: Quiz)-[:QUIZ_TARGET]->(s)
+        RETURN quiz.uid
+    """
+    rows, _ = await adb.cypher_query(
+        q,
+        params={
+            "sent_uid": to_uuid(sent_id).hex,
+        },
+    )
+
+    def eq_uuidy(id1: UUIDy, id2: UUIDy) -> bool:
+        return to_uuid(id1) == to_uuid(id2)
+
+    def eq_uuidys(ids1: Iterable[UUIDy], ids2: Iterable[UUIDy]) -> bool:
+        return {to_uuid(id1) for id1 in ids1} == {to_uuid(id2) for id2 in ids2}
+
+    if not rows:
+        return False
+
+    srcs = await restore_quiz_sources(rows[0])
+    for s in srcs:
+        eq_t = s.quiz_type == qt
+        eq_tgt = eq_uuidy(s.target_id, sent_id)
+        eq_opt = eq_uuidys(s.sources.keys(), option_ids)
+        eq_crct = eq_uuidys(s.correct_ids, correct_sent_uids)
+        if eq_t and eq_tgt and eq_opt and eq_crct:
+            return True
+    return False
+
+
+async def prepare_quiz_gen(  # noqa: PLR0917
+    qt: QuizType,
+    ct: CandidateType,
+    target_sent_uid: UUIDy,
+    n_option: int,
+    correct_sent_uids: list[UUIDy] | None = None,
+    without_correct_option: bool = False,  # noqa: FBT001, FBT002
+) -> tuple[list[UUID], list[UUIDy]]:
+    """クイズ生成用に単文idのセットを返す."""
+    correct_ids = qt.correct_ids(target_sent_uid, correct_sent_uids)
+    n_ds = n_option - len(correct_ids)
+    if without_correct_option:
+        n_ds = n_option
+    if qt is QuizType.PAIR2REL:
+        ds = await fetch_pair2rel_distractor_ids(
+            target_sent_uid,
+            ct,
+            n_ds,
+            correct_ids,
+        )
+    else:
+        ds = await fetch_distractor_ids(
+            [target_sent_uid],
+            ct,
+            n_ds,
+            qt.has_term,
+            correct_ids,
+        )
+    return ds, correct_ids
 
 
 async def generate_quiz(  # noqa: PLR0917
@@ -83,16 +157,13 @@ async def generate_quiz(  # noqa: PLR0917
     no_correct_option: bool = False,  # noqa: FBT001, FBT002
 ) -> QuizSource:
     """高級なクイズ生成."""
-    correct_ids = qt.correct_ids(target_sent_uid, correct_sent_uids)
-    n_ds = n_option - len(correct_ids)
-    if no_correct_option:
-        n_ds = n_option
-    ds = await fetch_distractor_ids(
-        [target_sent_uid],
+    ds, correct_ids = await prepare_quiz_gen(
+        qt,
         ct,
-        n_ds,
-        qt.has_term,
-        correct_ids if no_correct_option else None,
+        target_sent_uid,
+        n_option,
+        correct_sent_uids,
+        no_correct_option,
     )
     quiz_id = await create_quiz_and_correct(
         target_sent_uid,

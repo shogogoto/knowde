@@ -14,11 +14,14 @@ ok n_cand = n_option
 ok n_cand > n_option
 """
 
+from random import Random
+
 import pytest
 
+from knowde.integration.quiz.domain.rel import QuizRel
 from knowde.integration.quiz.errors import SamplingError
 
-from .domain import random_sample_safe
+from .domain import random_sample_safe, rank_distinct_paths
 
 
 def test_sample_safe():
@@ -32,3 +35,22 @@ def test_sample_safe():
     #     head_sample_safe(cands, n_sample=100)  # 候補より選択肢多い
     # samples = head_sample_safe(cands, n_sample=4)
     # assert len(samples) == 4
+
+
+def test_rank_distinct_paths():
+    """同じ表示を除外し、正解pathに近い実在pathから並べる."""
+    correct = [QuizRel.PREMISE, QuizRel.DETAIL]
+    candidates = {
+        "same-as-correct": [QuizRel.PREMISE, QuizRel.DETAIL],
+        "same-length": [QuizRel.CONCLUSION, QuizRel.EXAMPLE],
+        "same-position": [QuizRel.PREMISE, QuizRel.EXAMPLE],
+        "duplicate-a": [QuizRel.REFER],
+        "duplicate-b": [QuizRel.REFER],
+        "far": [QuizRel.PEER, QuizRel.PEER, QuizRel.PEER, QuizRel.PEER],
+    }
+
+    ranked = rank_distinct_paths(correct, candidates, rng=Random(0))  # noqa: S311
+
+    assert ranked[:2] == ["same-position", "same-length"]
+    assert "same-as-correct" not in ranked
+    assert len({"duplicate-a", "duplicate-b"} & set(ranked)) == 1

@@ -1,12 +1,13 @@
 """domain."""
 
+from datetime import datetime
 from typing import Literal, Self
 
 from pydantic import BaseModel, Field, RootModel
 
 from knowde.feature.entry.domain import NameSpace
 from knowde.shared.user.schema import UserReadPublic
-from knowde.shared.util import Neo4jDateTime
+from knowde.shared.util import TZ, Neo4jDateTime
 
 UserSearchOrderKey = Literal[
     "username",
@@ -37,6 +38,7 @@ class UserAchievement(BaseModel, frozen=True):
             n_char=n_char,
             n_sentence=n_sentence,
             n_resource=len(ns.stats.values()),
+            created=datetime.now(tz=TZ),
         )
 
 

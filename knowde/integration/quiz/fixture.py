@@ -1,4 +1,4 @@
-"""テスト用データ."""
+"""クイズ共通のテスト用データ."""
 
 from knowde.feature.entry.resource.usecase import save_text
 from knowde.shared.user.label import LUser
