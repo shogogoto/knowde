@@ -3,14 +3,15 @@
 import pytest
 
 from knowde.conftest import async_fixture, mark_async_test
-from knowde.feature.entry.namespace import fetch_namespace
-from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.integration.quiz.domain.parts import QuizType
-from knowde.integration.quiz.learning.domain import QuizFillStrategy, QuizPerformance
-from knowde.integration.quiz.learning.fixture import fx_learning
+from knowde.integration.quiz.learning.domain import QuizPerformance
+from knowde.integration.quiz.learning.fixture import (
+    answer_test_quiz,
+    fx_learning,
+    generate_test_quizzes,
+    learning_resource_id,
+)
 from knowde.integration.quiz.learning.repo import fetch_performance
-from knowde.integration.quiz.learning.usecase import generate_quizzes
-from knowde.integration.quiz.repo.answer import create_answer
 from knowde.shared.user.label import LUser
 
 u = async_fixture()(fx_learning)
@@ -19,18 +20,8 @@ u = async_fixture()(fx_learning)
 @mark_async_test()
 async def test_fetch_performance(u: LUser):
     """全回答から回答数、正解数、正答率、最終回答日時を取得."""
-    ns = await fetch_namespace(u.uid)
-    rid = ns.resources[0].uid
-    sources = await generate_quizzes(
-        rid,
-        u.uid,
-        QuizType.TERM2SENT,
-        QuizFillStrategy.IMPORTANCE,
-        CandidateType.ALL,
-        n_quiz=1,
-        n_option=3,
-    )
-    quiz = sources[0].to_readable()
+    rid = await learning_resource_id(u.uid)
+    quiz = (await generate_test_quizzes(rid, u.uid, 1))[0]
 
     before = await fetch_performance(rid, u.uid, QuizType.TERM2SENT)
     assert before.attempts == 0
@@ -38,9 +29,9 @@ async def test_fetch_performance(u: LUser):
     assert before.accuracy == 0
     assert before.last_attempted_at is None
 
-    await create_answer(quiz.quiz_id, quiz.correct, u.uid)
-    await create_answer(quiz.quiz_id, [quiz.distractors[0]], u.uid)
-    last_answer = await create_answer(quiz.quiz_id, quiz.correct, u.uid)
+    await answer_test_quiz(quiz, u.uid, correctly=True)
+    await answer_test_quiz(quiz, u.uid, correctly=False)
+    last_answer = await answer_test_quiz(quiz, u.uid, correctly=True)
 
     expected = QuizPerformance(
         resource_id=rid,

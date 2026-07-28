@@ -13,7 +13,6 @@ import pytest
 from neomodel import adb
 
 from knowde.conftest import async_fixture, mark_async_test
-from knowde.feature.entry.namespace import fetch_namespace
 from knowde.feature.knowde.repo.detail import fetch_knowdes_with_detail
 from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.integration.quiz.domain.parts import QuizType
@@ -22,6 +21,7 @@ from knowde.integration.quiz.learning.domain import (
     QuizTargetOrder,
     QuizTargetPool,
 )
+from knowde.integration.quiz.learning.fixture import learning_resource_id
 from knowde.integration.quiz.learning.repo import (
     assign_quiz_to_learner,
     fetch_coverage,
@@ -44,8 +44,7 @@ u = async_fixture()(fx_learning)
 @mark_async_test()
 async def test_fetch_coverage(u: LUser):
     """リソース内のクイズ化済み単文の割合を取得."""
-    ns = await fetch_namespace(u.uid)
-    rid = ns.resources[0].uid
+    rid = await learning_resource_id(u.uid)
     aaa = LSentence.nodes.first(val="a")
 
     expected = QuizCoverage(
@@ -76,8 +75,7 @@ async def test_fetch_coverage(u: LUser):
 @mark_async_test()
 async def test_assign_quiz_to_learner(u: LUser):
     """他人が作ったクイズを重複なく学習対象へ追加."""
-    ns = await fetch_namespace(u.uid)
-    rid = ns.resources[0].uid
+    rid = await learning_resource_id(u.uid)
     target = LSentence.nodes.first(val="a")
     quiz = await generate_quiz(
         QuizType.TERM2SENT,
@@ -130,8 +128,7 @@ async def test_assign_quiz_to_learner(u: LUser):
 @mark_async_test()
 async def test_fetch_uncovered(u: LUser):
     """リソース内の未クイズ化単文を作成."""
-    ns = await fetch_namespace(u.uid)
-    rid = ns.resources[0].uid
+    rid = await learning_resource_id(u.uid)
     aaa = LSentence.nodes.first(val="a")
     res = await fetch_uncovered_sent_ids(rid, u.uid, QuizType.TERM2SENT)
     assert aaa.uid in res  # クイズ作る前
@@ -143,8 +140,7 @@ async def test_fetch_uncovered(u: LUser):
 @mark_async_test()
 async def test_fetch_covered(u: LUser):
     """リソース内のクイズ化単文を取得."""
-    ns = await fetch_namespace(u.uid)
-    rid = ns.resources[0].uid
+    rid = await learning_resource_id(u.uid)
     aaa = LSentence.nodes.first(val="a")
     res = await fetch_covered_sent_ids(rid, u.uid, QuizType.TERM2SENT)
     assert res == []  # クイズ作る前
@@ -156,8 +152,7 @@ async def test_fetch_covered(u: LUser):
 @mark_async_test()
 async def test_sort_by_score(u: LUser):
     """スコア順で並べる."""
-    ns = await fetch_namespace(u.uid)
-    rid = ns.resources[0].uid
+    rid = await learning_resource_id(u.uid)
     res = await fetch_uncovered_sent_ids(rid, u.uid, QuizType.REL2PAIR)
     sort = await fetch_sort_by_score(res)
     kns = await fetch_knowdes_with_detail(sort, None)
@@ -169,8 +164,7 @@ async def test_sort_by_score(u: LUser):
 @mark_async_test()
 async def test_fetch_target_ids(u: LUser):
     """poolからスコア順で指定件数の対象を取得."""
-    ns = await fetch_namespace(u.uid)
-    rid = ns.resources[0].uid
+    rid = await learning_resource_id(u.uid)
     s = LSentence.nodes.first(val="s")
 
     targets = await fetch_target_ids(
@@ -209,8 +203,7 @@ async def test_fetch_target_ids(u: LUser):
 @mark_async_test()
 async def test_fetch_random_target_ids(u: LUser):
     """poolからランダムに指定件数の対象を取得."""
-    ns = await fetch_namespace(u.uid)
-    rid = ns.resources[0].uid
+    rid = await learning_resource_id(u.uid)
     pool = await fetch_uncovered_sent_ids(rid, u.uid, QuizType.TERM2SENT)
     limit = 2
 
@@ -236,23 +229,3 @@ async def test_fetch_random_target_ids(u: LUser):
     assert len(targets) == limit
     assert set(targets) <= set(pool)
     assert targets == same_seed_targets
-
-
-async def test_suggest_quizzes():
-    """coverageとaccuracyから次に解くクイズを提案."""
-
-
-async def test_accuracy():
-    """正答率の取得.
-
-    4種類のクイズごとに計算?
-    sentence_accuracyという名前にしなかったのはそういうこと
-
-
-    resource内の全単文のaccuracyをいちいち取得するのか?
-    """
-
-
-# fill_resource_coverage()
-# fetch_resource_coverage()
-# fetch_resource_accuracy()
