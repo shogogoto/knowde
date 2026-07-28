@@ -10,6 +10,7 @@
 from random import Random
 
 import pytest
+from neomodel import adb
 
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.entry.namespace import fetch_namespace
@@ -22,6 +23,7 @@ from knowde.integration.quiz.learning.domain import (
     QuizTargetPool,
 )
 from knowde.integration.quiz.learning.repo import (
+    assign_quiz_to_learner,
     fetch_coverage,
     fetch_covered_sent_ids,
     fetch_sort_by_score,
@@ -30,6 +32,7 @@ from knowde.integration.quiz.learning.repo import (
 )
 from knowde.integration.quiz.repo.create import generate_quiz
 from knowde.shared.knowde.label import LSentence
+from knowde.shared.types import to_uuid
 from knowde.shared.user.label import LUser
 from knowde.shared.user.testing import aregister
 
@@ -68,6 +71,60 @@ async def test_fetch_coverage(u: LUser):
     coverage = await fetch_coverage(rid, u.uid, expected.quiz_type)
     assert coverage == expected
     assert coverage.ratio == pytest.approx(expected.covered / expected.eligible)
+
+
+@mark_async_test()
+async def test_assign_quiz_to_learner(u: LUser):
+    """他人が作ったクイズを重複なく学習対象へ追加."""
+    ns = await fetch_namespace(u.uid)
+    rid = ns.resources[0].uid
+    target = LSentence.nodes.first(val="a")
+    quiz = await generate_quiz(
+        QuizType.TERM2SENT,
+        CandidateType.ALL,
+        target.uid,
+        3,
+        u.uid,
+    )
+    other = await aregister(email="learner@ex.com")
+
+    creator_before = await fetch_coverage(
+        rid,
+        u.uid,
+        QuizType.TERM2SENT,
+    )
+    learner_before = await fetch_coverage(
+        rid,
+        other.uid,
+        QuizType.TERM2SENT,
+    )
+    assert creator_before.covered == 1
+    assert learner_before.covered == 0
+
+    assert await assign_quiz_to_learner(quiz.quiz_id, other.uid)
+    assert await assign_quiz_to_learner(quiz.quiz_id, other.uid)
+
+    creator_after = await fetch_coverage(rid, u.uid, QuizType.TERM2SENT)
+    learner_after = await fetch_coverage(
+        rid,
+        other.uid,
+        QuizType.TERM2SENT,
+    )
+    assert creator_after == creator_before
+    assert learner_after.covered == 1
+
+    rows, _ = await adb.cypher_query(
+        """
+        MATCH (user: User {uid: $user_id})
+            -[learn:LEARN]->(quiz: Quiz {uid: $quiz_id})
+        RETURN COUNT(learn)
+        """,
+        params={
+            "user_id": to_uuid(other.uid).hex,
+            "quiz_id": to_uuid(quiz.quiz_id).hex,
+        },
+    )
+    assert rows == [[1]]
 
 
 @mark_async_test()
