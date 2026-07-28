@@ -5,9 +5,9 @@ from collections.abc import Iterable
 from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.integration.quiz.domain.domain import QuizSource
 from knowde.integration.quiz.domain.parts import QuizType
+from knowde.integration.quiz.generation.repo import generate_quiz
 from knowde.integration.quiz.learning.selection.domain import QuizFillStrategy
 from knowde.integration.quiz.learning.selection.repo import fetch_target_ids
-from knowde.integration.quiz.repo.create import generate_quiz
 from knowde.shared.types import UUIDy
 
 

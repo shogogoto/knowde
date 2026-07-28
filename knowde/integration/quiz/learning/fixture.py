@@ -2,13 +2,13 @@
 
 from knowde.feature.entry.namespace import fetch_namespace
 from knowde.feature.entry.resource.usecase import save_text
+from knowde.integration.quiz.answering.repo import create_answer
 from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.integration.quiz.domain.answer import Answer
 from knowde.integration.quiz.domain.domain import QuizSource
 from knowde.integration.quiz.domain.parts import QuizType
 from knowde.integration.quiz.learning.fill.usecase import generate_quizzes
 from knowde.integration.quiz.learning.selection.domain import QuizFillStrategy
-from knowde.integration.quiz.repo.answer import create_answer
 from knowde.shared.types import UUIDy
 from knowde.shared.user.label import LUser
 from knowde.shared.user.testing import aregister

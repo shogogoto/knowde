@@ -6,6 +6,7 @@ from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.knowde.repo.detail import fetch_knowdes_with_detail
 from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.integration.quiz.domain.parts import QuizType
+from knowde.integration.quiz.generation.repo import generate_quiz
 from knowde.integration.quiz.learning.fixture import (
     fx_learning,
     learning_resource_id,
@@ -20,7 +21,6 @@ from knowde.integration.quiz.learning.selection.repo import (
     fetch_target_ids,
     fetch_uncovered_sent_ids,
 )
-from knowde.integration.quiz.repo.create import generate_quiz
 from knowde.shared.knowde.label import LSentence
 from knowde.shared.user.label import LUser
 

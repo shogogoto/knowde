@@ -7,7 +7,7 @@ from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.integration.quiz.domain.answer import Answer
 from knowde.integration.quiz.domain.domain import ReadableQuiz
 from knowde.integration.quiz.domain.parts import QuizType
-from knowde.integration.quiz.repo.fixture import fx_u
+from knowde.integration.quiz.fixture import fx_u
 from knowde.integration.quiz.router.params import CreateQuizParam
 from knowde.shared.knowde.label import LSentence
 from knowde.shared.types import to_uuid

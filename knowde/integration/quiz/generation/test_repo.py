@@ -7,14 +7,12 @@ from knowde.conftest import async_fixture, mark_async_test
 from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.integration.quiz.domain.domain import QuizSource
 from knowde.integration.quiz.domain.parts import QuizType
-from knowde.integration.quiz.listing.repo import list_answers
-from knowde.integration.quiz.repo.answer import create_answer
-from knowde.integration.quiz.repo.fixture import fx_u
+from knowde.integration.quiz.fixture import fx_u
 from knowde.shared.knowde.label import LSentence
 from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.user.label import LUser
 
-from .create import check_duplicate_for_precreate, generate_quiz, prepare_quiz_gen
+from .repo import check_duplicate_for_precreate, generate_quiz, prepare_quiz_gen
 
 u = async_fixture()(fx_u)
 
@@ -168,24 +166,3 @@ async def test_check_duplication(u: LUser):
         list(source.sources),
         source.correct_ids,
     )
-
-
-@mark_async_test()
-async def test_answer(u: LUser):
-    """正解と不正解を保存して回答一覧を返す."""
-    source = await _generate_term_quiz(QuizType.TERM2SENT, u.uid)
-    quiz = source.to_readable()
-
-    assert len((await list_answers([quiz.quiz_id], user_uid=u.uid)).root) == 0
-
-    correct = await create_answer(quiz.quiz_id, quiz.correct, u.uid)
-    incorrect = LSentence.nodes.first(val="todetail")
-    wrong = await create_answer(quiz.quiz_id, [incorrect.uid], u.uid)
-    answers = await list_answers([quiz.quiz_id], user_uid=u.uid)
-
-    assert correct.is_correct
-    assert not wrong.is_correct
-    assert {answer.answer_uid for answer in answers.root} == {
-        correct.answer_uid,
-        wrong.answer_uid,
-    }

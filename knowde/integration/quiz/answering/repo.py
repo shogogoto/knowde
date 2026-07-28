@@ -1,4 +1,4 @@
-"""回答repo."""
+"""クイズ回答repo."""
 
 from datetime import datetime
 from uuid import UUID, uuid4

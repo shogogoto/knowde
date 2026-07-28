@@ -1,4 +1,4 @@
-"""ロジックを含まないコアなrepo."""
+"""クイズ生成repo."""
 
 from collections.abc import Iterable, Sequence
 from datetime import datetime
