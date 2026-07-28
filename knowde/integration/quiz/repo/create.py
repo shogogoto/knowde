@@ -21,7 +21,7 @@ async def create_quiz_and_correct(  # noqa: PLR0917
     target_sent_uid: UUIDy,
     quiz_type: QuizType,
     option_uids: Sequence[UUIDy],
-    user_uid: UUIDy,  # 誰が作ったか
+    user_uid: UUIDy,  # 作成者兼、現在の学習者
     correct_uids: Sequence[UUIDy] | None = None,
     no_correct_option: bool = False,  # noqa: FBT001, FBT002
 ) -> UUID:
@@ -43,7 +43,9 @@ async def create_quiz_and_correct(  # noqa: PLR0917
         CALL (quiz) {
             OPTIONAL MATCH (u: User {uid: $user_uid})
             WITH quiz, u WHERE u IS NOT NULL
-            CREATE (u)-[:CREATE]->(quiz)
+            CREATE
+                (u)-[:CREATE]->(quiz),
+                (u)-[:LEARN]->(quiz)
         }
         WITH quiz
         UNWIND $option_uids AS ouid

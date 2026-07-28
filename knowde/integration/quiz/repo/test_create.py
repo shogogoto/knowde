@@ -1,5 +1,7 @@
 """誤答肢の生成."""
 
+from neomodel import adb
+
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.integration.quiz.domain.domain import QuizSource
@@ -8,7 +10,7 @@ from knowde.integration.quiz.learning.list import list_answers
 from knowde.integration.quiz.repo.answer import create_answer
 from knowde.integration.quiz.repo.fixture import fx_u
 from knowde.shared.knowde.label import LSentence
-from knowde.shared.types import UUIDy
+from knowde.shared.types import UUIDy, to_uuid
 from knowde.shared.user.label import LUser
 
 from .create import check_duplicate_for_precreate, generate_quiz, prepare_quiz_gen
@@ -97,6 +99,31 @@ async def test_gen_quiz(u: LUser):
     await _check_with_term(QuizType.SENT2TERM, u.uid, "ccc", "ccc", "ccc1")
     await _check_gen_rel_quiz(QuizType.REL2PAIR, u.uid, "ccc", "parent")  # 偶に失敗
     await _check_gen_rel_quiz(QuizType.PAIR2REL, u.uid, "ccc", "parent")
+
+
+@mark_async_test()
+async def test_generated_quiz_has_creator_and_learner(u: LUser):
+    """自分用に生成したクイズは作成者と学習者の両方に紐づく."""
+    src = await _check_with_term(
+        QuizType.TERM2SENT,
+        u.uid,
+        "ccc",
+        "ccc",
+        "ccc1",
+    )
+    rows, _ = await adb.cypher_query(
+        """
+        MATCH (user: User {uid: $user_id}), (quiz: Quiz {uid: $quiz_id})
+        RETURN
+            EXISTS { (user)-[:CREATE]->(quiz) },
+            EXISTS { (user)-[:LEARN]->(quiz) }
+        """,
+        params={
+            "user_id": to_uuid(u.uid).hex,
+            "quiz_id": to_uuid(src.quiz_id).hex,
+        },
+    )
+    assert rows == [[True, True]]
 
 
 # 時々失敗する

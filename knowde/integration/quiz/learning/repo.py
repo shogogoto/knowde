@@ -35,7 +35,7 @@ async def _fetch_coverage_sent_ids(
             {eligible}
         WHERE {not_}EXISTS {{
             MATCH (user: User {{uid: $user_id}})
-                -[:CREATE]->(quiz: Quiz {{
+                -[:LEARN]->(quiz: Quiz {{
                     quiz_type: $quiz_type,
                     is_link_broken: false
                 }})-[:QUIZ_TARGET]->(sent)
@@ -132,7 +132,7 @@ async def fetch_sort_by_accuracy(
         UNWIND $uids AS uid
         MATCH (sent: Sentence {{uid: uid}})
         OPTIONAL MATCH (user: User {{uid: $user_id}})
-            -[:CREATE]->(quiz: Quiz {{
+            -[:LEARN]->(quiz: Quiz {{
                 quiz_type: $quiz_type,
                 is_link_broken: false
             }})-[:QUIZ_TARGET]->(sent)
@@ -235,7 +235,7 @@ async def fetch_unattempted_quiz_ids(
 
     q = """
         MATCH (user: User {uid: $user_id})
-            -[:CREATE]->(quiz: Quiz {
+            -[:LEARN]->(quiz: Quiz {
                 quiz_type: $quiz_type,
                 is_link_broken: false
             })-[:QUIZ_TARGET]->(
@@ -271,7 +271,7 @@ async def fetch_coverage(
         MATCH (sent: Sentence {{resource_uid: $resource_id}})
             {eligible}
         OPTIONAL MATCH (user: User {{uid: $user_id}})
-            -[:CREATE]->(quiz: Quiz {{
+            -[:LEARN]->(quiz: Quiz {{
                 quiz_type: $quiz_type,
                 is_link_broken: false
             }})-[:QUIZ_TARGET]->(sent)
@@ -305,7 +305,7 @@ async def fetch_attempt_rate(
     """用意された有効なクイズのうち回答したクイズの割合."""
     q = """
         MATCH (user: User {uid: $user_id})
-            -[:CREATE]->(quiz: Quiz {
+            -[:LEARN]->(quiz: Quiz {
                 quiz_type: $quiz_type,
                 is_link_broken: false
             })-[:QUIZ_TARGET]->(
@@ -345,7 +345,7 @@ async def fetch_performance(
     """クイズへの回答数、正解数、正答率、最終回答日時を取得."""
     q = """
         MATCH (user: User {uid: $user_id})
-        OPTIONAL MATCH (user)-[:CREATE]->(quiz: Quiz {
+        OPTIONAL MATCH (user)-[:LEARN]->(quiz: Quiz {
             quiz_type: $quiz_type,
             is_link_broken: false
         })-[:QUIZ_TARGET]->(
