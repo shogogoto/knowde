@@ -52,12 +52,13 @@ async def prepare_review_quizzes_with_reason(  # noqa: PLR0917
         limit=n_quiz,
     )
     existing = await restore_quiz_sources(unattempted_ids)
+    prepared_existing = [
+        PreparedReviewQuiz(quiz=quiz, kind=ReviewQuizKind.UNATTEMPTED)
+        for quiz in existing
+    ]
     n_missing = n_quiz - len(existing)
-    if n_missing == 0:
-        return [
-            PreparedReviewQuiz(quiz=quiz, kind=ReviewQuizKind.UNATTEMPTED)
-            for quiz in existing
-        ]
+    if n_missing == 0 or not quiz_type.has_term:
+        return prepared_existing
 
     generated = await generate_quizzes(
         resource_id,
@@ -70,10 +71,7 @@ async def prepare_review_quizzes_with_reason(  # noqa: PLR0917
         exclude_target_ids=[quiz.target_id for quiz in existing],
     )
     return [
-        *[
-            PreparedReviewQuiz(quiz=quiz, kind=ReviewQuizKind.UNATTEMPTED)
-            for quiz in existing
-        ],
+        *prepared_existing,
         *[
             PreparedReviewQuiz(quiz=quiz, kind=ReviewQuizKind.LOW_ACCURACY)
             for quiz in generated

@@ -49,17 +49,18 @@ async def _prepare_resource_quizzes(  # noqa: PLR0917
         n_quiz=n_quiz,
         n_option=n_option,
     )
+    prepared_reviews = [
+        (
+            item.quiz,
+            QuizRecommendationReason.UNATTEMPTED
+            if item.kind is ReviewQuizKind.UNATTEMPTED
+            else QuizRecommendationReason.LOW_ACCURACY,
+        )
+        for item in reviews
+    ]
     n_missing = n_quiz - len(reviews)
-    if n_missing == 0:
-        return [
-            (
-                item.quiz,
-                QuizRecommendationReason.UNATTEMPTED
-                if item.kind is ReviewQuizKind.UNATTEMPTED
-                else QuizRecommendationReason.LOW_ACCURACY,
-            )
-            for item in reviews
-        ]
+    if n_missing == 0 or not quiz_type.has_term:
+        return prepared_reviews
 
     new_quizzes = await generate_quizzes(
         resource_id,
@@ -72,15 +73,7 @@ async def _prepare_resource_quizzes(  # noqa: PLR0917
         exclude_target_ids=[item.quiz.target_id for item in reviews],
     )
     return [
-        *[
-            (
-                item.quiz,
-                QuizRecommendationReason.UNATTEMPTED
-                if item.kind is ReviewQuizKind.UNATTEMPTED
-                else QuizRecommendationReason.LOW_ACCURACY,
-            )
-            for item in reviews
-        ],
+        *prepared_reviews,
         *[(quiz, QuizRecommendationReason.COVERAGE) for quiz in new_quizzes],
     ]
 

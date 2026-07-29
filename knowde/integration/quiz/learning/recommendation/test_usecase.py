@@ -81,3 +81,20 @@ async def test_recommend_existing_unattempted_quiz_first(u: LUser):
 
     assert recommendations[0].quiz.quiz_id == existing.quiz_id
     assert recommendations[0].reason is QuizRecommendationReason.UNATTEMPTED
+
+
+@mark_async_test()
+async def test_relation_quiz_without_existing_quiz_is_skipped(u: LUser):
+    """自動生成未対応の関係QuizTypeはStudyPlan全体を失敗させない."""
+    resource_id = await learning_resource_id(u.uid)
+
+    recommendations = await recommend_quizzes(
+        [resource_id],
+        u.uid,
+        QuizType.REL2PAIR,
+        CandidateType.ALL,
+        n_quiz=1,
+        n_option=3,
+    )
+
+    assert recommendations == []
