@@ -23,5 +23,9 @@ class QuizDuplicateError(DomainError):
     """同一クイズ重複エラー."""
 
 
+class QuizRestoreError(DomainError):
+    """保存済みクイズを回答可能な形へ復元できない."""
+
+
 class AnswerFailedError(DomainError):
     """回答失敗(到達しないはずのコード)."""

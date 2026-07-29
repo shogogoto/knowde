@@ -14,6 +14,7 @@ from knowde.integration.quiz.domain.parts import (
     QuizRel,
     QuizType,
 )
+from knowde.integration.quiz.errors import QuizRestoreError
 from knowde.shared.nxutil.db import neo4jpath2nx
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import UUIDy, to_uuid
@@ -26,15 +27,23 @@ def nx2options(
     target_id: str,
     g: nx.DiGraph,
     uid2kn: dict[str, Knowde],
+    quiz_type: QuizType,
 ) -> dict[str, QuizOption]:
     """nxをoptionsに変換."""
-    return {
-        uid: QuizOption(
+    options = {}
+    for uid in uids:
+        try:
+            rels = QuizRel.of(*EdgeType.path2edgetypes(g, target_id, uid))
+        except (nx.NetworkXNoPath, nx.NodeNotFound) as error:
+            if not quiz_type.has_term:
+                msg = f"{quiz_type}の知識pathが見つかりません: {target_id} -> {uid}"
+                raise QuizRestoreError(msg) from error
+            rels = None
+        options[uid] = QuizOption(
             val=uid2kn[uid].sentence_or_def,
-            rels=QuizRel.of(*EdgeType.path2edgetypes(g, target_id, uid)),
+            rels=rels,
         )
-        for uid in uids
-    }
+    return options
 
 
 async def restore_quiz_sources(
@@ -88,21 +97,24 @@ async def restore_quiz_sources_with_knowdes(
         (to_uuid(uid).hex for uid in extra_uids),
     )
     kns = await fetch_knowdes_with_detail(all_uids)
-    sources = [
-        QuizSource(
-            quiz_id=r["quiz_id"],
-            quiz_type=QuizType[r["quiz_type"]],
-            target_id=r["target_id"],
-            correct_ids=r["correct_ids"],
-            sources=nx2options(
-                r["source_ids"],
-                r["target_id"],
-                neo4jpath2nx(r["paths"]),
-                kns,
+    sources = []
+    for r in flat:
+        quiz_type = QuizType[r["quiz_type"]]
+        sources.append(
+            QuizSource(
+                quiz_id=r["quiz_id"],
+                quiz_type=quiz_type,
+                target_id=r["target_id"],
+                correct_ids=r["correct_ids"],
+                sources=nx2options(
+                    r["source_ids"],
+                    r["target_id"],
+                    neo4jpath2nx(r["paths"]),
+                    kns,
+                    quiz_type,
+                ),
+                created=r["created"],
+                no_correct_option=r["quiz"].get("no_correct_option"),
             ),
-            created=r["created"],
-            no_correct_option=r["quiz"].get("no_correct_option"),
         )
-        for r in flat
-    ]
     return sources, kns
