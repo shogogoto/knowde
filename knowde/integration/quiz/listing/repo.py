@@ -6,6 +6,7 @@
 """
 
 from collections.abc import Iterable
+from datetime import datetime
 
 from neomodel import adb
 
@@ -13,6 +14,11 @@ from knowde.integration.quiz.domain.answer import Answer, Answers
 from knowde.integration.quiz.domain.collections import (
     ReadableQuizResult,
     ReadableQuizzes,
+)
+from knowde.integration.quiz.domain.parts import QuizType
+from knowde.integration.quiz.management.domain import (
+    ManagedQuiz,
+    ManagedQuizResult,
 )
 from knowde.integration.quiz.repo.restore import restore_quiz_sources
 from knowde.shared.cypher import Paging
@@ -65,6 +71,94 @@ async def list_quiz_by_user_ids(
         },
     )
     return await _to_result(*rows[0])
+
+
+async def search_created_quizzes(
+    user_id: UUIDy,
+    paging: Paging = Paging(),
+    *,
+    resource_id: UUIDy | None = None,
+    sentence_id: UUIDy | None = None,
+    quiz_types: Iterable[QuizType] | None = None,
+    answered: bool | None = None,
+    created_from: datetime | None = None,
+    created_to: datetime | None = None,
+    min_accuracy: float | None = None,
+    max_accuracy: float | None = None,
+) -> ManagedQuizResult:
+    """作成Quizを回答状況・作成日時・正答率で検索."""
+    q = f"""
+        MATCH (:User {{uid: $user_id}})-[:CREATE]->(quiz: Quiz)
+        MATCH (quiz)-[:QUIZ_TARGET]->(target: Sentence)
+        WHERE ($resource_id IS NULL OR target.resource_uid = $resource_id)
+          AND ($sentence_id IS NULL OR target.uid = $sentence_id)
+          AND ($quiz_types IS NULL OR quiz.quiz_type IN $quiz_types)
+          AND ($created_from IS NULL OR quiz.created >= datetime($created_from))
+          AND ($created_to IS NULL OR quiz.created <= datetime($created_to))
+        OPTIONAL MATCH (:User {{uid: $user_id}})-[:ANSWER]->(answer: Answer)
+            -[:ANSWER_OF]->(quiz)
+        WITH
+            quiz,
+            COUNT(answer) AS attempts,
+            COUNT(CASE WHEN answer.is_correct THEN 1 END) AS corrects,
+            MAX(answer.created) AS last_attempted_at
+        WITH
+            quiz,
+            attempts,
+            corrects,
+            last_attempted_at,
+            CASE
+                WHEN attempts = 0 THEN NULL
+                ELSE toFloat(corrects) / attempts
+            END AS accuracy
+        WHERE ($answered IS NULL OR (attempts > 0) = $answered)
+          AND ($min_accuracy IS NULL OR accuracy >= $min_accuracy)
+          AND ($max_accuracy IS NULL OR accuracy <= $max_accuracy)
+        ORDER BY quiz.created DESC, quiz.uid ASC
+        WITH COLLECT({{
+            quiz_id: quiz.uid,
+            attempts: attempts,
+            corrects: corrects,
+            accuracy: accuracy,
+            last_attempted_at: last_attempted_at
+        }}) AS records
+        {paging.return_stmt("records")}
+    """
+    rows, _ = await adb.cypher_query(
+        q,
+        params={
+            "user_id": to_uuid(user_id).hex,
+            "resource_id": to_uuid(resource_id).hex if resource_id else None,
+            "sentence_id": to_uuid(sentence_id).hex if sentence_id else None,
+            "quiz_types": (
+                [quiz_type.name for quiz_type in quiz_types]
+                if quiz_types is not None
+                else None
+            ),
+            "answered": answered,
+            "created_from": created_from.isoformat() if created_from else None,
+            "created_to": created_to.isoformat() if created_to else None,
+            "min_accuracy": min_accuracy,
+            "max_accuracy": max_accuracy,
+            **paging.params,
+        },
+    )
+    total, records = rows[0]
+    sources = await restore_quiz_sources([record["quiz_id"] for record in records])
+    source_by_id = {source.quiz_id.hex: source for source in sources}
+    return ManagedQuizResult(
+        total=total,
+        data=[
+            ManagedQuiz(
+                quiz=source_by_id[record["quiz_id"]].to_readable(),
+                attempts=record["attempts"],
+                corrects=record["corrects"],
+                accuracy=record["accuracy"],
+                last_attempted_at=record["last_attempted_at"],
+            )
+            for record in records
+        ],
+    )
 
 
 async def list_learning_quizzes(

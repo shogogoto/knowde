@@ -33,7 +33,7 @@ async def test_recommend_quizzes_for_study_plan(u: LUser):
         StudyPlanDraft(
             name="毎日の学習",
             resource_ids=[first, second],
-            quiz_type=QuizType.TERM2SENT,
+            quiz_types=[QuizType.TERM2SENT, QuizType.SENT2TERM],
             n_quiz=3,
             n_option=3,
         ),
@@ -46,10 +46,14 @@ async def test_recommend_quizzes_for_study_plan(u: LUser):
 
     assert [item.resource_id for item in recommendations] == [
         first,
-        second,
         first,
+        second,
     ]
     assert len({item.quiz.quiz_id for item in recommendations}) == plan.n_quiz
+    assert {item.quiz.quiz_type for item in recommendations} == {
+        QuizType.TERM2SENT,
+        QuizType.SENT2TERM,
+    }
 
     other = await aregister(email="study-plan-reader@ex.com")
     with pytest.raises(StudyPlanNotFoundError):

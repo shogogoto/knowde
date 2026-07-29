@@ -100,11 +100,22 @@ async def recommend_quizzes_for_study_plan(
     """保存されたStudyPlanの設定でクイズを推薦."""
     plan = await get_study_plan(plan_id, user_id)
 
-    return await recommend_quizzes(
-        plan.resource_ids,
-        user_id,
-        plan.quiz_type,
-        CandidateType.ALL,
-        plan.n_quiz,
-        plan.n_option,
-    )
+    quotient, remainder = divmod(plan.n_quiz, len(plan.quiz_types))
+    pools = []
+    for index, quiz_type in enumerate(plan.quiz_types):
+        count = quotient + (index < remainder)
+        pools.append(
+            await recommend_quizzes(
+                plan.resource_ids,
+                user_id,
+                quiz_type,
+                CandidateType.ALL,
+                count,
+                plan.n_option,
+            ),
+        )
+
+    longest = max((len(pool) for pool in pools), default=0)
+    return [
+        pool[index] for index in range(longest) for pool in pools if index < len(pool)
+    ]

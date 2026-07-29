@@ -1,5 +1,6 @@
 """quiz router."""
 
+from datetime import datetime
 from typing import Annotated
 from uuid import UUID
 
@@ -13,6 +14,7 @@ from knowde.integration.quiz.chain.router import quiz_chain_router
 from knowde.integration.quiz.domain.answer import Answers
 from knowde.integration.quiz.domain.collections import ReadableQuizResult
 from knowde.integration.quiz.domain.domain import ReadableQuiz
+from knowde.integration.quiz.domain.parts import QuizType
 from knowde.integration.quiz.generation.repo import generate_quiz
 from knowde.integration.quiz.learning.progress.domain import ResourceLearningStatus
 from knowde.integration.quiz.learning.progress.usecase import fetch_learning_status
@@ -21,8 +23,10 @@ from knowde.integration.quiz.listing.repo import (
     list_answers,
     list_learning_quizzes,
     list_quiz_by_user_ids,
+    search_created_quizzes,
 )
 from knowde.integration.quiz.management.domain import (
+    ManagedQuizResult,
     QuizResourceStatus,
     SentenceQuizStatus,
 )
@@ -97,6 +101,36 @@ async def list_created_quiz_resources(
 ) -> list[QuizResourceStatus]:
     """作成済みQuizの状況をResourceごとに取得."""
     return await list_created_quiz_resource_statuses(user.uid)
+
+
+@_r.get("/created/search")
+async def search_created_quizzes_api(
+    user: ActiveUser,
+    *,
+    quiz_types: Annotated[list[QuizType] | None, Query()] = None,
+    answered: bool | None = None,
+    created_from: datetime | None = None,
+    created_to: datetime | None = None,
+    min_accuracy: Annotated[float | None, Query(ge=0, le=1)] = None,
+    max_accuracy: Annotated[float | None, Query(ge=0, le=1)] = None,
+    resource_id: UUID | None = None,
+    sentence_id: UUID | None = None,
+    page: Annotated[int, Query(gt=0)] = 1,
+    size: Annotated[int, Query(gt=0)] = 100,
+) -> ManagedQuizResult:
+    """作成Quizを形式・回答状態・日時・正答率で検索."""
+    return await search_created_quizzes(
+        user.uid,
+        Paging(page=page, size=size),
+        resource_id=resource_id,
+        sentence_id=sentence_id,
+        quiz_types=quiz_types,
+        answered=answered,
+        created_from=created_from,
+        created_to=created_to,
+        min_accuracy=min_accuracy,
+        max_accuracy=max_accuracy,
+    )
 
 
 @_r.get("/created/resources/{resource_id}/sentences")
