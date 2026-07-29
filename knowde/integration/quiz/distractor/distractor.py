@@ -22,6 +22,7 @@ from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import UUIDy, to_uuid
 
 MAX_RELATION_PATH_CANDIDATES = 50
+MAX_RELATION_PATH_DEPTH = 3
 
 
 # correct == target の場合
@@ -59,9 +60,11 @@ async def _fetch_relation_paths(
         UNWIND $candidate_ids AS candidate_id
         MATCH (candidate: Sentence {uid: candidate_id})
         MATCH path = SHORTEST 1
-            (target)-[:__KNOWLEDGE_REL_TYPES__]-*(candidate)
+            (target)-[:__KNOWLEDGE_REL_TYPES__]-{1, __MAX_PATH_DEPTH__}(candidate)
         RETURN candidate.uid, path
-    """.replace("__KNOWLEDGE_REL_TYPES__", KNOWLEDGE_REL_TYPES)
+    """
+    query = query.replace("__KNOWLEDGE_REL_TYPES__", KNOWLEDGE_REL_TYPES)
+    query = query.replace("__MAX_PATH_DEPTH__", str(MAX_RELATION_PATH_DEPTH))
     rows, _ = await adb.cypher_query(
         query,
         params={
