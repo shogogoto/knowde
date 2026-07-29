@@ -1,5 +1,6 @@
 """quiz router test."""
 
+from fastapi import status
 from httpx import AsyncClient
 
 from knowde.conftest import async_fixture, mark_async_test
@@ -57,3 +58,37 @@ async def test_sent2term(ac: AsyncClient, u: LUser):
     ans = chain.answers[0]
     assert not ans.is_correct
     assert ans.who == to_uuid(u.uid)
+
+
+@mark_async_test()
+async def test_create_rel2pair(ac: AsyncClient, u: LUser):
+    """対象単文と関係先を指定してREL2PAIRを作成する."""
+    target = LSentence.nodes.first(val="ccc")
+    pair = LSentence.nodes.first(val="parent")
+    param = CreateQuizParam(
+        target_sent_uid=target.uid,
+        correct_sent_uids=[pair.uid],
+        quiz_type=QuizType.REL2PAIR,
+        cand_type=CandidateType.ALL,
+        n_option=3,
+    )
+
+    response = await ac.post(
+        "/quiz",
+        json=param.model_dump(),
+        headers=await aauth_header(email=u.email),
+    )
+
+    quiz = ReadableQuiz.model_validate(response.json())
+    assert len(quiz.options) == param.n_option
+    assert len(quiz.correct) == 1
+    assert quiz.options[quiz.correct[0]] == "parent"
+
+    invalid = param.model_dump()
+    invalid["correct_sent_uids"] = []
+    response = await ac.post(
+        "/quiz",
+        json=invalid,
+        headers=await aauth_header(email=u.email),
+    )
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY

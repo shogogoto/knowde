@@ -1,6 +1,8 @@
 """quiz router param."""
 
-from pydantic import BaseModel
+from typing import Self
+
+from pydantic import BaseModel, Field, model_validator
 
 from knowde.integration.quiz.candidate.types import CandidateType
 from knowde.integration.quiz.domain.parts import QuizType
@@ -25,8 +27,17 @@ class CreateQuizParam(BaseModel, frozen=True):
     quiz_type: QuizType
     cand_type: CandidateType
     n_option: int = 4
+    correct_sent_uids: list[str] = Field(default_factory=list)
     allow_multiple_anwser: bool = False
     allow_no_correct_option: bool = False
+
+    @model_validator(mode="after")
+    def relation_quiz_requires_correct_sentences(self) -> Self:
+        """関係クイズには正解となる関係先が必要."""
+        if not self.quiz_type.has_term and not self.correct_sent_uids:
+            msg = "関係クイズには正解となる関係先の単文を指定してください"
+            raise ValueError(msg)
+        return self
 
 
 # create_quizの引数そのまま

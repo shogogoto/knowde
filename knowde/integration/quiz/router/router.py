@@ -56,6 +56,7 @@ async def create_quiz_api(
         param.target_sent_uid,
         param.n_option,
         user_id=user.uid,
+        correct_sent_uids=param.correct_sent_uids,
     )
     return src.to_readable()
 
