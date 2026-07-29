@@ -2,7 +2,13 @@
 
 from knowde.shared.nxutil.edge_type import EdgeType
 
-from .rel import QuizRel, edgetype2rel
+from .rel import QUIZ_REL_EDGE_TYPES, QuizRel, edgetype2rel
+
+
+def test_quiz_rel_edge_types():
+    """クイズとして表示できる関係だけをpath探索に使う."""
+    assert EdgeType.TO in QUIZ_REL_EDGE_TYPES
+    assert EdgeType.BY not in QUIZ_REL_EDGE_TYPES
 
 
 def test_to_detail_rel():

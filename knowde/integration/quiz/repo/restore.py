@@ -14,12 +14,15 @@ from knowde.integration.quiz.domain.parts import (
     QuizRel,
     QuizType,
 )
+from knowde.integration.quiz.domain.rel import QUIZ_REL_EDGE_TYPES
 from knowde.integration.quiz.errors import QuizRestoreError
 from knowde.shared.nxutil.db import neo4jpath2nx
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import UUIDy, to_uuid
 
-KNOWLEDGE_REL_TYPES: Final = "|".join(edge_type.name for edge_type in EdgeType)
+KNOWLEDGE_REL_TYPES: Final = "|".join(
+    edge_type.name for edge_type in QUIZ_REL_EDGE_TYPES
+)
 
 
 def nx2options(

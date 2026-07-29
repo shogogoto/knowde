@@ -4,9 +4,17 @@ from collections.abc import Sequence
 from enum import StrEnum
 from functools import cache
 from itertools import islice
-from typing import Any, Self
+from typing import Any, Final, Self
 
 from knowde.shared.nxutil.edge_type import EdgeType
+
+QUIZ_REL_EDGE_TYPES: Final = (
+    EdgeType.SIBLING,
+    EdgeType.BELOW,
+    EdgeType.RESOLVED,
+    EdgeType.TO,
+    EdgeType.EXAMPLE,
+)
 
 
 class QuizRel(StrEnum):
