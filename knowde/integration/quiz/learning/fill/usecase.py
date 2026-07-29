@@ -32,7 +32,8 @@ async def generate_quizzes(  # noqa: PLR0917
             resource_id,
             user_id,
             quiz_type,
-            limit=max(n_quiz * 20, n_quiz),
+            # 生成不能な関係を延々と試すと推薦API全体が遅くなる。
+            limit=max(n_quiz * 3, n_quiz),
             exclude_sent_ids=exclude_target_ids,
         )
         quizzes = []

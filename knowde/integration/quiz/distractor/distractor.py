@@ -21,6 +21,8 @@ from knowde.shared.nxutil.db import neo4jpath2nx
 from knowde.shared.nxutil.edge_type import EdgeType
 from knowde.shared.types import UUIDy, to_uuid
 
+MAX_RELATION_PATH_CANDIDATES = 50
+
 
 # correct == target の場合
 async def fetch_distractor_ids(
@@ -99,6 +101,9 @@ async def fetch_pair2rel_distractor_ids(
         [target_id],
         exclude_sent_ids=correct_ids,
     )
+    # ALLはリソース内の全単文を返すため、そのまま最短pathを探索すると
+    # 大きいresourceでrecommendation APIがタイムアウトする。
+    candidate_ids = candidate_ids[:MAX_RELATION_PATH_CANDIDATES]
     paths = await _fetch_relation_paths(
         target_id,
         [*correct_ids, *candidate_ids],
