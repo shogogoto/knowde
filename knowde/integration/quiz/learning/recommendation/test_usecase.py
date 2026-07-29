@@ -9,6 +9,9 @@ from knowde.integration.quiz.learning.fixture import (
     generate_test_quizzes,
     learning_resource_id,
 )
+from knowde.integration.quiz.learning.recommendation.domain import (
+    QuizRecommendationReason,
+)
 from knowde.integration.quiz.learning.recommendation.usecase import (
     recommend_quizzes,
 )
@@ -77,3 +80,4 @@ async def test_recommend_existing_unattempted_quiz_first(u: LUser):
     )
 
     assert recommendations[0].quiz.quiz_id == existing.quiz_id
+    assert recommendations[0].reason is QuizRecommendationReason.UNATTEMPTED

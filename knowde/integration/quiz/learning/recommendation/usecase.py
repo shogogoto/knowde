@@ -6,9 +6,11 @@ from knowde.integration.quiz.domain.parts import QuizType
 from knowde.integration.quiz.learning.fill.usecase import generate_quizzes
 from knowde.integration.quiz.learning.recommendation.domain import (
     QuizRecommendation,
+    QuizRecommendationReason,
 )
+from knowde.integration.quiz.learning.review.domain import ReviewQuizKind
 from knowde.integration.quiz.learning.review.usecase import (
-    prepare_review_quizzes,
+    prepare_review_quizzes_with_reason,
 )
 from knowde.integration.quiz.learning.selection.domain import QuizFillStrategy
 from knowde.shared.types import UUIDy, to_uuid
@@ -37,9 +39,9 @@ async def _prepare_resource_quizzes(  # noqa: PLR0917
     candidate_type: CandidateType,
     n_quiz: int,
     n_option: int,
-) -> list[QuizSource]:
+) -> list[tuple[QuizSource, QuizRecommendationReason]]:
     """復習対象を優先し、不足分を未coverage対象から生成."""
-    reviews = await prepare_review_quizzes(
+    reviews = await prepare_review_quizzes_with_reason(
         resource_id,
         user_id,
         quiz_type,
@@ -49,7 +51,15 @@ async def _prepare_resource_quizzes(  # noqa: PLR0917
     )
     n_missing = n_quiz - len(reviews)
     if n_missing == 0:
-        return reviews
+        return [
+            (
+                item.quiz,
+                QuizRecommendationReason.UNATTEMPTED
+                if item.kind is ReviewQuizKind.UNATTEMPTED
+                else QuizRecommendationReason.LOW_ACCURACY,
+            )
+            for item in reviews
+        ]
 
     new_quizzes = await generate_quizzes(
         resource_id,
@@ -59,9 +69,20 @@ async def _prepare_resource_quizzes(  # noqa: PLR0917
         candidate_type,
         n_quiz=n_missing,
         n_option=n_option,
-        exclude_target_ids=[quiz.target_id for quiz in reviews],
+        exclude_target_ids=[item.quiz.target_id for item in reviews],
     )
-    return [*reviews, *new_quizzes]
+    return [
+        *[
+            (
+                item.quiz,
+                QuizRecommendationReason.UNATTEMPTED
+                if item.kind is ReviewQuizKind.UNATTEMPTED
+                else QuizRecommendationReason.LOW_ACCURACY,
+            )
+            for item in reviews
+        ],
+        *[(quiz, QuizRecommendationReason.COVERAGE) for quiz in new_quizzes],
+    ]
 
 
 async def recommend_quizzes(  # noqa: PLR0917
@@ -94,8 +115,12 @@ async def recommend_quizzes(  # noqa: PLR0917
         )
         pools.append(
             [
-                QuizRecommendation(resource_id=resource_id, quiz=quiz)
-                for quiz in quizzes
+                QuizRecommendation(
+                    resource_id=resource_id,
+                    quiz=quiz,
+                    reason=reason,
+                )
+                for quiz, reason in quizzes
             ],
         )
     return _round_robin(pools)

@@ -14,6 +14,9 @@ from knowde.integration.quiz.learning.fixture import (
 from knowde.integration.quiz.learning.progress.domain import (
     ResourceLearningStatus,
 )
+from knowde.integration.quiz.learning.recommendation.domain import (
+    QuizRecommendationReason,
+)
 from knowde.integration.quiz.learning.study_plan.domain import (
     StudyPlan,
     StudyPlanDraft,
@@ -119,6 +122,7 @@ async def test_study_plan_recommendation_api(ac: AsyncClient, u: LUser):
     )
     recommendation = QuizRecommendationResponse.model_validate(response.json()[0])
     assert recommendation.resource_id == resource_id
+    assert recommendation.reason is QuizRecommendationReason.COVERAGE
 
     quiz = recommendation.quiz
     response = await ac.post(
