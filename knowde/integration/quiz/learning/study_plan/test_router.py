@@ -123,6 +123,7 @@ async def test_study_plan_recommendation_api(ac: AsyncClient, u: LUser):
     )
     recommendation = QuizRecommendationResponse.model_validate(response.json()[0])
     assert recommendation.resource_id == resource_id
+    assert recommendation.quiz_type is QuizType.TERM2SENT
     assert recommendation.reason is QuizRecommendationReason.COVERAGE
 
     quiz = recommendation.quiz

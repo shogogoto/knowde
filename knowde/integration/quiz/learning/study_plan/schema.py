@@ -5,6 +5,7 @@ from uuid import UUID
 from pydantic import BaseModel
 
 from knowde.integration.quiz.domain.domain import ReadableQuiz
+from knowde.integration.quiz.domain.parts import QuizType
 from knowde.integration.quiz.learning.recommendation.domain import (
     QuizRecommendation,
     QuizRecommendationReason,
@@ -15,6 +16,7 @@ class QuizRecommendationResponse(BaseModel, frozen=True):
     """resource情報を含む回答可能な推薦クイズ."""
 
     resource_id: UUID
+    quiz_type: QuizType
     quiz: ReadableQuiz
     reason: QuizRecommendationReason
 
@@ -26,6 +28,7 @@ class QuizRecommendationResponse(BaseModel, frozen=True):
         """domainモデルをAPIレスポンスへ変換."""
         return cls(
             resource_id=recommendation.resource_id,
+            quiz_type=recommendation.quiz.quiz_type,
             quiz=recommendation.quiz.to_readable(),
             reason=recommendation.reason,
         )
