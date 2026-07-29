@@ -4,6 +4,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Response, status
 
+from knowde.integration.quiz.domain.parts import QuizType
 from knowde.integration.quiz.learning.study_plan.domain import (
     StudyPlan,
     StudyPlanDraft,
@@ -72,11 +73,13 @@ async def delete_study_plan_api(
 async def recommend_study_plan_quizzes_api(
     plan_id: UUID,
     user: ActiveUser,
+    quiz_type: QuizType | None = None,
 ) -> list[QuizRecommendationResponse]:
     """StudyPlanの設定で回答可能なクイズを推薦."""
     recommendations = await recommend_quizzes_for_study_plan(
         plan_id,
         user.uid,
+        quiz_type,
     )
     return [
         QuizRecommendationResponse.from_domain(recommendation)

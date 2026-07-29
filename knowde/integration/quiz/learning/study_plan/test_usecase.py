@@ -88,3 +88,12 @@ async def test_recommend_quizzes_across_all_quiz_types(u: LUser):
         QuizType.REL2PAIR,
         QuizType.PAIR2REL,
     ]
+
+    pair_recommendations = await recommend_quizzes_for_study_plan(
+        plan.uid,
+        u.uid,
+        QuizType.PAIR2REL,
+    )
+    assert {item.quiz.quiz_type for item in pair_recommendations} == {
+        QuizType.PAIR2REL,
+    }

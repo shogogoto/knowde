@@ -2,6 +2,7 @@
 
 from knowde.feature.entry.resource.repo.owner import check_entry_owner
 from knowde.integration.quiz.candidate.types import CandidateType
+from knowde.integration.quiz.domain.parts import QuizType
 from knowde.integration.quiz.learning.recommendation.domain import (
     QuizRecommendation,
 )
@@ -96,6 +97,7 @@ async def delete_study_plan(
 async def recommend_quizzes_for_study_plan(
     plan_id: UUIDy,
     user_id: UUIDy,
+    quiz_type: QuizType | None = None,
 ) -> list[QuizRecommendation]:
     """保存されたStudyPlanの設定でクイズを推薦."""
     plan = await get_study_plan(plan_id, user_id)
@@ -103,14 +105,22 @@ async def recommend_quizzes_for_study_plan(
     # 過去に保存された少ない出題数でも、選択した各形式を最低1問は試す。
     n_quiz = max(plan.n_quiz, len(plan.quiz_types))
     quotient, remainder = divmod(n_quiz, len(plan.quiz_types))
+    quiz_types = (
+        [quiz_type]
+        if quiz_type is not None and quiz_type in plan.quiz_types
+        else plan.quiz_types
+        if quiz_type is None
+        else []
+    )
     pools = []
-    for index, quiz_type in enumerate(plan.quiz_types):
+    for current_quiz_type in quiz_types:
+        index = plan.quiz_types.index(current_quiz_type)
         count = quotient + (index < remainder)
         pools.append(
             await recommend_quizzes(
                 plan.resource_ids,
                 user_id,
-                quiz_type,
+                current_quiz_type,
                 CandidateType.ALL,
                 count,
                 plan.n_option,

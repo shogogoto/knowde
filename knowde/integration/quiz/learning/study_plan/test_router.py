@@ -118,6 +118,7 @@ async def test_study_plan_recommendation_api(ac: AsyncClient, u: LUser):
 
     response = await ac.post(
         f"/quiz/study-plans/{plan.uid}/recommendations",
+        params={"quiz_type": QuizType.TERM2SENT},
         headers=headers,
     )
     recommendation = QuizRecommendationResponse.model_validate(response.json()[0])
