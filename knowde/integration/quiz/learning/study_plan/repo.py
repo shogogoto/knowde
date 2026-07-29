@@ -31,7 +31,7 @@ async def fetch_study_plan(
         RETURN
             plan.uid,
             plan.name,
-            plan.quiz_type,
+            plan.quiz_types,
             plan.n_quiz,
             plan.n_option,
             plan.created,
@@ -47,12 +47,12 @@ async def fetch_study_plan(
     if not rows:
         return None
 
-    uid, name, quiz_type, n_quiz, n_option, created, resource_ids = rows[0]
+    uid, name, quiz_types, n_quiz, n_option, created, resource_ids = rows[0]
     return StudyPlan(
         uid=uid,
         name=name,
         resource_ids=resource_ids,
-        quiz_type=QuizType[quiz_type],
+        quiz_types=[QuizType[quiz_type] for quiz_type in quiz_types],
         n_quiz=n_quiz,
         n_option=n_option,
         created=neo4j_dt_validator(created),
@@ -95,7 +95,7 @@ async def create_study_plan(
         CREATE (plan: StudyPlan {
             uid: $plan_id,
             name: $name,
-            quiz_type: $quiz_type,
+            quiz_types: $quiz_types,
             n_quiz: $n_quiz,
             n_option: $n_option,
             created: datetime($now)
@@ -113,7 +113,7 @@ async def create_study_plan(
             "user_id": to_uuid(user_id).hex,
             "resource_ids": [uid.hex for uid in resource_ids],
             "name": draft.name,
-            "quiz_type": draft.quiz_type.name,
+            "quiz_types": [quiz_type.name for quiz_type in draft.quiz_types],
             "n_quiz": draft.n_quiz,
             "n_option": draft.n_option,
             "now": now.isoformat(),
@@ -146,7 +146,7 @@ async def update_study_plan(
         WHERE size(resources) = size($resource_ids)
         SET
             plan.name = $name,
-            plan.quiz_type = $quiz_type,
+            plan.quiz_types = $quiz_types,
             plan.n_quiz = $n_quiz,
             plan.n_option = $n_option
         WITH plan
@@ -165,7 +165,7 @@ async def update_study_plan(
             "user_id": to_uuid(user_id).hex,
             "resource_ids": [uid.hex for uid in resource_ids],
             "name": draft.name,
-            "quiz_type": draft.quiz_type.name,
+            "quiz_types": [quiz_type.name for quiz_type in draft.quiz_types],
             "n_quiz": draft.n_quiz,
             "n_option": draft.n_option,
         },

@@ -26,7 +26,7 @@ async def test_create_and_fetch_study_plan(u: LUser):
     draft = StudyPlanDraft(
         name="重点学習",
         resource_ids=[second, first],
-        quiz_type=QuizType.TERM2SENT,
+        quiz_types=[QuizType.TERM2SENT, QuizType.SENT2TERM],
         n_quiz=3,
         n_option=4,
     )
@@ -35,7 +35,7 @@ async def test_create_and_fetch_study_plan(u: LUser):
 
     assert created.name == draft.name
     assert created.resource_ids == draft.resource_ids
-    assert created.quiz_type == draft.quiz_type
+    assert created.quiz_types == draft.quiz_types
     assert created.n_quiz == draft.n_quiz
     assert created.n_option == draft.n_option
     assert await fetch_study_plan(created.uid, u.uid) == created

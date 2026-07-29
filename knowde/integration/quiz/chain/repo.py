@@ -10,9 +10,10 @@ from knowde.integration.quiz.chain.domain import (
     QuizChainLink,
     QuizChainQuiz,
     QuizChainRole,
-    QuizChainSentence,
 )
-from knowde.integration.quiz.repo.restore import restore_quiz_sources
+from knowde.integration.quiz.repo.restore import (
+    restore_quiz_sources_with_knowdes,
+)
 from knowde.shared.types import UUIDy, to_uuid
 
 RELATION_TO_ROLE = {
@@ -31,8 +32,6 @@ async def fetch_quiz_chain(quiz_id: UUIDy) -> QuizChain | None:
         )
         RETURN
             sentence.uid,
-            sentence.val,
-            sentence.resource_uid,
             type(relation)
         ORDER BY sentence.uid, type(relation)
     """
@@ -40,25 +39,23 @@ async def fetch_quiz_chain(quiz_id: UUIDy) -> QuizChain | None:
         q,
         params={"quiz_id": to_uuid(quiz_id).hex},
     )
-    sources = await restore_quiz_sources([quiz_id])
+    sources, knowdes = await restore_quiz_sources_with_knowdes([quiz_id])
     if not sources:
         return None
 
     source = sources[0]
+    options = {to_uuid(uid): option for uid, option in source.sources.items()}
     sentences = {}
     links = []
-    for raw_sentence_id, sentence, resource_id, relation_type in rows:
+    for raw_sentence_id, relation_type in rows:
         sentence_id = to_uuid(raw_sentence_id)
-        sentences[sentence_id] = QuizChainSentence(
-            sentence_id=sentence_id,
-            sentence=sentence,
-            resource_id=to_uuid(resource_id),
-        )
+        sentences[sentence_id] = knowdes[sentence_id.hex]
         links.append(
             QuizChainLink(
                 quiz_id=source.quiz_id,
                 sentence_id=sentence_id,
                 role=RELATION_TO_ROLE[relation_type],
+                relations=list(options[sentence_id].rels or []),
             ),
         )
     return QuizChain(
@@ -87,8 +84,6 @@ async def fetch_sentence_chain(
         WHERE quiz IS NULL OR quiz.uid IN $quiz_ids
         RETURN
             sentence.uid,
-            sentence.val,
-            sentence.resource_uid,
             quiz.uid,
             type(relation)
         ORDER BY quiz.created DESC, quiz.uid, type(relation)
@@ -103,11 +98,18 @@ async def fetch_sentence_chain(
     if not rows:
         return None
 
-    sid, sentence, resource_id, _, _ = rows[0]
-    sources = await restore_quiz_sources(quiz_ids)
+    sid, _, _ = rows[0]
+    sources, knowdes = await restore_quiz_sources_with_knowdes(
+        quiz_ids,
+        extra_uids=[sentence_id],
+    )
     source_by_id = {source.quiz_id: source for source in sources}
+    options_by_quiz = {
+        source.quiz_id: {to_uuid(uid): option for uid, option in source.sources.items()}
+        for source in sources
+    }
     roles_by_quiz: dict[UUID, list[QuizChainRole]] = defaultdict(list)
-    for _, _, _, quiz_id, relation_type in rows:
+    for _, quiz_id, relation_type in rows:
         if quiz_id is not None:
             roles_by_quiz[to_uuid(quiz_id)].append(
                 RELATION_TO_ROLE[relation_type],
@@ -115,13 +117,7 @@ async def fetch_sentence_chain(
 
     sid = to_uuid(sid)
     return QuizChain(
-        sentences=[
-            QuizChainSentence(
-                sentence_id=sid,
-                sentence=sentence,
-                resource_id=to_uuid(resource_id),
-            ),
-        ],
+        sentences=[knowdes[sid.hex]],
         quizzes=[
             QuizChainQuiz(
                 quiz_id=source.quiz_id,
@@ -135,6 +131,9 @@ async def fetch_sentence_chain(
                 quiz_id=quiz_id,
                 sentence_id=sid,
                 role=role,
+                relations=list(
+                    options_by_quiz[quiz_id][sid].rels or [],
+                ),
             )
             for quiz_id, roles in roles_by_quiz.items()
             if quiz_id in source_by_id

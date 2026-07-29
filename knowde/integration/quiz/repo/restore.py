@@ -41,6 +41,15 @@ async def restore_quiz_sources(
     quiz_ids: Iterable[UUIDy],
 ) -> list[QuizSource]:
     """クイズの復元."""
+    sources, _ = await restore_quiz_sources_with_knowdes(quiz_ids)
+    return sources
+
+
+async def restore_quiz_sources_with_knowdes(
+    quiz_ids: Iterable[UUIDy],
+    extra_uids: Iterable[UUIDy] = (),
+) -> tuple[list[QuizSource], dict[str, Knowde]]:
+    """クイズと、その復元に使ったKnowdeをまとめて返す."""
     q = """
         UNWIND $quiz_ids AS quiz_id
         MATCH (quiz: Quiz {uid: quiz_id})
@@ -74,9 +83,12 @@ async def restore_quiz_sources(
     qids = [to_uuid(uid).hex for uid in quiz_ids]
     rows, _ = await adb.cypher_query(q, params={"quiz_ids": qids})
     flat = [row[0] for row in rows]
-    all_uids = set().union(*(r["source_ids"] for r in flat))
+    all_uids = set().union(
+        *(r["source_ids"] for r in flat),
+        (to_uuid(uid).hex for uid in extra_uids),
+    )
     kns = await fetch_knowdes_with_detail(all_uids)
-    return [
+    sources = [
         QuizSource(
             quiz_id=r["quiz_id"],
             quiz_type=QuizType[r["quiz_type"]],
@@ -93,3 +105,4 @@ async def restore_quiz_sources(
         )
         for r in flat
     ]
+    return sources, kns

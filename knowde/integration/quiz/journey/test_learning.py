@@ -51,7 +51,7 @@ async def _create_daily_plan(
         json=StudyPlanDraft(
             name="毎日の学習",
             resource_ids=[resource_id],
-            quiz_type=QuizType.TERM2SENT,
+            quiz_types=[QuizType.TERM2SENT],
             n_quiz=1,
             n_option=3,
         ).model_dump(mode="json"),

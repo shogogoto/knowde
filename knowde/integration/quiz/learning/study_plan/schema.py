@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from knowde.integration.quiz.domain.domain import ReadableQuiz
 from knowde.integration.quiz.learning.recommendation.domain import (
     QuizRecommendation,
+    QuizRecommendationReason,
 )
 
 
@@ -15,6 +16,7 @@ class QuizRecommendationResponse(BaseModel, frozen=True):
 
     resource_id: UUID
     quiz: ReadableQuiz
+    reason: QuizRecommendationReason
 
     @classmethod
     def from_domain(
@@ -25,4 +27,5 @@ class QuizRecommendationResponse(BaseModel, frozen=True):
         return cls(
             resource_id=recommendation.resource_id,
             quiz=recommendation.quiz.to_readable(),
+            reason=recommendation.reason,
         )

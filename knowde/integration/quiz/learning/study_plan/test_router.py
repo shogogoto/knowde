@@ -14,6 +14,9 @@ from knowde.integration.quiz.learning.fixture import (
 from knowde.integration.quiz.learning.progress.domain import (
     ResourceLearningStatus,
 )
+from knowde.integration.quiz.learning.recommendation.domain import (
+    QuizRecommendationReason,
+)
 from knowde.integration.quiz.learning.study_plan.domain import (
     StudyPlan,
     StudyPlanDraft,
@@ -50,7 +53,7 @@ async def test_study_plan_crud_api(ac: AsyncClient, u: LUser):
     draft = StudyPlanDraft(
         name="毎日の学習",
         resource_ids=[first, second],
-        quiz_type=QuizType.TERM2SENT,
+        quiz_types=[QuizType.TERM2SENT, QuizType.SENT2TERM],
         n_quiz=3,
         n_option=3,
     )
@@ -106,7 +109,7 @@ async def test_study_plan_recommendation_api(ac: AsyncClient, u: LUser):
         StudyPlanDraft(
             name="学習",
             resource_ids=[resource_id],
-            quiz_type=QuizType.TERM2SENT,
+            quiz_types=[QuizType.TERM2SENT],
             n_quiz=1,
             n_option=3,
         ),
@@ -119,6 +122,7 @@ async def test_study_plan_recommendation_api(ac: AsyncClient, u: LUser):
     )
     recommendation = QuizRecommendationResponse.model_validate(response.json()[0])
     assert recommendation.resource_id == resource_id
+    assert recommendation.reason is QuizRecommendationReason.COVERAGE
 
     quiz = recommendation.quiz
     response = await ac.post(
@@ -153,7 +157,7 @@ async def test_reject_other_users_resource_from_study_plan(
         json=StudyPlanDraft(
             name="登録不可",
             resource_ids=[resource_id],
-            quiz_type=QuizType.TERM2SENT,
+            quiz_types=[QuizType.TERM2SENT],
             n_quiz=1,
             n_option=3,
         ).model_dump(mode="json"),
