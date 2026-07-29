@@ -123,6 +123,28 @@ def test_quiz_term2sent(sn: SysNet):
     assert not q.is_correct([])
 
 
+def test_option_order_is_stable_and_varies_by_quiz(sn: SysNet):
+    """選択肢順は同じQuizでは安定し、Quiz間では固定位置に偏らない."""
+    source = QuizSource.from_sysnet(
+        sn=sn,
+        qt=QuizType.TERM2SENT,
+        target_stc="aaa",
+        source_stcs=["aaa", "bbb", "ccc", "ddd"],
+        correct_stcs=["aaa"],
+    )
+
+    assert list(source.readable_options()) == list(source.readable_options())
+    correct_positions = {
+        list(
+            source.model_copy(
+                update={"quiz_id": uuid.UUID(int=quiz_number)},
+            ).readable_options(),
+        ).index("1")
+        for quiz_number in range(1, 21)
+    }
+    assert len(correct_positions) > 1
+
+
 def test_quiz_rel2sent_lv1(sn: SysNet):
     """クイズ対象と関係にマッチするもの当て問題(1階層)."""
     src = QuizSource.from_sysnet(

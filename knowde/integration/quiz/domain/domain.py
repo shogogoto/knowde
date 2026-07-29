@@ -2,6 +2,7 @@
 
 import uuid
 from datetime import datetime
+from random import Random
 from textwrap import indent
 from typing import Self
 from uuid import UUID
@@ -103,13 +104,15 @@ class QuizSource(BaseModel, frozen=True):
         return key
 
     def readable_options(self) -> dict[str, str]:
-        """適切に選択肢を作成."""
+        """適切な選択肢をQuizごとに安定したランダム順で作成."""
         options = {k: self.quiz_type.opt_answer(v) for k, v in self.sources.items()}
         if not self.quiz_type.has_term:
             options = {k: v for k, v in options.items() if k != self.target_id}
         if self.no_correct_option:
             options = {k: v for k, v in options.items() if k not in self.correct_ids}
-        return options
+        items = list(options.items())
+        Random(self.quiz_id.int).shuffle(items)  # noqa: S311 - 表示順のみ
+        return dict(items)
 
     def to_readable(self) -> ReadableQuiz:
         """読める状態にする."""
