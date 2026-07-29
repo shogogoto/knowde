@@ -21,6 +21,7 @@ from knowde.shared.user.label import LUser
 from knowde.shared.user.testing import aregister
 
 u = async_fixture()(fx_learning)
+MIN_RECOMMENDED_OPTIONS = 2
 
 
 @mark_async_test()
@@ -76,7 +77,7 @@ async def test_recommend_quizzes_across_all_quiz_types(u: LUser):
                 QuizType.PAIR2REL,
             ],
             n_quiz=1,
-            n_option=3,
+            n_option=4,
         ),
     )
 
@@ -88,6 +89,8 @@ async def test_recommend_quizzes_across_all_quiz_types(u: LUser):
         QuizType.REL2PAIR,
         QuizType.PAIR2REL,
     ]
+    pair2rel = recommendations[-1].quiz.to_readable()
+    assert MIN_RECOMMENDED_OPTIONS <= len(pair2rel.options) <= plan.n_option
 
     pair_recommendations = await recommend_quizzes_for_study_plan(
         plan.uid,

@@ -38,24 +38,28 @@ async def generate_quizzes(  # noqa: PLR0917
         )
         quizzes = []
         generated_target_ids: set[UUIDy] = set()
-        for target_id, correct_id in pairs:
-            if target_id in generated_target_ids:
-                continue
-            try:
-                quiz = await generate_quiz(
-                    quiz_type,
-                    candidate_type,
-                    target_id,
-                    n_option,
-                    user_id,
-                    correct_sent_uids=[correct_id],
-                )
-            except InsufficientOptionsError:
-                continue
-            quizzes.append(quiz)
-            generated_target_ids.add(target_id)
-            if len(quizzes) == n_quiz:
-                break
+        option_counts = (
+            range(n_option, 1, -1) if quiz_type is QuizType.PAIR2REL else (n_option,)
+        )
+        for option_count in option_counts:
+            for target_id, correct_id in pairs:
+                if target_id in generated_target_ids:
+                    continue
+                try:
+                    quiz = await generate_quiz(
+                        quiz_type,
+                        candidate_type,
+                        target_id,
+                        option_count,
+                        user_id,
+                        correct_sent_uids=[correct_id],
+                    )
+                except InsufficientOptionsError:
+                    continue
+                quizzes.append(quiz)
+                generated_target_ids.add(target_id)
+                if len(quizzes) == n_quiz:
+                    return quizzes
         return quizzes
 
     pool, order = strategy.target_selection
