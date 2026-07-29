@@ -98,6 +98,8 @@ async def recommend_quizzes_for_study_plan(
     plan_id: UUIDy,
     user_id: UUIDy,
     quiz_type: QuizType | None = None,
+    *,
+    generate_missing: bool = True,
 ) -> list[QuizRecommendation]:
     """保存されたStudyPlanの設定でクイズを推薦."""
     plan = await get_study_plan(plan_id, user_id)
@@ -124,6 +126,7 @@ async def recommend_quizzes_for_study_plan(
                 CandidateType.ALL,
                 count,
                 plan.n_option,
+                generate_missing=generate_missing,
             ),
         )
 

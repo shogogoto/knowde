@@ -39,6 +39,8 @@ async def _prepare_resource_quizzes(  # noqa: PLR0917
     candidate_type: CandidateType,
     n_quiz: int,
     n_option: int,
+    *,
+    generate_missing: bool,
 ) -> list[tuple[QuizSource, QuizRecommendationReason]]:
     """復習対象を優先し、不足分を未coverage対象から生成."""
     reviews = await prepare_review_quizzes_with_reason(
@@ -48,6 +50,7 @@ async def _prepare_resource_quizzes(  # noqa: PLR0917
         candidate_type,
         n_quiz=n_quiz,
         n_option=n_option,
+        generate_missing=generate_missing,
     )
     prepared_reviews = [
         (
@@ -59,7 +62,7 @@ async def _prepare_resource_quizzes(  # noqa: PLR0917
         for item in reviews
     ]
     n_missing = n_quiz - len(reviews)
-    if n_missing == 0:
+    if n_missing == 0 or not generate_missing:
         return prepared_reviews
 
     new_quizzes = await generate_quizzes(
@@ -85,6 +88,8 @@ async def recommend_quizzes(  # noqa: PLR0917
     candidate_type: CandidateType,
     n_quiz: int,
     n_option: int,
+    *,
+    generate_missing: bool = True,
 ) -> list[QuizRecommendation]:
     """指定リソースから学習・復習クイズをラウンドロビン推薦."""
     if n_quiz < 0:
@@ -105,6 +110,7 @@ async def recommend_quizzes(  # noqa: PLR0917
             candidate_type,
             count,
             n_option,
+            generate_missing=generate_missing,
         )
         pools.append(
             [

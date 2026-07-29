@@ -74,12 +74,15 @@ async def recommend_study_plan_quizzes_api(
     plan_id: UUID,
     user: ActiveUser,
     quiz_type: QuizType | None = None,
+    *,
+    generate_missing: bool = True,
 ) -> list[QuizRecommendationResponse]:
     """StudyPlanの設定で回答可能なクイズを推薦."""
     recommendations = await recommend_quizzes_for_study_plan(
         plan_id,
         user.uid,
         quiz_type,
+        generate_missing=generate_missing,
     )
     return [
         QuizRecommendationResponse.from_domain(recommendation)

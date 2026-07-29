@@ -126,6 +126,20 @@ async def test_study_plan_recommendation_api(ac: AsyncClient, u: LUser):
     assert recommendation.quiz_type is QuizType.TERM2SENT
     assert recommendation.reason is QuizRecommendationReason.COVERAGE
 
+    existing_response = await ac.post(
+        f"/quiz/study-plans/{plan.uid}/recommendations",
+        params={
+            "quiz_type": QuizType.TERM2SENT,
+            "generate_missing": False,
+        },
+        headers=headers,
+    )
+    existing = QuizRecommendationResponse.model_validate(
+        existing_response.json()[0],
+    )
+    assert existing.quiz.quiz_id == recommendation.quiz.quiz_id
+    assert existing.reason is QuizRecommendationReason.UNATTEMPTED
+
     quiz = recommendation.quiz
     response = await ac.post(
         f"/quiz/answer/{quiz.quiz_id}",

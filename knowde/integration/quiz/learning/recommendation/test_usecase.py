@@ -84,6 +84,24 @@ async def test_recommend_existing_unattempted_quiz_first(u: LUser):
 
 
 @mark_async_test()
+async def test_recommend_without_generating_missing_quizzes(u: LUser):
+    """既存取得段階では、不足していても新しいQuizを作らない."""
+    resource_id = await learning_resource_id(u.uid)
+
+    recommendations = await recommend_quizzes(
+        [resource_id],
+        u.uid,
+        QuizType.TERM2SENT,
+        CandidateType.ALL,
+        n_quiz=1,
+        n_option=3,
+        generate_missing=False,
+    )
+
+    assert recommendations == []
+
+
+@mark_async_test()
 async def test_relation_quiz_is_generated_from_knowledge_path(u: LUser):
     """既存Quizがなければknowledge pathから関係Quizを生成する."""
     resource_id = await learning_resource_id(u.uid)

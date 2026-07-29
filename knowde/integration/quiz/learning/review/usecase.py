@@ -43,6 +43,8 @@ async def prepare_review_quizzes_with_reason(  # noqa: PLR0917
     candidate_type: CandidateType,
     n_quiz: int,
     n_option: int,
+    *,
+    generate_missing: bool = True,
 ) -> list[PreparedReviewQuiz]:
     """既存未回答と低正答率から生成したクイズを根拠付きで返す."""
     unattempted_ids = await fetch_unattempted_quiz_ids(
@@ -57,7 +59,7 @@ async def prepare_review_quizzes_with_reason(  # noqa: PLR0917
         for quiz in existing
     ]
     n_missing = n_quiz - len(existing)
-    if n_missing == 0:
+    if n_missing == 0 or not generate_missing:
         return prepared_existing
 
     generated = await generate_quizzes(
