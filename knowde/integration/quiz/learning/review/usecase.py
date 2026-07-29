@@ -57,7 +57,7 @@ async def prepare_review_quizzes_with_reason(  # noqa: PLR0917
         for quiz in existing
     ]
     n_missing = n_quiz - len(existing)
-    if n_missing == 0 or not quiz_type.has_term:
+    if n_missing == 0:
         return prepared_existing
 
     generated = await generate_quizzes(

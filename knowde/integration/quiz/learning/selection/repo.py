@@ -14,6 +14,7 @@ from knowde.integration.quiz.learning.selection.domain import (
     QuizTargetOrder,
     QuizTargetPool,
 )
+from knowde.integration.quiz.repo.restore import KNOWLEDGE_REL_TYPES
 from knowde.shared.types import UUIDy, to_uuid
 
 
@@ -76,6 +77,43 @@ async def fetch_covered_sent_ids(
         quiz_type,
         covered=True,
     )
+
+
+async def fetch_uncovered_relation_pairs(
+    resource_id: UUIDy,
+    user_id: UUIDy,
+    quiz_type: QuizType,
+    *,
+    limit: int,
+    exclude_sent_ids: Iterable[UUIDy] | None = None,
+) -> list[tuple[UUID, UUID]]:
+    """未coverageの対象単文と、knowledge path上の正解単文を取得."""
+    q = """
+        MATCH (target: Sentence {resource_uid: $resource_id})
+            -[:__KNOWLEDGE_REL_TYPES__]-(correct: Sentence)
+        WHERE NOT target.uid IN $exclude_sent_ids
+          AND NOT EXISTS {
+            MATCH (user: User {uid: $user_id})
+                -[:LEARN]->(quiz: Quiz {
+                    quiz_type: $quiz_type,
+                    is_link_broken: false
+                })-[:QUIZ_TARGET]->(target)
+          }
+        RETURN DISTINCT target.uid, correct.uid
+        ORDER BY target.uid ASC, correct.uid ASC
+        LIMIT $limit
+    """.replace("__KNOWLEDGE_REL_TYPES__", KNOWLEDGE_REL_TYPES)
+    rows, _ = await adb.cypher_query(
+        q,
+        params={
+            "resource_id": to_uuid(resource_id).hex,
+            "user_id": to_uuid(user_id).hex,
+            "quiz_type": quiz_type.name,
+            "exclude_sent_ids": [to_uuid(uid).hex for uid in (exclude_sent_ids or [])],
+            "limit": limit,
+        },
+    )
+    return [(to_uuid(target), to_uuid(correct)) for target, correct in rows]
 
 
 async def fetch_sort_by_score(

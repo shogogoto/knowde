@@ -58,3 +58,33 @@ async def test_recommend_quizzes_for_study_plan(u: LUser):
     other = await aregister(email="study-plan-reader@ex.com")
     with pytest.raises(StudyPlanNotFoundError):
         await recommend_quizzes_for_study_plan(plan.uid, other.uid)
+
+
+@mark_async_test()
+async def test_recommend_quizzes_across_all_quiz_types(u: LUser):
+    """自動生成できるQuizTypeを、関係QuizTypeと同時選択しても推薦する."""
+    resource_id = await learning_resource_id(u.uid)
+    plan = await create_study_plan(
+        u.uid,
+        StudyPlanDraft(
+            name="全形式",
+            resource_ids=[resource_id],
+            quiz_types=[
+                QuizType.TERM2SENT,
+                QuizType.SENT2TERM,
+                QuizType.REL2PAIR,
+                QuizType.PAIR2REL,
+            ],
+            n_quiz=1,
+            n_option=3,
+        ),
+    )
+
+    recommendations = await recommend_quizzes_for_study_plan(plan.uid, u.uid)
+
+    assert [item.quiz.quiz_type for item in recommendations] == [
+        QuizType.TERM2SENT,
+        QuizType.SENT2TERM,
+        QuizType.REL2PAIR,
+        QuizType.PAIR2REL,
+    ]

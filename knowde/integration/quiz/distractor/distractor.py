@@ -3,6 +3,7 @@
 import random
 from uuid import UUID
 
+import networkx as nx
 from neomodel import adb
 
 from knowde.integration.quiz.candidate.types import CandidateType
@@ -67,16 +68,19 @@ async def _fetch_relation_paths(
         },
     )
     target_uid = to_uuid(target_id).hex
-    return {
-        to_uuid(candidate_id): QuizRel.of(
-            *EdgeType.path2edgetypes(
-                neo4jpath2nx([path]),
-                target_uid,
-                candidate_id,
-            ),
-        )
-        for candidate_id, path in rows
-    }
+    paths = {}
+    for candidate_id, path in rows:
+        try:
+            paths[to_uuid(candidate_id)] = QuizRel.of(
+                *EdgeType.path2edgetypes(
+                    neo4jpath2nx([path]),
+                    target_uid,
+                    candidate_id,
+                ),
+            )
+        except (nx.NetworkXNoPath, nx.NodeNotFound):
+            continue
+    return paths
 
 
 async def fetch_pair2rel_distractor_ids(

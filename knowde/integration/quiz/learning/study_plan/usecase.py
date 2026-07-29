@@ -100,7 +100,9 @@ async def recommend_quizzes_for_study_plan(
     """保存されたStudyPlanの設定でクイズを推薦."""
     plan = await get_study_plan(plan_id, user_id)
 
-    quotient, remainder = divmod(plan.n_quiz, len(plan.quiz_types))
+    # 過去に保存された少ない出題数でも、選択した各形式を最低1問は試す。
+    n_quiz = max(plan.n_quiz, len(plan.quiz_types))
+    quotient, remainder = divmod(n_quiz, len(plan.quiz_types))
     pools = []
     for index, quiz_type in enumerate(plan.quiz_types):
         count = quotient + (index < remainder)

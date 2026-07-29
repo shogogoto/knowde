@@ -59,7 +59,7 @@ async def _prepare_resource_quizzes(  # noqa: PLR0917
         for item in reviews
     ]
     n_missing = n_quiz - len(reviews)
-    if n_missing == 0 or not quiz_type.has_term:
+    if n_missing == 0:
         return prepared_reviews
 
     new_quizzes = await generate_quizzes(

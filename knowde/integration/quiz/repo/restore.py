@@ -24,6 +24,8 @@ KNOWLEDGE_REL_TYPES: Final = "|".join(edge_type.name for edge_type in EdgeType)
 
 def nx2options(
     uids: Iterable[str],
+    *,
+    correct_ids: Iterable[str],
     target_id: str,
     g: nx.DiGraph,
     uid2kn: dict[str, Knowde],
@@ -31,11 +33,15 @@ def nx2options(
 ) -> dict[str, QuizOption]:
     """nxをoptionsに変換."""
     options = {}
+    correct_id_set = set(correct_ids)
     for uid in uids:
         try:
             rels = QuizRel.of(*EdgeType.path2edgetypes(g, target_id, uid))
         except (nx.NetworkXNoPath, nx.NodeNotFound) as error:
-            if not quiz_type.has_term:
+            requires_path = quiz_type is QuizType.PAIR2REL or (
+                quiz_type is QuizType.REL2PAIR and uid in correct_id_set
+            )
+            if requires_path:
                 msg = f"{quiz_type}の知識pathが見つかりません: {target_id} -> {uid}"
                 raise QuizRestoreError(msg) from error
             rels = None
@@ -108,10 +114,11 @@ async def restore_quiz_sources_with_knowdes(
                 correct_ids=r["correct_ids"],
                 sources=nx2options(
                     r["source_ids"],
-                    r["target_id"],
-                    neo4jpath2nx(r["paths"]),
-                    kns,
-                    quiz_type,
+                    correct_ids=r["correct_ids"],
+                    target_id=r["target_id"],
+                    g=neo4jpath2nx(r["paths"]),
+                    uid2kn=kns,
+                    quiz_type=quiz_type,
                 ),
                 created=r["created"],
                 no_correct_option=r["quiz"].get("no_correct_option"),

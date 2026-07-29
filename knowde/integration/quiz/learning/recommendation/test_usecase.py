@@ -84,8 +84,8 @@ async def test_recommend_existing_unattempted_quiz_first(u: LUser):
 
 
 @mark_async_test()
-async def test_relation_quiz_without_existing_quiz_is_skipped(u: LUser):
-    """自動生成未対応の関係QuizTypeはStudyPlan全体を失敗させない."""
+async def test_relation_quiz_is_generated_from_knowledge_path(u: LUser):
+    """既存Quizがなければknowledge pathから関係Quizを生成する."""
     resource_id = await learning_resource_id(u.uid)
 
     recommendations = await recommend_quizzes(
@@ -97,4 +97,5 @@ async def test_relation_quiz_without_existing_quiz_is_skipped(u: LUser):
         n_option=3,
     )
 
-    assert recommendations == []
+    assert len(recommendations) == 1
+    assert recommendations[0].quiz.quiz_type is QuizType.REL2PAIR
