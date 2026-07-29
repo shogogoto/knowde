@@ -1,5 +1,6 @@
 """quiz router test."""
 
+import pytest
 from fastapi import status
 from httpx import AsyncClient
 
@@ -60,15 +61,20 @@ async def test_sent2term(ac: AsyncClient, u: LUser):
     assert ans.who == to_uuid(u.uid)
 
 
+@pytest.mark.parametrize("quiz_type", [QuizType.REL2PAIR, QuizType.PAIR2REL])
 @mark_async_test()
-async def test_create_rel2pair(ac: AsyncClient, u: LUser):
-    """対象単文と関係先を指定してREL2PAIRを作成する."""
+async def test_create_relation_quiz(
+    ac: AsyncClient,
+    u: LUser,
+    quiz_type: QuizType,
+):
+    """対象単文と関係先を指定して関係クイズを作成する."""
     target = LSentence.nodes.first(val="ccc")
     pair = LSentence.nodes.first(val="parent")
     param = CreateQuizParam(
         target_sent_uid=target.uid,
         correct_sent_uids=[pair.uid],
-        quiz_type=QuizType.REL2PAIR,
+        quiz_type=quiz_type,
         cand_type=CandidateType.ALL,
         n_option=3,
     )
@@ -82,7 +88,8 @@ async def test_create_rel2pair(ac: AsyncClient, u: LUser):
     quiz = ReadableQuiz.model_validate(response.json())
     assert len(quiz.options) == param.n_option
     assert len(quiz.correct) == 1
-    assert quiz.options[quiz.correct[0]] == "parent"
+    if quiz_type is QuizType.REL2PAIR:
+        assert quiz.options[quiz.correct[0]] == "parent"
 
     invalid = param.model_dump()
     invalid["correct_sent_uids"] = []
