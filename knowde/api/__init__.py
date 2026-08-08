@@ -15,9 +15,11 @@ from knowde.api.middleware.logging import LoggingMiddleware
 from knowde.api.middleware.logging.log_config import setup_logging
 from knowde.api.middleware.transaction import Neo4jTransactionMiddleware
 from knowde.config.env import Settings
+from knowde.feature.achievement.router.router import user_achievement_router
 from knowde.feature.entry.router import entry_router
 from knowde.feature.knowde.router import knowde_router
 from knowde.feature.quiz.router.router import quiz_router
+from knowde.feature.user import PREFIX_USER
 from knowde.feature.user.routers import auth_router, user_router
 
 if TYPE_CHECKING:
@@ -54,6 +56,7 @@ api.add_middleware(LoggingMiddleware)
 
 api.include_router(auth_router())
 api.include_router(user_router())
+api.include_router(user_achievement_router(), prefix=PREFIX_USER)
 api.include_router(entry_router())
 api.include_router(knowde_router())
 api.include_router(quiz_router())

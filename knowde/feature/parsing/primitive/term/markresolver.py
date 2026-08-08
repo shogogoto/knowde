@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING, Self
 import networkx as nx
 from pydantic import BaseModel
 
-from knowde.feature.knowde.graph import to_nested
-from knowde.feature.knowde.graph.schema import NXGraph
+from knowde.feature.domain.graph import to_nested
+from knowde.feature.domain.graph.schema import NXGraph
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.primitive.term.const import (
     BRACE_MARKER,

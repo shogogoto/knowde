@@ -2,7 +2,7 @@
 
 from enum import StrEnum
 
-from knowde.feature.knowde.graph.edge_type import Direction, EdgeType
+from knowde.feature.domain.graph.edge_type import Direction, EdgeType
 
 
 def detail_match(sent_var: str, dist: int | None) -> str:

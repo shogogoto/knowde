@@ -3,7 +3,10 @@
 import ast
 from pathlib import Path
 
+import networkx as nx
+
 KNOWDE_DIR = Path(__file__).parent.parent
+FEATURE_DIR = Path(__file__).parent
 FOUNDATION_DIRS = (
     Path(__file__).parent / "domain",
     Path(__file__).parent / "repo",
@@ -47,3 +50,28 @@ def test_foundation_does_not_depend_on_specific_features():
             )
 
     assert invalid == []
+
+
+def test_feature_dependencies_are_acyclic():
+    """Feature間のproductionコードに循環依存を作らない."""
+    features = {
+        path.name
+        for path in FEATURE_DIR.iterdir()
+        if path.is_dir() and any(path.rglob("*.py"))
+    }
+    dependencies = nx.DiGraph()
+    dependencies.add_nodes_from(features)
+
+    for path in FEATURE_DIR.rglob("*.py"):
+        if path.name.startswith("test_"):
+            continue
+        source = path.relative_to(FEATURE_DIR).parts[0]
+        for module in _imported_modules(path):
+            prefix = "knowde.feature."
+            if not module.startswith(prefix):
+                continue
+            target = module.removeprefix(prefix).split(".")[0]
+            if target in features and target != source:
+                dependencies.add_edge(source, target)
+
+    assert nx.is_directed_acyclic_graph(dependencies)

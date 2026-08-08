@@ -11,6 +11,7 @@ from more_itertools import flatten
 from neomodel import adb, db
 
 from knowde.feature.domain.errors import NotFoundError, NotUniqueError
+from knowde.feature.domain.graph.edge_type import EdgeType
 from knowde.feature.domain.types import UUIDy, to_uuid
 from knowde.feature.knowde.domain import (
     Additional,
@@ -19,18 +20,17 @@ from knowde.feature.knowde.domain import (
     KnowdeChains,
     KnowdeLocation,
 )
-from knowde.feature.knowde.graph.edge_type import EdgeType
 from knowde.feature.knowde.label import LQuoterm, LSentence
 from knowde.feature.knowde.repo.clause import OrderBy
 from knowde.feature.knowde.repo.cypher import (
     build_location_res,
-    q_call_sent_names,
     q_chain,
     q_location,
     q_stats,
     q_upper,
 )
 from knowde.feature.parsing.primitive.term import Term
+from knowde.feature.repo.cypher import q_call_term_names
 
 
 def q_knowde_detail(
@@ -43,7 +43,7 @@ def q_knowde_detail(
         // q_detail_location
         UNWIND $uids as uid
         MATCH (sent: Sentence {{uid: uid}})
-        {q_call_sent_names("sent")}
+        {q_call_term_names("sent")}
         {q_stats("sent", order_by)}
         OPTIONAL MATCH (intv: Interval)<-[:WHEN]-(sent)
         {q_loc}

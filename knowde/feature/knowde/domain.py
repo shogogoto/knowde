@@ -23,11 +23,11 @@ import networkx as nx
 from networkx import DiGraph
 from pydantic import BaseModel, Field, RootModel
 
+from knowde.feature.domain.graph import to_nodes
+from knowde.feature.domain.graph.edge_type import EdgeType
+from knowde.feature.domain.graph.schema import NXGraph
+from knowde.feature.entry.domain import ResourceInfo
 from knowde.feature.entry.mapper import MResource
-from knowde.feature.entry.resource.stats.domain import ResourceStats
-from knowde.feature.knowde.graph import to_nodes
-from knowde.feature.knowde.graph.edge_type import EdgeType
-from knowde.feature.knowde.graph.schema import NXGraph
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.sysnet.sysnode import Def
 from knowde.feature.user.public_schema import UserReadPublic
@@ -97,14 +97,6 @@ class Knowde(BaseModel, frozen=True):
         if self.term is None:
             return self.sentence
         return Def(term=self.term, sentence=self.sentence)
-
-
-class ResourceInfo(BaseModel):
-    """リソースの所有者や詳細."""
-
-    user: UserReadPublic
-    resource: MResource
-    resource_stats: ResourceStats
 
 
 class KnowdeSearchResult(BaseModel):

@@ -13,10 +13,9 @@ from more_itertools import collapse
 from neomodel import AsyncStructuredNode, StructuredNode, adb
 from pydantic import BaseModel
 
+from knowde.feature.domain.graph.edge_type import EdgeType
 from knowde.feature.domain.types import Duplicable, to_uuid
 from knowde.feature.entry.label import LHead, LResource
-from knowde.feature.knowde.graph.edge_type import EdgeType
-from knowde.feature.knowde.label import LInterval, LQuoterm, LSentence, LTerm
 from knowde.feature.parsing.primitive.quoterm.domain import Quoterm
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.primitive.time import WhenNode
@@ -81,15 +80,15 @@ def q_create_node(
             ret = []
             for i, name in enumerate(n.names):
                 ivar = f"{var}_{i}" if i > 0 else var
-                c = f"CREATE ({ivar}:{t2labels(LTerm)} {{val: '{name}'}})"
+                c = f"CREATE ({ivar}:Term {{val: '{name}'}})"
                 ret.append(c)
             return ret
         case WhenNode():
             d = n.model_dump(mode="json")
             d["val"] = d.pop("n")
-            return f"CREATE ({var}:{t2labels(LInterval)} {propstr(d)})"
+            return f"CREATE ({var}:Interval {propstr(d)})"
         case str() | Duplicable() | Quoterm():
-            t = t2labels(LQuoterm) if isinstance(n, Quoterm) else t2labels(LSentence)
+            t = "Quoterm" if isinstance(n, Quoterm) else "Sentence"
             uid = getattr(n, "uid", uuid4()).hex
             return (
                 f"CREATE ({var}:{t} {{val: '{n}', uid: '{uid}', resource_uid: $uid}})"

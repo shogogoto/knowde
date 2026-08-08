@@ -7,12 +7,13 @@ from typing import Any, Final
 from more_itertools import first_true
 from neo4j.graph import Path
 
+from knowde.feature.domain.graph.edge_type import EdgeType
 from knowde.feature.domain.types import UUIDy
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.knowde.domain import LocationWithoutParents, UidStr
-from knowde.feature.knowde.graph.edge_type import EdgeType
 from knowde.feature.knowde.repo.adj import AdjType
 from knowde.feature.knowde.repo.clause import OrderBy, WherePhrase
+from knowde.feature.repo.cypher import q_call_term_names
 from knowde.feature.user.public_schema import UserReadPublic
 
 
@@ -92,28 +93,13 @@ def q_chain(var: str, et: EdgeType, indent_len: int = 0) -> str:
     return indent(s, " " * indent_len)
 
 
-def q_call_sent_names(var: str) -> str:
-    """単文の名前を取得."""
-    return f"""
-        CALL ({var}) {{
-            OPTIONAL MATCH ({var})<-[r:DEF]-(t1:Term)
-            OPTIONAL MATCH p = (t1)-[:ALIAS]->*(t2:Term)
-            WITH p, LENGTH(p) as len, r
-            ORDER BY len DESC
-            LIMIT 1
-            RETURN nodes(p) as names
-                , r.alias AS alias
-        }}
-    """
-
-
 def q_where_knowde(p: WherePhrase = WherePhrase.CONTAINS) -> str:
     """検索文字列が含まれている文と用語に紐づく文を返す."""
     where_phrase = f"{p.value} $s"
     return f"""
         // 検索文字列が含まれる文 q_where_knowde
         MATCH (sent1: Sentence WHERE sent1.val {where_phrase})
-        {q_call_sent_names("sent1")}
+        {q_call_term_names("sent1")}
         RETURN sent1 AS sent
         UNION
         // 検索文字列が含まれる用語

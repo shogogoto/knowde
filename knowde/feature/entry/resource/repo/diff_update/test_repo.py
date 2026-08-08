@@ -6,13 +6,13 @@ import networkx as nx
 from pytest_unordered import unordered
 
 from knowde.conftest import async_fixture, mark_async_test
+from knowde.feature.domain.graph import nxprint
 from knowde.feature.entry.resource.repo.diff_update.domain.domain import (
     identify_duplicate_updiff,
 )
 from knowde.feature.entry.resource.repo.diff_update.repo import update_resource_diff
 from knowde.feature.entry.resource.repo.restore import restore_sysnet
 from knowde.feature.entry.resource.usecase import save_text
-from knowde.feature.knowde.graph import nxprint
 from knowde.feature.parsing.tree2net import parse2net
 from knowde.feature.user.label import LUser
 

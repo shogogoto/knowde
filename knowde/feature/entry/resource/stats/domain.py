@@ -9,13 +9,13 @@ import networkx as nx
 import pydantic_partial
 from pydantic import BaseModel, Field, computed_field
 
-from knowde.feature.domain.types import Duplicable
-from knowde.feature.knowde.graph.edge_type import (
+from knowde.feature.domain.graph.edge_type import (
     EdgeType,
     etype_subgraph,
     is_leaf,
     is_root,
 )
+from knowde.feature.domain.types import Duplicable
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.sysnet.sysnode import KNArg

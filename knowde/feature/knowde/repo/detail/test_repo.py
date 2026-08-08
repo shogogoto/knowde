@@ -6,9 +6,9 @@ import pytest
 from pytest_unordered import unordered
 
 from knowde.conftest import async_fixture, mark_async_test
+from knowde.feature.domain.graph import to_leaves, to_roots
+from knowde.feature.domain.graph.edge_type import EdgeType
 from knowde.feature.entry.resource.usecase import save_text
-from knowde.feature.knowde.graph import to_leaves, to_roots
-from knowde.feature.knowde.graph.edge_type import EdgeType
 from knowde.feature.knowde.label import LSentence
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.user.label import LUser

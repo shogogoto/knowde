@@ -5,11 +5,11 @@ from neomodel import db
 from pytest_unordered import unordered
 
 from knowde.conftest import async_fixture, mark_async_test
+from knowde.feature.domain.graph.edge_type import EdgeType
 from knowde.feature.domain.types import UUIDy, to_uuid
 from knowde.feature.entry.resource.repo.restore import restore_sysnet
 from knowde.feature.entry.resource.repo.save import sn2db
 from knowde.feature.entry.resource.usecase import save_text
-from knowde.feature.knowde.graph.edge_type import EdgeType
 from knowde.feature.knowde.label import LSentence
 from knowde.feature.knowde.repo import adj_knowde, search_knowde
 from knowde.feature.knowde.repo.cypher import q_stats

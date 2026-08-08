@@ -6,9 +6,8 @@ from uuid import UUID
 import networkx as nx
 from neomodel import adb
 
+from knowde.feature.domain.graph.edge_type import EdgeType
 from knowde.feature.domain.types import UUIDy, to_uuid
-from knowde.feature.knowde.graph.db import neo4jpath2nx
-from knowde.feature.knowde.graph.edge_type import EdgeType
 from knowde.feature.quiz.candidate.types import CandidateType
 from knowde.feature.quiz.distractor.domain import (
     random_sample_safe,
@@ -20,6 +19,7 @@ from knowde.feature.quiz.errors import (
     SamplingError,
 )
 from knowde.feature.quiz.repo.restore import KNOWLEDGE_REL_TYPES
+from knowde.feature.repo.graph import neo4jpath2nx
 
 MAX_RELATION_PATH_CANDIDATES = 50
 MAX_RELATION_PATH_DEPTH = 3

@@ -3,7 +3,7 @@
 import networkx as nx
 import pytest
 
-from knowde.feature.knowde.graph.util import succ_attr
+from knowde.feature.domain.graph.util import succ_attr
 
 from . import leaf_paths, root_paths, select_edge_attr, to_nested, to_roots
 

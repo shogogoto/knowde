@@ -3,9 +3,9 @@
 import networkx as nx
 import pytest
 
+from knowde.feature.domain.graph import to_nested
+from knowde.feature.domain.graph.edge_type import EdgeType
 from knowde.feature.domain.types import Duplicable
-from knowde.feature.knowde.graph import to_nested
-from knowde.feature.knowde.graph.edge_type import EdgeType
 from knowde.feature.parsing.primitive.term import Term, check_and_merge_term
 from knowde.feature.parsing.primitive.term.markresolver import MarkResolver
 from knowde.feature.parsing.sysnet.errors import (

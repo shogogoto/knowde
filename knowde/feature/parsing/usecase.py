@@ -7,7 +7,7 @@ from typing import IO, TYPE_CHECKING
 import click
 from tabulate import tabulate
 
-from knowde.feature.knowde.graph.edge_type import EdgeType
+from knowde.feature.domain.graph.edge_type import EdgeType
 from knowde.feature.parsing.domain import try_parse2net
 from knowde.feature.parsing.sysnet.systats.nw1_n1.ctxdetail import Nw1N1Detail
 from knowde.feature.parsing.sysnet.systats.nw1_n1.scorable import (

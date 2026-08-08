@@ -10,15 +10,15 @@ import networkx as nx
 from pydantic import BaseModel, Field
 from pydantic_core import Url
 
+from knowde.feature.domain.graph.schema import NXGraph
 from knowde.feature.entry.mapper import Entry, MResource
 from knowde.feature.entry.resource.stats.domain import ResourceStats
-from knowde.feature.knowde.domain import ResourceInfo
-from knowde.feature.knowde.graph.schema import NXGraph
 from knowde.feature.parsing.meta_parse import meta_parse, title_parse
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.primitive.time import parse2dt
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.sysnet.sysnode import KNode
+from knowde.feature.user.public_schema import UserReadPublic
 
 from .errors import (
     EntryNotFoundError,
@@ -181,6 +181,14 @@ class ResourceMeta(BaseModel):
         if updated is not None:
             meta.updated = updated
         return meta
+
+
+class ResourceInfo(BaseModel):
+    """リソースの所有者や統計を含む情報."""
+
+    user: UserReadPublic
+    resource: MResource
+    resource_stats: ResourceStats
 
 
 class ResourceDetail(BaseModel):

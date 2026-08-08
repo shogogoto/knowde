@@ -3,7 +3,7 @@
 import networkx as nx
 from pytest_unordered import unordered
 
-from knowde.feature.knowde.graph.edge_type import EdgeType
+from knowde.feature.domain.graph.edge_type import EdgeType
 
 
 def test_subgraph() -> None:

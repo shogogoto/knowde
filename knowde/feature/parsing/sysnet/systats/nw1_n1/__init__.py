@@ -6,12 +6,12 @@ from collections.abc import Callable, Hashable, Iterable
 from functools import cache
 from typing import TYPE_CHECKING, Final
 
-from knowde.feature.knowde.graph import (
+from knowde.feature.domain.graph import (
     select_edge_attr,
     to_nodes,
     to_roots,
 )
-from knowde.feature.knowde.graph.edge_type import EdgeType, etype_subgraph
+from knowde.feature.domain.graph.edge_type import EdgeType, etype_subgraph
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.sysnet.sysnode import KNArg, KNode
 

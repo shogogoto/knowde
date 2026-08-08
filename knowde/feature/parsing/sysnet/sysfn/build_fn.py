@@ -2,7 +2,7 @@
 
 import networkx as nx
 
-from knowde.feature.knowde.graph.edge_type import EdgeType
+from knowde.feature.domain.graph.edge_type import EdgeType
 from knowde.feature.parsing.primitive.term.errors import TermResolveError
 from knowde.feature.parsing.primitive.term.markresolver import MarkResolver
 from knowde.feature.parsing.sysnet.sysnode import Def

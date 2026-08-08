@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Self, override
 from pydantic import Field
 
 from knowde.feature.domain.collections import parted
-from knowde.feature.knowde.graph.edge_type import EdgeType
+from knowde.feature.domain.graph.edge_type import EdgeType
 from knowde.feature.parsing.primitive.term import (
     MergedTerms,
     Term,

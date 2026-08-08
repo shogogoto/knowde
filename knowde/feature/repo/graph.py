@@ -7,7 +7,7 @@ from collections.abc import Iterable
 import networkx as nx
 from neo4j.graph import Path as NeoPath
 
-from knowde.feature.knowde.graph.edge_type import EdgeType
+from knowde.feature.domain.graph.edge_type import EdgeType
 
 
 def neo4jpath2nx(paths: Iterable[NeoPath]) -> nx.MultiDiGraph:

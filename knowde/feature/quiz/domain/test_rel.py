@@ -1,6 +1,6 @@
 """クイズ関係タイプテスト."""
 
-from knowde.feature.knowde.graph.edge_type import EdgeType
+from knowde.feature.domain.graph.edge_type import EdgeType
 
 from .rel import QUIZ_REL_EDGE_TYPES, QuizRel, edgetype2rel
 

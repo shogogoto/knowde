@@ -11,7 +11,6 @@ import networkx as nx
 from more_itertools import flatten
 from pydantic import BaseModel, Field, PrivateAttr, field_validator
 
-from knowde.feature.knowde.label import LTerm
 from knowde.feature.parsing.primitive.dupchk import DuplicationChecker
 from knowde.feature.parsing.primitive.term.const import (
     BRACE_MARKER,
@@ -70,12 +69,6 @@ class Term(BaseModel, frozen=True):
     @classmethod
     def create(cls, *names: str, alias: str | None = None) -> Self:  # noqa: D102
         return cls(names=names, alias=alias)
-
-    @classmethod
-    def from_labels(cls, lbs: Iterable[LTerm]) -> Self | None:
-        """LTermから生成."""
-        names = [str(lb.val) for lb in lbs if lb]
-        return cls.create(*names) if len(names) > 0 else None
 
     def __repr__(self) -> str:
         """Class representation."""

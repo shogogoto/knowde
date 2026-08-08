@@ -10,8 +10,8 @@ from typing import TYPE_CHECKING, Final, Self, override
 from lark import Token
 from pydantic import BaseModel
 
+from knowde.feature.domain.graph.edge_type import EdgeType
 from knowde.feature.domain.types import Duplicable
-from knowde.feature.knowde.graph.edge_type import EdgeType
 from knowde.feature.parsing.primitive.quoterm.domain import Quoterm
 from knowde.feature.parsing.primitive.template import Template
 from knowde.feature.parsing.primitive.term import Term

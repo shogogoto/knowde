@@ -13,7 +13,7 @@
 #     DUMMY_SENTENCE,
 #     DummySentence,
 # )
-# from knowde.feature.knowde.graph.edge_type import EdgeType
+# from knowde.feature.domain.graph.edge_type import EdgeType
 # from knowde.feature.domain.types import Duplicable
 #
 # T_EDGE_KEY: Final = "type"

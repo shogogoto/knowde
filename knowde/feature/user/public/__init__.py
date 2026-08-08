@@ -6,7 +6,6 @@ entryやknowdeが絡むような機能はそっちのfeatureで書く
 from fastapi import APIRouter
 from neomodel import Q
 
-from knowde.feature.achievement.router.router import user_achievement_router
 from knowde.feature.user.errors import UserNotFoundError
 from knowde.feature.user.label import LUser
 from knowde.feature.user.router_util import TrackUser
@@ -28,9 +27,6 @@ async def user_profile(username: str, user: TrackUser = None) -> UserReadPublic:
         raise UserNotFoundError(msg)
     lb = lbs[0]
     return UserReadPublic.model_validate(lb.__properties__)
-
-
-_r.include_router(user_achievement_router())
 
 
 def public_user_router() -> APIRouter:  # noqa: D103

@@ -11,12 +11,12 @@ from httpx import AsyncClient
 
 from knowde.api import api
 from knowde.conftest import mark_async_test
+from knowde.feature.entry.domain import ResourceInfo
 from knowde.feature.entry.namespace import create_folder, create_resource
 from knowde.feature.entry.namespace.sync import Anchor
 from knowde.feature.entry.namespace.test_namespace import files  # noqa: F401
 from knowde.feature.entry.resource.usecase import save_text
 from knowde.feature.entry.router.fixture import fixture_txt
-from knowde.feature.knowde.domain import ResourceInfo
 from knowde.feature.user.label import LUser
 from knowde.feature.user.routers.repo.client import (
     AuthPost,

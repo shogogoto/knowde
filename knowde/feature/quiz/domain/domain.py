@@ -11,7 +11,7 @@ from more_itertools import duplicates_everseen
 from pydantic import BaseModel, Field, model_validator
 
 from knowde.feature.domain.datetime import TZ, Neo4jDateTime
-from knowde.feature.knowde.graph.edge_type import EdgeType
+from knowde.feature.domain.graph.edge_type import EdgeType
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.quiz.domain.rel import QuizRel
 from knowde.feature.quiz.errors import (

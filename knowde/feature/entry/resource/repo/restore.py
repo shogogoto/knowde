@@ -10,10 +10,9 @@ from lark import Token
 from neomodel.async_.core import AsyncDatabase
 
 from knowde.feature.domain.errors import NotFoundError
+from knowde.feature.domain.graph.edge_type import EdgeType
 from knowde.feature.domain.types import Duplicable, UUIDy, is_duplicable, to_uuid
 from knowde.feature.entry.label import LResource
-from knowde.feature.knowde.graph.edge_type import EdgeType
-from knowde.feature.knowde.repo.cypher import q_call_sent_names
 from knowde.feature.parsing.primitive.quoterm.domain import Quoterm
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.primitive.time import WhenNode
@@ -24,6 +23,7 @@ from knowde.feature.parsing.sysnet.sysnode import (
     KNode,
     add_def_edge,
 )
+from knowde.feature.repo.cypher import q_call_term_names
 
 
 @cache
@@ -104,7 +104,7 @@ async def restore_undersentnet(  # noqa: PLR0914
     q = f"""
         MATCH (s:Sentence|Quoterm {{resource_uid: $uid}})
         OPTIONAL MATCH (s)-[r:{various}]->(e:Sentence|Interval|Quterm)
-        {q_call_sent_names("s")}
+        {q_call_term_names("s")}
         RETURN s
             , COLLECT([e, r]) as ends
             , COALESCE(names, []) as names

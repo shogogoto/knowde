@@ -10,11 +10,11 @@ from lark import Token
 from more_itertools import flatten
 from pydantic import BaseModel
 
+from knowde.feature.domain.graph import to_nested
+from knowde.feature.domain.graph.edge_type import EdgeType
+from knowde.feature.domain.graph.schema import NXGraph
+from knowde.feature.domain.graph.types import Accessor
 from knowde.feature.domain.types import Duplicable
-from knowde.feature.knowde.graph import to_nested
-from knowde.feature.knowde.graph.edge_type import EdgeType
-from knowde.feature.knowde.graph.schema import NXGraph
-from knowde.feature.knowde.graph.types import Accessor
 from knowde.feature.parsing.primitive.heading import get_headings
 from knowde.feature.parsing.primitive.template import Templates
 from knowde.feature.parsing.primitive.term import Term

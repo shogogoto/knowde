@@ -8,7 +8,7 @@ from lark import Tree
 from lark.visitors import Interpreter
 
 from knowde.feature.domain.collections import parted
-from knowde.feature.knowde.graph.edge_type import Direction, EdgeType
+from knowde.feature.domain.graph.edge_type import Direction, EdgeType
 from knowde.feature.parsing.primitive.heading import exclude_heading, include_heading
 from knowde.feature.parsing.tree2net.directed_edge import (
     DirectedEdgeCollection,

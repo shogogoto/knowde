@@ -6,7 +6,7 @@ from functools import cache
 from itertools import islice
 from typing import Any, Final, Self
 
-from knowde.feature.knowde.graph.edge_type import EdgeType
+from knowde.feature.domain.graph.edge_type import EdgeType
 
 QUIZ_REL_EDGE_TYPES: Final = (
     EdgeType.SIBLING,

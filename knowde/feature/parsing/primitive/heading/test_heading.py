@@ -3,7 +3,7 @@
 import networkx as nx
 from lark import Token
 
-from knowde.feature.knowde.graph.edge_type import EdgeType
+from knowde.feature.domain.graph.edge_type import EdgeType
 from knowde.feature.parsing.primitive.heading import get_heading_path, get_headings
 
 hpath = [Token(value=f"h{i}", type=f"H{i + 1}") for i in range(1, 4)]

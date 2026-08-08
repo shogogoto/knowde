@@ -10,11 +10,11 @@ from typing import TYPE_CHECKING
 import networkx as nx
 from more_itertools import pairwise
 
-from knowde.feature.knowde.graph.errors import MultiEdgesError
-from knowde.feature.knowde.graph.util import pred_attr, succ_attr
+from knowde.feature.domain.graph.errors import MultiEdgesError
+from knowde.feature.domain.graph.util import pred_attr, succ_attr
 
 if TYPE_CHECKING:
-    from knowde.feature.knowde.graph.types import Accessor
+    from knowde.feature.domain.graph.types import Accessor
 
 
 class Direction(Enum):

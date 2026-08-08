@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any
 from lark import Token
 from pydantic import BaseModel, Field
 
-from knowde.feature.knowde.graph.edge_type import Direction, EdgeType
+from knowde.feature.domain.graph.edge_type import Direction, EdgeType
 from knowde.feature.parsing.sysnet.sysfn import (
     arg2sentence,
 )

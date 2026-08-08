@@ -6,10 +6,9 @@ from typing import Final
 import networkx as nx
 from neomodel import adb
 
+from knowde.feature.domain.graph.edge_type import EdgeType
 from knowde.feature.domain.types import UUIDy, to_uuid
 from knowde.feature.knowde.domain import Knowde
-from knowde.feature.knowde.graph.db import neo4jpath2nx
-from knowde.feature.knowde.graph.edge_type import EdgeType
 from knowde.feature.knowde.repo.detail import fetch_knowdes_with_detail
 from knowde.feature.quiz.domain.domain import QuizSource
 from knowde.feature.quiz.domain.parts import (
@@ -19,6 +18,7 @@ from knowde.feature.quiz.domain.parts import (
 )
 from knowde.feature.quiz.domain.rel import QUIZ_REL_EDGE_TYPES
 from knowde.feature.quiz.errors import QuizRestoreError
+from knowde.feature.repo.graph import neo4jpath2nx
 
 KNOWLEDGE_REL_TYPES: Final = "|".join(
     edge_type.name for edge_type in QUIZ_REL_EDGE_TYPES

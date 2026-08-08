@@ -13,6 +13,8 @@
 - すべてのfeatureが利用する基礎的な型や例外は、直下の `domain` に置きます。
 - すべてのfeatureのDB操作で利用する土台は、直下の `repo` に置きます。
 - 直下の `domain` と `repo` は個別のfeatureには依存させません。
+- feature間の依存は許可しますが、循環依存は禁止します。
+- 複数featureのrouterは、feature内部ではなくAPIルートで組み立てます。
 - 知識グラフ固有の型や変換処理は `knowde/graph` に置きます。
 
 旧 `knowde.integration` と `knowde.shared` は使用しません。共有が必要になった処理も、
