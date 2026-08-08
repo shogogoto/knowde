@@ -3,7 +3,7 @@
 from enum import StrEnum, auto
 from uuid import UUID
 
-from knowde.feature.primitive.types import UUIDy
+from knowde.feature.domain.types import UUIDy
 from knowde.feature.quiz.candidate.candidate import (
     fetch_sent2resource_id,
     list_candidates_by_radius,

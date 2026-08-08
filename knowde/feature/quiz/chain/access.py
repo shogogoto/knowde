@@ -4,7 +4,7 @@ from uuid import UUID
 
 from neomodel import adb
 
-from knowde.feature.primitive.types import UUIDy, to_uuid
+from knowde.feature.domain.types import UUIDy, to_uuid
 
 
 async def can_read_quiz(user_id: UUIDy, quiz_id: UUIDy) -> bool:

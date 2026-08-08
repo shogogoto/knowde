@@ -8,7 +8,6 @@ from fastapi import APIRouter, Query, Response, status
 
 from knowde.feature.entry.errors import NotOwnerError
 from knowde.feature.entry.resource.repo.owner import check_entry_owner
-from knowde.feature.primitive.cypher import Paging
 from knowde.feature.quiz.answering.usecase import answer_quiz_as_chain
 from knowde.feature.quiz.chain.domain import QuizChain
 from knowde.feature.quiz.chain.router import quiz_chain_router
@@ -40,6 +39,7 @@ from knowde.feature.quiz.router.params import (
     AnswerParam,
     CreateQuizParam,
 )
+from knowde.feature.repo.cypher import Paging
 from knowde.feature.user.router_util import ActiveUser
 
 _r = APIRouter(prefix="/quiz", tags=["quiz"])

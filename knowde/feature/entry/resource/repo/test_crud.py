@@ -5,6 +5,7 @@ import pytest
 from pytest_unordered import unordered
 
 from knowde.conftest import async_fixture, mark_async_test
+from knowde.feature.domain.errors import NotFoundError
 from knowde.feature.entry.domain import ResourceMeta
 from knowde.feature.entry.label import LResource
 from knowde.feature.entry.mapper import MResource
@@ -15,7 +16,6 @@ from knowde.feature.parsing.primitive.heading import include_heading
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.sysnet.systats.nw1_n1 import NwOp
 from knowde.feature.parsing.tree2net import parse2net
-from knowde.feature.primitive.errors.domain import NotFoundError
 from knowde.feature.user.label import LUser
 
 from .restore import (

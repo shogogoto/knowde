@@ -6,9 +6,9 @@ from uuid import uuid4
 import pytest
 
 from knowde.conftest import async_fixture, mark_async_test
+from knowde.feature.domain.errors import NotFoundError
 from knowde.feature.entry.errors import FolderDeleteError
 from knowde.feature.entry.namespace import fetch_namespace
-from knowde.feature.primitive.errors.domain import NotFoundError
 from knowde.feature.user.label import LUser
 
 from . import (

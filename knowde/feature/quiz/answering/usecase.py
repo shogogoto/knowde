@@ -1,6 +1,6 @@
 """クイズ回答usecase."""
 
-from knowde.feature.primitive.types import UUIDy
+from knowde.feature.domain.types import UUIDy
 from knowde.feature.quiz.answering.repo import create_answer
 from knowde.feature.quiz.chain.domain import QuizChain
 from knowde.feature.quiz.chain.usecase import expand_quiz_chain

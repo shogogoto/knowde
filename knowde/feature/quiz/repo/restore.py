@@ -6,11 +6,11 @@ from typing import Final
 import networkx as nx
 from neomodel import adb
 
+from knowde.feature.domain.types import UUIDy, to_uuid
 from knowde.feature.knowde.domain import Knowde
 from knowde.feature.knowde.graph.db import neo4jpath2nx
 from knowde.feature.knowde.graph.edge_type import EdgeType
 from knowde.feature.knowde.repo.detail import fetch_knowdes_with_detail
-from knowde.feature.primitive.types import UUIDy, to_uuid
 from knowde.feature.quiz.domain.domain import QuizSource
 from knowde.feature.quiz.domain.parts import (
     QuizOption,

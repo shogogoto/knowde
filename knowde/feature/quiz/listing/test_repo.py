@@ -5,8 +5,8 @@ from uuid import UUID, uuid4
 from pytest_unordered import unordered
 
 from knowde.conftest import async_fixture, mark_async_test
+from knowde.feature.domain.types import UUIDy
 from knowde.feature.knowde.label import LSentence
-from knowde.feature.primitive.types import UUIDy
 from knowde.feature.quiz.candidate.types import CandidateType
 from knowde.feature.quiz.distractor.distractor import fetch_distractor_ids
 from knowde.feature.quiz.domain.parts import QuizType

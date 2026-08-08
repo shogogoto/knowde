@@ -6,9 +6,9 @@ from typing import Final
 
 import networkx as nx
 
+from knowde.feature.domain.types import Duplicable
 from knowde.feature.knowde.graph.edge_type import EdgeType
 from knowde.feature.parsing.primitive.term import Term
-from knowde.feature.primitive.types import Duplicable
 
 from .errors import QuotermNotFoundError
 

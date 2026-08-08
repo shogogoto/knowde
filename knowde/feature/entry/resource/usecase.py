@@ -3,6 +3,8 @@
 from datetime import datetime
 from uuid import UUID
 
+from knowde.feature.domain.errors import NotFoundError
+from knowde.feature.domain.types import UUIDy, to_uuid
 from knowde.feature.entry.domain import NameSpace, ResourceMeta
 from knowde.feature.entry.errors import ResourceSaveOptimisticLockError
 from knowde.feature.entry.label import LResource
@@ -16,8 +18,6 @@ from knowde.feature.entry.resource.repo.diff_update.repo import update_resource_
 from knowde.feature.entry.resource.repo.save import sn2db
 from knowde.feature.parsing.domain import try_parse2net
 from knowde.feature.parsing.sysnet import SysNet
-from knowde.feature.primitive.errors.domain import NotFoundError
-from knowde.feature.primitive.types import UUIDy, to_uuid
 
 from .stats.repo import save_resource_stats_cache
 

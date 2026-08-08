@@ -9,9 +9,9 @@ from datetime import datetime
 
 import pytest
 
+from knowde.feature.domain.datetime import TZ
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.tree2net import parse2net
-from knowde.feature.primitive.util import TZ
 from knowde.feature.quiz.domain.parts import QuizRel
 from knowde.feature.quiz.errors import InvalidAnswerOptionError, QuizDuplicateError
 

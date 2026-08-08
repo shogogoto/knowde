@@ -14,7 +14,7 @@ from pydantic import BaseModel
 
 from knowde.cli.util.typeutil.check import is_generic_alias
 from knowde.cli.util.typeutil.operate import extract_generic_alias_type
-from knowde.feature.primitive.util import TZ
+from knowde.feature.domain.datetime import TZ
 
 
 class DateType(ParamType):

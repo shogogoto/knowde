@@ -5,7 +5,7 @@ from uuid import UUID
 
 from neomodel import adb
 
-from knowde.feature.primitive.types import UUIDy, to_uuid
+from knowde.feature.domain.types import UUIDy, to_uuid
 from knowde.feature.quiz.chain.domain import (
     QuizChain,
     QuizChainLink,

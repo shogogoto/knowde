@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, RootModel
 
-from knowde.feature.primitive.util import Neo4jDateTime
+from knowde.feature.domain.datetime import Neo4jDateTime
 from knowde.feature.quiz.domain.domain import ReadableQuiz
 
 

@@ -6,9 +6,9 @@ from uuid import UUID
 import networkx as nx
 from neomodel import adb
 
+from knowde.feature.domain.types import UUIDy, to_uuid
 from knowde.feature.knowde.graph.db import neo4jpath2nx
 from knowde.feature.knowde.graph.edge_type import EdgeType
-from knowde.feature.primitive.types import UUIDy, to_uuid
 from knowde.feature.quiz.candidate.types import CandidateType
 from knowde.feature.quiz.distractor.domain import (
     random_sample_safe,

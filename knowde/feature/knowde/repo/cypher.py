@@ -7,12 +7,12 @@ from typing import Any, Final
 from more_itertools import first_true
 from neo4j.graph import Path
 
+from knowde.feature.domain.types import UUIDy
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.knowde.domain import LocationWithoutParents, UidStr
 from knowde.feature.knowde.graph.edge_type import EdgeType
 from knowde.feature.knowde.repo.adj import AdjType
 from knowde.feature.knowde.repo.clause import OrderBy, WherePhrase
-from knowde.feature.primitive.types import UUIDy
 from knowde.feature.user.public_schema import UserReadPublic
 
 

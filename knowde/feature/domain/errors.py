@@ -28,3 +28,33 @@ class DomainError(HTTPException):
         if msg is not None:
             self.msg = msg
         self.headers = headers
+
+
+class NotExistsAccessError(DomainError):
+    """存在しないのにアクセス."""
+
+    status_code = status.HTTP_404_NOT_FOUND
+
+
+class CompleteNotFoundError(DomainError):
+    """補完時に見つからない."""
+
+    status_code = status.HTTP_404_NOT_FOUND
+
+
+class NotUniqueError(DomainError):
+    """1つが見つかるべきとき."""
+
+    status_code = status.HTTP_409_CONFLICT
+
+
+class NotFoundError(DomainError):
+    """Neomodel内で見つからなかったとき."""
+
+    status_code = status.HTTP_404_NOT_FOUND
+
+
+class AlreadyExistsError(DomainError):
+    """既に作成済み."""
+
+    status_code = status.HTTP_409_CONFLICT

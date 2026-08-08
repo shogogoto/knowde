@@ -8,7 +8,7 @@ import neo4j
 from pydantic import BaseModel
 from pydantic_core import Url
 
-from knowde.feature.primitive.types import to_uuid
+from knowde.feature.domain.types import to_uuid
 
 
 class Entry(BaseModel, frozen=True):

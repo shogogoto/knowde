@@ -3,6 +3,7 @@
 import networkx as nx
 import pytest
 
+from knowde.feature.domain.types import Duplicable
 from knowde.feature.knowde.graph import to_nested
 from knowde.feature.knowde.graph.edge_type import EdgeType
 from knowde.feature.parsing.primitive.term import Term, check_and_merge_term
@@ -14,7 +15,6 @@ from knowde.feature.parsing.sysnet.errors import (
 from knowde.feature.parsing.sysnet.sysfn import get_ifdef, to_sentence, to_term
 from knowde.feature.parsing.sysnet.sysfn.build_fn import add_resolved_edges
 from knowde.feature.parsing.sysnet.sysnode import Def
-from knowde.feature.primitive.types import Duplicable
 
 from . import check_duplicated_sentence
 

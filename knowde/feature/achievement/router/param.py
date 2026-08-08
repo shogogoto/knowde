@@ -5,7 +5,7 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 from knowde.feature.achievement.domain import UserSearchOrderKey
-from knowde.feature.primitive.cypher import Paging
+from knowde.feature.repo.cypher import Paging
 
 
 class UserSearchBody(BaseModel, frozen=True):

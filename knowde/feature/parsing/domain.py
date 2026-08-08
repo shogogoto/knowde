@@ -5,9 +5,9 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from cProfile import Profile
 
+from knowde.feature.domain.errors import DomainError
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.tree2net import parse2net
-from knowde.feature.primitive.errors import DomainError
 
 
 def try_parse2net(s: str) -> SysNet:

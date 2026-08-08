@@ -2,7 +2,7 @@
 
 from collections.abc import Iterable
 
-from knowde.feature.primitive.types import UUIDy
+from knowde.feature.domain.types import UUIDy
 from knowde.feature.quiz.domain.parts import QuizType
 from knowde.feature.quiz.learning.progress.domain import (
     QuizTypeLearningStatus,

@@ -1,6 +1,6 @@
 """QuizChainのusecase."""
 
-from knowde.feature.primitive.types import UUIDy
+from knowde.feature.domain.types import UUIDy
 from knowde.feature.quiz.chain.access import (
     can_read_quiz,
     can_read_sentence,

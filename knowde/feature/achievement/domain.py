@@ -5,8 +5,8 @@ from typing import Literal, Self
 
 from pydantic import BaseModel, Field, RootModel
 
+from knowde.feature.domain.datetime import TZ, Neo4jDateTime
 from knowde.feature.entry.domain import NameSpace
-from knowde.feature.primitive.util import TZ, Neo4jDateTime
 from knowde.feature.user.public_schema import UserReadPublic
 
 UserSearchOrderKey = Literal[

@@ -4,6 +4,7 @@ from pprint import pp
 
 from neomodel import adb
 
+from knowde.feature.domain.types import UUIDy, to_uuid
 from knowde.feature.entry.label import LResource
 from knowde.feature.entry.resource.repo.diff_update.cypher import (
     build_varnames,
@@ -27,7 +28,6 @@ from knowde.feature.entry.resource.repo.diff_update.domain.domain import (
 from knowde.feature.entry.resource.repo.restore import restore_sysnet
 from knowde.feature.entry.resource.repo.save import q_create_node, t2labels
 from knowde.feature.parsing.sysnet import SysNet
-from knowde.feature.primitive.types import UUIDy, to_uuid
 
 
 # 単文のuidをなるべく不変にする

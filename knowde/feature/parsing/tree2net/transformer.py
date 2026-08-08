@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from lark import Token, Transformer
 
+from knowde.feature.domain.types import Duplicable
 from knowde.feature.knowde.graph.edge_type import EdgeType
 from knowde.feature.parsing.primitive.quoterm.domain import Quoterm
 from knowde.feature.parsing.primitive.template import Template
@@ -11,7 +12,6 @@ from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.primitive.time import WhenNode
 from knowde.feature.parsing.sysnet.sysnode import Def, KNArg
 from knowde.feature.parsing.tree2net.lineparse import parse_line
-from knowde.feature.primitive.types import Duplicable
 
 
 def _stoken(tok: Token, erase: str | None = None) -> Token:

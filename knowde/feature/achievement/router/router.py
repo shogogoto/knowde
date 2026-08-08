@@ -18,7 +18,7 @@ from knowde.feature.achievement.repo import (
     fetch_user_with_current_achivement,
     snapshot_archivement,
 )
-from knowde.feature.primitive.cypher import Paging
+from knowde.feature.repo.cypher import Paging
 from knowde.feature.user.router_util import TrackUser
 
 from .param import (

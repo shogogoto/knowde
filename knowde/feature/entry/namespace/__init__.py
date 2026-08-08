@@ -15,6 +15,8 @@ from neomodel.async_.core import AsyncDatabase
 from pydantic import RootModel
 from pydantic_core import Url
 
+from knowde.feature.domain.errors import NotFoundError
+from knowde.feature.domain.types import UUIDy, to_uuid
 from knowde.feature.entry.domain import NameSpace, ResourceMeta
 from knowde.feature.entry.errors import (
     DuplicatedTitleError,
@@ -26,8 +28,6 @@ from knowde.feature.entry.label import LFolder, LResource, LResourceStatsCache
 from knowde.feature.entry.mapper import MFolder, MResource
 from knowde.feature.entry.resource.stats.domain import ResourceStats
 from knowde.feature.knowde.domain import ResourceInfo
-from knowde.feature.primitive.errors.domain import NotFoundError
-from knowde.feature.primitive.types import UUIDy, to_uuid
 from knowde.feature.user.label import LUser
 from knowde.feature.user.public_schema import UserReadPublic
 

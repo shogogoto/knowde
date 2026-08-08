@@ -4,9 +4,9 @@ from datetime import datetime, timedelta
 from operator import attrgetter
 
 from knowde.conftest import async_fixture, mark_async_test
+from knowde.feature.domain.datetime import TZ
 from knowde.feature.entry.resource.usecase import save_text
-from knowde.feature.primitive.cypher import Paging
-from knowde.feature.primitive.util import TZ
+from knowde.feature.repo.cypher import Paging
 from knowde.feature.user.label import LUser
 
 from .repo import (

@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 from lark import Token
 
+from knowde.feature.domain.types import Duplicable
 from knowde.feature.knowde.graph.edge_type import EdgeType
 from knowde.feature.parsing.primitive.template import Template
 from knowde.feature.parsing.primitive.term import Term
@@ -20,7 +21,6 @@ from knowde.feature.parsing.sysnet.sysnode import (
     DummySentence,
     KNArg,
 )
-from knowde.feature.primitive.types import Duplicable
 
 if TYPE_CHECKING:
     import networkx as nx

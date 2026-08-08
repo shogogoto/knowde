@@ -1,6 +1,6 @@
 """複数リソースを横断するクイズ推薦ユースケース."""
 
-from knowde.feature.primitive.types import UUIDy, to_uuid
+from knowde.feature.domain.types import UUIDy, to_uuid
 from knowde.feature.quiz.candidate.types import CandidateType
 from knowde.feature.quiz.domain.domain import QuizSource
 from knowde.feature.quiz.domain.parts import QuizType

@@ -9,9 +9,9 @@ from typing import Final, Self
 
 from pydantic import BaseModel
 
+from knowde.feature.domain.types import UUIDy
 from knowde.feature.parsing.primitive.mark import inject2placeholder
 from knowde.feature.parsing.sysnet.sysnode import Def
-from knowde.feature.primitive.types import UUIDy
 from knowde.feature.quiz.errors import QuizOptionsMustBeDefError
 
 from .rel import QuizRel

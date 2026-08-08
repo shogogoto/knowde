@@ -1,8 +1,7 @@
-"""util."""
+"""日時に関する共通の型と変換."""
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
 from datetime import datetime
 from typing import Annotated, Any
 
@@ -21,10 +20,3 @@ def neo4j_dt_validator(v: Any) -> datetime:
 
 
 type Neo4jDateTime = Annotated[datetime, BeforeValidator(neo4j_dt_validator)]
-
-
-def parted(it: Iterable, f: Callable[..., bool]) -> tuple[list, list]:
-    """iterを条件で2分割."""
-    matches = list(filter(f, it))
-    not_matches = [e for e in it if e not in matches]
-    return matches, not_matches

@@ -6,10 +6,10 @@ from uuid import UUID
 from neomodel import adb
 from pydantic import Field, TypeAdapter
 
+from knowde.feature.domain.types import UUIDy, to_uuid
 from knowde.feature.knowde.repo import search_knowde_ids
 from knowde.feature.knowde.repo.clause import OrderBy
-from knowde.feature.primitive.cypher import Paging
-from knowde.feature.primitive.types import UUIDy, to_uuid
+from knowde.feature.repo.cypher import Paging
 
 
 async def fetch_sent2resource_id(sent_ids: list[UUIDy]):

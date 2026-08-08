@@ -13,7 +13,7 @@ from knowde.feature.entry.domain import (
 from knowde.feature.entry.mapper import MResource
 from knowde.feature.entry.resource.stats.domain import ResourceStats
 from knowde.feature.knowde.domain import ResourceInfo
-from knowde.feature.primitive.cypher import Paging
+from knowde.feature.repo.cypher import Paging
 from knowde.feature.user.public_schema import UserReadPublic
 
 

@@ -6,8 +6,8 @@ from uuid import UUID, uuid4
 
 from neomodel import adb
 
-from knowde.feature.primitive.types import UUIDy, to_uuid
-from knowde.feature.primitive.util import TZ
+from knowde.feature.domain.datetime import TZ
+from knowde.feature.domain.types import UUIDy, to_uuid
 from knowde.feature.quiz.candidate.types import CandidateType
 from knowde.feature.quiz.distractor.distractor import (
     fetch_distractor_ids,

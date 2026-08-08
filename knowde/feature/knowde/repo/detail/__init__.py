@@ -10,6 +10,8 @@ import networkx as nx
 from more_itertools import flatten
 from neomodel import adb, db
 
+from knowde.feature.domain.errors import NotFoundError, NotUniqueError
+from knowde.feature.domain.types import UUIDy, to_uuid
 from knowde.feature.knowde.domain import (
     Additional,
     Knowde,
@@ -29,8 +31,6 @@ from knowde.feature.knowde.repo.cypher import (
     q_upper,
 )
 from knowde.feature.parsing.primitive.term import Term
-from knowde.feature.primitive.errors.domain import NotFoundError, NotUniqueError
-from knowde.feature.primitive.types import UUIDy, to_uuid
 
 
 def q_knowde_detail(

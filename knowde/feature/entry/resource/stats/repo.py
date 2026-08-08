@@ -1,8 +1,8 @@
 """リソース統計情報のneo4j label."""
 
+from knowde.feature.domain.types import UUIDy, to_uuid
 from knowde.feature.entry.label import LResource, LResourceStatsCache
 from knowde.feature.parsing.sysnet import SysNet
-from knowde.feature.primitive.types import UUIDy, to_uuid
 
 from .domain import (
     create_resource_stats,

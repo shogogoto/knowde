@@ -1,6 +1,6 @@
 """quiz repo."""
 
-from knowde.feature.primitive.types import UUIDy
+from knowde.feature.domain.types import UUIDy
 
 
 class DistractStrategy:

@@ -5,8 +5,8 @@ from uuid import UUID, uuid4
 
 from neomodel import adb
 
-from knowde.feature.primitive.types import UUIDy, to_uuid
-from knowde.feature.primitive.util import TZ
+from knowde.feature.domain.datetime import TZ
+from knowde.feature.domain.types import UUIDy, to_uuid
 from knowde.feature.quiz.domain.answer import Answer
 from knowde.feature.quiz.errors import AnswerFailedError
 from knowde.feature.quiz.repo.restore import restore_quiz_sources

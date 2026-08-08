@@ -10,8 +10,7 @@ from datetime import datetime
 
 from neomodel import adb
 
-from knowde.feature.primitive.cypher import Paging
-from knowde.feature.primitive.types import UUIDy, to_uuid
+from knowde.feature.domain.types import UUIDy, to_uuid
 from knowde.feature.quiz.domain.answer import Answer, Answers
 from knowde.feature.quiz.domain.collections import (
     ReadableQuizResult,
@@ -23,6 +22,7 @@ from knowde.feature.quiz.management.domain import (
     ManagedQuizResult,
 )
 from knowde.feature.quiz.repo.restore import restore_quiz_sources
+from knowde.feature.repo.cypher import Paging
 
 
 async def _to_result(total: int, ids: list[str]) -> ReadableQuizResult:

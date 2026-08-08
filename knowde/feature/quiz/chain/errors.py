@@ -2,7 +2,7 @@
 
 from fastapi import status
 
-from knowde.feature.primitive.errors import DomainError
+from knowde.feature.domain.errors import DomainError
 
 
 class QuizChainNotFoundError(DomainError):

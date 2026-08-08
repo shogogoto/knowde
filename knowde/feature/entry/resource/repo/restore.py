@@ -9,6 +9,8 @@ import networkx as nx
 from lark import Token
 from neomodel.async_.core import AsyncDatabase
 
+from knowde.feature.domain.errors import NotFoundError
+from knowde.feature.domain.types import Duplicable, UUIDy, is_duplicable, to_uuid
 from knowde.feature.entry.label import LResource
 from knowde.feature.knowde.graph.edge_type import EdgeType
 from knowde.feature.knowde.repo.cypher import q_call_sent_names
@@ -22,8 +24,6 @@ from knowde.feature.parsing.sysnet.sysnode import (
     KNode,
     add_def_edge,
 )
-from knowde.feature.primitive.errors.domain import NotFoundError
-from knowde.feature.primitive.types import Duplicable, UUIDy, is_duplicable, to_uuid
 
 
 @cache

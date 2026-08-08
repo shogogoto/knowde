@@ -2,7 +2,7 @@
 
 from neomodel import adb
 
-from knowde.feature.primitive.types import UUIDy, to_uuid
+from knowde.feature.domain.types import UUIDy, to_uuid
 
 
 async def assign_quiz_to_learner(

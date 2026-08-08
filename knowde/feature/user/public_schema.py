@@ -5,8 +5,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, BeforeValidator, Field
 
-from knowde.feature.primitive.types import to_uuid
-from knowde.feature.primitive.util import Neo4jDateTime
+from knowde.feature.domain.datetime import Neo4jDateTime
+from knowde.feature.domain.types import to_uuid
 
 from . import LEN_DISPLAY_NAME, LEN_PROFILE, MAX_LEN_USERNAME
 

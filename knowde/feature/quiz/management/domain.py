@@ -4,8 +4,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from knowde.feature.domain.datetime import Neo4jDateTime
 from knowde.feature.entry.mapper import MResource
-from knowde.feature.primitive.util import Neo4jDateTime
 from knowde.feature.quiz.domain.domain import ReadableQuiz
 from knowde.feature.quiz.domain.parts import QuizType
 

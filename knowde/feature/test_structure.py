@@ -4,7 +4,10 @@ import ast
 from pathlib import Path
 
 KNOWDE_DIR = Path(__file__).parent.parent
-PRIMITIVE_DIR = Path(__file__).parent / "primitive"
+FOUNDATION_DIRS = (
+    Path(__file__).parent / "domain",
+    Path(__file__).parent / "repo",
+)
 
 
 def _imported_modules(path: Path) -> list[str]:
@@ -26,18 +29,21 @@ def test_legacy_package_source_files_are_removed():
         assert source_files == []
 
 
-def test_primitive_does_not_depend_on_feature_packages():
-    """Primitive を機能層から独立させる。."""
+def test_foundation_does_not_depend_on_specific_features():
+    """直下のdomain/repoを個別のfeatureから独立させる."""
     invalid: list[tuple[Path, str]] = []
-    for path in PRIMITIVE_DIR.rglob("*.py"):
-        feature_imports = [
-            module
-            for module in _imported_modules(path)
-            if module.startswith("knowde.feature.")
-            and not module.startswith("knowde.feature.primitive")
-        ]
-        invalid.extend(
-            (path.relative_to(KNOWDE_DIR), module) for module in feature_imports
-        )
+    for foundation_dir in FOUNDATION_DIRS:
+        for path in foundation_dir.rglob("*.py"):
+            feature_imports = [
+                module
+                for module in _imported_modules(path)
+                if module.startswith("knowde.feature.")
+                and not module.startswith(
+                    ("knowde.feature.domain", "knowde.feature.repo"),
+                )
+            ]
+            invalid.extend(
+                (path.relative_to(KNOWDE_DIR), module) for module in feature_imports
+            )
 
     assert invalid == []

@@ -2,8 +2,8 @@
 
 from neomodel.async_.core import AsyncDatabase
 
-from knowde.feature.primitive.errors.domain import NotFoundError
-from knowde.feature.primitive.types import UUIDy, to_uuid
+from knowde.feature.domain.errors import NotFoundError
+from knowde.feature.domain.types import UUIDy, to_uuid
 
 
 async def check_entry_owner(user_uid: UUIDy, entry_uid: UUIDy) -> bool:

@@ -3,8 +3,8 @@
 import pytest
 
 from knowde.conftest import async_fixture, mark_async_test
+from knowde.feature.domain.types import to_uuid
 from knowde.feature.knowde.label import LSentence
-from knowde.feature.primitive.types import to_uuid
 from knowde.feature.quiz.candidate.types import CandidateType
 from knowde.feature.quiz.chain.domain import QuizChainRole
 from knowde.feature.quiz.chain.repo import fetch_quiz_chain

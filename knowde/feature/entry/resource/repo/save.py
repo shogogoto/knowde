@@ -13,18 +13,18 @@ from more_itertools import collapse
 from neomodel import AsyncStructuredNode, StructuredNode, adb
 from pydantic import BaseModel
 
+from knowde.feature.domain.types import Duplicable, to_uuid
 from knowde.feature.entry.label import LHead, LResource
 from knowde.feature.knowde.graph.edge_type import EdgeType
 from knowde.feature.knowde.label import LInterval, LQuoterm, LSentence, LTerm
 from knowde.feature.parsing.primitive.quoterm.domain import Quoterm
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.primitive.time import WhenNode
-from knowde.feature.primitive.types import Duplicable, to_uuid
 
 if TYPE_CHECKING:
+    from knowde.feature.domain.types import UUIDy
     from knowde.feature.parsing.sysnet import SysNet
     from knowde.feature.parsing.sysnet.sysnode import KNode
-    from knowde.feature.primitive.types import UUIDy
 
 
 def val2str(val: Any) -> str:

@@ -11,6 +11,7 @@ import chardet  # 文字エンコーディング検出用
 from fastapi import APIRouter, Body, UploadFile
 from neomodel.async_.core import AsyncDatabase
 
+from knowde.feature.domain.datetime import TZ
 from knowde.feature.entry.domain import NameSpace, ResourceDetail, ResourceSearchResult
 from knowde.feature.entry.errors import NotOwnerError
 from knowde.feature.entry.label import LResource
@@ -27,7 +28,6 @@ from knowde.feature.entry.resource.repo.restore import restore_graph
 from knowde.feature.entry.resource.repo.search import search_resources
 from knowde.feature.entry.resource.usecase import save_resource_with_detail
 from knowde.feature.entry.router.param import ResourceSearchBody
-from knowde.feature.primitive.util import TZ
 from knowde.feature.user.router_util import ActiveUser, TrackUser
 
 router = APIRouter(tags=["entry"])

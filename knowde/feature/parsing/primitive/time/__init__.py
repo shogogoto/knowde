@@ -32,13 +32,13 @@ from pyparsing import (
     printables,
 )
 
+from knowde.feature.domain.datetime import TZ
+from knowde.feature.domain.types import Duplicable
 from knowde.feature.parsing.primitive.time.errors import (
     EndBeforeStartError,
     ParseWhenError,
 )
 from knowde.feature.parsing.primitive.time.parse import parse_extime, str2edtf
-from knowde.feature.primitive.types import Duplicable
-from knowde.feature.primitive.util import TZ
 
 if TYPE_CHECKING:
     from edtf import EDTFObject

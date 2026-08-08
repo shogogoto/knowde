@@ -14,7 +14,7 @@
 #     DummySentence,
 # )
 # from knowde.feature.knowde.graph.edge_type import EdgeType
-# from knowde.feature.primitive.types import Duplicable
+# from knowde.feature.domain.types import Duplicable
 #
 # T_EDGE_KEY: Final = "type"
 #

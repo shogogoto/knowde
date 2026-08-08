@@ -5,10 +5,10 @@ from uuid import uuid4
 import pytest
 
 from knowde.conftest import mark_async_test
+from knowde.feature.domain.errors import NotFoundError
 from knowde.feature.entry.label import LResource
 from knowde.feature.entry.resource.repo.owner import check_entry_owner
 from knowde.feature.entry.resource.usecase import save_text
-from knowde.feature.primitive.errors.domain import NotFoundError
 from knowde.feature.user.label import LUser
 
 

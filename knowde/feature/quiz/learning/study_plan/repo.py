@@ -5,8 +5,8 @@ from uuid import uuid4
 
 from neomodel import adb
 
-from knowde.feature.primitive.types import UUIDy, to_uuid
-from knowde.feature.primitive.util import TZ, neo4j_dt_validator
+from knowde.feature.domain.datetime import TZ, neo4j_dt_validator
+from knowde.feature.domain.types import UUIDy, to_uuid
 from knowde.feature.quiz.domain.parts import QuizType
 from knowde.feature.quiz.learning.study_plan.domain import (
     StudyPlan,

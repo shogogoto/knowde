@@ -2,7 +2,7 @@
 
 from collections.abc import Iterable
 
-from knowde.feature.primitive.types import UUIDy
+from knowde.feature.domain.types import UUIDy
 from knowde.feature.quiz.candidate.types import CandidateType
 from knowde.feature.quiz.domain.domain import QuizSource
 from knowde.feature.quiz.domain.parts import QuizType

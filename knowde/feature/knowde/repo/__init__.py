@@ -6,6 +6,8 @@ from uuid import UUID
 from more_itertools import collapse
 from neomodel import adb, db
 
+from knowde.feature.domain.errors import DomainError as DomainError
+from knowde.feature.domain.types import UUIDy, to_uuid
 from knowde.feature.entry.namespace import resource_infos_by_resource_uids
 from knowde.feature.knowde.domain import (
     KAdjacency,
@@ -17,9 +19,7 @@ from knowde.feature.knowde.domain import (
 from knowde.feature.knowde.repo.adj import AdjType
 from knowde.feature.knowde.repo.clause import OrderBy, WherePhrase
 from knowde.feature.knowde.repo.detail import fetch_knowdes_with_detail
-from knowde.feature.primitive.cypher import Paging
-from knowde.feature.primitive.errors import DomainError as DomainError
-from knowde.feature.primitive.types import UUIDy, to_uuid
+from knowde.feature.repo.cypher import Paging
 
 from .cypher import q_adjacency_uids, q_search
 from .cypher import q_stats as q_stats

@@ -8,10 +8,10 @@ from typing import TYPE_CHECKING
 
 import Levenshtein
 
+from knowde.feature.domain.types import Duplicable
 from knowde.feature.entry.resource.repo.diff_update.errors import IdentificationError
 from knowde.feature.entry.resource.repo.save import EdgeRel
 from knowde.feature.parsing.sysnet.sysnode import Def, Sentency
-from knowde.feature.primitive.types import Duplicable
 
 if TYPE_CHECKING:
     from knowde.feature.parsing.primitive.term import Term

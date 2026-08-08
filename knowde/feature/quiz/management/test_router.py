@@ -4,8 +4,8 @@ from fastapi import status
 from httpx import AsyncClient
 
 from knowde.conftest import async_fixture, mark_async_test
+from knowde.feature.domain.types import to_uuid
 from knowde.feature.knowde.label import LSentence
-from knowde.feature.primitive.types import to_uuid
 from knowde.feature.quiz.candidate.types import CandidateType
 from knowde.feature.quiz.domain.collections import ReadableQuizResult
 from knowde.feature.quiz.domain.parts import QuizType

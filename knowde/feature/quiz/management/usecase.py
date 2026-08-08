@@ -1,6 +1,6 @@
 """Quiz管理usecase."""
 
-from knowde.feature.primitive.types import UUIDy
+from knowde.feature.domain.types import UUIDy
 from knowde.feature.quiz.management.errors import QuizNotFoundError
 from knowde.feature.quiz.management.repo import delete_created_quiz
 

@@ -7,12 +7,12 @@ from typing import TYPE_CHECKING
 from lark import Tree
 from lark.visitors import Interpreter
 
+from knowde.feature.domain.collections import parted
 from knowde.feature.knowde.graph.edge_type import Direction, EdgeType
 from knowde.feature.parsing.primitive.heading import exclude_heading, include_heading
 from knowde.feature.parsing.tree2net.directed_edge import (
     DirectedEdgeCollection,
 )
-from knowde.feature.primitive.util import parted
 
 if TYPE_CHECKING:
     from lark.tree import Branch

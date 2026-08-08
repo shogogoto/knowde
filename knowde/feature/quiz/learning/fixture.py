@@ -2,9 +2,9 @@
 
 from uuid import UUID
 
+from knowde.feature.domain.types import UUIDy, to_uuid
 from knowde.feature.entry.namespace import fetch_namespace
 from knowde.feature.entry.resource.usecase import save_text
-from knowde.feature.primitive.types import UUIDy, to_uuid
 from knowde.feature.quiz.answering.repo import create_answer
 from knowde.feature.quiz.candidate.types import CandidateType
 from knowde.feature.quiz.domain.answer import Answer
