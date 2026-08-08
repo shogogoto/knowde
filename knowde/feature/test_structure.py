@@ -5,7 +5,7 @@ from pathlib import Path
 
 import networkx as nx
 
-KNOWDE_DIR = Path(__file__).parent.parent
+PACKAGE_DIR = Path(__file__).parent.parent
 FEATURE_DIR = Path(__file__).parent
 FOUNDATION_DIRS = (
     Path(__file__).parent / "domain",
@@ -27,7 +27,7 @@ def _imported_modules(path: Path) -> list[str]:
 def test_legacy_package_source_files_are_removed():
     """Integration/shared へ新しい実装を戻さない."""
     for package_name in ("integration", "shared"):
-        package = KNOWDE_DIR / package_name
+        package = PACKAGE_DIR / package_name
         source_files = list(package.rglob("*.py")) if package.exists() else []
         assert source_files == []
 
@@ -46,7 +46,7 @@ def test_foundation_does_not_depend_on_specific_features():
                 )
             ]
             invalid.extend(
-                (path.relative_to(KNOWDE_DIR), module) for module in feature_imports
+                (path.relative_to(PACKAGE_DIR), module) for module in feature_imports
             )
 
     assert invalid == []

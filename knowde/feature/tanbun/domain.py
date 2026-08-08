@@ -34,14 +34,14 @@ from knowde.feature.user.public_schema import UserReadPublic
 
 
 class Additional(BaseModel, frozen=True):
-    """knowde付加情報."""
+    """単文の付加情報."""
 
     when: str | None = None
     where: str | None = None
     by: str | None = None
 
 
-class KStats(BaseModel, frozen=True):
+class TanbunStats(BaseModel, frozen=True):
     """知識の関係統計."""
 
     # frontendのモック自動生成で数値の範囲を制限したい
@@ -68,14 +68,14 @@ class KStats(BaseModel, frozen=True):
         return str(ls)
 
 
-class Knowde(BaseModel, frozen=True):
+class Tanbun(BaseModel, frozen=True):
     """知識の最小単位."""
 
     sentence: str
     uid: UUID
     term: Term | None = None
     additional: Additional | None = None
-    stats: KStats
+    stats: TanbunStats
     resource_uid: UUID
 
     def __str__(self) -> str:  # noqa: D105
@@ -99,11 +99,11 @@ class Knowde(BaseModel, frozen=True):
         return Def(term=self.term, sentence=self.sentence)
 
 
-class KnowdeSearchResult(BaseModel):
-    """knowde検索結果."""
+class TanbunSearchResult(BaseModel):
+    """単文検索結果."""
 
     total: int
-    data: list[Knowde]
+    data: list[Tanbun]
     resource_infos: dict[UUID, ResourceInfo]
 
 
@@ -115,7 +115,7 @@ class UidStr(BaseModel):
 
 
 class LocationWithoutParents(BaseModel):
-    """親なしknowdeの位置情報."""
+    """親なし単文の位置情報."""
 
     user: UserReadPublic
     folders: list[UidStr]
@@ -127,23 +127,23 @@ class LocationWithoutParents(BaseModel):
     #     return f"{self.user.username} {'>'.join([h.val for h in self.headers])}"
 
 
-class KnowdeLocation(LocationWithoutParents):
-    """knowdeの位置情報."""
+class TanbunLocation(LocationWithoutParents):
+    """単文の位置情報."""
 
-    parents: list[Knowde]
+    parents: list[Tanbun]
 
 
-class KAdjacency(BaseModel):
+class TanbunAdjacency(BaseModel):
     """周辺情報も含める."""
 
-    center: Knowde
-    details: list[Knowde]
-    premises: list[Knowde]
-    conclusions: list[Knowde]
-    refers: list[Knowde]
-    referreds: list[Knowde]
-    abstracts: list[Knowde]
-    examples: list[Knowde]
+    center: Tanbun
+    details: list[Tanbun]
+    premises: list[Tanbun]
+    conclusions: list[Tanbun]
+    refers: list[Tanbun]
+    referreds: list[Tanbun]
+    abstracts: list[Tanbun]
+    examples: list[Tanbun]
 
     def __str__(self) -> str:
         """For display in CLI."""
@@ -163,37 +163,37 @@ class KAdjacency(BaseModel):
         return s
 
 
-class KnowdeChain(BaseModel):
+class TanbunChain(BaseModel):
     """詳細."""
 
     uid: UUID
     g: NXGraph
-    knowdes: dict[str, Knowde]
-    location: KnowdeLocation
+    knowdes: dict[str, Tanbun]
+    location: TanbunLocation
 
     # テスト用メソッド
     def get(self, sentence: str) -> str:  # noqa: D102
         for k, v in self.knowdes.items():
             if v.sentence == sentence:
                 if v.uid.hex not in self.g:
-                    msg = "KnowdeDetail.get: not found uid in graph"
+                    msg = "TanbunChain.get: not found uid in graph"
                     raise ValueError(msg)
                 return k
 
-        msg = f"'{sentence}' not found in knowde detail"
+        msg = f"'{sentence}' not found in tanbun detail"
         raise ValueError(msg)
 
-    def succ(self, sentence: str, t: EdgeType) -> list[Knowde]:  # noqa: D102
+    def succ(self, sentence: str, t: EdgeType) -> list[Tanbun]:  # noqa: D102
         uid = self.get(sentence)
         succs = list(t.succ(self.g, uid))
         return [self.knowdes[s] for s in succs]
 
-    def pred(self, sentence: str, t: EdgeType) -> list[Knowde]:  # noqa: D102
+    def pred(self, sentence: str, t: EdgeType) -> list[Tanbun]:  # noqa: D102
         uid = self.get(sentence)
         preds = list(t.pred(self.g, uid))
         return [self.knowdes[s] for s in preds]
 
-    def part(self, tgt: str) -> set[Knowde]:
+    def part(self, tgt: str) -> set[Tanbun]:
         """targetも含めて返す."""
         uid = self.get(tgt)
 
@@ -212,19 +212,19 @@ class KnowdeChain(BaseModel):
         return {self.knowdes.get(s) for s in ns if s is not None}
 
     def relabeled(self) -> DiGraph:
-        """UUIDstr node をknowdeに置き換えたgraphを返す."""
+        """UUIDstr node を単文に置き換えたgraphを返す."""
         return nx.relabel_nodes(self.g, self.knowdes)
 
 
-class KnowdeChains(RootModel[list[KnowdeChain]]):
-    """knowdeチェーンたち."""
+class TanbunChains(RootModel[list[TanbunChain]]):
+    """単文チェーンたち."""
 
-    def get(self, sentence: str) -> KnowdeChain:
+    def get(self, sentence: str) -> TanbunChain:
         """単文で返す."""
         for chain in self.root:
             uid = chain.uid
             kn = chain.knowdes[uid.hex]
             if kn.sentence == sentence:
                 return chain
-        msg = f"'{sentence}' not found in knowde chains"
+        msg = f"'{sentence}' not found in tanbun chains"
         raise KeyError(msg)

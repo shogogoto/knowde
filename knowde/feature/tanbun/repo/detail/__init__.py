@@ -13,27 +13,27 @@ from neomodel import adb, db
 from knowde.feature.domain.errors import NotFoundError, NotUniqueError
 from knowde.feature.domain.graph.edge_type import EdgeType
 from knowde.feature.domain.types import UUIDy, to_uuid
-from knowde.feature.knowde.domain import (
+from knowde.feature.parsing.primitive.term import Term
+from knowde.feature.repo.cypher import q_call_term_names
+from knowde.feature.tanbun.domain import (
     Additional,
-    Knowde,
-    KnowdeChain,
-    KnowdeChains,
-    KnowdeLocation,
+    Tanbun,
+    TanbunChain,
+    TanbunChains,
+    TanbunLocation,
 )
-from knowde.feature.knowde.label import LQuoterm, LSentence
-from knowde.feature.knowde.repo.clause import OrderBy
-from knowde.feature.knowde.repo.cypher import (
+from knowde.feature.tanbun.label import LQuoterm, LSentence
+from knowde.feature.tanbun.repo.clause import OrderBy
+from knowde.feature.tanbun.repo.cypher import (
     build_location_res,
     q_chain,
     q_location,
     q_stats,
     q_upper,
 )
-from knowde.feature.parsing.primitive.term import Term
-from knowde.feature.repo.cypher import q_call_term_names
 
 
-def q_knowde_detail(
+def q_tanbun_detail(
     with_location: bool = False,  # noqa: FBT001, FBT002
     order_by: OrderBy | None = OrderBy(),
 ) -> str:
@@ -56,10 +56,10 @@ def q_knowde_detail(
     """
 
 
-def _row2knowde(sent, names, alias, when, stats) -> Knowde:
-    """q_detail_locationの結果をKnowdeに変換."""
+def _row2tanbun(sent, names, alias, when, stats) -> Tanbun:
+    """q_detail_locationの結果をTanbunに変換."""
     names = [n.get("val") for n in names] if names is not None else []
-    return Knowde(
+    return Tanbun(
         sentence=sent.get("val"),
         uid=sent.get("uid"),
         term=Term.create(*names, alias=alias) if names else None,
@@ -71,13 +71,13 @@ def _row2knowde(sent, names, alias, when, stats) -> Knowde:
     )
 
 
-async def fetch_knowdes_with_detail(
+async def fetch_tanbuns_with_detail(
     uids: Iterable[UUIDy],
     order_by: OrderBy | None = OrderBy(),
     do_print: bool = False,  # noqa: FBT001, FBT002
-) -> dict[str, Knowde]:
+) -> dict[str, Tanbun]:
     """文のuuidリストから名前などの付属情報を返す."""
-    q = q_knowde_detail(order_by=order_by)
+    q = q_tanbun_detail(order_by=order_by)
     if do_print:
         print(q)  # noqa: T201
     rows, _ = await adb.cypher_query(
@@ -88,26 +88,26 @@ async def fetch_knowdes_with_detail(
     for row in rows:
         sent, names, alias, when, stats = row
         uid = sent.get("uid")
-        d[uid] = _row2knowde(sent, names, alias, when, stats)
+        d[uid] = _row2tanbun(sent, names, alias, when, stats)
     diff = set(uids) - set(d.keys())
     if len(diff) > 0:
-        msg = f"knowde取得に{len(diff)}個の漏れがある: {list(diff)}"
+        msg = f"単文取得に{len(diff)}個の漏れがある: {list(diff)}"
         raise NotFoundError(msg)
     return d
 
 
-async def fetch_knowdes_with_detail_and_location(
+async def fetch_tanbuns_with_detail_and_location(
     uids: Iterable[UUIDy],
     order_by: OrderBy | None = OrderBy(),
-) -> dict[str, tuple[Knowde, KnowdeLocation]]:
+) -> dict[str, tuple[Tanbun, TanbunLocation]]:
     """詳細とlocation付きで返す."""
-    q = q_knowde_detail(with_location=True, order_by=order_by)
+    q = q_tanbun_detail(with_location=True, order_by=order_by)
     rows, _ = db.cypher_query(
         q,
         params={"uids": [to_uuid(uid).hex for uid in uids]},
     )
 
-    def _to_knowde():
+    def _to_tanbun():
         d = {}
         d_loc = {}
         d_parents = {}
@@ -117,20 +117,20 @@ async def fetch_knowdes_with_detail_and_location(
             if location is None:
                 msg = f"location not found: {s} @{uid}"
                 raise NotFoundError(msg)
-            d[uid] = _row2knowde(sent, names, alais, when, stats)
+            d[uid] = _row2tanbun(sent, names, alais, when, stats)
             d_loc[uid], d_parents[uid] = build_location_res(location, uid)
         return d, d_loc, d_parents
 
-    d, d_loc, d_parents = _to_knowde()
+    d, d_loc, d_parents = _to_tanbun()
     # それぞれの parents を集めて一括 parent detial取得
     puids = set(flatten(d_parents.values()))
-    parent_dk = await fetch_knowdes_with_detail(puids)
+    parent_dk = await fetch_tanbuns_with_detail(puids)
     retval = {}
     for k, v in d.items():
         parents = [parent_dk[uid] for uid in d_parents[k]]
         retval[k] = (
             v,
-            KnowdeLocation(
+            TanbunLocation(
                 parents=parents,
                 user=d_loc[k].user,
                 folders=d_loc[k].folders,
@@ -141,8 +141,8 @@ async def fetch_knowdes_with_detail_and_location(
     return retval
 
 
-def knowde_upper(uid: UUID) -> LSentence:
-    """knowdeの親を返す."""
+def tanbun_upper(uid: UUID) -> LSentence:
+    """単文の親を返す."""
     q = f"""
         MATCH (sent: Sentence {{uid: $uid}})
         {q_upper("sent")}
@@ -156,11 +156,11 @@ def knowde_upper(uid: UUID) -> LSentence:
     return LSentence(**rows[0][0]._properties)  # noqa: SLF001
 
 
-async def chains_knowde(
+async def fetch_tanbun_chains(
     uids: Iterable[UUIDy],
     do_print: bool = False,  # noqa: FBT001, FBT002
-) -> KnowdeChains:
-    """knowdeの依存chain全てを含めた詳細."""
+) -> TanbunChains:
+    """単文の依存chain全てを含めた詳細."""
     q = f"""
         UNWIND $uids AS uid
         MATCH (s: Sentence {{uid: uid}})
@@ -212,11 +212,11 @@ async def chains_knowde(
             msg = f"{uids[0]} sentence not found"
             raise NotFoundError(msg)
     nodes = reduce(operator.or_, [set(g.nodes) for g in g_dict.values()])
-    d = await fetch_knowdes_with_detail(nodes, do_print=do_print)
-    d2 = await fetch_knowdes_with_detail_and_location(uids)
-    return KnowdeChains(
+    d = await fetch_tanbuns_with_detail(nodes, do_print=do_print)
+    d2 = await fetch_tanbuns_with_detail_and_location(uids)
+    return TanbunChains(
         root=[
-            KnowdeChain(
+            TanbunChain(
                 uid=to_uuid(uid),
                 g=g_dict[uid],
                 knowdes={n: d[n] for n in g_dict[uid].nodes},

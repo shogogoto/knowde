@@ -1,6 +1,6 @@
 """認証なしで使える単純なuser検索.
 
-entryやknowdeが絡むような機能はそっちのfeatureで書く
+entryやtanbunが絡むような機能はそっちのfeatureで書く
 """
 
 from fastapi import APIRouter

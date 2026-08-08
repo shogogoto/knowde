@@ -3,8 +3,6 @@
 from random import Random
 
 from knowde.conftest import async_fixture, mark_async_test
-from knowde.feature.knowde.label import LSentence
-from knowde.feature.knowde.repo.detail import fetch_knowdes_with_detail
 from knowde.feature.quiz.candidate.types import CandidateType
 from knowde.feature.quiz.domain.parts import QuizType
 from knowde.feature.quiz.generation.repo import generate_quiz
@@ -22,6 +20,8 @@ from knowde.feature.quiz.learning.selection.repo import (
     fetch_target_ids,
     fetch_uncovered_sent_ids,
 )
+from knowde.feature.tanbun.label import LSentence
+from knowde.feature.tanbun.repo.detail import fetch_tanbuns_with_detail
 from knowde.feature.user.label import LUser
 
 u = async_fixture()(fx_learning)
@@ -81,7 +81,7 @@ async def test_sort_by_score(u: LUser):
     rid = await learning_resource_id(u.uid)
     ids = await fetch_uncovered_sent_ids(rid, u.uid, QuizType.REL2PAIR)
     sorted_ids = await fetch_sort_by_score(ids)
-    knowdes = await fetch_knowdes_with_detail(sorted_ids, None)
+    knowdes = await fetch_tanbuns_with_detail(sorted_ids, None)
     sentences = [knowde.sentence for knowde in knowdes.values()]
     assert sentences[:2] == ["s", "pre_s"]
 

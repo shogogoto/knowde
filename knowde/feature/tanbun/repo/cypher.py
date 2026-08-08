@@ -10,10 +10,10 @@ from neo4j.graph import Path
 from knowde.feature.domain.graph.edge_type import EdgeType
 from knowde.feature.domain.types import UUIDy
 from knowde.feature.entry.mapper import MResource
-from knowde.feature.knowde.domain import LocationWithoutParents, UidStr
-from knowde.feature.knowde.repo.adj import AdjType
-from knowde.feature.knowde.repo.clause import OrderBy, WherePhrase
 from knowde.feature.repo.cypher import q_call_term_names
+from knowde.feature.tanbun.domain import LocationWithoutParents, UidStr
+from knowde.feature.tanbun.repo.adj import AdjType
+from knowde.feature.tanbun.repo.clause import OrderBy, WherePhrase
 from knowde.feature.user.public_schema import UserReadPublic
 
 
@@ -93,11 +93,11 @@ def q_chain(var: str, et: EdgeType, indent_len: int = 0) -> str:
     return indent(s, " " * indent_len)
 
 
-def q_where_knowde(p: WherePhrase = WherePhrase.CONTAINS) -> str:
+def q_where_tanbun(p: WherePhrase = WherePhrase.CONTAINS) -> str:
     """検索文字列が含まれている文と用語に紐づく文を返す."""
     where_phrase = f"{p.value} $s"
     return f"""
-        // 検索文字列が含まれる文 q_where_knowde
+        // 検索文字列が含まれる文 q_where_tanbun
         MATCH (sent1: Sentence WHERE sent1.val {where_phrase})
         {q_call_term_names("sent1")}
         RETURN sent1 AS sent
@@ -117,7 +117,7 @@ def q_search(
     only_with_term: bool,  # noqa: FBT001
     exclude_sent_ids: list[UUIDy] | None = None,
 ) -> str:
-    """search_knowdeとtotalのクエリ."""
+    """search_tanbunとtotalのクエリ."""
     q_term = "MATCH (sent)<-[:DEF]-(:Term)" if only_with_term else ""
     # フィルタ条件の構築
     conditions = []
@@ -132,7 +132,7 @@ def q_search(
 
     return rf"""
         CALL () {{
-        {indent(q_where_knowde(where), " " * 4)}
+        {indent(q_where_tanbun(where), " " * 4)}
         }}
         {q_term}
         WITH sent

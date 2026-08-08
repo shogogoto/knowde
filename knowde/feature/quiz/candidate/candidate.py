@@ -7,9 +7,9 @@ from neomodel import adb
 from pydantic import Field, TypeAdapter
 
 from knowde.feature.domain.types import UUIDy, to_uuid
-from knowde.feature.knowde.repo import search_knowde_ids
-from knowde.feature.knowde.repo.clause import OrderBy
 from knowde.feature.repo.cypher import Paging
+from knowde.feature.tanbun.repo import search_tanbun_ids
+from knowde.feature.tanbun.repo.clause import OrderBy
 
 
 async def fetch_sent2resource_id(sent_ids: list[UUIDy]):
@@ -39,7 +39,7 @@ async def list_candidates_in_resource(
         exclude_sent_ids = []
 
     rs_uids = await fetch_sent2resource_id(target_sent_ids)
-    return await search_knowde_ids(
+    return await search_tanbun_ids(
         "",
         paging=ENOUGH_PAGING,
         order_by=None,  # 無駄な並び替え省く
@@ -64,7 +64,7 @@ async def list_candidates_by_radius(
         exclude_sent_ids = []
     r = r_adapter.validate_python(radius)
     q_term = "<-[:DEF]-(:Term)" if only_with_term else ""
-    # search_knowde あたりをcallするだけにしたかったが
+    # search_tanbun あたりをcallするだけにしたかったが
     # locationを持たせる設計になっているため合わない
     q = f"""
         UNWIND $sent_uids AS sent_uid
@@ -116,7 +116,7 @@ async def list_top_scoring_candidates(
     exclude_sent_ids: list[UUIDy] | None = None,
 ) -> list[UUID]:
     """スコアの上位から候補を出す."""
-    rows = await search_knowde_ids(
+    rows = await search_tanbun_ids(
         "",
         paging=Paging(size=limit),
         order_by=order_by,

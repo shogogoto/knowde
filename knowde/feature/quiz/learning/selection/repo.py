@@ -8,14 +8,14 @@ from more_itertools import flatten
 from neomodel import adb
 
 from knowde.feature.domain.types import UUIDy, to_uuid
-from knowde.feature.knowde.repo.clause import OrderBy
-from knowde.feature.knowde.repo.cypher import q_stats
 from knowde.feature.quiz.domain.parts import QuizType
 from knowde.feature.quiz.learning.selection.domain import (
     QuizTargetOrder,
     QuizTargetPool,
 )
 from knowde.feature.quiz.repo.restore import KNOWLEDGE_REL_TYPES
+from knowde.feature.tanbun.repo.clause import OrderBy
+from knowde.feature.tanbun.repo.cypher import q_stats
 
 
 async def _fetch_coverage_sent_ids(

@@ -1,4 +1,4 @@
-"""knowde Neo4j Label Definition."""
+"""単文のNeo4j label定義."""
 
 from __future__ import annotations
 

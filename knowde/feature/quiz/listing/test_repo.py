@@ -6,7 +6,6 @@ from pytest_unordered import unordered
 
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.domain.types import UUIDy
-from knowde.feature.knowde.label import LSentence
 from knowde.feature.quiz.candidate.types import CandidateType
 from knowde.feature.quiz.distractor.distractor import fetch_distractor_ids
 from knowde.feature.quiz.domain.parts import QuizType
@@ -20,6 +19,7 @@ from knowde.feature.quiz.listing.repo import (
     list_quiz_by_sentence_ids,
     list_quiz_by_user_ids,
 )
+from knowde.feature.tanbun.label import LSentence
 from knowde.feature.user.label import LUser
 
 u = async_fixture()(fx_u)

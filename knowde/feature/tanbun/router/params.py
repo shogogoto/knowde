@@ -1,10 +1,10 @@
-"""knowde router params."""
+"""単文routerのparameter."""
 
 from fastapi import Query
 from pydantic import BaseModel, Field
 
-from knowde.feature.knowde.repo.clause import OrderBy, WherePhrase
 from knowde.feature.repo.cypher import Paging
+from knowde.feature.tanbun.repo.clause import OrderBy, WherePhrase
 
 
 class SearchParam(BaseModel):

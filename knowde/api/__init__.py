@@ -17,8 +17,8 @@ from knowde.api.middleware.transaction import Neo4jTransactionMiddleware
 from knowde.config.env import Settings
 from knowde.feature.achievement.router.router import user_achievement_router
 from knowde.feature.entry.router import entry_router
-from knowde.feature.knowde.router import knowde_router
 from knowde.feature.quiz.router.router import quiz_router
+from knowde.feature.tanbun.router import tanbun_router
 from knowde.feature.user import PREFIX_USER
 from knowde.feature.user.routers import auth_router, user_router
 
@@ -58,7 +58,7 @@ api.include_router(auth_router())
 api.include_router(user_router())
 api.include_router(user_achievement_router(), prefix=PREFIX_USER)
 api.include_router(entry_router())
-api.include_router(knowde_router())
+api.include_router(tanbun_router())
 api.include_router(quiz_router())
 
 

@@ -8,8 +8,6 @@ from neomodel import adb
 
 from knowde.feature.domain.graph.edge_type import EdgeType
 from knowde.feature.domain.types import UUIDy, to_uuid
-from knowde.feature.knowde.domain import Knowde
-from knowde.feature.knowde.repo.detail import fetch_knowdes_with_detail
 from knowde.feature.quiz.domain.domain import QuizSource
 from knowde.feature.quiz.domain.parts import (
     QuizOption,
@@ -19,6 +17,8 @@ from knowde.feature.quiz.domain.parts import (
 from knowde.feature.quiz.domain.rel import QUIZ_REL_EDGE_TYPES
 from knowde.feature.quiz.errors import QuizRestoreError
 from knowde.feature.repo.graph import neo4jpath2nx
+from knowde.feature.tanbun.domain import Tanbun
+from knowde.feature.tanbun.repo.detail import fetch_tanbuns_with_detail
 
 KNOWLEDGE_REL_TYPES: Final = "|".join(
     edge_type.name for edge_type in QUIZ_REL_EDGE_TYPES
@@ -31,7 +31,7 @@ def nx2options(
     correct_ids: Iterable[str],
     target_id: str,
     g: nx.DiGraph,
-    uid2kn: dict[str, Knowde],
+    uid2kn: dict[str, Tanbun],
     quiz_type: QuizType,
 ) -> dict[str, QuizOption]:
     """nxをoptionsに変換."""
@@ -59,15 +59,15 @@ async def restore_quiz_sources(
     quiz_ids: Iterable[UUIDy],
 ) -> list[QuizSource]:
     """クイズの復元."""
-    sources, _ = await restore_quiz_sources_with_knowdes(quiz_ids)
+    sources, _ = await restore_quiz_sources_with_tanbuns(quiz_ids)
     return sources
 
 
-async def restore_quiz_sources_with_knowdes(
+async def restore_quiz_sources_with_tanbuns(
     quiz_ids: Iterable[UUIDy],
     extra_uids: Iterable[UUIDy] = (),
-) -> tuple[list[QuizSource], dict[str, Knowde]]:
-    """クイズと、その復元に使ったKnowdeをまとめて返す."""
+) -> tuple[list[QuizSource], dict[str, Tanbun]]:
+    """クイズと、その復元に使ったTanbunをまとめて返す."""
     q = """
         UNWIND $quiz_ids AS quiz_id
         MATCH (quiz: Quiz {uid: quiz_id})
@@ -105,7 +105,7 @@ async def restore_quiz_sources_with_knowdes(
         *(r["source_ids"] for r in flat),
         (to_uuid(uid).hex for uid in extra_uids),
     )
-    kns = await fetch_knowdes_with_detail(all_uids)
+    kns = await fetch_tanbuns_with_detail(all_uids)
     sources = []
     for r in flat:
         quiz_type = QuizType[r["quiz_type"]]

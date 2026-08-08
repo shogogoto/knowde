@@ -5,8 +5,8 @@ from pydantic import ValidationError
 
 from knowde.conftest import mark_async_test
 from knowde.feature.entry.resource.usecase import save_text
-from knowde.feature.knowde.label import LSentence
 from knowde.feature.quiz.fixture import fx_u
+from knowde.feature.tanbun.label import LSentence
 from knowde.feature.user.label import LUser
 
 from .candidate import (

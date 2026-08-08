@@ -5,13 +5,13 @@ from httpx import AsyncClient
 
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.domain.types import to_uuid
-from knowde.feature.knowde.label import LSentence
 from knowde.feature.quiz.candidate.types import CandidateType
 from knowde.feature.quiz.domain.collections import ReadableQuizResult
 from knowde.feature.quiz.domain.parts import QuizType
 from knowde.feature.quiz.fixture import fx_u
 from knowde.feature.quiz.generation.repo import generate_quiz
 from knowde.feature.quiz.management.domain import ManagedQuizResult
+from knowde.feature.tanbun.label import LSentence
 from knowde.feature.user.label import LUser
 from knowde.feature.user.testing import aauth_header, aregister
 

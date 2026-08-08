@@ -10,11 +10,11 @@ from knowde.feature.domain.types import UUIDy, to_uuid
 from knowde.feature.entry.resource.repo.restore import restore_sysnet
 from knowde.feature.entry.resource.repo.save import sn2db
 from knowde.feature.entry.resource.usecase import save_text
-from knowde.feature.knowde.label import LSentence
-from knowde.feature.knowde.repo import adj_knowde, search_knowde
-from knowde.feature.knowde.repo.cypher import q_stats
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.repo.cypher import Paging
+from knowde.feature.tanbun.label import LSentence
+from knowde.feature.tanbun.repo import adj_tanbun, search_tanbun
+from knowde.feature.tanbun.repo.cypher import q_stats
 from knowde.feature.user.label import LUser
 
 from .clause import OrderBy, WherePhrase
@@ -26,7 +26,7 @@ async def u() -> LUser:  # noqa: D103
 
 
 @mark_async_test()
-async def test_search_knowde_by_txt(u: LUser):
+async def test_search_tanbun_by_txt(u: LUser):
     """文の所属などを取得."""
     s = """
     # titleX
@@ -47,22 +47,22 @@ async def test_search_knowde_by_txt(u: LUser):
         y: {x}yy
     """
     _sn, _ = await save_text(u.uid, s)
-    res = await search_knowde("A1")
+    res = await search_tanbun("A1")
     assert [a.sentence for a in res.data] == unordered(["a", "ちん", "bA123", "stcA1"])
     assert res.total == 4  # noqa: PLR2004
 
     # 用語ありだけにフィルター
-    res = await search_knowde("A1", only_with_term=True)
+    res = await search_tanbun("A1", only_with_term=True)
     assert [a.sentence for a in res.data] == unordered(["a", "ちん", "bA123"])
     assert res.total == 3  # noqa: PLR2004
 
     a = LSentence.nodes.get(val="xxx")
-    adjs = await adj_knowde([a.uid])
+    adjs = await adj_tanbun([a.uid])
     assert adjs[0].referreds[0].sentence == "{x}yy"
 
 
 @mark_async_test()
-async def test_search_knowde_with_resource_uid(u: LUser):
+async def test_search_tanbun_with_resource_uid(u: LUser):
     """リソースで検索範囲を絞る."""
     s1 = """
         # title1
@@ -80,15 +80,15 @@ async def test_search_knowde_with_resource_uid(u: LUser):
     """
     _, r1 = await save_text(u.uid, s1)
     _, r2 = await save_text(u.uid, s2)
-    res = await search_knowde("")
+    res = await search_tanbun("")
     assert res.total == 7  # noqa: PLR2004
-    res = await search_knowde("", filter_resource_uids=[r1.uid])
+    res = await search_tanbun("", filter_resource_uids=[r1.uid])
     assert len(res.data) == 3  # noqa: PLR2004
     assert res.total == 3  # noqa: PLR2004
-    res = await search_knowde("", filter_resource_uids=[r2.uid])
+    res = await search_tanbun("", filter_resource_uids=[r2.uid])
     assert len(res.data) == 4  # noqa: PLR2004
     assert res.total == 4  # noqa: PLR2004
-    res = await search_knowde("", filter_resource_uids=[r1.uid, r2.uid])
+    res = await search_tanbun("", filter_resource_uids=[r1.uid, r2.uid])
     assert len(res.data) == 7  # noqa: PLR2004
     assert res.total == 7  # noqa: PLR2004
 
@@ -169,14 +169,14 @@ async def test_paging(u: LUser):
     sn, _uids = await restore_sysnet(r.uid)
     n_nodes = len(sn.g.nodes) - 1
     assert n_nodes == 121  # title除いて121の文  # noqa: PLR2004
-    res = await search_knowde(".*", WherePhrase.REGEX, Paging(page=1))
+    res = await search_tanbun(".*", WherePhrase.REGEX, Paging(page=1))
     assert res.total == n_nodes
     assert len(res.data) == 100  # noqa: PLR2004
 
-    res = await search_knowde(".*", WherePhrase.REGEX, Paging(page=2))
+    res = await search_tanbun(".*", WherePhrase.REGEX, Paging(page=2))
     assert len(res.data) == 21  # noqa: PLR2004
 
-    res = await search_knowde(".*", WherePhrase.REGEX, Paging(page=3))
+    res = await search_tanbun(".*", WherePhrase.REGEX, Paging(page=3))
     assert len(res.data) == 0
 
 
@@ -195,7 +195,7 @@ async def to_chain(u: LUser) -> SysNet:
 
 
 @mark_async_test()
-async def test_search_knowde_ordering(u: LUser):
+async def test_search_tanbun_ordering(u: LUser):
     """検索結果の順番を確認."""
     _sn = await to_chain(u)
     order_by = OrderBy(
@@ -205,7 +205,7 @@ async def test_search_knowde_ordering(u: LUser):
         n_refer=0,
         n_referred=-0,
     )
-    res = await search_knowde(
+    res = await search_tanbun(
         ".*",
         WherePhrase.REGEX,
         order_by=order_by,
@@ -244,8 +244,8 @@ async def test_details(u: LUser):
     """
     _, r = await save_text(u.uid, s)
     _sn, _uids = await restore_sysnet(r.uid)
-    adjs1 = await adj_knowde([LSentence.nodes.get(val="detail1").uid])
-    adjs2 = await adj_knowde([LSentence.nodes.get(val="detail2").uid])
+    adjs1 = await adj_tanbun([LSentence.nodes.get(val="detail1").uid])
+    adjs2 = await adj_tanbun([LSentence.nodes.get(val="detail2").uid])
     assert [str(k) for k in adjs1[0].details] == ["d1T(114)", "d2", "d3"]
     assert [str(k) for k in adjs2[0].details] == [
         "x1",
@@ -280,7 +280,7 @@ async def test_score_with_quoterm(u: LUser):
           ex. iyan2
     """
     _sn, _mr1 = await save_text(u.uid, s1)
-    result = await search_knowde("aaa")
+    result = await search_tanbun("aaa")
     # zzz, yyy, ahan, iyan1の4つがdetalになる
     assert result.data[0].stats.n_detail == 4  # noqa: PLR2004
     assert result.data[0].stats.n_conclusion == 5  # noqa: PLR2004

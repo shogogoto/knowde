@@ -9,11 +9,11 @@ from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.domain.graph import to_leaves, to_roots
 from knowde.feature.domain.graph.edge_type import EdgeType
 from knowde.feature.entry.resource.usecase import save_text
-from knowde.feature.knowde.label import LSentence
 from knowde.feature.parsing.sysnet import SysNet
+from knowde.feature.tanbun.label import LSentence
 from knowde.feature.user.label import LUser
 
-from . import chains_knowde, knowde_upper
+from . import fetch_tanbun_chains, tanbun_upper
 
 
 @async_fixture()
@@ -79,7 +79,7 @@ async def test_get_upper(u: LUser):
 
     def s_assert(val: str, expected: str):
         s = LSentence.nodes.get(val=val)
-        upper = knowde_upper(UUID(s.uid))
+        upper = tanbun_upper(UUID(s.uid))
         assert upper.val == expected
 
     # そのまま辿れるなら自身を返す
@@ -119,7 +119,7 @@ async def test_detail_networks_to_or_resolved_edges(u: LUser):
     """IDによる詳細 TO/RESOLVED関係."""
     await setup(u)
     s = LSentence.nodes.get(val="0")
-    chains = await chains_knowde([s.uid])
+    chains = await fetch_tanbun_chains([s.uid])
     c = chains.root[0]
     assert [k.sentence for k in c.succ("0", EdgeType.TO)] == unordered([
         "1",
@@ -187,7 +187,7 @@ async def test_detail_no_below_no_header(u: LUser):
     """
     _sn, _r = await save_text(u.uid, s)
     s = LSentence.nodes.get(val="a")
-    chains = await chains_knowde([s.uid])
+    chains = await fetch_tanbun_chains([s.uid])
     c = chains.root[0]
     assert [k.sentence for k in c.part("a")] == ["a"]
     assert c.location.headers == []
@@ -205,7 +205,7 @@ async def test_detail_no_below_no_header_with_parent(u: LUser):
     """
     _sn, _r = await save_text(u.uid, s)
     s = LSentence.nodes.get(val="a")
-    chains = await chains_knowde([s.uid])
+    chains = await fetch_tanbun_chains([s.uid])
     c = chains.root[0]
     assert [k.sentence for k in c.part("a")] == ["a"]
     assert [k.sentence for k in c.location.parents] == ["parent"]
@@ -227,7 +227,7 @@ async def test_detail_no_header(u: LUser):
     """
     _sn, _r = await save_text(u.uid, s)
     s = LSentence.nodes.get(val="a")
-    chains = await chains_knowde([s.uid])
+    chains = await fetch_tanbun_chains([s.uid])
     c = chains.root[0]
     assert [k.sentence for k in c.part("a")] == unordered(["a", "b", "c"])
     assert c.location.parents == []
@@ -256,7 +256,7 @@ async def test_chain_quoterm_rel(u: LUser):
 
     _sn, _r = await save_text(u.uid, s)
     tgt = LSentence.nodes.first(val="aaa")
-    chains = await chains_knowde([tgt.uid])
+    chains = await fetch_tanbun_chains([tgt.uid])
     c = chains.root[0]
     assert [k.sentence for k in c.succ("aaa", EdgeType.TO)] == unordered([
         "direct",
@@ -286,7 +286,7 @@ async def test_fetch_multi_chains(u: LUser):
     _sn, _r = await save_text(u.uid, s)
     tgt1 = LSentence.nodes.first(val="aaa")
     tgt2 = LSentence.nodes.first(val="ddd")
-    chains = await chains_knowde([tgt1.uid, tgt2.uid])
+    chains = await fetch_tanbun_chains([tgt1.uid, tgt2.uid])
     assert len(chains.root) == 2  # noqa: PLR2004
     c_aaa = chains.get("aaa")
     c_ddd = chains.get("ddd")

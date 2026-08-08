@@ -1,4 +1,4 @@
-"""リソースの詳細(knowde)を含まないリソースのメタ情報repo."""
+"""リソースの詳細(単文)を含まないリソースのメタ情報repo."""
 
 from __future__ import annotations
 
@@ -145,7 +145,7 @@ async def save_or_move_resource(
     ns.remove_resource(m.title)
 
     d = old.model_dump()
-    d["uid"] = d["uid"].hex  # ハイフンありに変換されるとknowdeとの結びつかなくなる
+    d["uid"] = d["uid"].hex  # ハイフンありに変換されると単文との結びつきがなくなる
     d["updated"] = m.updated
     upd = await LResource(**d).save()  # reflesh
     owner = await upd.owner.get_or_none()

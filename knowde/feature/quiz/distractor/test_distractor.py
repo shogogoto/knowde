@@ -7,7 +7,6 @@ from uuid import UUID
 import pytest
 
 from knowde.conftest import async_fixture, mark_async_test
-from knowde.feature.knowde.label import LSentence
 from knowde.feature.quiz.candidate.types import CandidateType
 from knowde.feature.quiz.distractor.distractor import (
     MAX_RELATION_PATH_CANDIDATES,
@@ -17,6 +16,7 @@ from knowde.feature.quiz.distractor.distractor import (
 from knowde.feature.quiz.domain.rel import QuizRel
 from knowde.feature.quiz.errors import InsufficientOptionsError
 from knowde.feature.quiz.fixture import fx_u
+from knowde.feature.tanbun.label import LSentence
 from knowde.feature.user.label import LUser
 
 u = async_fixture()(fx_u)

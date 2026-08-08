@@ -5,11 +5,11 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from knowde.feature.knowde.domain import Knowde
 from knowde.feature.quiz.domain.answer import Answer
 from knowde.feature.quiz.domain.domain import ReadableQuiz
 from knowde.feature.quiz.domain.parts import QuizType
 from knowde.feature.quiz.domain.rel import QuizRel
+from knowde.feature.tanbun.domain import Tanbun
 
 
 class QuizChainRole(StrEnum):
@@ -29,7 +29,7 @@ class QuizChainQuiz(BaseModel, frozen=True):
 
 
 class QuizChainLink(BaseModel, frozen=True):
-    """QuizとKnowdeを結ぶ役割と、targetからの知識関係."""
+    """QuizとTanbunを結ぶ役割と、targetからの知識関係."""
 
     quiz_id: UUID
     sentence_id: UUID
@@ -40,7 +40,7 @@ class QuizChainLink(BaseModel, frozen=True):
 class QuizChain(BaseModel, frozen=True):
     """frontendで既存chainへマージできる1ホップ分のgraph."""
 
-    sentences: list[Knowde]
+    sentences: list[Tanbun]
     quizzes: list[QuizChainQuiz]
     links: list[QuizChainLink]
     answers: list[Answer] = Field(default_factory=list)

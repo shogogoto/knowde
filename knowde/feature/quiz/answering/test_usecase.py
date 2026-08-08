@@ -3,13 +3,13 @@
 import pytest
 
 from knowde.conftest import async_fixture, mark_async_test
-from knowde.feature.knowde.label import LSentence
 from knowde.feature.quiz.answering.usecase import answer_quiz_as_chain
 from knowde.feature.quiz.candidate.types import CandidateType
 from knowde.feature.quiz.chain.errors import QuizChainNotFoundError
 from knowde.feature.quiz.domain.parts import QuizType
 from knowde.feature.quiz.fixture import fx_u
 from knowde.feature.quiz.generation.repo import generate_quiz
+from knowde.feature.tanbun.label import LSentence
 from knowde.feature.user.label import LUser
 from knowde.feature.user.testing import aregister
 

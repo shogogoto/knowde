@@ -1,4 +1,4 @@
-"""knowde router test."""
+"""単文router test."""
 
 from datetime import datetime
 from uuid import UUID
@@ -10,8 +10,8 @@ from fastapi.testclient import TestClient
 from knowde.api import root_router
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.entry.resource.usecase import save_text
-from knowde.feature.knowde.domain import KnowdeChains
-from knowde.feature.knowde.label import LSentence, LTerm
+from knowde.feature.tanbun.domain import TanbunChains
+from knowde.feature.tanbun.label import LSentence, LTerm
 from knowde.feature.user.label import LUser
 
 
@@ -53,7 +53,7 @@ async def test_detail_router(u: LUser, caplog):
     res = client.get(url)
 
     assert res.status_code == status.HTTP_200_OK
-    chains = KnowdeChains.model_validate(res.json())
+    chains = TanbunChains.model_validate(res.json())
     c = chains.root[0]
     assert c.location.resource.updated == t
     assert c.location.user.id.hex == u.uid

@@ -4,7 +4,6 @@ import pytest
 
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.domain.types import to_uuid
-from knowde.feature.knowde.label import LSentence
 from knowde.feature.quiz.candidate.types import CandidateType
 from knowde.feature.quiz.chain.domain import QuizChainRole
 from knowde.feature.quiz.chain.repo import fetch_quiz_chain
@@ -12,6 +11,7 @@ from knowde.feature.quiz.domain.parts import QuizType
 from knowde.feature.quiz.domain.rel import QuizRel
 from knowde.feature.quiz.fixture import fx_u
 from knowde.feature.quiz.generation.repo import generate_quiz
+from knowde.feature.tanbun.label import LSentence
 from knowde.feature.user.label import LUser
 
 u = async_fixture()(fx_u)
@@ -20,7 +20,7 @@ u = async_fixture()(fx_u)
 @pytest.mark.parametrize("quiz_type", list(QuizType))
 @mark_async_test()
 async def test_fetch_quiz_chain(quiz_type: QuizType, u: LUser):
-    """全quiz typeを表示できるKnowdeと知識関係を1ホップ取得."""
+    """全quiz typeを表示できるTanbunと知識関係を1ホップ取得."""
     target = LSentence.nodes.first(val="ccc")
     pair = LSentence.nodes.first(val="parent")
     source = await generate_quiz(
@@ -39,11 +39,11 @@ async def test_fetch_quiz_chain(quiz_type: QuizType, u: LUser):
     assert {knowde.uid for knowde in chain.sentences} == {
         to_uuid(sentence_id) for sentence_id in source.sources
     }
-    target_knowde = next(
+    target_tanbun = next(
         knowde for knowde in chain.sentences if knowde.uid == to_uuid(source.target_id)
     )
-    assert target_knowde.term is not None
-    assert target_knowde.sentence == "ccc"
+    assert target_tanbun.term is not None
+    assert target_tanbun.sentence == "ccc"
 
     target_roles = {
         link.role

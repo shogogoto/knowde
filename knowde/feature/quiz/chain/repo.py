@@ -13,7 +13,7 @@ from knowde.feature.quiz.chain.domain import (
     QuizChainRole,
 )
 from knowde.feature.quiz.repo.restore import (
-    restore_quiz_sources_with_knowdes,
+    restore_quiz_sources_with_tanbuns,
 )
 
 RELATION_TO_ROLE = {
@@ -39,7 +39,7 @@ async def fetch_quiz_chain(quiz_id: UUIDy) -> QuizChain | None:
         q,
         params={"quiz_id": to_uuid(quiz_id).hex},
     )
-    sources, knowdes = await restore_quiz_sources_with_knowdes([quiz_id])
+    sources, knowdes = await restore_quiz_sources_with_tanbuns([quiz_id])
     if not sources:
         return None
 
@@ -99,7 +99,7 @@ async def fetch_sentence_chain(
         return None
 
     sid, _, _ = rows[0]
-    sources, knowdes = await restore_quiz_sources_with_knowdes(
+    sources, knowdes = await restore_quiz_sources_with_tanbuns(
         quiz_ids,
         extra_uids=[sentence_id],
     )

@@ -37,7 +37,7 @@ async def save_resource_with_detail(
     updated: datetime | None = None,
     do_print: bool = False,  # noqa: FBT001, FBT002
 ) -> tuple[MResource, ResourceMeta]:
-    """テキストからResource内のKnowdeネットワークを永続化."""
+    """テキストからResource内のTanbunネットワークを永続化."""
     meta = ResourceMeta.from_str(txt, path, updated)
     lb = await save_or_move_resource(meta, ns)
     await _check_duplication(ns.user_id, meta.title)
