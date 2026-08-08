@@ -16,7 +16,7 @@ from .params import SearchParam, get_search_param
 @cache
 def tanbun_router() -> APIRouter:
     """Router."""
-    return APIRouter(prefix="/knowde", tags=["knowde"])
+    return APIRouter()
 
 
 @tanbun_router().get("/")

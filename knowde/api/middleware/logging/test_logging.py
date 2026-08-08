@@ -23,7 +23,7 @@ def test_api_call_logging(caplog: pytest.LogCaptureFixture):
     handler.setFormatter(text_formatter())
     client = TestClient(root_router())
 
-    res = client.get("/knowde/sentence/064ef00c-5e33-4505-acf5-45ba26cc54dc")
+    res = client.get("/tanbun/sentence/064ef00c-5e33-4505-acf5-45ba26cc54dc")
     assert "x-user-id" not in res.headers
 
     email = "log@test.com"
@@ -50,7 +50,7 @@ def test_api_call_logging(caplog: pytest.LogCaptureFixture):
 
     # ログイン後はuser-idをレスポンスに付与
     res = client.get(
-        "/knowde/sentence/064ef00c-5e33-4505-acf5-45ba26cc54dc",
+        "/tanbun/sentence/064ef00c-5e33-4505-acf5-45ba26cc54dc",
         headers=auth,
     )
     assert "x-user-id" in res.headers

@@ -62,7 +62,7 @@ api.include_router(
     tags=["public_user"],
 )
 api.include_router(entry_router())
-api.include_router(tanbun_router())
+api.include_router(tanbun_router(), prefix="/tanbun", tags=["tanbun"])
 api.include_router(quiz_router())
 
 
