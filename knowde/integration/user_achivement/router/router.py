@@ -9,6 +9,9 @@ from knowde.integration.user_achivement.domain import (
     UserActivities,
     UserSearchResult,
 )
+from knowde.integration.user_achivement.quiz.router import (
+    router as quiz_achievement_router,
+)
 from knowde.integration.user_achivement.repo import (
     fetch_achievement_history,
     fetch_activity,
@@ -25,6 +28,7 @@ from .param import (
 )
 
 _r = APIRouter()
+_r.include_router(quiz_achievement_router)
 
 
 @_r.post("/search")
