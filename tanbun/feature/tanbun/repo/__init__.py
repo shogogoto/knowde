@@ -4,7 +4,7 @@ from typing import Any
 from uuid import UUID
 
 from more_itertools import collapse
-from neomodel import adb, db
+from neomodel import adb
 
 from tanbun.feature.domain.errors import DomainError as DomainError
 from tanbun.feature.domain.types import UUIDy, to_uuid
@@ -26,7 +26,7 @@ from .cypher import q_stats as q_stats
 from .cypher import q_where_tanbun as q_where_tanbun
 
 
-def search_total(
+async def search_total(
     s: str,
     where: WherePhrase = WherePhrase.CONTAINS,
     filter_resource_uids: list[UUIDy] | None = None,
@@ -37,7 +37,7 @@ def search_total(
     q += """
         RETURN COUNT(sent)
     """
-    res = db.cypher_query(
+    res, _ = await adb.cypher_query(
         q,
         params={
             "s": s,
@@ -46,7 +46,7 @@ def search_total(
             else [],
         },
     )
-    return res[0][0][0]
+    return res[0][0]
 
 
 async def search_tanbun_ids(  # noqa: PLR0917
@@ -114,7 +114,7 @@ async def search_tanbun(  # noqa: PLR0917
     d = await fetch_tanbuns_with_detail(kn_uids, order_by=order_by)
     ls = list(d.values())
     return TanbunSearchResult(
-        total=search_total(s, where, filter_resource_uids, only_with_term),
+        total=await search_total(s, where, filter_resource_uids, only_with_term),
         data=ls,
         resource_infos=await resource_infos_by_resource_uids({
             k.resource_uid for k in ls

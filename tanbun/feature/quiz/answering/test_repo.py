@@ -16,7 +16,7 @@ u = async_fixture()(fx_u)
 @mark_async_test()
 async def test_create_answer(u: LUser):
     """正解と不正解を保存して回答一覧を返す."""
-    target = LSentence.nodes.first(val="ccc")
+    target = await LSentence.nodes.first(val="ccc")
     source = await generate_quiz(
         QuizType.TERM2SENT,
         CandidateType.ALL,
@@ -28,7 +28,7 @@ async def test_create_answer(u: LUser):
     assert (await list_answers([quiz.quiz_id], user_uid=u.uid)).root == []
 
     correct = await create_answer(quiz.quiz_id, quiz.correct, u.uid)
-    incorrect = LSentence.nodes.first(val="todetail")
+    incorrect = await LSentence.nodes.first(val="todetail")
     wrong = await create_answer(quiz.quiz_id, [incorrect.uid], u.uid)
     answers = await list_answers([quiz.quiz_id], user_uid=u.uid)
 

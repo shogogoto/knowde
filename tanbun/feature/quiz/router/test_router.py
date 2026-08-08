@@ -22,7 +22,7 @@ u = async_fixture()(fx_u)
 @mark_async_test()
 async def test_sent2term(ac: AsyncClient, u: LUser):
     """単文から用語を当てるクイズの一連の流れ."""
-    sent = LSentence.nodes.first(val="ccc")
+    sent = await LSentence.nodes.first(val="ccc")
     p = CreateQuizParam(
         target_sent_uid=sent.uid,
         quiz_type=QuizType.SENT2TERM,
@@ -69,8 +69,8 @@ async def test_create_relation_quiz(
     quiz_type: QuizType,
 ):
     """対象単文と関係先を指定して関係クイズを作成する."""
-    target = LSentence.nodes.first(val="ccc")
-    pair = LSentence.nodes.first(val="parent")
+    target = await LSentence.nodes.first(val="ccc")
+    pair = await LSentence.nodes.first(val="parent")
     param = CreateQuizParam(
         target_sent_uid=target.uid,
         correct_sent_uids=[pair.uid],

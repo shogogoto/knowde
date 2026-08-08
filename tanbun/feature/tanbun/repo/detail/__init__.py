@@ -8,7 +8,7 @@ from uuid import UUID
 
 import networkx as nx
 from more_itertools import flatten
-from neomodel import adb, db
+from neomodel import adb
 
 from tanbun.feature.domain.errors import NotFoundError, NotUniqueError
 from tanbun.feature.domain.graph.edge_type import EdgeType
@@ -102,7 +102,7 @@ async def fetch_tanbuns_with_detail_and_location(
 ) -> dict[str, tuple[Tanbun, TanbunLocation]]:
     """詳細とlocation付きで返す."""
     q = q_tanbun_detail(with_location=True, order_by=order_by)
-    rows, _ = db.cypher_query(
+    rows, _ = await adb.cypher_query(
         q,
         params={"uids": [to_uuid(uid).hex for uid in uids]},
     )
@@ -141,7 +141,7 @@ async def fetch_tanbuns_with_detail_and_location(
     return retval
 
 
-def tanbun_upper(uid: UUID) -> LSentence:
+async def tanbun_upper(uid: UUID) -> LSentence:
     """単文の親を返す."""
     q = f"""
         MATCH (sent: Sentence {{uid: $uid}})
@@ -149,7 +149,7 @@ def tanbun_upper(uid: UUID) -> LSentence:
         RETURN upper
     """
 
-    rows, _ = db.cypher_query(q, params={"uid": uid.hex})
+    rows, _ = await adb.cypher_query(q, params={"uid": uid.hex})
     if len(rows) != 1:
         msg = f"{uid} sentence location is not unique: {len(rows)}"
         raise NotUniqueError(msg)
@@ -194,7 +194,7 @@ async def fetch_tanbun_chains(
     if do_print:
         print(q)  # noqa: T201
 
-    rows, _ = db.cypher_query(q, params={"uids": uids}, resolve_objects=True)
+    rows, _ = await adb.cypher_query(q, params={"uids": uids}, resolve_objects=True)
     g_dict = {uid: nx.MultiDiGraph() for uid in uids}
     for row in rows:
         tgt_uid, start, end, type_ = row

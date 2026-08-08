@@ -48,7 +48,7 @@ async def test_detail_router(u: LUser, caplog):
         path=("A", "B", "C.txt"),
     )
 
-    s = LSentence.nodes.get(val="p21")
+    s = await LSentence.nodes.get(val="p21")
     url = f"/tanbun/sentence/{UUID(s.uid)}"
     res = client.get(url)
 
@@ -103,7 +103,8 @@ async def test_search(u: LUser, caplog):
     """
     client = TestClient(root_router())
     _sn, _r = await save_text(u.uid, s)
-    s = LTerm.nodes.get(val="アルキメデス").sentence.single()
+    term = await LTerm.nodes.get(val="アルキメデス")
+    s = await term.sentence.single()
     url = "/tanbun/?q=%E6%95%B0%E5%AD%A6&type=CONTAINS&page=1&size=100&n_detail=1&n_premise=3&n_conclusion=3&n_refer=3&n_referred=3&dist_axiom=1&dist_leaf=1&desc=true"  # noqa: E501
     res = client.get(url)
     assert res.status_code == status.HTTP_200_OK
@@ -160,7 +161,7 @@ async def test_not_found_should_not_raise_error(u: LUser):
           ! nameの区切り文字を","に変えるべきか
     """
     _sn, _r = await save_text(u.uid, s)
-    tgt = LSentence.nodes.first(val="物理的実在の世界")
+    tgt = await LSentence.nodes.first(val="物理的実在の世界")
     client = TestClient(root_router())
     res = client.get(f"/tanbun/sentence/{tgt.uid}")
     assert res.is_success
@@ -188,10 +189,10 @@ async def test_location_by_regression(u: LUser):
     _sn, _r = await save_text(u.uid, s)
     client = TestClient(root_router())
 
-    tgt = LSentence.nodes.first(val="ドイツの数学者")
+    tgt = await LSentence.nodes.first(val="ドイツの数学者")
     res = client.get(f"/tanbun/sentence/{tgt.uid}")
     assert res.is_success
 
-    tgt = LSentence.nodes.first(val="最も偉大な論理学者の一人")
+    tgt = await LSentence.nodes.first(val="最も偉大な論理学者の一人")
     res = client.get(f"/tanbun/sentence/{tgt.uid}")
     assert res.is_success

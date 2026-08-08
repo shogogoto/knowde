@@ -33,7 +33,7 @@ async def u() -> LUser:  # noqa: D103
 async def test_list_candidates_in_resource():
     """リソース内検索."""
     await u()
-    sent = LSentence.nodes.first(val="aaa")
+    sent = await LSentence.nodes.first(val="aaa")
     c = await list_candidates_in_resource([sent.uid])
     assert len(c) == 3  # noqa: PLR2004
     c = await list_candidates_in_resource([sent.uid], only_with_term=True)
@@ -44,7 +44,7 @@ async def test_list_candidates_in_resource():
 async def test_list_candidates_by_radius():
     """距離指定で誤答肢候補を列挙."""
     await u()
-    sent = LSentence.nodes.first(val="aaa")
+    sent = await LSentence.nodes.first(val="aaa")
     with pytest.raises(ValidationError):
         await list_candidates_by_radius([sent.uid], radius=-999)
     c = await list_candidates_by_radius([sent.uid], radius=1)
@@ -62,7 +62,7 @@ async def test_list_candidates_by_radius():
 async def test_list_top_scoring_candidates():
     """対象と特定の関係をもつ候補を列挙する."""
     await fx_u()
-    sent = LSentence.nodes.first(val="aaa")
+    sent = await LSentence.nodes.first(val="aaa")
     # 用語ありなのは5個
     res = await list_top_scoring_candidates(
         [sent.resource_uid],

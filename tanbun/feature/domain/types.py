@@ -7,7 +7,7 @@ from collections.abc import Hashable
 from typing import Annotated, Any
 from uuid import UUID, uuid4
 
-from neomodel import StringProperty, StructuredNode, UniqueIdProperty
+from neomodel import AsyncStructuredNode, StringProperty, UniqueIdProperty
 from pydantic import (
     BaseModel,
     Field,
@@ -28,14 +28,14 @@ def to_uuid(uidy: UUIDy) -> UUID:
 def _validate_neomodel(
     v: Any,
     info: ValidationInfo,
-) -> StructuredNode:
-    if isinstance(v, StructuredNode):
+) -> AsyncStructuredNode:
+    if isinstance(v, AsyncStructuredNode):
         return v
     raise TypeError
 
 
 NeoModel = Annotated[
-    StructuredNode,
+    AsyncStructuredNode,
     PlainValidator(_validate_neomodel),
     PlainSerializer(lambda x: x.__properties__),
 ]

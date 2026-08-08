@@ -21,8 +21,8 @@ u = async_fixture()(fx_u)
 @mark_async_test()
 async def test_fetch_quiz_chain(quiz_type: QuizType, u: LUser):
     """全quiz typeを表示できるTanbunと知識関係を1ホップ取得."""
-    target = LSentence.nodes.first(val="ccc")
-    pair = LSentence.nodes.first(val="parent")
+    target = await LSentence.nodes.first(val="ccc")
+    pair = await LSentence.nodes.first(val="parent")
     source = await generate_quiz(
         quiz_type,
         CandidateType.ALL,

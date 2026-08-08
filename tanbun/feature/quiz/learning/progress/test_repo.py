@@ -23,7 +23,7 @@ u = async_fixture()(fx_learning)
 async def test_fetch_coverage(u: LUser):
     """別タイプ・別ユーザーのクイズを除外してcoverageを取得."""
     rid = await learning_resource_id(u.uid)
-    target = LSentence.nodes.first(val="a")
+    target = await LSentence.nodes.first(val="a")
     expected = QuizCoverage(
         resource_id=rid,
         user_id=u.uid,

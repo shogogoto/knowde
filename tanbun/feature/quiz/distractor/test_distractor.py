@@ -25,7 +25,7 @@ u = async_fixture()(fx_u)
 @mark_async_test()
 async def test_raise_insufficient_options(u: LUser):
     """候補不足はQuizType共通の公開エラーへ変換する."""
-    target = LSentence.nodes.first(val="ccc")
+    target = await LSentence.nodes.first(val="ccc")
 
     with pytest.raises(InsufficientOptionsError):
         await fetch_distractor_ids(

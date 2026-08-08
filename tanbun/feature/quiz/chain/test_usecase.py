@@ -23,7 +23,7 @@ u = async_fixture()(fx_u)
 @mark_async_test()
 async def test_expand_sentence_chain_one_hop(u: LUser):
     """Sentenceから本人のQuizだけを取得し、他のSentenceへは展開しない."""
-    target = LSentence.nodes.first(val="ccc")
+    target = await LSentence.nodes.first(val="ccc")
     own = await generate_quiz(
         QuizType.TERM2SENT,
         CandidateType.ALL,
@@ -54,7 +54,7 @@ async def test_expand_sentence_chain_one_hop(u: LUser):
 @mark_async_test()
 async def test_reject_unassigned_quiz_chain(u: LUser):
     """LEARNがないQuizは展開できない."""
-    target = LSentence.nodes.first(val="ccc")
+    target = await LSentence.nodes.first(val="ccc")
     other = await aregister(email="quiz-chain-owner@ex.com")
     quiz = await generate_quiz(
         QuizType.TERM2SENT,

@@ -34,7 +34,7 @@ QUIZ_TYPES = [
 async def _create_quiz_set(user_id: UUIDy, target: str) -> list[UUID]:
     """一覧テスト用に3件のクイズを作成."""
     qids = []
-    sentence = LSentence.nodes.first(val=target)
+    sentence = await LSentence.nodes.first(val=target)
     option_ids = await fetch_distractor_ids(
         [sentence.uid],
         CandidateType.NEAR,
@@ -84,7 +84,7 @@ async def test_list_learning_quizzes(u: LUser):
 @mark_async_test()
 async def test_list_quiz_by_sentence_id(u: LUser):
     """単文指定でクイズを取得."""
-    sent = LSentence.nodes.first(val="ccc")
+    sent = await LSentence.nodes.first(val="ccc")
     expected_ids = await _create_quiz_set(u.uid, "ccc")
     await _create_quiz_set(u.uid, "ccc1")
 
@@ -96,7 +96,7 @@ async def test_list_quiz_by_sentence_id(u: LUser):
 @mark_async_test()
 async def test_list_quiz_by_sentence_id_empty(u: LUser):
     """クイズが存在しない単文を指定した場合、空のリストが返る."""
-    sent = LSentence.nodes.first(val="ccc")
+    sent = await LSentence.nodes.first(val="ccc")
     result = await list_quiz_by_sentence_ids([sent.uid])
     assert result.data.root == []
 

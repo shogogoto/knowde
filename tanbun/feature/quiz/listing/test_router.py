@@ -20,7 +20,7 @@ u = async_fixture()(fx_u)
 
 async def _generate_quizzes(u: LUser, count: int) -> list[QuizSource]:
     """一覧API用のクイズを生成."""
-    target = LSentence.nodes.first(val="ccc")
+    target = await LSentence.nodes.first(val="ccc")
     return [
         await generate_quiz(
             QuizType.TERM2SENT,

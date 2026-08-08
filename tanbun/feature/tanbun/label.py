@@ -3,22 +3,22 @@
 from __future__ import annotations
 
 from neomodel import (
+    AsyncOne,
+    AsyncRelationshipFrom,
+    AsyncRelationshipManager,
+    AsyncRelationshipTo,
+    AsyncStructuredNode,
+    AsyncZeroOrOne,
     FloatProperty,
     FulltextIndex,
-    One,
-    RelationshipFrom,
-    RelationshipManager,
-    RelationshipTo,
     StringProperty,
-    StructuredNode,
     UniqueIdProperty,
-    ZeroOrOne,
 )
 
 from tanbun.feature.domain.graph.edge_type import EdgeType
 
 
-class LSentence(StructuredNode):
+class LSentence(AsyncStructuredNode):
     """1文."""
 
     __label__ = "Sentence"
@@ -28,7 +28,7 @@ class LSentence(StructuredNode):
         required=True,
         fulltext_index=FulltextIndex(),
     )  # , max_length=MAX_CHARS)
-    term = RelationshipTo("LTerm", "TERM", cardinality=ZeroOrOne)
+    term = AsyncRelationshipTo("LTerm", "TERM", cardinality=AsyncZeroOrOne)
     # 各文からlocationを取得しようとしたが、探索に時間がかかりすぎるのか応答しなくなった
     # 探索コストを削減するために、元からIDを持たせる
     resource_uid = StringProperty(require=True, index=True)  # 作成ユーザーID
@@ -37,16 +37,16 @@ class LSentence(StructuredNode):
 
     # cypher_query で relからNodeのpropertyを取得するために必要
     # resolve_object=Trueにするとpropertiesが空にならずにマッピングされる
-    premise = RelationshipFrom("LSentence", EdgeType.TO.name)
-    conculusion = RelationshipTo("LSentence", EdgeType.TO.name)
-    refer = RelationshipFrom("LSentence", EdgeType.RESOLVED.name)
-    referred = RelationshipTo("LSentence", EdgeType.RESOLVED.name)
-    parent = RelationshipFrom("LSentence", EdgeType.BELOW.name)
-    detail = RelationshipTo("LSentence", EdgeType.BELOW.name)
-    sibling = RelationshipTo("LSentence", EdgeType.SIBLING.name)
+    premise = AsyncRelationshipFrom("LSentence", EdgeType.TO.name)
+    conculusion = AsyncRelationshipTo("LSentence", EdgeType.TO.name)
+    refer = AsyncRelationshipFrom("LSentence", EdgeType.RESOLVED.name)
+    referred = AsyncRelationshipTo("LSentence", EdgeType.RESOLVED.name)
+    parent = AsyncRelationshipFrom("LSentence", EdgeType.BELOW.name)
+    detail = AsyncRelationshipTo("LSentence", EdgeType.BELOW.name)
+    sibling = AsyncRelationshipTo("LSentence", EdgeType.SIBLING.name)
 
 
-class LTerm(StructuredNode):
+class LTerm(AsyncStructuredNode):
     """用語."""
 
     __label__ = "Term"
@@ -56,21 +56,25 @@ class LTerm(StructuredNode):
         required=True,
         fulltext_index=FulltextIndex(),
     )  # , max_length=MAX_CHARS)
-    alias = RelationshipTo("LTerm", "ALIAS", cardinality=ZeroOrOne)
-    sentence: RelationshipManager = RelationshipTo("LSentence", "DEF")
+    alias = AsyncRelationshipTo("LTerm", "ALIAS", cardinality=AsyncZeroOrOne)
+    sentence: AsyncRelationshipManager = AsyncRelationshipTo("LSentence", "DEF")
 
 
-class LQuoterm(StructuredNode):
+class LQuoterm(AsyncStructuredNode):
     """引用用語."""
 
     __label__ = "Quoterm"
     uid = UniqueIdProperty()
     val = StringProperty(index=True, required=True)
-    term: RelationshipManager = RelationshipTo("LTerm", "QUOTE", cardinality=One)
+    term: AsyncRelationshipManager = AsyncRelationshipTo(
+        "LTerm",
+        "QUOTE",
+        cardinality=AsyncOne,
+    )
     resource_uid = StringProperty(require=True, index=True)  # 作成ユーザーID
 
 
-class LInterval(StructuredNode):
+class LInterval(AsyncStructuredNode):
     """時刻期間."""
 
     __label__ = "Interval"

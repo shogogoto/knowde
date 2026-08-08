@@ -22,7 +22,7 @@ u = async_fixture()(fx_u)
 @mark_async_test()
 async def test_delete_quiz_and_answers_without_deleting_sentences(u: LUser):
     """QuizとAnswerだけを削除し、元のSentenceは残す."""
-    target = LSentence.nodes.first(val="ccc")
+    target = await LSentence.nodes.first(val="ccc")
     source = await generate_quiz(
         QuizType.TERM2SENT,
         CandidateType.ALL,
@@ -58,7 +58,7 @@ async def test_delete_quiz_and_answers_without_deleting_sentences(u: LUser):
 async def test_reject_deleting_other_users_quiz(u: LUser):
     """作成者以外はQuizを削除できない."""
     other = await aregister(email="quiz-delete-other@ex.com")
-    target = LSentence.nodes.first(val="ccc")
+    target = await LSentence.nodes.first(val="ccc")
     source = await generate_quiz(
         QuizType.TERM2SENT,
         CandidateType.ALL,

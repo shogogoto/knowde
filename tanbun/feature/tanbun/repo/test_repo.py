@@ -1,7 +1,7 @@
 """test."""
 
 import networkx as nx
-from neomodel import db
+from neomodel import adb
 from pytest_unordered import unordered
 
 from tanbun.conftest import async_fixture, mark_async_test
@@ -56,7 +56,7 @@ async def test_search_tanbun_by_txt(u: LUser):
     assert [a.sentence for a in res.data] == unordered(["a", "ちん", "bA123"])
     assert res.total == 3  # noqa: PLR2004
 
-    a = LSentence.nodes.get(val="xxx")
+    a = await LSentence.nodes.get(val="xxx")
     adjs = await adj_tanbun([a.uid])
     assert adjs[0].referreds[0].sentence == "{x}yy"
 
@@ -93,7 +93,7 @@ async def test_search_tanbun_with_resource_uid(u: LUser):
     assert res.total == 7  # noqa: PLR2004
 
 
-def get_stats_by_id_for_test(uid: UUIDy) -> list[int] | None:
+async def get_stats_by_id_for_test(uid: UUIDy) -> list[int] | None:
     """systats相当のものをDBから取得する(動作確認用)."""
     q = rf"""
         MATCH (tgt:Sentence) WHERE tgt.uid= $uid
@@ -108,12 +108,12 @@ def get_stats_by_id_for_test(uid: UUIDy) -> list[int] | None:
             , st.n_refer
             , st.n_detail
     """
-    res = db.cypher_query(
+    rows, _ = await adb.cypher_query(
         q,
         params={"uid": to_uuid(uid).hex},
         resolve_objects=True,
     )
-    return res[0][0] if res else None
+    return rows[0] if rows else None
 
 
 @mark_async_test()
@@ -148,11 +148,19 @@ async def test_stats_from_db(u: LUser):
     """
     _, r = await save_text(u.uid, s)
     _sn, uids = await restore_sysnet(r.uid)
-    assert get_stats_by_id_for_test(uids["0"]) == [6, 7, 0, 0, 0, 0, 0]
-    assert get_stats_by_id_for_test(uids["1"]) == [7, 2, 0, 0, 0, 0, 0]
-    assert get_stats_by_id_for_test(uids["a"]) == [0, 0, 0, 0, 2, 0, 0]
-    assert get_stats_by_id_for_test(uids["b{A}b"]) == [0, 0, 0, 0, 1, 1, 0]
-    assert get_stats_by_id_for_test(uids["detail"]) == [0, 0, 0, 0, 0, 0, 5]
+    assert await get_stats_by_id_for_test(uids["0"]) == [6, 7, 0, 0, 0, 0, 0]
+    assert await get_stats_by_id_for_test(uids["1"]) == [7, 2, 0, 0, 0, 0, 0]
+    assert await get_stats_by_id_for_test(uids["a"]) == [0, 0, 0, 0, 2, 0, 0]
+    assert await get_stats_by_id_for_test(uids["b{A}b"]) == [0, 0, 0, 0, 1, 1, 0]
+    assert await get_stats_by_id_for_test(uids["detail"]) == [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+    ]
 
 
 @mark_async_test()
@@ -244,8 +252,10 @@ async def test_details(u: LUser):
     """
     _, r = await save_text(u.uid, s)
     _sn, _uids = await restore_sysnet(r.uid)
-    adjs1 = await adj_tanbun([LSentence.nodes.get(val="detail1").uid])
-    adjs2 = await adj_tanbun([LSentence.nodes.get(val="detail2").uid])
+    detail1 = await LSentence.nodes.get(val="detail1")
+    detail2 = await LSentence.nodes.get(val="detail2")
+    adjs1 = await adj_tanbun([detail1.uid])
+    adjs2 = await adj_tanbun([detail2.uid])
     assert [str(k) for k in adjs1[0].details] == ["d1T(114)", "d2", "d3"]
     assert [str(k) for k in adjs2[0].details] == [
         "x1",

@@ -31,7 +31,7 @@ u = async_fixture()(fx_learning)
 async def test_fetch_uncovered(u: LUser):
     """クイズ生成後の単文を未coverage対象から除外."""
     rid = await learning_resource_id(u.uid)
-    target = LSentence.nodes.first(val="a")
+    target = await LSentence.nodes.first(val="a")
     assert target.uid in await fetch_uncovered_sent_ids(
         rid,
         u.uid,
@@ -57,7 +57,7 @@ async def test_fetch_uncovered(u: LUser):
 async def test_fetch_covered(u: LUser):
     """クイズ生成後の単文をcoverage対象として取得."""
     rid = await learning_resource_id(u.uid)
-    target = LSentence.nodes.first(val="a")
+    target = await LSentence.nodes.first(val="a")
     assert await fetch_covered_sent_ids(rid, u.uid, QuizType.TERM2SENT) == []
 
     await generate_quiz(
@@ -90,7 +90,7 @@ async def test_sort_by_score(u: LUser):
 async def test_fetch_target_ids(u: LUser):
     """poolからスコア順で指定件数の対象を取得."""
     rid = await learning_resource_id(u.uid)
-    highest = LSentence.nodes.first(val="s")
+    highest = await LSentence.nodes.first(val="s")
 
     targets = await fetch_target_ids(
         rid,

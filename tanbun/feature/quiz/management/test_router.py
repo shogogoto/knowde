@@ -22,7 +22,7 @@ u = async_fixture()(fx_u)
 async def test_list_and_delete_created_quizzes_api(ac: AsyncClient, u: LUser):
     """自分が作成したQuizを一覧し、削除できる."""
     n_created = 3
-    target = LSentence.nodes.first(val="ccc")
+    target = await LSentence.nodes.first(val="ccc")
     own = await generate_quiz(
         QuizType.TERM2SENT,
         CandidateType.ALL,

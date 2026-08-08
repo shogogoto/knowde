@@ -10,7 +10,7 @@ from uuid import UUID, uuid4
 import networkx as nx
 from lark import Token
 from more_itertools import collapse
-from neomodel import AsyncStructuredNode, StructuredNode, adb
+from neomodel import AsyncStructuredNode, adb
 from pydantic import BaseModel
 
 from tanbun.feature.domain.graph.edge_type import EdgeType
@@ -42,10 +42,10 @@ def val2str(val: Any) -> str:
             return f"'{val}'"
 
 
-def propstr(tgt: StructuredNode | BaseModel | dict) -> str:
+def propstr(tgt: AsyncStructuredNode | BaseModel | dict) -> str:
     """Neomodel のラベルからcypher用プロパティ文字列へ."""
     d = tgt
-    if isinstance(tgt, StructuredNode):
+    if isinstance(tgt, AsyncStructuredNode):
         d = tgt.__properties__
     if isinstance(tgt, BaseModel):
         d = tgt.model_dump(mode="json")
@@ -56,7 +56,7 @@ def propstr(tgt: StructuredNode | BaseModel | dict) -> str:
     return f"{{ {s} }}"
 
 
-def t2labels(t: type[StructuredNode | AsyncStructuredNode]) -> str:
+def t2labels(t: type[AsyncStructuredNode]) -> str:
     """Convert to query string from neomodel type."""
     return ":".join(t.inherited_labels())
 

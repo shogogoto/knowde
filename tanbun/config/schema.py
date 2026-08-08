@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 
-from neomodel import adb, db
+from neomodel import adb
 
 from tanbun.config.env import Settings
 from tanbun.feature.achievement.label import LArchievement
@@ -19,7 +19,6 @@ from tanbun.feature.quiz.label import LAnswer, LQuiz
 from tanbun.feature.tanbun.label import LInterval, LQuoterm, LSentence, LTerm
 from tanbun.feature.user.label import LAccount, LUser
 
-SYNC_LABELS = (LSentence, LTerm, LQuoterm, LInterval)
 ASYNC_LABELS = (
     LAccount,
     LUser,
@@ -31,6 +30,10 @@ ASYNC_LABELS = (
     LQuiz,
     LAnswer,
     LArchievement,
+    LSentence,
+    LTerm,
+    LQuoterm,
+    LInterval,
 )
 
 
@@ -40,12 +43,9 @@ async def install_schema() -> None:
     settings.setup_db()
 
     try:
-        for label in SYNC_LABELS:
-            db.install_labels(label, quiet=False)
         for label in ASYNC_LABELS:
             await adb.install_labels(label, quiet=False)
     finally:
-        settings.terdown_db()
         await adb.close_connection()
 
 

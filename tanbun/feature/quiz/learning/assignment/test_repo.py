@@ -26,7 +26,7 @@ u = async_fixture()(fx_learning)
 async def test_assign_quiz_to_learner(u: LUser):
     """他人が作ったクイズを重複なく学習対象へ追加."""
     rid = await learning_resource_id(u.uid)
-    target = LSentence.nodes.first(val="a")
+    target = await LSentence.nodes.first(val="a")
     quiz = await generate_quiz(
         QuizType.TERM2SENT,
         CandidateType.ALL,

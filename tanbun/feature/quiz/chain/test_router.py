@@ -19,7 +19,7 @@ u = async_fixture()(fx_u)
 @mark_async_test()
 async def test_expand_quiz_and_sentence_chain_api(ac: AsyncClient, u: LUser):
     """選択したQuizとSentenceをAPIから1ホップずつ展開."""
-    target = LSentence.nodes.first(val="ccc")
+    target = await LSentence.nodes.first(val="ccc")
     quiz = await generate_quiz(
         QuizType.TERM2SENT,
         CandidateType.ALL,
@@ -48,7 +48,7 @@ async def test_expand_quiz_and_sentence_chain_api(ac: AsyncClient, u: LUser):
 @mark_async_test()
 async def test_reject_other_users_quiz_chain_api(ac: AsyncClient, u: LUser):
     """他ユーザーだけがLEARNするQuizはAPIから取得できない."""
-    target = LSentence.nodes.first(val="ccc")
+    target = await LSentence.nodes.first(val="ccc")
     other = await aregister(email="quiz-chain-api-other@ex.com")
     quiz = await generate_quiz(
         QuizType.TERM2SENT,

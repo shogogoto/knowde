@@ -33,7 +33,6 @@ s = Settings()
 async def lifespan(_app: FastAPI) -> AsyncGenerator:
     """Set up DB etc."""
     s.setup_db()
-    await AsyncDatabase().install_all_labels()
     yield
     await AsyncDatabase().close_connection()
 

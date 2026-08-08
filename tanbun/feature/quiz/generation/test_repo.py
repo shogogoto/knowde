@@ -25,7 +25,7 @@ async def _generate_term_quiz(
     user_id: UUIDy,
 ) -> QuizSource:
     """用語を持つ単文からクイズを生成."""
-    target = LSentence.nodes.first(val="ccc")
+    target = await LSentence.nodes.first(val="ccc")
     return await generate_quiz(
         quiz_type,
         CandidateType.ALL,
@@ -40,8 +40,8 @@ async def _generate_relation_quiz(
     user_id: UUIDy,
 ) -> QuizSource:
     """対象と関係先を指定して関係クイズを生成."""
-    target = LSentence.nodes.first(val="ccc")
-    pair = LSentence.nodes.first(val="parent")
+    target = await LSentence.nodes.first(val="ccc")
+    pair = await LSentence.nodes.first(val="parent")
     return await generate_quiz(
         quiz_type,
         CandidateType.ALL,
@@ -59,8 +59,8 @@ async def _generate_relation_quiz(
 @mark_async_test()
 async def test_prepare_relation_quiz(quiz_type: QuizType, u: LUser):
     """関係クイズ用の正解と誤答肢を準備する."""
-    target = LSentence.nodes.first(val="ccc")
-    pair = LSentence.nodes.first(val="parent")
+    target = await LSentence.nodes.first(val="ccc")
+    pair = await LSentence.nodes.first(val="parent")
 
     for _ in range(3):
         distractor_ids, correct_ids = await prepare_quiz_gen(
@@ -135,8 +135,8 @@ async def test_generate_quiz_without_correct_option(
     u: LUser,
 ):
     """クイズの正解の選択肢がなくて何も選ばないのが正解."""
-    target = LSentence.nodes.first(val="ccc")
-    pair = LSentence.nodes.first(val="parent")
+    target = await LSentence.nodes.first(val="ccc")
+    pair = await LSentence.nodes.first(val="parent")
     source = await generate_quiz(
         quiz_type,
         CandidateType.ALL,

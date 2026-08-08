@@ -77,36 +77,36 @@ async def test_get_upper(u: LUser):
     """parent(resourceに辿れる)の末尾 upper を取得する."""
     _sn = await setup(u)
 
-    def s_assert(val: str, expected: str):
-        s = LSentence.nodes.get(val=val)
-        upper = tanbun_upper(UUID(s.uid))
+    async def s_assert(val: str, expected: str):
+        s = await LSentence.nodes.get(val=val)
+        upper = await tanbun_upper(UUID(s.uid))
         assert upper.val == expected
 
     # そのまま辿れるなら自身を返す
-    s_assert("0", "0")
-    s_assert("p2", "p2")
-    s_assert("x23", "x23")
-    s_assert("x231", "x231")
-    s_assert("yyy", "yyy")
-    s_assert("zzz", "zzz")
+    await s_assert("0", "0")
+    await s_assert("p2", "p2")
+    await s_assert("x23", "x23")
+    await s_assert("x231", "x231")
+    await s_assert("yyy", "yyy")
+    await s_assert("zzz", "zzz")
     # upperがない場合は自身を返す
-    s_assert("a", "a")
-    s_assert("c{B}c", "c{B}c")
+    await s_assert("a", "a")
+    await s_assert("c{B}c", "c{B}c")
     # -> の upperも辿れる
-    s_assert("1", "0")
-    s_assert("2", "0")
-    s_assert("11", "0")
-    s_assert("22", "0")
-    s_assert("221", "0")
+    await s_assert("1", "0")
+    await s_assert("2", "0")
+    await s_assert("11", "0")
+    await s_assert("22", "0")
+    await s_assert("221", "0")
 
     # <- の upperも辿れる
-    s_assert("-1", "0")
-    s_assert("-2", "0")
-    s_assert("-11", "0")
-    s_assert("-22", "0")
+    await s_assert("-1", "0")
+    await s_assert("-2", "0")
+    await s_assert("-11", "0")
+    await s_assert("-22", "0")
     # ->と<- の混在
-    s_assert("complex1", "0")
-    s_assert("complex2", "0")
+    await s_assert("complex1", "0")
+    await s_assert("complex2", "0")
 
 
 @mark_async_test()
@@ -118,7 +118,7 @@ async def test_parents(u: LUser):
 async def test_detail_networks_to_or_resolved_edges(u: LUser):
     """IDによる詳細 TO/RESOLVED関係."""
     await setup(u)
-    s = LSentence.nodes.get(val="0")
+    s = await LSentence.nodes.get(val="0")
     chains = await fetch_tanbun_chains([s.uid])
     c = chains.root[0]
     assert [k.sentence for k in c.succ("0", EdgeType.TO)] == unordered([
@@ -186,7 +186,7 @@ async def test_detail_no_below_no_header(u: LUser):
         a
     """
     _sn, _r = await save_text(u.uid, s)
-    s = LSentence.nodes.get(val="a")
+    s = await LSentence.nodes.get(val="a")
     chains = await fetch_tanbun_chains([s.uid])
     c = chains.root[0]
     assert [k.sentence for k in c.part("a")] == ["a"]
@@ -204,7 +204,7 @@ async def test_detail_no_below_no_header_with_parent(u: LUser):
             a
     """
     _sn, _r = await save_text(u.uid, s)
-    s = LSentence.nodes.get(val="a")
+    s = await LSentence.nodes.get(val="a")
     chains = await fetch_tanbun_chains([s.uid])
     c = chains.root[0]
     assert [k.sentence for k in c.part("a")] == ["a"]
@@ -226,7 +226,7 @@ async def test_detail_no_header(u: LUser):
             f
     """
     _sn, _r = await save_text(u.uid, s)
-    s = LSentence.nodes.get(val="a")
+    s = await LSentence.nodes.get(val="a")
     chains = await fetch_tanbun_chains([s.uid])
     c = chains.root[0]
     assert [k.sentence for k in c.part("a")] == unordered(["a", "b", "c"])
@@ -255,7 +255,7 @@ async def test_chain_quoterm_rel(u: LUser):
     """
 
     _sn, _r = await save_text(u.uid, s)
-    tgt = LSentence.nodes.first(val="aaa")
+    tgt = await LSentence.nodes.first(val="aaa")
     chains = await fetch_tanbun_chains([tgt.uid])
     c = chains.root[0]
     assert [k.sentence for k in c.succ("aaa", EdgeType.TO)] == unordered([
@@ -284,8 +284,8 @@ async def test_fetch_multi_chains(u: LUser):
     """
 
     _sn, _r = await save_text(u.uid, s)
-    tgt1 = LSentence.nodes.first(val="aaa")
-    tgt2 = LSentence.nodes.first(val="ddd")
+    tgt1 = await LSentence.nodes.first(val="aaa")
+    tgt2 = await LSentence.nodes.first(val="ddd")
     chains = await fetch_tanbun_chains([tgt1.uid, tgt2.uid])
     assert len(chains.root) == 2  # noqa: PLR2004
     c_aaa = chains.get("aaa")
