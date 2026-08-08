@@ -5,7 +5,7 @@ description = ""
 authors = ["Shogo Goto <gotoadmn0605@gmail.com>"]
 readme = "README.md"
 repository = "https://github.com/shogogoto/tanbunism"
-packages = [{ include = "knowde" }]
+packages = [{ include = "tanbun" }]
 exclude = [
     "**/test_*.py",
     "**/conftest.py",
@@ -69,7 +69,7 @@ enable = true
 vcs = "git"
 
 [tool.poetry-dynamic-versioning.substitution]
-files = ["knowde/feature/cli/__init__.py"]
+files = ["tanbun/feature/cli/__init__.py"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
@@ -82,11 +82,11 @@ ptw = "ptw -- --ff --testmon"                               # ispytest-watch
 lint = "ruff check ."
 lintfix = "ruff check . --fix"
 pre-commit = "pre-commit install"
-dev = "fastapi dev knowde/api/__init__.py --reload --host 0.0.0.0"
-# serve      = "uvicorn knowde:api --reload --host 0.0.0.0 --port 8000"
-serve = "fastapi run knowde/api/__init__.py"
-build = "pyinstaller --noupx --optimize 1 --collect-all knowde --workpath ./standalone/build --specpath ./standalone --distpath ./standalone/dist  --onefile --name kn knowde/feature/cli/__init__.py"
-compile = "nuitka --standalone --follow-imports --onefile --product-name=kn knowde/feature/cli.py"
+dev = "fastapi dev tanbun/api/__init__.py --reload --host 0.0.0.0"
+# serve      = "uvicorn tanbun:api --reload --host 0.0.0.0 --port 8000"
+serve = "fastapi run tanbun/api/__init__.py"
+build = "pyinstaller --noupx --optimize 1 --collect-all tanbun --workpath ./standalone/build --specpath ./standalone --distpath ./standalone/dist  --onefile --name kn tanbun/feature/cli/__init__.py"
+compile = "nuitka --standalone --follow-imports --onefile --product-name=kn tanbun/feature/cli.py"
 
 [tool.poetry.scripts]
-tb = "knowde:cli"
+tb = "tanbun:cli"

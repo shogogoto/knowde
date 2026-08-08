@@ -1,7 +1,7 @@
 # プロジェクトの文脈
 
 このリポジトリは、知識を単文と関係に分解して管理する知識管理システム
-`tanbunism` の実装である。Python パッケージ名は `knowde`、CLI コマンドは
+`tanbunism` の実装である。Python パッケージ名は `tanbun`、CLI コマンドは
 `tb` である。
 
 現在のタスクに関連する場合は、`chatgpt-web/` にある過去の ChatGPT での
