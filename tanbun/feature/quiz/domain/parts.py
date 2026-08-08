@@ -76,6 +76,8 @@ S_SENT2TERM: Final = "に合う用語はどれ?"
 S_TERM2SENT: Final = "に合う文はどれ?"
 S_PAIR2REL: Final = "への関係を当ててください"
 S_REL2PAIR: Final = "関係で繋がる単文を当ててください"
+S_PAIR2REL_GRAPH: Final = "[]に入る関係はどれ?"
+S_REL2PAIR_GRAPH: Final = "<?>に入る文はどれ?"
 
 
 class QuizType(StrEnum):
@@ -93,6 +95,8 @@ class QuizType(StrEnum):
             S_TERM2SENT: cls.TERM2SENT,
             S_REL2PAIR: cls.REL2PAIR,
             S_PAIR2REL: cls.PAIR2REL,
+            S_REL2PAIR_GRAPH: cls.REL2PAIR,
+            S_PAIR2REL_GRAPH: cls.PAIR2REL,
         }
         for suffix, quiz_type in mapping.items():
             if suffix in stmt:
@@ -159,17 +163,15 @@ class QuizType(StrEnum):
             return self.inject(vals)
         correct = corrects[0]
         if self is QuizType.PAIR2REL:
-            question = self.inject([target.sentence, correct.sentence])
             graph = _relation_graph(
                 target.sentence,
                 correct.sentence,
                 correct.rels,
                 conceal_relations=True,
             )
-            return f"{question}\nこれを{graph} の関係はどれ?"
-        question = self.inject([target.sentence, self.opt_question(correct)])
+            return f"{graph}\n{S_PAIR2REL_GRAPH}"
         graph = _relation_graph(target.sentence, None, correct.rels)
-        return f"{question}\n{graph}\n<?>に入る文はどれ?"
+        return f"{graph}\n{S_REL2PAIR_GRAPH}"
 
     def inject(self, vals: list[str]) -> str:
         """プレースホルダーを置き換えて返す."""
