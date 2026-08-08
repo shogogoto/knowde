@@ -2,7 +2,7 @@
 
 from knowde.feature.entry.label import LResource, LResourceStatsCache
 from knowde.feature.parsing.sysnet import SysNet
-from knowde.shared.types import UUIDy, to_uuid
+from knowde.feature.primitive.types import UUIDy, to_uuid
 
 from .domain import (
     create_resource_stats,

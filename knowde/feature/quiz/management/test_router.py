@@ -1,0 +1,140 @@
+"""Quiz管理APIのテスト."""
+
+from fastapi import status
+from httpx import AsyncClient
+
+from knowde.conftest import async_fixture, mark_async_test
+from knowde.feature.knowde.label import LSentence
+from knowde.feature.primitive.types import to_uuid
+from knowde.feature.quiz.candidate.types import CandidateType
+from knowde.feature.quiz.domain.collections import ReadableQuizResult
+from knowde.feature.quiz.domain.parts import QuizType
+from knowde.feature.quiz.fixture import fx_u
+from knowde.feature.quiz.generation.repo import generate_quiz
+from knowde.feature.quiz.management.domain import ManagedQuizResult
+from knowde.feature.user.label import LUser
+from knowde.feature.user.testing import aauth_header, aregister
+
+u = async_fixture()(fx_u)
+
+
+@mark_async_test()
+async def test_list_and_delete_created_quizzes_api(ac: AsyncClient, u: LUser):
+    """自分が作成したQuizを一覧し、削除できる."""
+    n_created = 3
+    target = LSentence.nodes.first(val="ccc")
+    own = await generate_quiz(
+        QuizType.TERM2SENT,
+        CandidateType.ALL,
+        target.uid,
+        3,
+        u.uid,
+    )
+    incorrect = await generate_quiz(
+        QuizType.SENT2TERM,
+        CandidateType.ALL,
+        target.uid,
+        3,
+        u.uid,
+    )
+    unattempted = await generate_quiz(
+        QuizType.TERM2SENT,
+        CandidateType.ALL,
+        target.uid,
+        3,
+        u.uid,
+    )
+    other = await aregister(email="quiz-management-api-other@ex.com")
+    other_quiz = await generate_quiz(
+        QuizType.TERM2SENT,
+        CandidateType.ALL,
+        target.uid,
+        3,
+        other.uid,
+    )
+    headers = await aauth_header(email=u.email)
+
+    response = await ac.get("/quiz/created", headers=headers)
+    result = ReadableQuizResult.model_validate(response.json())
+
+    assert {quiz.quiz_id for quiz in result.data.root} == {
+        own.quiz_id,
+        incorrect.quiz_id,
+        unattempted.quiz_id,
+    }
+
+    response = await ac.get("/quiz/created/resources", headers=headers)
+    assert response.status_code == status.HTTP_200_OK
+    resource_status = response.json()[0]
+    assert resource_status["resource"]["name"] == "# title"
+    assert resource_status["total_quizzes"] == n_created
+    assert resource_status["quiz_counts"] == {"term2sent": 2, "sent2term": 1}
+
+    response = await ac.get(
+        "/quiz/created",
+        params={"resource_id": target.resource_uid},
+        headers=headers,
+    )
+    filtered = ReadableQuizResult.model_validate(response.json())
+    assert len(filtered.data.root) == n_created
+
+    response = await ac.get(
+        f"/quiz/created/resources/{target.resource_uid}/sentences",
+        headers=headers,
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == [
+        {
+            "sentence_id": str(to_uuid(target.uid)),
+            "total_quizzes": 3,
+            "quiz_counts": {"term2sent": 2, "sent2term": 1},
+        },
+    ]
+
+    response = await ac.get(
+        "/quiz/created",
+        params={"sentence_id": target.uid},
+        headers=headers,
+    )
+    filtered = ReadableQuizResult.model_validate(response.json())
+    assert len(filtered.data.root) == n_created
+
+    await ac.post(
+        f"/quiz/answer/{own.quiz_id}",
+        json={"selected": [str(uid) for uid in own.correct_ids]},
+        headers=headers,
+    )
+    await ac.post(
+        f"/quiz/answer/{incorrect.quiz_id}",
+        json={"selected": []},
+        headers=headers,
+    )
+
+    response = await ac.get(
+        "/quiz/created/search",
+        params={"quiz_types": "sent2term", "answered": True, "max_accuracy": 0.5},
+        headers=headers,
+    )
+    searched = ManagedQuizResult.model_validate(response.json())
+    assert searched.total == 1
+    assert searched.data[0].quiz.quiz_id == incorrect.quiz_id
+    assert searched.data[0].attempts == 1
+    assert searched.data[0].accuracy == 0
+
+    response = await ac.get(
+        "/quiz/created/search",
+        params={"answered": False},
+        headers=headers,
+    )
+    searched = ManagedQuizResult.model_validate(response.json())
+    assert [item.quiz.quiz_id for item in searched.data] == [unattempted.quiz_id]
+
+    response = await ac.delete(f"/quiz/{other_quiz.quiz_id}", headers=headers)
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    response = await ac.delete(f"/quiz/{own.quiz_id}", headers=headers)
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+
+    response = await ac.get("/quiz/created", headers=headers)
+    result = ReadableQuizResult.model_validate(response.json())
+    assert result.total == n_created - 1

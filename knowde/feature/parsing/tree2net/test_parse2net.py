@@ -2,11 +2,11 @@
 
 from pytest_unordered import unordered
 
+from knowde.feature.knowde.graph import to_nested
+from knowde.feature.knowde.graph.edge_type import EdgeType
 from knowde.feature.parsing.meta_parse import title_parse
 from knowde.feature.parsing.primitive.heading import get_heading_path, get_headings
 from knowde.feature.parsing.tree2net import parse2net
-from knowde.shared.nxutil import to_nested
-from knowde.shared.nxutil.edge_type import EdgeType
 
 
 def test_duplicable() -> None:

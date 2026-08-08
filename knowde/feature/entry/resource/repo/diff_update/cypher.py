@@ -8,7 +8,7 @@ from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.primitive.time import WhenNode
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.sysnet.sysnode import Def, KNode, Sentency
-from knowde.shared.types import Duplicable, to_uuid
+from knowde.feature.primitive.types import Duplicable, to_uuid
 
 
 def n2label(n: KNode) -> str:

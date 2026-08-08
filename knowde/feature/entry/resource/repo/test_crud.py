@@ -15,8 +15,8 @@ from knowde.feature.parsing.primitive.heading import include_heading
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.sysnet.systats.nw1_n1 import NwOp
 from knowde.feature.parsing.tree2net import parse2net
-from knowde.shared.errors.domain import NotFoundError
-from knowde.shared.user.label import LUser
+from knowde.feature.primitive.errors.domain import NotFoundError
+from knowde.feature.user.label import LUser
 
 from .restore import (
     restore_sysnet,

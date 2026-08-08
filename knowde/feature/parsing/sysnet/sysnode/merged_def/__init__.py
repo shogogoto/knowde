@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Self, override
 
 from pydantic import Field
 
+from knowde.feature.knowde.graph.edge_type import EdgeType
 from knowde.feature.parsing.primitive.term import (
     MergedTerms,
     Term,
@@ -13,8 +14,7 @@ from knowde.feature.parsing.primitive.term import (
     eq_term,
 )
 from knowde.feature.parsing.sysnet.sysnode import Def, DummySentence, IDef
-from knowde.shared.nxutil.edge_type import EdgeType
-from knowde.shared.util import parted
+from knowde.feature.primitive.util import parted
 
 if TYPE_CHECKING:
     import networkx as nx

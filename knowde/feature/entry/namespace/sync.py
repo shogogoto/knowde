@@ -7,7 +7,7 @@ from datetime import datetime
 from knowde.feature.entry.domain import ResourceMeta
 from knowde.feature.entry.router import ResourceMetas
 from knowde.feature.parsing.tree2net import filter_parsable
-from knowde.shared.util import TZ
+from knowde.feature.primitive.util import TZ
 
 from pathlib import Path
 

@@ -17,7 +17,7 @@ from knowde.feature.parsing.sysnet.systats.types import Nw1N1Label, Nw1N1Recursi
 if TYPE_CHECKING:
     from knowde.feature.parsing.sysnet import SysNet
     from knowde.feature.parsing.sysnet.sysnode import KNArg
-    from knowde.shared.types import Duplicable
+    from knowde.feature.primitive.types import Duplicable
 
 
 def to_nw1n1fn(f: Callable[[nx.DiGraph, KNode], list[KNode]]) -> Nw1N1Fn:

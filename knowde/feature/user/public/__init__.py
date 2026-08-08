@@ -6,11 +6,11 @@ entryやknowdeが絡むような機能はそっちのfeatureで書く
 from fastapi import APIRouter
 from neomodel import Q
 
+from knowde.feature.achievement.router.router import user_achievement_router
 from knowde.feature.user.errors import UserNotFoundError
+from knowde.feature.user.label import LUser
+from knowde.feature.user.router_util import TrackUser
 from knowde.feature.user.schema import UserReadPublic
-from knowde.integration.user_achivement.router.router import user_achievement_router
-from knowde.shared.user.label import LUser
-from knowde.shared.user.router_util import TrackUser
 
 _r = APIRouter(tags=["public_user"])
 

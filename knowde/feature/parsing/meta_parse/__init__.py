@@ -4,7 +4,7 @@
 それを回避したい
 """
 
-from knowde.shared.errors import DomainError
+from knowde.feature.primitive.errors import DomainError
 
 
 class NonTitleError(DomainError):

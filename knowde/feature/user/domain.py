@@ -10,8 +10,8 @@ from uuid import UUID
 from fastapi_users.schemas import BaseOAuthAccount, BaseOAuthAccountMixin
 from pydantic import EmailStr
 
+from knowde.feature.primitive.util import Neo4jDateTime
 from knowde.feature.user.schema import CommonSchema
-from knowde.shared.util import Neo4jDateTime
 
 
 class User(CommonSchema, BaseOAuthAccountMixin):

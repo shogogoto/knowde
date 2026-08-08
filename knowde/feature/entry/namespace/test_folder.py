@@ -8,8 +8,8 @@ import pytest
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.entry.errors import FolderDeleteError
 from knowde.feature.entry.namespace import fetch_namespace
-from knowde.shared.errors.domain import NotFoundError
-from knowde.shared.user.label import LUser
+from knowde.feature.primitive.errors.domain import NotFoundError
+from knowde.feature.user.label import LUser
 
 from . import (
     create_folder,

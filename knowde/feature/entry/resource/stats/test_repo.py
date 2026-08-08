@@ -9,7 +9,7 @@ from knowde.feature.entry.namespace import (
     save_or_move_resource,
 )
 from knowde.feature.parsing.tree2net import parse2net
-from knowde.shared.user.label import LUser
+from knowde.feature.user.label import LUser
 
 from .repo import fetch_resource_stats_cache, save_resource_stats_cache
 

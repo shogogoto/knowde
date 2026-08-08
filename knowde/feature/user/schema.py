@@ -7,8 +7,8 @@ from fastapi_users import schemas
 from pydantic import BaseModel, Field
 from pydantic_partial import create_partial_model
 
-from knowde.shared.user.label import LUser
-from knowde.shared.user.schema import CommonSchema, UserReadPublic
+from knowde.feature.user.label import LUser
+from knowde.feature.user.public_schema import CommonSchema, UserReadPublic
 
 
 class SecurityFields(BaseModel):

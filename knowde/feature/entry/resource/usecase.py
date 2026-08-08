@@ -16,8 +16,8 @@ from knowde.feature.entry.resource.repo.diff_update.repo import update_resource_
 from knowde.feature.entry.resource.repo.save import sn2db
 from knowde.feature.parsing.domain import try_parse2net
 from knowde.feature.parsing.sysnet import SysNet
-from knowde.shared.errors.domain import NotFoundError
-from knowde.shared.types import UUIDy, to_uuid
+from knowde.feature.primitive.errors.domain import NotFoundError
+from knowde.feature.primitive.types import UUIDy, to_uuid
 
 from .stats.repo import save_resource_stats_cache
 

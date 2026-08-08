@@ -5,7 +5,7 @@
 #
 # import networkx as nx
 #
-# from knowde.shared.nxutil.edge_type import EdgeType
+# from knowde.feature.knowde.graph.edge_type import EdgeType
 #
 # from . import NxJsonalyzer, nxread, nxwrite
 #

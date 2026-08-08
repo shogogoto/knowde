@@ -17,8 +17,8 @@ from knowde.api.middleware.transaction import Neo4jTransactionMiddleware
 from knowde.config.env import Settings
 from knowde.feature.entry.router import entry_router
 from knowde.feature.knowde.router import knowde_router
+from knowde.feature.quiz.router.router import quiz_router
 from knowde.feature.user.routers import auth_router, user_router
-from knowde.integration.quiz.router.router import quiz_router
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator

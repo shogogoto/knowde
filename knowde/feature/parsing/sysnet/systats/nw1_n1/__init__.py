@@ -6,14 +6,14 @@ from collections.abc import Callable, Hashable, Iterable
 from functools import cache
 from typing import TYPE_CHECKING, Final
 
-from knowde.feature.parsing.sysnet import SysNet
-from knowde.feature.parsing.sysnet.sysnode import KNArg, KNode
-from knowde.shared.nxutil import (
+from knowde.feature.knowde.graph import (
     select_edge_attr,
     to_nodes,
     to_roots,
 )
-from knowde.shared.nxutil.edge_type import EdgeType, etype_subgraph
+from knowde.feature.knowde.graph.edge_type import EdgeType, etype_subgraph
+from knowde.feature.parsing.sysnet import SysNet
+from knowde.feature.parsing.sysnet.sysnode import KNArg, KNode
 
 if TYPE_CHECKING:
     import networkx as nx

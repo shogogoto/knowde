@@ -10,13 +10,15 @@ import networkx as nx
 from more_itertools import flatten
 from neomodel import adb, db
 
-from knowde.feature.knowde import (
+from knowde.feature.knowde.domain import (
     Additional,
     Knowde,
     KnowdeChain,
     KnowdeChains,
     KnowdeLocation,
 )
+from knowde.feature.knowde.graph.edge_type import EdgeType
+from knowde.feature.knowde.label import LQuoterm, LSentence
 from knowde.feature.knowde.repo.clause import OrderBy
 from knowde.feature.knowde.repo.cypher import (
     build_location_res,
@@ -27,10 +29,8 @@ from knowde.feature.knowde.repo.cypher import (
     q_upper,
 )
 from knowde.feature.parsing.primitive.term import Term
-from knowde.shared.errors.domain import NotFoundError, NotUniqueError
-from knowde.shared.knowde.label import LQuoterm, LSentence
-from knowde.shared.nxutil.edge_type import EdgeType
-from knowde.shared.types import UUIDy, to_uuid
+from knowde.feature.primitive.errors.domain import NotFoundError, NotUniqueError
+from knowde.feature.primitive.types import UUIDy, to_uuid
 
 
 def q_knowde_detail(

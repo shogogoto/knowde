@@ -8,8 +8,8 @@ from knowde.conftest import mark_async_test
 from knowde.feature.entry.label import LResource
 from knowde.feature.entry.resource.repo.owner import check_entry_owner
 from knowde.feature.entry.resource.usecase import save_text
-from knowde.shared.errors.domain import NotFoundError
-from knowde.shared.user.label import LUser
+from knowde.feature.primitive.errors.domain import NotFoundError
+from knowde.feature.user.label import LUser
 
 
 @mark_async_test()

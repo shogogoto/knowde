@@ -7,7 +7,7 @@ from cProfile import Profile
 
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.tree2net import parse2net
-from knowde.shared.errors import DomainError
+from knowde.feature.primitive.errors import DomainError
 
 
 def try_parse2net(s: str) -> SysNet:

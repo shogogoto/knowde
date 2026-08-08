@@ -27,7 +27,7 @@ from knowde.feature.entry.resource.repo.diff_update.domain.domain import (
 from knowde.feature.entry.resource.repo.restore import restore_sysnet
 from knowde.feature.entry.resource.repo.save import q_create_node, t2labels
 from knowde.feature.parsing.sysnet import SysNet
-from knowde.shared.types import UUIDy, to_uuid
+from knowde.feature.primitive.types import UUIDy, to_uuid
 
 
 # 単文のuidをなるべく不変にする

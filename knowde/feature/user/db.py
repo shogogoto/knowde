@@ -10,7 +10,7 @@ from fastapi_users.db import (
 )
 
 from knowde.feature.user.domain import Account, User
-from knowde.shared.user.label import LAccount, LUser
+from knowde.feature.user.label import LAccount, LUser
 
 
 async def _get_user_with_account(**kwargs) -> User | None:

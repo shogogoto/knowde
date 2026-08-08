@@ -12,9 +12,9 @@ from knowde.feature.entry.resource.repo.diff_update.domain.domain import (
 from knowde.feature.entry.resource.repo.diff_update.repo import update_resource_diff
 from knowde.feature.entry.resource.repo.restore import restore_sysnet
 from knowde.feature.entry.resource.usecase import save_text
+from knowde.feature.knowde.graph import nxprint
 from knowde.feature.parsing.tree2net import parse2net
-from knowde.shared.nxutil import nxprint
-from knowde.shared.user.label import LUser
+from knowde.feature.user.label import LUser
 
 
 @async_fixture()

@@ -10,9 +10,9 @@ from fastapi.testclient import TestClient
 from knowde.api import root_router
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.entry.resource.usecase import save_text
-from knowde.feature.knowde import KnowdeChains
-from knowde.shared.knowde.label import LSentence, LTerm
-from knowde.shared.user.label import LUser
+from knowde.feature.knowde.domain import KnowdeChains
+from knowde.feature.knowde.label import LSentence, LTerm
+from knowde.feature.user.label import LUser
 
 
 @async_fixture()

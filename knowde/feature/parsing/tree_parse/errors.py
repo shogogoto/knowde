@@ -2,7 +2,7 @@
 
 from textwrap import dedent
 
-from knowde.shared.errors import DomainError
+from knowde.feature.primitive.errors import DomainError
 
 
 class ParserError(DomainError):

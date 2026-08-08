@@ -9,7 +9,7 @@ from neomodel import adb, db
 
 from knowde.api.middleware.logging.log_config import clear_logging, setup_logging
 from knowde.config.env import Settings
-from knowde.shared.user.testing import async_client
+from knowde.feature.user.testing import async_client
 
 
 def pytest_configure() -> None:

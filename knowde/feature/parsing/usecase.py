@@ -7,13 +7,13 @@ from typing import IO, TYPE_CHECKING
 import click
 from tabulate import tabulate
 
+from knowde.feature.knowde.graph.edge_type import EdgeType
 from knowde.feature.parsing.domain import try_parse2net
 from knowde.feature.parsing.sysnet.systats.nw1_n1.ctxdetail import Nw1N1Detail
 from knowde.feature.parsing.sysnet.systats.nw1_n1.scorable import (
     NRecursiveWeight,
     SyScore,
 )
-from knowde.shared.nxutil.edge_type import EdgeType
 
 if TYPE_CHECKING:
     from knowde.feature.parsing.sysnet.systats.types import Nw1N1Label, Nw1N1Recursive

@@ -10,6 +10,10 @@ from lark import Token
 from more_itertools import flatten
 from pydantic import BaseModel
 
+from knowde.feature.knowde.graph import to_nested
+from knowde.feature.knowde.graph.edge_type import EdgeType
+from knowde.feature.knowde.graph.schema import NXGraph
+from knowde.feature.knowde.graph.types import Accessor
 from knowde.feature.parsing.primitive.heading import get_headings
 from knowde.feature.parsing.primitive.template import Templates
 from knowde.feature.parsing.primitive.term import Term
@@ -20,10 +24,7 @@ from knowde.feature.parsing.sysnet.sysfn import (
     to_template,
     to_term,
 )
-from knowde.shared.nxutil import to_nested
-from knowde.shared.nxutil.edge_type import EdgeType
-from knowde.shared.nxutil.types import Accessor
-from knowde.shared.types import Duplicable, NXGraph
+from knowde.feature.primitive.types import Duplicable
 
 from .errors import SysNetNotFoundError
 from .sysnode import Def, KNArg, KNode, is_meta

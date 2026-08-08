@@ -7,11 +7,11 @@ from pytest_unordered import unordered
 
 from knowde.conftest import async_fixture, mark_async_test
 from knowde.feature.entry.resource.usecase import save_text
+from knowde.feature.knowde.graph import to_leaves, to_roots
+from knowde.feature.knowde.graph.edge_type import EdgeType
+from knowde.feature.knowde.label import LSentence
 from knowde.feature.parsing.sysnet import SysNet
-from knowde.shared.knowde.label import LSentence
-from knowde.shared.nxutil import to_leaves, to_roots
-from knowde.shared.nxutil.edge_type import EdgeType
-from knowde.shared.user.label import LUser
+from knowde.feature.user.label import LUser
 
 from . import chains_knowde, knowde_upper
 

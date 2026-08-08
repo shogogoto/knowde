@@ -8,12 +8,12 @@ from more_itertools import first_true
 from neo4j.graph import Path
 
 from knowde.feature.entry.mapper import MResource
-from knowde.feature.knowde import LocationWithoutParents, UidStr
+from knowde.feature.knowde.domain import LocationWithoutParents, UidStr
+from knowde.feature.knowde.graph.edge_type import EdgeType
 from knowde.feature.knowde.repo.adj import AdjType
 from knowde.feature.knowde.repo.clause import OrderBy, WherePhrase
-from knowde.shared.nxutil.edge_type import EdgeType
-from knowde.shared.types import UUIDy
-from knowde.shared.user.schema import UserReadPublic
+from knowde.feature.primitive.types import UUIDy
+from knowde.feature.user.public_schema import UserReadPublic
 
 
 def q_indent(f: Callable) -> Callable:

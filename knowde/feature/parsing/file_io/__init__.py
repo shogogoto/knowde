@@ -13,8 +13,8 @@
 #     DUMMY_SENTENCE,
 #     DummySentence,
 # )
-# from knowde.shared.nxutil.edge_type import EdgeType
-# from knowde.shared.types import Duplicable
+# from knowde.feature.knowde.graph.edge_type import EdgeType
+# from knowde.feature.primitive.types import Duplicable
 #
 # T_EDGE_KEY: Final = "type"
 #

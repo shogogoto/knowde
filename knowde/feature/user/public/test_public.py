@@ -4,9 +4,9 @@ from fastapi import FastAPI, status
 from fastapi.testclient import TestClient
 
 from knowde.conftest import async_fixture, mark_async_test
+from knowde.feature.user.label import LUser
+from knowde.feature.user.public_schema import UserReadPublic
 from knowde.feature.user.routers import user_router
-from knowde.shared.user.label import LUser
-from knowde.shared.user.schema import UserReadPublic
 
 
 @async_fixture()

@@ -2,7 +2,7 @@
 
 from fastapi import status
 
-from knowde.shared.errors import DomainError
+from knowde.feature.primitive.errors import DomainError
 
 
 class TokenUnsavedError(Exception):

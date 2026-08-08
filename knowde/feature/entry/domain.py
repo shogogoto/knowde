@@ -12,13 +12,13 @@ from pydantic_core import Url
 
 from knowde.feature.entry.mapper import Entry, MResource
 from knowde.feature.entry.resource.stats.domain import ResourceStats
-from knowde.feature.knowde import ResourceInfo
+from knowde.feature.knowde.domain import ResourceInfo
+from knowde.feature.knowde.graph.schema import NXGraph
 from knowde.feature.parsing.meta_parse import meta_parse, title_parse
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.primitive.time import parse2dt
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.sysnet.sysnode import KNode
-from knowde.shared.types import NXGraph
 
 from .errors import (
     EntryNotFoundError,

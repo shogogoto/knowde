@@ -1,8 +1,8 @@
 """差分更新test."""
 
+from knowde.feature.knowde.graph.edge_type import EdgeType
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.tree2net import parse2net
-from knowde.shared.nxutil.edge_type import EdgeType
 
 from .domain import (
     create_updatediff,

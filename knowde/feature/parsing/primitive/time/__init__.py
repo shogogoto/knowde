@@ -37,8 +37,8 @@ from knowde.feature.parsing.primitive.time.errors import (
     ParseWhenError,
 )
 from knowde.feature.parsing.primitive.time.parse import parse_extime, str2edtf
-from knowde.shared.types import Duplicable
-from knowde.shared.util import TZ
+from knowde.feature.primitive.types import Duplicable
+from knowde.feature.primitive.util import TZ
 
 if TYPE_CHECKING:
     from edtf import EDTFObject

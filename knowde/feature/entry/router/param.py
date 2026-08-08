@@ -8,7 +8,7 @@ from knowde.feature.entry.domain import (
     StatsOrderKey,
     UserOrderKey,
 )
-from knowde.shared.cypher import Paging
+from knowde.feature.primitive.cypher import Paging
 
 
 class ResourceSearchBody(BaseModel, frozen=True):

@@ -17,7 +17,7 @@ from knowde.feature.entry.namespace import (
     save_resource,
     sync_namespace,
 )
-from knowde.shared.user.label import LUser
+from knowde.feature.user.label import LUser
 
 from .sync import Anchor
 

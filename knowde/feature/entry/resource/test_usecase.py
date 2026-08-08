@@ -8,7 +8,7 @@ from knowde.feature.entry.namespace import create_resource, fetch_namespace
 from knowde.feature.entry.resource.usecase import (
     save_resource_with_detail,
 )
-from knowde.shared.user.label import LUser
+from knowde.feature.user.label import LUser
 
 
 @async_fixture()

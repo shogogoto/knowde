@@ -9,6 +9,12 @@ import networkx as nx
 import pydantic_partial
 from pydantic import BaseModel, Field, computed_field
 
+from knowde.feature.knowde.graph.edge_type import (
+    EdgeType,
+    etype_subgraph,
+    is_leaf,
+    is_root,
+)
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.sysnet import SysNet
 from knowde.feature.parsing.sysnet.sysnode import KNArg
@@ -16,8 +22,7 @@ from knowde.feature.parsing.sysnet.systats.nw1_n1 import (
     NwOp,
     has_dependency,
 )
-from knowde.shared.nxutil.edge_type import EdgeType, etype_subgraph, is_leaf, is_root
-from knowde.shared.types import Duplicable
+from knowde.feature.primitive.types import Duplicable
 
 
 class ResourceStatsBasic(BaseModel):

@@ -14,17 +14,17 @@ from neomodel import AsyncStructuredNode, StructuredNode, adb
 from pydantic import BaseModel
 
 from knowde.feature.entry.label import LHead, LResource
+from knowde.feature.knowde.graph.edge_type import EdgeType
+from knowde.feature.knowde.label import LInterval, LQuoterm, LSentence, LTerm
 from knowde.feature.parsing.primitive.quoterm.domain import Quoterm
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.primitive.time import WhenNode
-from knowde.shared.knowde.label import LInterval, LQuoterm, LSentence, LTerm
-from knowde.shared.nxutil.edge_type import EdgeType
-from knowde.shared.types import Duplicable, to_uuid
+from knowde.feature.primitive.types import Duplicable, to_uuid
 
 if TYPE_CHECKING:
     from knowde.feature.parsing.sysnet import SysNet
     from knowde.feature.parsing.sysnet.sysnode import KNode
-    from knowde.shared.types import UUIDy
+    from knowde.feature.primitive.types import UUIDy
 
 
 def val2str(val: Any) -> str:

@@ -25,11 +25,11 @@ from knowde.feature.entry.errors import (
 from knowde.feature.entry.label import LFolder, LResource, LResourceStatsCache
 from knowde.feature.entry.mapper import MFolder, MResource
 from knowde.feature.entry.resource.stats.domain import ResourceStats
-from knowde.feature.knowde import ResourceInfo
-from knowde.shared.errors.domain import NotFoundError
-from knowde.shared.types import UUIDy, to_uuid
-from knowde.shared.user.label import LUser
-from knowde.shared.user.schema import UserReadPublic
+from knowde.feature.knowde.domain import ResourceInfo
+from knowde.feature.primitive.errors.domain import NotFoundError
+from knowde.feature.primitive.types import UUIDy, to_uuid
+from knowde.feature.user.label import LUser
+from knowde.feature.user.public_schema import UserReadPublic
 
 
 class ResourceMetas(RootModel[list[ResourceMeta]]):

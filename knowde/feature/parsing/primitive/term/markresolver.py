@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING, Self
 import networkx as nx
 from pydantic import BaseModel
 
+from knowde.feature.knowde.graph import to_nested
+from knowde.feature.knowde.graph.schema import NXGraph
 from knowde.feature.parsing.primitive.term import Term
 from knowde.feature.parsing.primitive.term.const import (
     BRACE_MARKER,
@@ -14,8 +16,6 @@ from knowde.feature.parsing.primitive.term.const import (
 )
 from knowde.feature.parsing.primitive.term.errors import MarkUncontainedError
 from knowde.feature.parsing.primitive.term.marklookup import to_lookup
-from knowde.shared.nxutil import to_nested
-from knowde.shared.types import NXGraph
 
 if TYPE_CHECKING:
     from knowde.feature.parsing.primitive.term import MergedTerms

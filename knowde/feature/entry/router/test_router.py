@@ -16,12 +16,12 @@ from knowde.feature.entry.namespace.sync import Anchor
 from knowde.feature.entry.namespace.test_namespace import files  # noqa: F401
 from knowde.feature.entry.resource.usecase import save_text
 from knowde.feature.entry.router.fixture import fixture_txt
-from knowde.feature.knowde import ResourceInfo
+from knowde.feature.knowde.domain import ResourceInfo
+from knowde.feature.user.label import LUser
 from knowde.feature.user.routers.repo.client import (
     AuthPost,
 )
-from knowde.shared.user.label import LUser
-from knowde.shared.user.testing import async_auth_header
+from knowde.feature.user.testing import async_auth_header
 
 if TYPE_CHECKING:
     from pathlib import Path

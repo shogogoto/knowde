@@ -2,7 +2,7 @@
 
 from neomodel.async_.core import AsyncDatabase
 
-from knowde.shared.types import UUIDy, to_uuid
+from knowde.feature.primitive.types import UUIDy, to_uuid
 
 
 async def delete_resource_unders(resource_uid: UUIDy):
