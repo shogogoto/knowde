@@ -22,7 +22,10 @@ class LQuiz(AsyncStructuredNode):
 
     __label__ = "Quiz"
     uid = UniqueIdProperty()
-    quiz_type = StringProperty(required=True, choices=QuizType)
+    quiz_type = StringProperty(
+        required=True,
+        choices=((quiz_type.value, quiz_type.name) for quiz_type in QuizType),
+    )
     # リンク切れ状態を明示して壊れたことが分かるようにして再構成を促す
     is_link_broken = BooleanProperty(default=False)
     created = DateTimeProperty()

@@ -85,6 +85,7 @@ pre-commit = "pre-commit install"
 dev = "fastapi dev tanbun/api/__init__.py --reload --host 0.0.0.0"
 # serve      = "uvicorn tanbun:api --reload --host 0.0.0.0 --port 8000"
 serve = "fastapi run tanbun/api/__init__.py"
+schema-install = "python -m tanbun.config.schema"
 build = "pyinstaller --noupx --optimize 1 --collect-all tanbun --workpath ./standalone/build --specpath ./standalone --distpath ./standalone/dist --onefile --name kn tanbun/__main__.py"
 compile = "nuitka --standalone --follow-imports --onefile --product-name=kn tanbun/__main__.py"
 
