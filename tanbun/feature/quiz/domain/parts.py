@@ -9,6 +9,7 @@ from typing import Final, Self
 
 from pydantic import BaseModel
 
+from tanbun.feature.domain.graph.edge_type import EdgeType
 from tanbun.feature.domain.types import UUIDy
 from tanbun.feature.parsing.primitive.mark import inject2placeholder
 from tanbun.feature.parsing.sysnet.sysnode import Def
@@ -71,8 +72,8 @@ class QuizOption(BaseModel, frozen=True):
 QUIZ_PLACEHOLDER = "$@"
 
 
-S_SENT2TERM: Final = "に合う用語を当ててください"
-S_TERM2SENT: Final = "に合う文を当ててください"
+S_SENT2TERM: Final = "に合う用語はどれ?"
+S_TERM2SENT: Final = "に合う文はどれ?"
 S_PAIR2REL: Final = "への関係を当ててください"
 S_REL2PAIR: Final = "関係で繋がる単文を当ててください"
 
@@ -94,7 +95,7 @@ class QuizType(StrEnum):
             S_PAIR2REL: cls.PAIR2REL,
         }
         for suffix, quiz_type in mapping.items():
-            if stmt.endswith(suffix):
+            if suffix in stmt:
                 return quiz_type
         msg = f"Unknown statement: {stmt}"
         raise ValueError(msg)
@@ -102,8 +103,8 @@ class QuizType(StrEnum):
     @property
     def _TEMPLATE(self) -> str:  # noqa: N802
         return {
-            QuizType.SENT2TERM: f"$@{S_SENT2TERM}",
-            QuizType.TERM2SENT: f"$@{S_TERM2SENT}",
+            QuizType.SENT2TERM: f"文$@{S_SENT2TERM}",
+            QuizType.TERM2SENT: f"用語$@{S_TERM2SENT}",
             QuizType.REL2PAIR: f"$@と$@{S_REL2PAIR}",
             QuizType.PAIR2REL: f"$@から$@{S_PAIR2REL}",
         }[self]
@@ -155,9 +156,20 @@ class QuizType(StrEnum):
         """クイズの問題文."""
         if self.has_term:
             vals = [self.opt_question(target)]
-        else:
-            vals = [str(target.val), *[self.opt_question(c) for c in corrects]]
-        return self.inject(vals)
+            return self.inject(vals)
+        correct = corrects[0]
+        if self is QuizType.PAIR2REL:
+            question = self.inject([target.sentence, correct.sentence])
+            graph = _relation_graph(
+                target.sentence,
+                correct.sentence,
+                correct.rels,
+                conceal_relations=True,
+            )
+            return f"{question}\nこれを{graph} の関係はどれ?"
+        question = self.inject([target.sentence, self.opt_question(correct)])
+        graph = _relation_graph(target.sentence, None, correct.rels)
+        return f"{question}\n{graph}\n<?>に入る文はどれ?"
 
     def inject(self, vals: list[str]) -> str:
         """プレースホルダーを置き換えて返す."""
@@ -168,3 +180,61 @@ class QuizType(StrEnum):
             surround_pre="'",
             surround_post="'",
         )
+
+
+def _relation_graph(
+    target: str,
+    correct: str | None,
+    rels: Sequence[QuizRel] | None,
+    *,
+    conceal_relations: bool = False,
+) -> str:
+    """Render a knowledge path while keeping its actual edge directions."""
+    if not rels:
+        msg = "relation quiz requires a relation"
+        raise ValueError(msg)
+    edges = [rel.edge for rel in rels]
+    if all(is_forward for _, is_forward in edges):
+        end = correct if correct is not None else "<?>"
+        return _forward_graph(
+            target,
+            end,
+            [edge for edge, _ in edges],
+            conceal_relations=conceal_relations,
+        )
+    if all(not is_forward for _, is_forward in edges):
+        start = correct if correct is not None else "<?>"
+        return _forward_graph(
+            start,
+            target,
+            [edge for edge, _ in reversed(edges)],
+            conceal_relations=conceal_relations,
+        )
+
+    end = correct if correct is not None else "<?>"
+    parts = [_graph_node(target)]
+    for index, (edge, is_forward) in enumerate(edges):
+        edge_name = "" if conceal_relations else edge.name
+        arrow = f"-[{edge_name}]->" if is_forward else f"<-[{edge_name}]-"
+        node = _graph_node(end) if index == len(edges) - 1 else "…"
+        parts.extend((arrow, node))
+    return "".join(parts)
+
+
+def _forward_graph(
+    start: str,
+    end: str,
+    edges: Sequence[EdgeType],
+    *,
+    conceal_relations: bool = False,
+) -> str:
+    parts = [_graph_node(start)]
+    for index, edge in enumerate(edges):
+        edge_name = "" if conceal_relations else edge.name
+        node = _graph_node(end) if index == len(edges) - 1 else "…"
+        parts.extend((f"-[{edge_name}]->", node))
+    return "".join(parts)
+
+
+def _graph_node(value: str) -> str:
+    return value if value == "<?>" else f"'{value}'"

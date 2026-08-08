@@ -37,6 +37,21 @@ class QuizRel(StrEnum):
     GENERAL = "一般"
     EXAMPLE = "具体例"
 
+    @property
+    def edge(self) -> tuple[EdgeType, bool]:
+        """Return the knowledge edge and its direction from the quiz target."""
+        return {
+            self.PARENT: (EdgeType.BELOW, False),
+            self.DETAIL: (EdgeType.BELOW, True),
+            self.PEER: (EdgeType.SIBLING, True),
+            self.PREMISE: (EdgeType.TO, False),
+            self.CONCLUSION: (EdgeType.TO, True),
+            self.REFER: (EdgeType.RESOLVED, False),
+            self.REFERRED: (EdgeType.RESOLVED, True),
+            self.GENERAL: (EdgeType.EXAMPLE, False),
+            self.EXAMPLE: (EdgeType.EXAMPLE, True),
+        }[self]
+
     @classmethod
     @cache
     def forwards(cls) -> dict:

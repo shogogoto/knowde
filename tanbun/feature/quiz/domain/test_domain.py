@@ -93,7 +93,7 @@ def test_quiz_sent2term(sn: SysNet):
         correct_stcs=["aaa"],
     )
     q = src.to_readable()
-    assert q.statement == "'aaa'に合う用語を当ててください"
+    assert q.statement == "文'aaa'に合う用語はどれ?"
     assert set(q.options.values()) == {"A", "B", "C", "D"}
     assert q.is_correct(["1"])
     assert not q.is_correct(["1", "4"])
@@ -115,7 +115,7 @@ def test_quiz_term2sent(sn: SysNet):
     )
     q = src.to_readable()
     assert set(q.options.values()) == {"aaa", "bbb", "ccc", "ddd"}
-    assert q.statement == "'A'に合う文を当ててください"
+    assert q.statement == "用語'A'に合う文はどれ?"
     assert q.is_correct(["1"])
     assert not q.is_correct(["1", "4"])
     assert not q.is_correct(["2"])
@@ -156,17 +156,63 @@ def test_quiz_rel2sent_lv1(sn: SysNet):
     )
     # 詳細はどれか
     q = src.to_readable()
-    assert q.statement == "'C: ccc'と'詳細'関係で繋がる単文を当ててください"
+    assert q.statement == (
+        "'ccc'と'詳細'関係で繋がる単文を当ててください\n"
+        "'ccc'-[BELOW]-><?>\n"
+        "<?>に入る文はどれ?"
+    )
     assert q.is_correct(["2"])
     assert not q.is_correct(["3"])
 
     src2 = src.model_copy(update={"correct_ids": ["3"]})
     # 結論はどれか
     q = src2.to_readable()
-    assert q.statement == "'C: ccc'と'結論'関係で繋がる単文を当ててください"
+    assert q.statement == (
+        "'ccc'と'結論'関係で繋がる単文を当ててください\n"
+        "'ccc'-[TO]-><?>\n"
+        "<?>に入る文はどれ?"
+    )
     assert q.is_correct(["3"])
     assert not q.is_correct(["2", "4"])
     assert not q.is_correct(["3", "4"])
+
+    premise = src.model_copy(update={"correct_ids": ["4"]}).to_readable()
+    assert premise.statement == (
+        "'ccc'と'前提'関係で繋がる単文を当ててください\n"
+        "<?>-[TO]->'ccc'\n"
+        "<?>に入る文はどれ?"
+    )
+
+    premise_of_premise = src.model_copy(update={"correct_ids": ["5"]}).to_readable()
+    assert premise_of_premise.statement == (
+        "'ccc'と'前提の前提'関係で繋がる単文を当ててください\n"
+        "<?>-[TO]->…-[TO]->'ccc'\n"
+        "<?>に入る文はどれ?"
+    )
+
+
+def test_quiz_pair2rel_shows_graph_direction(sn: SysNet):
+    """関係当て問題は実際の辺方向を空欄付きグラフとして示す."""
+    source = QuizSource.from_sysnet(
+        sn=sn,
+        qt=QuizType.PAIR2REL,
+        target_stc="ccc",
+        source_stcs=["ccc", "to", "cccb"],
+        correct_stcs=["to"],
+    )
+
+    conclusion = source.to_readable()
+    assert conclusion.statement == (
+        "'ccc'から'to'への関係を当ててください\nこれを'ccc'-[]->'to' の関係はどれ?"
+    )
+
+    premise = source.model_copy(update={"correct_ids": ["3"]}).to_readable()
+    assert premise.statement == (
+        "'ccc'から'cccb'への関係を当ててください\nこれを'cccb'-[]->'ccc' の関係はどれ?"
+    )
+
+    assert QuizType.from_statemet(conclusion.statement) is QuizType.PAIR2REL
+    assert QuizType.from_statemet(premise.statement) is QuizType.PAIR2REL
 
 
 def test_without_correct(sn: SysNet):
