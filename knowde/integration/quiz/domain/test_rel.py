@@ -11,6 +11,11 @@ def test_quiz_rel_edge_types():
     assert EdgeType.BY not in QUIZ_REL_EDGE_TYPES
 
 
+def test_referred_label():
+    """被参照関係は冗長な「用語」を付けずに表示する."""
+    assert QuizRel.REFERRED == "被参照"
+
+
 def test_to_detail_rel():
     """親子関係変換."""
     # 変換しない

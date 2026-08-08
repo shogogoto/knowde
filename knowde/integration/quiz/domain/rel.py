@@ -31,7 +31,7 @@ class QuizRel(StrEnum):
 
     # refer 分かりにくい表現
     REFER = "用語参照"  # targetが参照する、根, source側
-    REFERRED = "用語被参照"  # targetが参照される、葉, destination側
+    REFERRED = "被参照"  # targetが参照される、葉, destination側
 
     # hierarchy
     GENERAL = "一般"
